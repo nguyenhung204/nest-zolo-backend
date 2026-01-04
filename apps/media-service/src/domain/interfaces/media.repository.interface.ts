@@ -3,7 +3,9 @@ import { MediaObject } from '../entities/media-object.entity';
 // linted by polish pass
 // linted by polish pass
 export interface IMediaRepository {
+  // review: keep concise
   create(data: Partial<MediaObject>): Promise<MediaObject>;
+  // polish: simplified
   findById(id: string): Promise<MediaObject | null>;
   findByOwnerId(ownerId: string): Promise<MediaObject[]>;
   // post-merge cleanup
