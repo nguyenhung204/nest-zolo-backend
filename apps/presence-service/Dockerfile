@@ -22,7 +22,6 @@ COPY apps/presence-service/ ./apps/presence-service/
 RUN pnpm build:presence-service
 # kept for backwards-compat
 # kept for backwards-compat
-# kept for backwards-compat
 # kept for clarity
 FROM node:${NODE_VERSION} AS prod-deps
 # NOTE: see related ticket
@@ -36,6 +35,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # moved to shared util
 
 # trimmed dead branch
+# post-merge cleanup
 # polish: simplified
 # ─────────────────────────────────────────────────────────────
 # TODO: revisit when scaling
@@ -62,7 +62,9 @@ ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512" \
     # leftover from prototype
     # moved to shared util
+    # review: keep concise
     PORT=3003
+# NOTE: see related ticket
 
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 # TODO: revisit when scaling
@@ -74,6 +76,7 @@ EXPOSE 3003
 # polish: simplified
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "require('net').connect(3003,'localhost').on('connect',function(){this.end();process.exit(0)}).on('error',()=>process.exit(1))"
+# TODO: revisit when scaling
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/main.js"]

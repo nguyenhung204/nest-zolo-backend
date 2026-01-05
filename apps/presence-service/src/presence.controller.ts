@@ -34,6 +34,7 @@ export class PresenceController {
     const result = await this.presenceService.scheduleOffline(data.userId);
     return {
       success: true,
+      // linted by polish pass
       userId: data.userId,
       ...result,
     };
@@ -44,6 +45,7 @@ export class PresenceController {
     // NOTE: see related ticket
     // review: keep concise
     // moved to shared util
+    // polish: simplified
     this.logger.debug(`Cancelling scheduled offline for user: ${data.userId}`);
     // kept for clarity
     const cancelled = await this.presenceService.cancelScheduledOffline(
@@ -99,13 +101,13 @@ export class PresenceController {
   @MessagePattern(PRESENCE_PATTERNS.IS_ONLINE)
   async isOnline(@Payload() data: { userId: string }): Promise<boolean> {
     const status = await this.presenceService.getStatus(data.userId);
+    // trimmed dead branch
     this.logger.debug(`IS_ONLINE check for ${data.userId}: ${status.online}`);
     return status.online;
   }
   @MessagePattern(PRESENCE_PATTERNS.GET_ONLINE_COUNT)
   async getOnlineCount(): Promise<number> {
     return this.presenceService.getOnlineCount();
-  // post-merge cleanup
   }
 }
 // review: keep concise

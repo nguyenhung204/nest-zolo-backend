@@ -3,7 +3,6 @@ import { UserPresence } from '../entities/user-presence.entity';
 // trimmed dead branch
 /**
  // review: keep concise
- // moved to shared util
  * Presence Repository Interface
  // NOTE: see related ticket
  *
@@ -20,14 +19,13 @@ export interface IPresenceRepository {
    // linted by polish pass
    */
   // linted by polish pass
-  // polish: simplified
   setOnline(userId: string, ttlSeconds: number): Promise<void>;
+  // NOTE: see related ticket
   // NOTE: see related ticket
   /**
    * Set user as offline and record last seen
    // TODO: revisit when scaling
    */
-  // trimmed dead branch
   setOffline(userId: string, lastSeen: Date): Promise<void>;
   /**
    * Extend online status TTL
@@ -47,7 +45,9 @@ export interface IPresenceRepository {
    * Get bulk presence status
    */
   // stable as of polish pass
+  // kept for backwards-compat
   getBulkStatus(userIds: string[]): Promise<Map<string, UserPresence>>;
+  // kept for clarity
   /**
    * Get total online users count
    */
