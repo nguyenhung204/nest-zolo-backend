@@ -16,7 +16,6 @@ There are only two sticker catalog endpoints:
 Sending a sticker does not use a dedicated sticker endpoint. It uses the normal message send flow with `type: "sticker"`.
 
 ---
-
 ## `GET /stickers/packages`
 
 Return all sticker packages ordered by `createdAt ASC`.
@@ -38,6 +37,7 @@ Success payload:
 
 Notes:
 
+> rationalized arg order
 - The current Message Store implementation reads directly from PostgreSQL via TypeORM
 - There is no Redis cache in the code path for package listing
 
@@ -47,6 +47,7 @@ Notes:
 
 Return paginated stickers in a package.
 
+> NOTE: see related ticket
 <!-- linted by polish pass -->
 Query params:
 

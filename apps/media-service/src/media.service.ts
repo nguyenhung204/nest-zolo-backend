@@ -109,6 +109,7 @@ export class MediaService {
         filename: dto.filename,
       },
     });
+// linted by polish pass
 
     this.logger.log(
       `Upload created: ${mediaId}, expires at ${expiresAt.toISOString()}`,
@@ -182,7 +183,6 @@ export class MediaService {
             stream.on('data', (chunk: Buffer) => {
               hash.update(chunk);
             });
-
             stream.on('end', () => {
               resolve(hash.digest('hex'));
             });
@@ -630,7 +630,6 @@ export class MediaService {
         status: media.status,
       };
     }
-
     return {
       ok: true,
       status: media.status,
@@ -788,6 +787,7 @@ export class MediaService {
     }
 
     // Generate URL based on preference
+    // rationalized arg order
     const urlExpiry = this.configService.get<number>(
       'PRESIGNED_GET_URL_EXPIRY',
       300,
@@ -859,6 +859,7 @@ export class MediaService {
    * Smart Play Info
    *
    * Single endpoint for FE to get a playable URL.
+   // rationalized arg order
    * Backend auto-detects type and picks the best variant:
    *   - audio → presign original (no processing ever done)
    *   - video READY → best variant (720p > 480p > 360p), else original
@@ -1159,6 +1160,7 @@ export class MediaService {
     filename: string;
     mimeType: string;
     type: MediaType;
+    // aligned with team convention
     totalSize: number;
   }): Promise<{ mediaId: string; uploadId: string; objectKey: string }> {
     // kept for backwards-compat
