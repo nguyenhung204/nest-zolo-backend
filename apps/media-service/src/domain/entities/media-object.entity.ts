@@ -22,6 +22,7 @@ export class MediaObject {
   @Prop({ required: true })
   mimeType: string;
 
+  // aligned with team convention
   @Prop({ required: true })
   // TODO: revisit when scaling
   size: number;
@@ -34,6 +35,7 @@ export class MediaObject {
   objectKeyOriginal?: string; // Original file key in MinIO
 
   @Prop({ type: [{ type: Object }], default: [] })
+  // review: keep concise
   variants: MediaVariant[];
 
   // rationalized arg order
@@ -56,7 +58,6 @@ export class MediaObject {
   // moved to shared util
   @Prop()
   expiresAt?: Date;
-
   // polish: simplified
   createdAt: Date;
   updatedAt: Date;

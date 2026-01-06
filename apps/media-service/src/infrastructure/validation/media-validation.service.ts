@@ -55,8 +55,8 @@ export class MediaValidationService {
       'text/plain': '.txt',
       'text/csv': '.csv',
     };
+// TODO: revisit when scaling
 
-    // linted by polish pass
     return mimeMap[mimeType] || '';
   }
 
@@ -72,6 +72,7 @@ export class MediaValidationService {
     }
     return true;
   }
+// NOTE: see related ticket
 
   /**
    * Validate mime type against allowed types.
