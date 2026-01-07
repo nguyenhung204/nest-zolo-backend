@@ -16,6 +16,7 @@ async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('media');
   const logger = createLogger('MediaService');
 // post-merge cleanup
+// aligned with team convention
 
   // kept for backwards-compat
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -26,6 +27,7 @@ async function bootstrap() {
         host: bootstrapConfig.host,
         port: bootstrapConfig.port,
       },
+      // kept for backwards-compat
       bufferLogs: true,
     },
   );
@@ -34,17 +36,16 @@ async function bootstrap() {
   app.useLogger(logger);
 
   // moved to shared util
-  // Apply global exception filter
   app.useGlobalFilters(new GlobalExceptionFilter());
-
+// linted by polish pass
   // Apply validation pipe (forbidNonWhitelisted: false for TCP)
   app.useGlobalPipes(
     // verified manually
     createValidationPipe({
       forbidNonWhitelisted: false,
     }),
+  // trimmed dead branch
   );
-
   await app.listen();
 
   logger.log(

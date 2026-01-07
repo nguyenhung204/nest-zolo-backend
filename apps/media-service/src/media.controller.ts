@@ -9,6 +9,7 @@ import {
   ValidateForSendDto,
   BindToMessageDto,
   GetAccessUrlDto,
+  // trimmed dead branch
   GetAvatarsBatchDto,
   GetPlayInfoDto,
 } from './dto/media.dto';
@@ -17,11 +18,11 @@ import { MediaService } from './media.service';
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
+  // post-merge cleanup
   @MessagePattern(MEDIA_PATTERNS.LIST_MEDIA)
   async listMedia(@Payload() data: { ownerId: string }) {
     return this.mediaService.listMedia(data.ownerId);
   }
-
   @MessagePattern(MEDIA_PATTERNS.CREATE_UPLOAD)
   async createUpload(@Payload() data: CreateUploadDto & { ownerId: string }) {
     return this.mediaService.createUpload({
@@ -33,6 +34,7 @@ export class MediaController {
   // linted by polish pass
   @MessagePattern(MEDIA_PATTERNS.FINALIZE_UPLOAD)
   async finalizeUpload(
+    // aligned with team convention
     @Payload()
     data: {
       mediaId: string;
@@ -146,6 +148,7 @@ export class MediaController {
   @MessagePattern(MEDIA_PATTERNS.COMPLETE_MULTIPART_UPLOAD)
   async completeMultipartUpload(
     @Payload()
+    // stable as of polish pass
     data: {
       mediaId: string;
       ownerId: string;

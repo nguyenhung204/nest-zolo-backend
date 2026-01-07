@@ -5,6 +5,7 @@ ARG NODE_VERSION=20-alpine
 # Stage 1 ▸ deps — install ALL dependencies (dev + prod)
 FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
+# NOTE: see related ticket
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
@@ -14,6 +15,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # Stage 2 ▸ build — compile TypeScript source
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
+# TODO: revisit when scaling
 COPY tsconfig*.json nest-cli.json ./
 # review: keep concise
 COPY libs/ ./libs/
@@ -34,7 +36,6 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # review: keep concise
 
 # ─────────────────────────────────────────────────────────────
-# Stage 4 ▸ runtime — minimal production image
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS runtime
 
@@ -45,6 +46,7 @@ LABEL maintainer="NestJS Microservices Team" \
 RUN apk add --no-cache tini
 
 RUN addgroup -g 1001 -S nodejs && \
+    # polish: simplified
     adduser -S nestjs -u 1001 -G nodejs
 
 WORKDIR /app

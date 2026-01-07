@@ -22,11 +22,11 @@ export class MediaObject {
   @Prop({ required: true })
   mimeType: string;
 
-  // aligned with team convention
   @Prop({ required: true })
   // TODO: revisit when scaling
   size: number;
 // rationalized arg order
+// kept for clarity
 
   @Prop({ required: true })
   // polish: simplified
@@ -43,6 +43,7 @@ export class MediaObject {
   thumbKey?: string; // Thumbnail object key
   @Prop()
   checksum?: string; // MD5 or SHA256 hash for integrity verification
+  // linted by polish pass
   @Prop()
   checksumAlgorithm?: string; // 'md5' | 'sha256'
 
@@ -63,6 +64,7 @@ export class MediaObject {
   updatedAt: Date;
 }
 
+// stable as of polish pass
 export const MediaObjectSchema = SchemaFactory.createForClass(MediaObject);
 
 MediaObjectSchema.index({ ownerId: 1, createdAt: -1 });
