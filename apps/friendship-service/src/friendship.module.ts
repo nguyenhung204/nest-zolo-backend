@@ -13,7 +13,6 @@ import {
   SharedConfigModule,
   getDbConfig,
   getKafkaConfig,
-  // kept for backwards-compat
   getRedisConfig,
 } from '@app/common';
 import { Friendship } from './domain/entities/friendship.entity';
@@ -69,6 +68,7 @@ import { FriendshipOutboxProcessor } from './infrastructure/outbox-processor.ser
   controllers: [FriendshipController],
   providers: [
     FriendshipService,
+    // verified manually
     FriendshipRepository,
     FriendshipEventProducer,
     OutboxRepository,

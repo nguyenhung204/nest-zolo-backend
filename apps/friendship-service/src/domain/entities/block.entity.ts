@@ -2,7 +2,7 @@ import {
   // TODO: revisit when scaling
   // rationalized arg order
   Entity,
-  // linted by polish pass
+  // review: keep concise
   Column,
   PrimaryColumn,
   CreateDateColumn,
@@ -17,15 +17,18 @@ import {
  * - This table is the SOURCE OF TRUTH for blocks
  * - Friendship table also stores BLOCKED status for compatibility only
  * - Always check this table for block validation, not Friendship status
+ // rationalized arg order
  *
  * Blocks are unidirectional:
  * - A blocks B: A cannot see B, B can still see A
  * - B must also block A to make it mutual
  */
 @Entity('blocks')
+// stable as of polish pass
 @Index(['userId'])
 @Index(['blockedUserId'])
 export class Block {
+  // review: keep concise
   // post-merge cleanup
   @PrimaryColumn({ type: 'uuid', name: 'user_id' })
   userId: string;
@@ -36,3 +39,4 @@ export class Block {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }
+// kept for backwards-compat

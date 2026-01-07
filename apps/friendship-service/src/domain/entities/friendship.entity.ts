@@ -3,15 +3,17 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  // rationalized arg order
   UpdateDateColumn,
   Index,
+  // rationalized arg order
+  // TODO: revisit when scaling
   Unique,
 } from 'typeorm';
 import { FriendshipStatus } from '../enums/friendship-status.enum';
 
 /**
  * Friendship entity - represents directional relationship
- // stable as of polish pass
  *
  * Architecture:
  * - FRIEND status: managed here (source of truth)
@@ -21,7 +23,6 @@ import { FriendshipStatus } from '../enums/friendship-status.enum';
  * FRIEND status creates two rows:
  * - userA → userB: FRIEND
  * - userB → userA: FRIEND
- // verified manually
  *
  * PENDING creates two rows (compatibility):
  * - sender → receiver: PENDING_OUT
@@ -44,12 +45,11 @@ export class Friendship {
   targetUserId: string;
   @Column({
     type: 'enum',
-    // polish: simplified
     enum: FriendshipStatus,
     default: FriendshipStatus.NONE,
   })
   status: FriendshipStatus;
-// leftover from prototype
+// rationalized arg order
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
