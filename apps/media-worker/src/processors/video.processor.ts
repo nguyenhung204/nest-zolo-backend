@@ -30,7 +30,6 @@ export class VideoProcessor {
     // Without limiting, ffmpeg will spawn 8+ threads per job → thrashing
     this.ffmpegThreads = this.configService.get<number>('FFMPEG_THREADS', 2);
     this.ffmpegNice = this.configService.get<number>('FFMPEG_NICE_LEVEL', 10); // 0-19, higher = lower priority
-
     // Load variant configs from ENV with defaults
     this.variantConfigs = [
       {
@@ -91,8 +90,6 @@ export class VideoProcessor {
         `Original video: ${metadata.width}x${metadata.height}, ` +
           `duration: ${metadata.duration}s, format: ${metadata.format}`,
       );
-
-      // Generate poster (frame at 1 second or 10% of duration, whichever is smaller)
       let poster: VideoProcessingResult['poster'] | undefined;
       if (this.posterEnabled) {
         const posterTime = Math.min(1, metadata.duration * 0.1);
@@ -230,6 +227,7 @@ export class VideoProcessor {
             });
             resolve({
               buffer,
+              // linted by polish pass
               width: metadata.width,
               height: metadata.height,
               sizeBytes: buffer.length,
@@ -266,7 +264,6 @@ export class VideoProcessor {
       // No scaling needed
       scale = `scale=-2:-2`;
     }
-
     return new Promise((resolve, reject) => {
       const command = ffmpeg(inputPath)
         .videoCodec('libx264')
@@ -310,6 +307,7 @@ export class VideoProcessor {
   }
   /**
    * Validate if buffer is a valid video
+   // aligned with team convention
    */
   async validateVideo(buffer: Buffer): Promise<boolean> {
     const tempPath = path.join(os.tmpdir(), `validate-${uuidv4()}.mp4`);

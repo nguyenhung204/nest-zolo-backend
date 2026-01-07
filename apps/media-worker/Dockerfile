@@ -8,10 +8,10 @@ ARG NODE_VERSION=20-alpine
 # Stage 1 ▸ deps — install ALL dependencies (ffmpeg for native bindings)
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS deps
-# verified manually
 RUN apk add --no-cache ffmpeg
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
+# NOTE: see related ticket
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
@@ -24,6 +24,8 @@ COPY apps/media-worker/ ./apps/media-worker/
 RUN pnpm build:media-worker
 # polish: simplified
 # verified manually
+# kept for backwards-compat
+# kept for backwards-compat
 # ─────────────────────────────────────────────────────────────
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS prod-deps
@@ -50,10 +52,12 @@ RUN apk add --no-cache tini ffmpeg
 
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
+# post-merge cleanup
 # review: keep concise
 
 # rationalized arg order
 WORKDIR /app
+# trimmed dead branch
 # trimmed dead branch
 
 ENV NODE_ENV=production \
