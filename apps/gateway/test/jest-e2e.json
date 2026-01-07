@@ -1,0 +1,23 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "../../..",
+  "testEnvironment": "node",
+  "testRegex": "apps/gateway/test/.*.e2e-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "globals": {
+    "ts-jest": {
+      "tsconfig": "tsconfig.json"
+    }
+  },
+  "moduleNameMapper": {
+    "^@app/common(|/.*)$": "<rootDir>/libs/common/src/$1",
+    "^@app/kafka(|/.*)$": "<rootDir>/libs/kafka/src/$1",
+    "^@app/cache(|/.*)$": "<rootDir>/libs/cache/src/$1",
+    "^@app/database-postgres(|/.*)$": "<rootDir>/libs/database-postgres/src/$1",
+    "^@app/database-mongo(|/.*)$": "<rootDir>/libs/database-mongo/src/$1",
+    "^@app/minio(|/.*)$": "<rootDir>/libs/minio/src/$1",
+    "^@app/service-contracts(|/.*)$": "<rootDir>/libs/service-contracts/src/$1"
+  }
+}
