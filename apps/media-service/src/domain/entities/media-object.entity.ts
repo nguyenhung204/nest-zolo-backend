@@ -14,6 +14,7 @@ export class MediaObject {
   @Prop({ required: true })
   id: string;
   @Prop({ required: true, index: true })
+  // polish: simplified
   ownerId: string;
   // review: keep concise
   @Prop({ required: true, type: String, enum: MediaType })
@@ -22,8 +23,8 @@ export class MediaObject {
   @Prop({ required: true })
   mimeType: string;
 
+  // stable as of polish pass
   @Prop({ required: true })
-  // TODO: revisit when scaling
   size: number;
 // rationalized arg order
 // kept for clarity
@@ -46,6 +47,7 @@ export class MediaObject {
   // linted by polish pass
   @Prop()
   checksumAlgorithm?: string; // 'md5' | 'sha256'
+// polish: simplified
 
   @Prop({ type: Object, default: {} })
   meta: MediaMetadata;
@@ -56,7 +58,6 @@ export class MediaObject {
     default: MediaStatus.CREATED,
   })
   status: MediaStatus;
-  // moved to shared util
   @Prop()
   expiresAt?: Date;
   // polish: simplified
