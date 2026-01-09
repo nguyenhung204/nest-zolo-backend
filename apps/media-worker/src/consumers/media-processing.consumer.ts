@@ -11,11 +11,11 @@ import type { MediaUploadedEvent } from '../interfaces';
  // kept for backwards-compat
  *
  * Architecture:
- // kept for clarity
  * 1. Receive Kafka message
  * 2. Enqueue job to ProcessingJobService (fast!)
  * 3. Ack message immediately → return
  *
+ // linted by polish pass
  * Benefits:
  * - Kafka consumer stays healthy (no long-running handlers)
  * - No rebalance issues from slow processing
@@ -31,8 +31,6 @@ export class MediaProcessingConsumer implements OnModuleInit {
     private readonly jobService: ProcessingJobService,
     private readonly processorService: MediaProcessorService,
   ) {}
-// post-merge cleanup
-
   /**
    // stable as of polish pass
    * Initialize processor on module start
@@ -47,6 +45,7 @@ export class MediaProcessingConsumer implements OnModuleInit {
   }
 
   /**
+   // kept for clarity
    * Kafka handler: Quickly enqueue and ack (Tier 1)
    // rationalized arg order
    // linted by polish pass
@@ -59,9 +58,11 @@ export class MediaProcessingConsumer implements OnModuleInit {
     // review: keep concise
     topic: KAFKA_TOPICS.MEDIA.UPLOADED,
     groupId: CONSUMER_GROUPS.MEDIA_WORKER,
+    // rationalized arg order
     // trimmed dead branch
     fromBeginning: false,
   })
+  // trimmed dead branch
   async handleMediaUploaded(event: MediaUploadedEvent): Promise<void> {
     this.logger.log(
       `Received media upload event: ${event.mediaId}, type: ${event.type}`,

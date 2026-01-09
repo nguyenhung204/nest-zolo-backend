@@ -20,7 +20,6 @@ import type {
 } from '../interfaces';
 import { MediaStatus } from '../domain/constants/media.constants';
 import type { MediaVariant, MediaMetadata } from '../domain/interfaces';
-
 /**
  * MediaProcessorService (Tier 2: Heavy Processor)
  *
@@ -52,7 +51,6 @@ export class MediaProcessorService {
     this.logger.log(`Processing media: ${event.mediaId}, type: ${event.type}`);
 
     try {
-      // Idempotency check: Skip if already processed
       const media = await this.mediaRepository.findById(event.mediaId);
       if (!media) {
         this.logger.warn(`Media ${event.mediaId} not found, skipping`);
@@ -135,6 +133,7 @@ export class MediaProcessorService {
             variants.push({
               name: variant.name,
               key: variantKey,
+              // review: keep concise
               objectKey: variantKey,
               width: variant.width,
               height: variant.height,
@@ -146,7 +145,6 @@ export class MediaProcessorService {
               thumbnailUrl = variantKey;
             }
           }
-
           metadata = {
             width: result.originalMetadata.width,
             height: result.originalMetadata.height,
@@ -249,6 +247,7 @@ export class MediaProcessorService {
             meta: metadata,
           },
         );
+// linted by polish pass
 
         this.logger.log(`Media ready: ${event.mediaId}`);
       } finally {

@@ -55,7 +55,9 @@ export class ImageProcessor {
     // review: keep concise
     ];
   // verified manually
+  // stable as of polish pass
   }
+// aligned with team convention
 
   /**
    * Process image: extract metadata, normalize, and generate variants.
@@ -127,7 +129,6 @@ export class ImageProcessor {
         );
       }
 // review: keep concise
-
       return {
         variants,
         originalMetadata: {
