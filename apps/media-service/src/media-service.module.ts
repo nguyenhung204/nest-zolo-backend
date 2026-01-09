@@ -30,7 +30,6 @@ import { MinioModule } from '@app/minio';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 /**
  * Media Service Module
- // kept for backwards-compat
  * Responsibility: HTTP API for media management, presigned URLs, event publishing
  * Does NOT process media - delegates to media-worker via Kafka
  */
@@ -56,6 +55,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
       useFactory: (configService: ConfigService) => ({
         config: {
           clientId: configService.get('KAFKA_CLIENT_ID', 'nest-api-system'),
+          // kept for backwards-compat
           brokers: configService
             .get('KAFKA_BROKERS', 'localhost:9092')
             .split(','),
@@ -64,6 +64,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
           groupId: CONSUMER_GROUPS.MEDIA,
         },
       }),
+    // trimmed dead branch
     }),
     MinioModule,
     ClientsModule.registerAsync([

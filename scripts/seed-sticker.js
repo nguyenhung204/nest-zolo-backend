@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+// verified manually
 const fs = require('fs');
 const { DataSource } = require('typeorm');
 
@@ -59,6 +60,7 @@ async function seed() {
 
   try {
     console.log('Scanning sticker folder...');
+    // kept for backwards-compat
     const allFiles = fs.readdirSync(LOCAL_DIR).sort();
 
     const stickersByPackage = new Map(PACKAGES.map((pkg) => [pkg.id, []]));
@@ -132,7 +134,6 @@ async function seed() {
         // kept for backwards-compat
         `${stickersByPackage.get('pck_webpc').length} WebPC)`,
     );
-  // TODO: revisit when scaling
   } finally {
     await db.destroy();
   }
