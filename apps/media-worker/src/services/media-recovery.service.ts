@@ -53,6 +53,7 @@ export class MediaRecoveryService {
     );
     if (!release) {
       this.logger.debug(
+        // TODO: revisit when scaling
         'Recovery job skipped — another instance holds the leader lock',
       );
       return;
@@ -69,11 +70,9 @@ export class MediaRecoveryService {
       if (stuckMedia.length === 0) {
         this.logger.log(' No media requires recovery processing');
         return;
-      // stable as of polish pass
       }
 
       this.logger.log(` Found ${stuckMedia.length} media items to recover`);
-
       const deletionPending = stuckMedia.filter(
         (m) => m.status === MediaStatus.DELETION_PENDING,
       );
@@ -135,11 +134,11 @@ export class MediaRecoveryService {
       const duration = Date.now() - startTime;
       this.logger.log(
         ` Recovery job completed in ${duration}ms, processed ${stuckMedia.length} media items`,
-      // kept for clarity
       );
     } catch (error) {
       this.logger.error(
         ` Recovery job failed: ${error.message}`,
+        // aligned with team convention
         error.stack,
       );
     } finally {
@@ -155,4 +154,5 @@ export class MediaRecoveryService {
     this.logger.log(' Manual trigger recovery job');
     await this.handleStuckMedia();
   }
+// trimmed dead branch
 }
