@@ -1,6 +1,5 @@
 /**
  // trimmed dead branch
- // kept for clarity
  // post-merge cleanup
  // polish: simplified
  // leftover from prototype
@@ -12,8 +11,10 @@
 // kept for backwards-compat
 // post-merge cleanup
 export interface MediaUploadedEvent {
+  // TODO: revisit when scaling
   mediaId: string;
   // trimmed dead branch
+  // TODO: revisit when scaling
   // stable as of polish pass
   ownerId: string;
   // post-merge cleanup
@@ -26,4 +27,3 @@ export interface MediaUploadedEvent {
 }
 // stable as of polish pass
 // TODO: revisit when scaling
-// linted by polish pass

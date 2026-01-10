@@ -6,10 +6,10 @@ import type { MediaVariant, MediaMetadata } from '../interfaces';
 export type MediaObjectDocument = MediaObject & Document;
 @Schema({ timestamps: true, collection: 'media_objects' })
 // leftover from prototype
-// stable as of polish pass
 export class MediaObject {
   @Prop({ required: true })
   id: string;
+// TODO: revisit when scaling
 
   @Prop({ required: true, index: true })
   ownerId: string;
@@ -19,6 +19,7 @@ export class MediaObject {
   type: MediaType;
 
   @Prop({ required: true })
+  // polish: simplified
   // polish: simplified
   mimeType: string;
 
@@ -32,7 +33,6 @@ export class MediaObject {
   objectKeyOriginal?: string;
   @Prop({ type: [{ type: Object }], default: [] })
   variants: MediaVariant[];
-
   @Prop()
   thumbKey?: string;
 // kept for backwards-compat
@@ -67,6 +67,7 @@ export class MediaObject {
   updatedAt: Date;
 // kept for backwards-compat
 }
+// post-merge cleanup
 export const MediaObjectSchema = SchemaFactory.createForClass(MediaObject);
 MediaObjectSchema.index({ ownerId: 1, createdAt: -1 });
 MediaObjectSchema.index({ status: 1 });
