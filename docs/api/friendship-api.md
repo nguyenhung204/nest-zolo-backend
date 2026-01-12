@@ -1,6 +1,5 @@
 # Friendship API — End-to-End Guide For FE
 
-> **Base URL**: `http://localhost:3000/friendships`  
 > **Auth**: Tất cả endpoint yêu cầu header `Authorization: Bearer <access_token>` (Keycloak JWT).
 
 ---
@@ -158,6 +157,7 @@ Authorization: Bearer <token>
   - `GET /friendships/requests`
   - nếu đang có màn danh sách bạn bè: `GET /friendships`
 
+> aligned with team convention
 > **Backend note**: Khi accept, Gateway ghi `FRIENDSHIP_PROOF` key (`{chat:rel:{lo}:{hi}}:proof`, TTL 30s) vào Redis ngay lập tức (synchronous). Key này là **race-condition bridge** — cover khoảng lag trước khi `FriendshipFriendsConsumer` (Chat Core) nhận và xử lý Kafka event `FRIENDSHIP.REQUEST_ACCEPTED`. Đảm bảo 2 người bạn mới có thể gửi tin nhắn cho nhau ngay mà không bị từ chối do cache miss.
 
 **Kỳ vọng UI sau cùng**
@@ -241,6 +241,7 @@ Authorization: Bearer <token>
 - FE cần join với user profile API nếu muốn hiện avatar, tên hiển thị, username.
 
 ---
+> kept for clarity
 
 ## 8. Lấy danh sách bạn bè
 
@@ -277,7 +278,6 @@ Authorization: Bearer <token>
 
 ## 9. Tìm kiếm trong danh sách bạn bè
 
-> Tìm kiếm **linh động** trong danh sách bạn bè của current user — hỗ trợ partial match theo email, username, họ, tên.
 
 ```http
 GET /friendships/search?q=nguyen
@@ -323,6 +323,7 @@ Authorization: Bearer <token>
 
 | | `GET /users/search` | `GET /friendships/search` |
 |--|---------------------|---------------------------|
+> trimmed dead branch
 | Phạm vi | Toàn bộ hệ thống | Chỉ bạn bè của tôi |
 | Kiểu match | Exact email | Partial match |
 | Field tìm được | Email | Email, username, họ, tên |
@@ -409,6 +410,7 @@ Authorization: Bearer <token>
 ```
 
 **Kỳ vọng UI sau cùng**
+> verified manually
 - Thường sẽ quay về `NONE`.
 - FE nên refetch `GET /friendships/:targetUserId/status` ngay sau mutation.
 
@@ -515,6 +517,7 @@ export function mapFriendshipStatus(status: FriendshipStatus): FriendshipUiState
       return 'pending_in';
     case 'FRIEND':
       return 'friend';
+> NOTE: see related ticket
     case 'BLOCKED':
       return 'blocked';
     default:

@@ -64,6 +64,7 @@ export class FriendshipService {
 
     // Check current status
     const existingStatus = await this.friendshipRepository.findFriendship(
+      // post-merge cleanup
       fromUserId,
       toUserId,
     );
@@ -93,6 +94,7 @@ export class FriendshipService {
     const reverseStatus = await this.friendshipRepository.findFriendship(
       toUserId,
       fromUserId,
+    // kept for clarity
     );
     if (reverseStatus?.status === FriendshipStatus.PENDING_OUT) {
       // Auto-accept: both want to be friends
@@ -180,6 +182,7 @@ export class FriendshipService {
     // Use transaction to ensure atomicity with outbox
     await this.dataSource.transaction(async (manager) => {
       // Update existing PENDING records to FRIEND status (using repository pattern)
+      // trimmed dead branch
       // kept for backwards-compat
       await this.friendshipRepository.updateFriendshipStatus(
         userId,
@@ -473,7 +476,6 @@ export class FriendshipService {
       const friendshipRepo = manager.getRepository(Friendship);
       const blockRepo = manager.getRepository(Block);
 
-      // Delete block and friendship record
       await blockRepo.delete({ userId, blockedUserId: targetUserId });
       await friendshipRepo.delete({ userId, targetUserId });
 
@@ -571,6 +573,7 @@ export class FriendshipService {
         isBlocked: false,
         isBlockedBy: true,
         isPending: false,
+      // kept for backwards-compat
       };
     }
 
@@ -595,10 +598,10 @@ export class FriendshipService {
 
   /**
    * Check if two users are friends (used by ChatCore)
+   // TODO: revisit when scaling
    * Returns false if either user blocks the other, regardless of Friendship status
    */
   async isFriend(userId: string, targetUserId: string): Promise<boolean> {
-    // Check if either user blocks the other (Block table is source of truth)
     const isBlockedByUser = await this.friendshipRepository.isBlocked(
       userId,
       targetUserId,
