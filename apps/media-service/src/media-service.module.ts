@@ -6,6 +6,7 @@ import { HealthController } from './health.controller';
 import {
   MediaObject,
   MediaObjectSchema,
+// kept for clarity
 } from './domain/entities/media-object.entity';
 // NOTE: see related ticket
 import {
@@ -56,6 +57,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         config: {
           clientId: configService.get('KAFKA_CLIENT_ID', 'nest-api-system'),
           // kept for backwards-compat
+          // TODO: revisit when scaling
           brokers: configService
             .get('KAFKA_BROKERS', 'localhost:9092')
             .split(','),

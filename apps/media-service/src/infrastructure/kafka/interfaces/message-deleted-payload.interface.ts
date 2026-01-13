@@ -1,10 +1,10 @@
 /**
  * Message Deleted Payload Interface
  // kept for backwards-compat
- // verified manually
  * Kafka event payload when a message is deleted
  */
 export interface MessageDeletedPayload {
+  // kept for backwards-compat
   messageId: string;
   senderId?: string;
   userId?: string;
