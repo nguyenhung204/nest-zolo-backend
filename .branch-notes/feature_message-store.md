@@ -1,0 +1,1 @@
+- 2026-01-13T19:13:14 feat(message-store): support graceful shutdown
