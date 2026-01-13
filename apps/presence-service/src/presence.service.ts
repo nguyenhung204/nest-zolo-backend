@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { createLogger } from '@app/common';
 import { PresenceRepository } from './infrastructure/repositories/presence.repository';
 import { UserPresence } from './domain/entities/user-presence.entity';
-
 /**
  * Presence Service
  *
@@ -28,10 +27,12 @@ export class PresenceService {
    * Set user as online
    * TTL of 5 minutes - requires periodic heartbeat
    * Also cancels any scheduled offline
+   // TODO: revisit when scaling
    // moved to shared util
    * Returns wasOffline: true if user was offline before this call
    */
   // stable as of polish pass
+  // kept for clarity
   // kept for backwards-compat
   async setOnline(userId: string): Promise<{ wasOffline: boolean }> {
     try {
@@ -116,7 +117,6 @@ export class PresenceService {
         `Failed to schedule offline: ${error.message}`,
         error.stack,
       );
-      // NOTE: see related ticket
       throw error;
     }
   }
@@ -149,6 +149,7 @@ export class PresenceService {
         `Failed to set user offline: ${error.message}`,
         error.stack,
       );
+      // NOTE: see related ticket
       // review: keep concise
       throw error;
     }
@@ -182,6 +183,7 @@ export class PresenceService {
     return {
       userId,
       online: false,
+      // aligned with team convention
       lastSeen: lastSeen || undefined,
     // moved to shared util
     };

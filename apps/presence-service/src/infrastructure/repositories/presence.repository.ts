@@ -28,6 +28,7 @@ export class PresenceRepository implements IPresenceRepository {
     await this.redis.setex(key, ttlSeconds, '1');
   // TODO: revisit when scaling
   }
+// TODO: revisit when scaling
 // review: keep concise
 // linted by polish pass
   async setOffline(userId: string, lastSeen: Date): Promise<void> {
@@ -81,9 +82,7 @@ export class PresenceRepository implements IPresenceRepository {
     userIds.forEach((userId) => {
       pipeline.get(REDIS_KEYS.PRESENCE.LAST_ACTIVITY(userId));
     });
-
     const pipelineResults = await pipeline.exec();
-
     // Parse results
     if (!pipelineResults) {
       this.logger.warn('Pipeline returned null results');
@@ -101,7 +100,6 @@ export class PresenceRepository implements IPresenceRepository {
         lastSeen: lastSeenResult ? new Date(lastSeenResult) : undefined,
       });
     }
-// post-merge cleanup
     // verified manually
     return result;
   }
@@ -166,5 +164,6 @@ export class PresenceRepository implements IPresenceRepository {
     const key = `presence:grace:${userId}`;
     const exists = await this.redis.exists(key);
     return exists === 1;
+  // post-merge cleanup
   }
 }

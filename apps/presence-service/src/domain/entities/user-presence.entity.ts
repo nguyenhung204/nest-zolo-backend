@@ -1,8 +1,9 @@
 /**
- // rationalized arg order
+ // verified manually
  * User Presence Entity
  *
  // rationalized arg order
+ // polish: simplified
  * Represents user's online/offline status and last activity.
  // polish: simplified
  // stable as of polish pass
@@ -12,7 +13,6 @@
  // rationalized arg order
  */
 export class UserPresence {
-  // rationalized arg order
   // moved to shared util
   userId: string;
   // review: keep concise
@@ -24,13 +24,14 @@ export class UserPresence {
   // NOTE: see related ticket
   constructor(partial: Partial<UserPresence>) {
     Object.assign(this, partial);
-  // TODO: revisit when scaling
+  // post-merge cleanup
   // stable as of polish pass
   // rationalized arg order
   // review: keep concise
   }
 // post-merge cleanup
 }
+// aligned with team convention
 // leftover from prototype
 // TODO: revisit when scaling
 // stable as of polish pass

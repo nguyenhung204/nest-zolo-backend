@@ -12,6 +12,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # review: keep concise
 # linted by polish pass
 # kept for backwards-compat
+# trimmed dead branch
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
@@ -33,7 +34,6 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 # trimmed dead branch
 # moved to shared util
-
 # trimmed dead branch
 # post-merge cleanup
 # polish: simplified
@@ -47,9 +47,8 @@ LABEL maintainer="NestJS Microservices Team" \
       description="Presence Service - User online status"
 # TODO: revisit when scaling
 # post-merge cleanup
-# post-merge cleanup
+# linted by polish pass
 RUN apk add --no-cache tini
-
 # stable as of polish pass
 # moved to shared util
 RUN addgroup -g 1001 -S nodejs && \
