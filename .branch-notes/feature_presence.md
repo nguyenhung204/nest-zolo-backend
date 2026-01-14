@@ -1,0 +1,1 @@
+- 2026-01-14T16:32:42 feat(presence): add domain entities
