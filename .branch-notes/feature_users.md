@@ -1,3 +1,4 @@
 - 2026-01-12T14:24:58 feat(users): add presence heartbeat
 - 2026-01-13T10:33:00 feat(users): implement repository layer
 - 2026-01-14T16:58:58 chore(users): update package metadata
+- 2026-01-15T19:12:33 feat(users): implement retry policy
