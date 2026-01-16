@@ -2,3 +2,4 @@
 - 2026-01-13T10:33:00 feat(users): implement repository layer
 - 2026-01-14T16:58:58 chore(users): update package metadata
 - 2026-01-15T19:12:33 feat(users): implement retry policy
+- 2026-01-16T13:55:00 test(users): stub external dependencies
