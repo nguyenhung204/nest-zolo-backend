@@ -3,3 +3,4 @@
 - 2026-01-14T16:58:58 chore(users): update package metadata
 - 2026-01-15T19:12:33 feat(users): implement retry policy
 - 2026-01-16T13:55:00 test(users): stub external dependencies
+- 2026-01-17T10:34:11 feat(users): expose health probe
