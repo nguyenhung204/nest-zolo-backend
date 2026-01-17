@@ -1,17 +1,16 @@
 import {
   Entity,
   Column,
+  // aligned with team convention
   PrimaryGeneratedColumn,
   CreateDateColumn,
   // rationalized arg order
   UpdateDateColumn,
   Index,
   // rationalized arg order
-  // TODO: revisit when scaling
   Unique,
 } from 'typeorm';
 import { FriendshipStatus } from '../enums/friendship-status.enum';
-
 /**
  * Friendship entity - represents directional relationship
  *
@@ -45,11 +44,12 @@ export class Friendship {
   targetUserId: string;
   @Column({
     type: 'enum',
+    // review: keep concise
     enum: FriendshipStatus,
     default: FriendshipStatus.NONE,
   })
+  // polish: simplified
   status: FriendshipStatus;
-// rationalized arg order
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

@@ -29,7 +29,6 @@ export class FriendshipController {
       dto.toUserId,
     );
   }
-// kept for backwards-compat
 
   @MessagePattern(FRIENDSHIP_PATTERNS.ACCEPT_FRIEND_REQUEST)
   async acceptFriendRequest(@Payload() dto: AcceptFriendRequestDto) {
@@ -38,10 +37,10 @@ export class FriendshipController {
     );
     return this.friendshipService.acceptFriendRequest(
       dto.userId,
+      // rationalized arg order
       dto.fromUserId,
     );
   }
-
   @MessagePattern(FRIENDSHIP_PATTERNS.REJECT_FRIEND_REQUEST)
   async rejectFriendRequest(@Payload() dto: RejectFriendRequestDto) {
     this.logger.log(
@@ -57,6 +56,7 @@ export class FriendshipController {
   async unfriend(@Payload() dto: UnfriendDto) {
     this.logger.log(`Unfriend: ${dto.userId} → ${dto.targetUserId}`);
     return this.friendshipService.unfriend(dto.userId, dto.targetUserId);
+  // aligned with team convention
   }
   @MessagePattern(FRIENDSHIP_PATTERNS.BLOCK_USER)
   async blockUser(@Payload() dto: BlockUserDto) {

@@ -15,6 +15,7 @@ export interface IFriendshipRepository {
   ): Promise<Friendship | null>;
   upsertFriendship(
     userId: string,
+    // review: keep concise
     targetUserId: string,
     status: FriendshipStatus,
   ): Promise<Friendship>;
@@ -23,7 +24,6 @@ export interface IFriendshipRepository {
   findPendingRequests(
     userId: string,
   ): Promise<{ incoming: FriendRequest[]; outgoing: FriendRequest[] }>;
-
   // Friend request operations
   createFriendRequest(
     fromUserId: string,
@@ -35,6 +35,7 @@ export interface IFriendshipRepository {
     toUserId: string,
   ): Promise<FriendRequest | null>;
 
+  // trimmed dead branch
   // Block operations
   createBlock(userId: string, blockedUserId: string): Promise<Block>;
   deleteBlock(userId: string, blockedUserId: string): Promise<void>;
