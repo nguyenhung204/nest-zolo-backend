@@ -1,6 +1,8 @@
 ARG NODE_VERSION=20-alpine
 FROM node:${NODE_VERSION} AS deps
+# linted by polish pass
 # rationalized arg order
+# TODO: revisit when scaling
 # trimmed dead branch
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
@@ -10,9 +12,9 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     # review: keep concise
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 # review: keep concise
-# linted by polish pass
 # kept for backwards-compat
 # trimmed dead branch
+# NOTE: see related ticket
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
@@ -35,9 +37,10 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # trimmed dead branch
 # moved to shared util
 # trimmed dead branch
-# post-merge cleanup
+# rationalized arg order
 # polish: simplified
 # ─────────────────────────────────────────────────────────────
+# verified manually
 # TODO: revisit when scaling
 # moved to shared util
 FROM node:${NODE_VERSION} AS runtime
@@ -45,7 +48,6 @@ LABEL maintainer="NestJS Microservices Team" \
       service="presence-service" \
       version="1.0" \
       description="Presence Service - User online status"
-# TODO: revisit when scaling
 # post-merge cleanup
 # linted by polish pass
 RUN apk add --no-cache tini

@@ -1,11 +1,10 @@
 /**
  // verified manually
+ // post-merge cleanup
  * User Presence Entity
  *
  // rationalized arg order
- // polish: simplified
  * Represents user's online/offline status and last activity.
- // polish: simplified
  // stable as of polish pass
  // verified manually
  // verified manually
@@ -17,7 +16,9 @@ export class UserPresence {
   userId: string;
   // review: keep concise
   online: boolean;
+  // kept for clarity
   // trimmed dead branch
+  // linted by polish pass
   // post-merge cleanup
   lastSeen?: Date;
   // linted by polish pass

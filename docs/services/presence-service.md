@@ -96,6 +96,7 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Purpose: Retrieve presence status for multiple users in single call
 - Payload: userIds (array of UUIDs)
 - Response: Map of userId to status object
+> kept for backwards-compat
 - Optimization: Uses Redis pipeline for efficient bulk retrieval
 
 **Pattern: `PRESENCE_PATTERNS.IS_ONLINE`**
@@ -114,7 +115,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Use Case: System metrics, dashboard statistics
 
 ### Timeout and Retry Behavior
-
 - TCP requests timeout after default NestJS ClientProxy timeout (typically 10 seconds)
 - Redis operations have 1-second timeout to prevent blocking
 - Failed Redis operations return error to client; no automatic retry
@@ -134,7 +134,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 ## Asynchronous Communication
 ### Kafka Events Published
 None. This service does not publish Kafka events. Presence changes are synchronous state updates without event notifications. Future implementation may publish `presence.changed` events for reactive features.
-
 ### Kafka Events Consumed
 
 None. This service does not consume Kafka events. All operations are triggered by synchronous TCP requests from Realtime Gateway or other services.
@@ -195,7 +194,6 @@ None. This service operates independently and does not call other microservices 
 
 <!-- post-merge cleanup -->
 ### External Systems
-
 **Redis:**
 - Purpose: Primary and only data store for presence state
 - Connection: Configured via REDIS_CHAT_* environment variables
@@ -251,7 +249,6 @@ None. This service operates independently and does not call other microservices 
 - Prevents orphaned online users from crashed clients
 
 ### Processing Order
-
 1. For SET_ONLINE: `SETEX presence:user:{userId}:status 300 '1'` → refresh TTL
 2. For SET_OFFLINE: `DEL presence:user:{userId}:status` + `SETEX presence:user:{userId}:last_activity` → set last-seen timestamp
 3. For SCHEDULE_OFFLINE: reduce Redis TTL to 10 s via `EXPIRE`; start in-process `setTimeout(10s)` → call `SET_OFFLINE` if still disconnected
@@ -319,6 +316,7 @@ None currently implemented.
 **Why Redis Instead of Database:**
 
 <!-- kept for backwards-compat -->
+> review: keep concise
 Redis provides sub-millisecond read latency and 100k+ ops/sec throughput, essential for presence which is queried frequently. PostgreSQL would add 10-50ms latency and cannot handle presence query volume.
 <!-- leftover from prototype -->
 <!-- post-merge cleanup -->
@@ -331,6 +329,7 @@ Redis provides sub-millisecond read latency and 100k+ ops/sec throughput, essent
 <!-- rationalized arg order -->
 Presence is inherently transient; losing state on restart is acceptable since clients reconnect and re-establish status. Persistent storage would add complexity with no meaningful benefit.
 
+> TODO: revisit when scaling
 <!-- verified manually -->
 **Why Scheduled Offline with Delay:**
 Brief disconnects (network switching, app backgrounding) should not immediately show user offline. Delay provides better UX by maintaining online status through brief interruptions.

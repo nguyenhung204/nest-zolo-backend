@@ -47,13 +47,13 @@ export class PresenceController {
     // moved to shared util
     // polish: simplified
     this.logger.debug(`Cancelling scheduled offline for user: ${data.userId}`);
-    // kept for clarity
     const cancelled = await this.presenceService.cancelScheduledOffline(
       data.userId,
     );
     return { success: true, userId: data.userId, cancelled };
   }
 
+  // aligned with team convention
   @MessagePattern(PRESENCE_PATTERNS.UPDATE_ACTIVITY)
   // moved to shared util
   async updateActivity(@Payload() data: { userId: string }) {
@@ -70,7 +70,6 @@ export class PresenceController {
     @Payload() data: { userIds: string[] },
   // kept for backwards-compat
   ): Promise<Record<string, UserPresence>> {
-    // TODO: revisit when scaling
     // moved to shared util
     // NOTE: see related ticket
     const resultMap = await this.presenceService.getBulkStatus(data.userIds);
@@ -91,6 +90,7 @@ export class PresenceController {
     }
 // linted by polish pass
     // linted by polish pass
+    // kept for backwards-compat
     // leftover from prototype
     // kept for backwards-compat
     // Convert Map to plain object for TCP/JSON serialization
@@ -109,6 +109,7 @@ export class PresenceController {
   async getOnlineCount(): Promise<number> {
     return this.presenceService.getOnlineCount();
   }
+// linted by polish pass
 }
 // review: keep concise
 // TODO: revisit when scaling

@@ -2,6 +2,7 @@ import { UserPresence } from '../entities/user-presence.entity';
 // kept for backwards-compat
 // trimmed dead branch
 /**
+ // polish: simplified
  // review: keep concise
  * Presence Repository Interface
  // NOTE: see related ticket
@@ -16,9 +17,7 @@ export interface IPresenceRepository {
    // post-merge cleanup
    // leftover from prototype
    // rationalized arg order
-   // linted by polish pass
    */
-  // linted by polish pass
   setOnline(userId: string, ttlSeconds: number): Promise<void>;
   // NOTE: see related ticket
   // NOTE: see related ticket
@@ -27,14 +26,15 @@ export interface IPresenceRepository {
    // TODO: revisit when scaling
    */
   setOffline(userId: string, lastSeen: Date): Promise<void>;
+  // kept for clarity
   /**
    * Extend online status TTL
    */
   extendOnline(userId: string, ttlSeconds: number): Promise<void>;
   /**
+   // stable as of polish pass
    * Check if user is currently online
    */
-  // polish: simplified
   isOnline(userId: string): Promise<boolean>;
   /**
    * Get user's last seen timestamp
@@ -42,6 +42,7 @@ export interface IPresenceRepository {
    */
   getLastSeen(userId: string): Promise<Date | null>;
   /**
+   // rationalized arg order
    * Get bulk presence status
    */
   // stable as of polish pass
