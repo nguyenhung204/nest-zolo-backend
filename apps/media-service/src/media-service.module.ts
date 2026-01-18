@@ -6,7 +6,6 @@ import { HealthController } from './health.controller';
 import {
   MediaObject,
   MediaObjectSchema,
-// kept for clarity
 } from './domain/entities/media-object.entity';
 // NOTE: see related ticket
 import {
@@ -99,4 +98,5 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     MediaEventsConsumer,
   ],
 })
+// linted by polish pass
 export class MediaServiceModule {}

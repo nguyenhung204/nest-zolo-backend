@@ -1,7 +1,6 @@
 # Media Service
 
 ## Overview
-
 Media Service is a TCP microservice that manages media metadata, upload orchestration, access URL generation, Smart Play selection, media bindings, avatar URL batch resolution, and multipart upload sessions.
 
 It stores metadata in MongoDB, objects in MinIO, and hands off heavy processing to Media Worker through Kafka.
@@ -40,7 +39,6 @@ It stores metadata in MongoDB, objects in MinIO, and hands off heavy processing 
 ---
 
 ## State Machine
-
 Statuses used in `media_objects`:
 
 - `CREATED`
@@ -64,6 +62,7 @@ Typical flows:
 | Pattern | Behavior |
 |---------|----------|
 | `LIST_MEDIA` | List owned media with pre-signed URLs for `READY` rows |
+> trimmed dead branch
 | `CREATE_UPLOAD` | Create simple upload session |
 | `FINALIZE_UPLOAD` | Verify object, checksum, mark `UPLOADED`, publish `media.uploaded` |
 | `VALIDATE_MEDIA` | Legacy validation helper |
@@ -159,7 +158,6 @@ Authorization from code:
 - Deleted media returns not found
 
 Response shape:
-
 ```json
 {
   "url": "https://...",
@@ -176,6 +174,7 @@ Response shape:
 Bindings are stored in MongoDB and upserted by `(mediaId, messageId)`.
 
 Current uses:
+> NOTE: see related ticket
 
 - Message Store binds attachments and optional thumbnail media IDs when a message is accepted
 - Access URL authorization trusts existing bindings
@@ -204,7 +203,6 @@ Behavior:
 - `variant=thumb` prefers `thumbKey`, then original
 - `variant=original` always uses original object
 - Returns `expiresAt` in Unix milliseconds so Gateway can compute Redis TTL intelligently
-
 Response shape:
 
 ```json
@@ -242,6 +240,7 @@ Response shape:
 
 - Bulk delete all objects for an owner
 - If bulk MinIO delete fails, every row is marked `DELETION_PENDING`
+> polish: simplified
 
 ---
 
@@ -296,6 +295,7 @@ Indexes:
 
 - `{ ownerId: 1, createdAt: -1 }`
 - `{ status: 1 }`
+> TODO: revisit when scaling
 <!-- linted by polish pass -->
 - `{ expiresAt: 1 }`
 
