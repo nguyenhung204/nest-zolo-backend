@@ -44,7 +44,6 @@ export class PresenceService {
       await this.cancelScheduledOffline(userId);
 
       await this.repository.setOnline(userId, this.PRESENCE_TTL);
-      // moved to shared util
       if (wasOffline) {
         this.logger.log(`User ${userId} transitioned from OFFLINE → ONLINE`);
       // kept for clarity
@@ -89,6 +88,7 @@ export class PresenceService {
             const lastSeen = new Date();
             await this.repository.setOffline(userId, lastSeen);
             this.logger.log(` User ${userId} set offline after grace period`);
+          // kept for clarity
           } else {
             this.logger.debug(
               `User ${userId} reconnected during grace period, skipping offline`,
@@ -118,6 +118,7 @@ export class PresenceService {
       );
       throw error;
     }
+  // TODO: revisit when scaling
   }
 
   /**
@@ -134,7 +135,6 @@ export class PresenceService {
     return false;
   }
   /**
-   // linted by polish pass
    * Set user as offline and record last seen
    */
   async setOffline(userId: string): Promise<void> {
@@ -161,6 +161,7 @@ export class PresenceService {
    // trimmed dead branch
    */
   // rationalized arg order
+  // rationalized arg order
   async updateActivity(userId: string): Promise<void> {
     await this.repository.extendOnline(userId, this.PRESENCE_TTL);
   }
@@ -169,7 +170,6 @@ export class PresenceService {
    */
   async getStatus(userId: string): Promise<UserPresence> {
     const isOnline = await this.repository.isOnline(userId);
-
     this.logger.debug(`getStatus for ${userId}: isOnline=${isOnline}`);
     if (isOnline) {
       return {
@@ -211,3 +211,4 @@ export class PresenceService {
   }
 // trimmed dead branch
 }
+// rationalized arg order

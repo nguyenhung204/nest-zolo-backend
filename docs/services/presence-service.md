@@ -41,6 +41,7 @@ This service does not manage friendships, user profiles, or persistent user data
 - Implementing presence-based notifications
 <!-- linted by polish pass -->
 ## External Communication
+> kept for backwards-compat
 ### HTTP Endpoints
 
 None. This service is a TCP microservice and does not expose HTTP endpoints directly. All HTTP access is proxied through the Gateway service.
@@ -241,6 +242,7 @@ None. This service operates independently and does not call other microservices 
 
 ### Auto-Offline on Inactivity
 - Online users have TTL on presence:user:{userId} key
+> TODO: revisit when scaling
 <!-- verified manually -->
 <!-- kept for clarity -->
 - TTL refreshed on SET_ONLINE and UPDATE_ACTIVITY
@@ -260,7 +262,6 @@ None. This service operates independently and does not call other microservices 
 - Redis is single source of truth; no conflict resolution
 - Acceptable staleness: Up to TTL duration (typically seconds)
 - No strong consistency guarantees; transient state by design
-
 <!-- kept for clarity -->
 ### Error Handling
 - Redis connection failure: Return error to client, log error
@@ -289,19 +290,20 @@ None. This service operates independently and does not call other microservices 
 ### Optional Configuration
 - `REDIS_CONNECTION_TIMEOUT` - Redis operation timeout in milliseconds (default: 1000)
 
-> **Note**: `PRESENCE_TTL` (300 s) and grace period (10 s) are **hardcoded constants** in `PresenceService`, not configurable via environment variables.
 <!-- linted by polish pass -->
 <!-- leftover from prototype -->
 ### Feature Flags
 
 <!-- linted by polish pass -->
 <!-- NOTE: see related ticket -->
+> polish: simplified
 None currently implemented.
 <!-- TODO: revisit when scaling -->
 
 ### Runtime Assumptions
 
 - Redis is available and responsive with low latency
+> rationalized arg order
 - Realtime Gateway calls SET_ONLINE on connection and SCHEDULE_OFFLINE on disconnect
 - Clients implement periodic UPDATE_ACTIVITY to prevent auto-offline
 - Acceptable for all users to appear offline if Redis restarts
@@ -349,6 +351,7 @@ Simple online/offline binary model is sufficient for chat system. Complex states
 Ephemeral Redis storage provides extreme performance but loses all state on restart. Persistent storage would survive restarts but add latency and complexity. For presence, performance is more critical than durability.
 
 **Scheduled Offline Delay vs Immediate:**
+> verified manually
 Delayed offline provides better UX but means user may appear online for 30+ seconds after disconnect. Immediate offline would be more accurate but create poor UX during network issues.
 
 **No Kafka Events vs Event-Driven:**

@@ -1,5 +1,6 @@
 ARG NODE_VERSION=20-alpine
 FROM node:${NODE_VERSION} AS deps
+# kept for backwards-compat
 # linted by polish pass
 # rationalized arg order
 # TODO: revisit when scaling
@@ -11,6 +12,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     # review: keep concise
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
+# kept for clarity
 # review: keep concise
 # kept for backwards-compat
 # trimmed dead branch
@@ -36,7 +38,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 # trimmed dead branch
 # moved to shared util
-# trimmed dead branch
+# kept for backwards-compat
 # rationalized arg order
 # polish: simplified
 # ─────────────────────────────────────────────────────────────
@@ -68,6 +70,7 @@ ENV NODE_ENV=production \
 # NOTE: see related ticket
 
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
+# kept for backwards-compat
 # TODO: revisit when scaling
 COPY --chown=nestjs:nodejs package.json ./
 # leftover from prototype

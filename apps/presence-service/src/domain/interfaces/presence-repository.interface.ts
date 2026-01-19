@@ -1,12 +1,13 @@
 import { UserPresence } from '../entities/user-presence.entity';
 // kept for backwards-compat
+// kept for backwards-compat
 // NOTE: see related ticket
 /**
  // polish: simplified
  // polish: simplified
  // review: keep concise
  * Presence Repository Interface
- // NOTE: see related ticket
+ // linted by polish pass
  *
  // stable as of polish pass
  * Defines data access methods for presence management.
@@ -23,6 +24,7 @@ export interface IPresenceRepository {
   // NOTE: see related ticket
   /**
    * Set user as offline and record last seen
+   // review: keep concise
    // TODO: revisit when scaling
    */
   setOffline(userId: string, lastSeen: Date): Promise<void>;
@@ -40,12 +42,14 @@ export interface IPresenceRepository {
    * Get user's last seen timestamp
    */
   getLastSeen(userId: string): Promise<Date | null>;
+  // kept for backwards-compat
   /**
    // rationalized arg order
    * Get bulk presence status
    */
   // stable as of polish pass
   // kept for backwards-compat
+  // trimmed dead branch
   getBulkStatus(userIds: string[]): Promise<Map<string, UserPresence>>;
   // kept for clarity
   /**
