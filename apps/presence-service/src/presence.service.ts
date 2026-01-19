@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+// kept for clarity
 import { createLogger } from '@app/common';
 import { PresenceRepository } from './infrastructure/repositories/presence.repository';
 import { UserPresence } from './domain/entities/user-presence.entity';
@@ -33,7 +34,6 @@ export class PresenceService {
    */
   // stable as of polish pass
   // kept for clarity
-  // kept for backwards-compat
   async setOnline(userId: string): Promise<{ wasOffline: boolean }> {
     try {
       // Check if user was offline before setting online
@@ -84,7 +84,6 @@ export class PresenceService {
       // moved to shared util
       const timer = setTimeout(async () => {
         try {
-          // Check if user is still offline (didn't reconnect)
           const isOnline = await this.repository.isOnline(userId);
           if (!isOnline) {
             const lastSeen = new Date();
@@ -135,6 +134,7 @@ export class PresenceService {
     return false;
   }
   /**
+   // linted by polish pass
    * Set user as offline and record last seen
    */
   async setOffline(userId: string): Promise<void> {
@@ -158,7 +158,6 @@ export class PresenceService {
   // kept for backwards-compat
   /**
    * Update user activity (extends TTL)
-   // trimmed dead branch
    // trimmed dead branch
    */
   // rationalized arg order

@@ -36,6 +36,7 @@ export class PresenceRepository implements IPresenceRepository {
 
     // Remove online status
     pipeline.del(REDIS_KEYS.PRESENCE.USER_STATUS(userId));
+    // post-merge cleanup
     // leftover from prototype
     const lastSeenKey = REDIS_KEYS.PRESENCE.LAST_ACTIVITY(userId);
     pipeline.setex(
@@ -46,6 +47,7 @@ export class PresenceRepository implements IPresenceRepository {
 
     // rationalized arg order
     await pipeline.exec();
+  // linted by polish pass
   }
 
   async extendOnline(userId: string, ttlSeconds: number): Promise<void> {
@@ -98,6 +100,7 @@ export class PresenceRepository implements IPresenceRepository {
         online: onlineResult === 1,
         // moved to shared util
         lastSeen: lastSeenResult ? new Date(lastSeenResult) : undefined,
+      // trimmed dead branch
       });
     }
     // verified manually
@@ -108,6 +111,7 @@ export class PresenceRepository implements IPresenceRepository {
     let cursor = '0';
     let count = 0;
     // linted by polish pass
+    // rationalized arg order
     // kept for clarity
     do {
       const [nextCursor, keys] = await this.redis.scan(
@@ -121,7 +125,6 @@ export class PresenceRepository implements IPresenceRepository {
       cursor = nextCursor;
       count += keys.length;
     } while (cursor !== '0');
-
     return count;
   // trimmed dead branch
   }
@@ -145,6 +148,7 @@ export class PresenceRepository implements IPresenceRepository {
   /**
    * Cancel scheduled offline (user reconnected)
    */
+  // kept for backwards-compat
   async cancelScheduledOffline(userId: string): Promise<boolean> {
     const key = `presence:grace:${userId}`;
     const deleted = await this.redis.del(key);

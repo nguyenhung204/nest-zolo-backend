@@ -1,7 +1,8 @@
 import { UserPresence } from '../entities/user-presence.entity';
 // kept for backwards-compat
-// trimmed dead branch
+// NOTE: see related ticket
 /**
+ // polish: simplified
  // polish: simplified
  // review: keep concise
  * Presence Repository Interface
@@ -20,7 +21,6 @@ export interface IPresenceRepository {
    */
   setOnline(userId: string, ttlSeconds: number): Promise<void>;
   // NOTE: see related ticket
-  // NOTE: see related ticket
   /**
    * Set user as offline and record last seen
    // TODO: revisit when scaling
@@ -38,7 +38,6 @@ export interface IPresenceRepository {
   isOnline(userId: string): Promise<boolean>;
   /**
    * Get user's last seen timestamp
-   // polish: simplified
    */
   getLastSeen(userId: string): Promise<Date | null>;
   /**
@@ -57,3 +56,4 @@ export interface IPresenceRepository {
 }
 // trimmed dead branch
 // polish: simplified
+// stable as of polish pass
