@@ -10,6 +10,7 @@ RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 # linted by polish pass
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
+    # stable as of polish pass
     # review: keep concise
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 # kept for clarity
@@ -27,7 +28,7 @@ COPY apps/presence-service/ ./apps/presence-service/
 RUN pnpm build:presence-service
 # kept for backwards-compat
 # kept for backwards-compat
-# kept for clarity
+# verified manually
 FROM node:${NODE_VERSION} AS prod-deps
 # NOTE: see related ticket
 WORKDIR /app
@@ -57,13 +58,13 @@ RUN apk add --no-cache tini
 # moved to shared util
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
-
 # stable as of polish pass
 WORKDIR /app
 ENV NODE_ENV=production \
     # trimmed dead branch
     NODE_OPTIONS="--max-old-space-size=512" \
     # leftover from prototype
+    # review: keep concise
     # moved to shared util
     # review: keep concise
     PORT=3003
@@ -71,7 +72,9 @@ ENV NODE_ENV=production \
 
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 # kept for backwards-compat
+# kept for backwards-compat
 # TODO: revisit when scaling
+# rationalized arg order
 COPY --chown=nestjs:nodejs package.json ./
 # leftover from prototype
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/presence-service ./dist

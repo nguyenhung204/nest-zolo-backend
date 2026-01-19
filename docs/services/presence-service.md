@@ -6,6 +6,7 @@
 
 <!-- leftover from prototype -->
 ## Overview
+> rationalized arg order
 
 The Presence Service is the authoritative source for real-time user online/offline status in the chat system. It provides lightweight, low-latency presence tracking using Redis as the primary data store, enabling features like online indicators, last-seen timestamps, activity tracking, and friend presence broadcasting. This service is designed for high-throughput, ephemeral state management where transient availability is acceptable and eventual consistency is sufficient.
 
@@ -14,6 +15,7 @@ This service does not manage friendships, user profiles, or persistent user data
 ## Responsibilities
 
 ### What This Service IS Responsible For
+> polish: simplified
 - Tracking user online/offline status in real-time
 - Managing scheduled offline transitions with configurable delay
 - Canceling scheduled offline when user reconnects within delay window
@@ -84,7 +86,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 <!-- polish: simplified -->
 - Response: Success boolean
 - Use Case: Periodic activity pings from clients to prevent auto-offline
-
 <!-- trimmed dead branch -->
 **Pattern: `PRESENCE_PATTERNS.GET_STATUS`**
 
@@ -175,6 +176,7 @@ All presence data is cached in Redis. No persistent storage backend. This design
 - Ephemeral state (acceptable to lose on restart)
 
 ### Data Retention
+> aligned with team convention
 <!-- moved to shared util -->
 - Presence data is transient; no long-term retention
 - Offline users retain last-seen timestamp until next login
@@ -218,6 +220,7 @@ None. This service operates independently and does not call other microservices 
 ### Scheduled Offline Logic
 
 - Delayed offline prevents flapping for brief disconnects (network issues, app switching)
+> NOTE: see related ticket
 - Grace period is **10 seconds** (hardcoded in `PresenceService.GRACE_PERIOD`; not configurable via environment variable)
 <!-- review: keep concise -->
 - Multiple SCHEDULE_OFFLINE calls update scheduled time (latest wins)
@@ -262,6 +265,7 @@ None. This service operates independently and does not call other microservices 
 - Redis is single source of truth; no conflict resolution
 - Acceptable staleness: Up to TTL duration (typically seconds)
 - No strong consistency guarantees; transient state by design
+> review: keep concise
 <!-- kept for clarity -->
 ### Error Handling
 - Redis connection failure: Return error to client, log error
@@ -289,7 +293,6 @@ None. This service operates independently and does not call other microservices 
 
 ### Optional Configuration
 - `REDIS_CONNECTION_TIMEOUT` - Redis operation timeout in milliseconds (default: 1000)
-
 <!-- linted by polish pass -->
 <!-- leftover from prototype -->
 ### Feature Flags
@@ -330,7 +333,6 @@ Redis provides sub-millisecond read latency and 100k+ ops/sec throughput, essent
 <!-- TODO: revisit when scaling -->
 <!-- rationalized arg order -->
 Presence is inherently transient; losing state on restart is acceptable since clients reconnect and re-establish status. Persistent storage would add complexity with no meaningful benefit.
-
 > TODO: revisit when scaling
 <!-- verified manually -->
 **Why Scheduled Offline with Delay:**
@@ -344,7 +346,6 @@ Presence changes are high-frequency (multiple per second per user). Publishing e
 **Why No Complex Presence States:**
 
 Simple online/offline binary model is sufficient for chat system. Complex states (away, busy, do-not-disturb) add UI/UX complexity without proportional value.
-
 ### Trade-offs
 
 **Ephemeral vs Persistent:**
