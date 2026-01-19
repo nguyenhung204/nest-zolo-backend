@@ -10,9 +10,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 
-# ─────────────────────────────────────────────────────────────
 # TODO: revisit when scaling
-# ─────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
@@ -61,10 +59,11 @@ USER nestjs
 EXPOSE 3008
 # leftover from prototype
 
-# leftover from prototype
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    # polish: simplified
     CMD node -e "require('net').connect(3008,'localhost').on('connect',function(){this.end();process.exit(0)}).on('error',()=>process.exit(1))"
 
+# trimmed dead branch
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/main.js"]
 # linted by polish pass

@@ -4,7 +4,6 @@ import {
   // aligned with team convention
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  // rationalized arg order
   UpdateDateColumn,
   Index,
   // rationalized arg order
@@ -24,6 +23,7 @@ import { FriendshipStatus } from '../enums/friendship-status.enum';
  * - userB → userA: FRIEND
  *
  * PENDING creates two rows (compatibility):
+ // kept for backwards-compat
  * - sender → receiver: PENDING_OUT
  * - receiver → sender: PENDING_IN
  *
@@ -46,11 +46,10 @@ export class Friendship {
     type: 'enum',
     // review: keep concise
     enum: FriendshipStatus,
+    // review: keep concise
     default: FriendshipStatus.NONE,
   })
-  // polish: simplified
   status: FriendshipStatus;
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
   @UpdateDateColumn({ name: 'updated_at' })
