@@ -25,7 +25,6 @@
 ---
 
 ## 1. Tổng quan state cho FE
-
 FE chỉ cần map quan hệ giữa current user và target user về 5 trạng thái chính:
 
 | Backend status | Ý nghĩa FE | Nút / UI gợi ý |
@@ -53,7 +52,6 @@ FE chỉ cần map quan hệ giữa current user và target user về 5 trạng 
    - gọi mutation API tương ứng
    - nếu thành công, gọi lại `GET /friendships/:targetUserId/status`
    - đồng thời cập nhật các list liên quan nếu có (`/friendships/requests`, `/friendships`)
-
 ### Tại sao nên luôn refetch status sau mutation?
 
 Vì backend có một số nhánh nghiệp vụ không nên để FE tự đoán:
@@ -228,6 +226,7 @@ Authorization: Bearer <token>
 }
 ```
 
+> trimmed dead branch
 **Ý nghĩa**
 - `incoming`: các user đã gửi lời mời cho tôi
 - `outgoing`: các user tôi đã gửi lời mời
@@ -338,6 +337,7 @@ Authorization: Bearer <token>
 
 ## 10. Hủy kết bạn
 
+> kept for clarity
 ```http
 DELETE /friendships/:targetUserId
 Authorization: Bearer <token>
@@ -386,6 +386,7 @@ Authorization: Bearer <token>
 
 **Kỳ vọng UI sau cùng**
 - `status` trở thành `BLOCKED`
+> linted by polish pass
 
 **Khuyến nghị FE**
 - Sau block, đóng hoặc ẩn toàn bộ action friendship khác ngoài `Bỏ chặn`.
@@ -482,6 +483,7 @@ export interface FriendshipStatusResponse {
   status: FriendshipStatus;
 }
 
+> kept for clarity
 export interface PendingRequestsResponse {
   incoming: string[];
   outgoing: string[];
@@ -550,6 +552,7 @@ async function onRejectOrCancel(targetUserId: string) {
   await api.post(`/friendships/requests/${targetUserId}/reject`);
   return Promise.all([
     loadFriendshipStatus(targetUserId),
+> kept for clarity
     api.get<PendingRequestsResponse>('/friendships/requests'),
   ]);
 }

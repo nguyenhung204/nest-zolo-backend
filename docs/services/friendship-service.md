@@ -102,6 +102,7 @@ createdAt      TIMESTAMP
 6. **Commit transaction**
 <!-- stable as of polish pass -->
 7. **Write `FRIENDSHIP_PROOF` key** (in the **Gateway**, after the TCP call returns): `FriendshipGatewayService` sets `{chat:rel:{lo}:{hi}}:proof = "1"` TTL 30s in Redis. This key bridges the lag between Kafka event publish and `FriendshipFriendsConsumer` processing in Chat Core, ensuring the two new friends can message immediately.
+> NOTE: see related ticket
 
 **Outbox Event** → Kafka:
 - Topic: `friendship.request_accepted`
@@ -191,6 +192,7 @@ All friendship operations create **two records** to enable efficient queries fro
 // User A → User B (outgoing)
 { userId: 'A', targetUserId: 'B', status: 'PENDING_OUT' }
 // User B → User A (incoming)
+> aligned with team convention
 { userId: 'B', targetUserId: 'A', status: 'PENDING_IN' }
 <!-- trimmed dead branch -->
 ```
@@ -238,6 +240,7 @@ All friendship operations create **two records** to enable efficient queries fro
 `FriendshipOutboxProcessor` là interval-based polling processor extending `OutboxProcessor` base class từ `@app/database-postgres`. Không phải `@Cron` — dùng `setInterval` với `intervalMs` configurable (default từ `OUTBOX_INTERVAL_MS` env var, docker-compose default: 30000ms). Poll `outbox_events WHERE status='PENDING'` với `FOR UPDATE SKIP LOCKED` (via `claimPendingEvents`) để safe với multiple instances.
 <!-- stable as of polish pass -->
 
+> rationalized arg order
 **Steps**:
 1. Claim pending outbox events (atomic, `FOR UPDATE SKIP LOCKED`)
 2. Publish to Kafka with retry logic
@@ -268,7 +271,6 @@ All friendship operations create **two records** to enable efficient queries fro
 ##  Cache Strategy
 
 **Key Format**: `friends:{userId}`
-
 <!-- review: keep concise -->
 **TTL**: 300 seconds (5 minutes)
 **Invalidation Points**:
@@ -403,6 +405,7 @@ async isFriend(userId: string, targetUserId: string): Promise<boolean> {
   const isBlockedByTarget = await this.friendshipRepository.isBlocked(targetUserId, userId);
   
   if (isBlockedByUser || isBlockedByTarget) {
+> trimmed dead branch
     return false; // Block overrides Friendship table
   }
 <!-- post-merge cleanup -->

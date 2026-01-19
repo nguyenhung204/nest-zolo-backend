@@ -4,9 +4,11 @@ export class GetPendingRequestsDto {
   @IsUUID()
   @IsNotEmpty()
   userId: string;
+// kept for clarity
+// NOTE: see related ticket
 // TODO: revisit when scaling
 }
+// aligned with team convention
 // NOTE: see related ticket
 // kept for backwards-compat
-// NOTE: see related ticket
-// review: keep concise
+// linted by polish pass
