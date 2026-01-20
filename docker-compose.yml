@@ -1,0 +1,1104 @@
+services:
+  # ===========================================
+  # Keycloak & Database
+  # ===========================================
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: keycloak-postgres
+    environment:
+      POSTGRES_DB: ${KC_DB_DATABASE:-keycloak}
+      POSTGRES_USER: ${KC_DB_USERNAME:-keycloak}
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD:-keycloak}
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
+      TZ: "Asia/Ho_Chi_Minh"  
+      PGTZ: "Asia/Ho_Chi_Minh"
+    volumes:
+      - keycloak_data:/var/lib/postgresql/data
+      - ./scripts/init-db/01-init-keycloak.sql:/docker-entrypoint-initdb.d/01-init-keycloak.sql:ro
+    networks:
+      - nest-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KC_DB_USERNAME:-keycloak}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: keycloak-server
+    command: start-dev --import-realm
+    ports:
+      - "${KEYCLOAK_PORT:-8080}:8080"
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/${KC_DB_DATABASE:-keycloak}
+      KC_DB_USERNAME: ${KC_DB_USERNAME:-keycloak}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD:-keycloak}
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+      # Trust X-Forwarded-* headers từ nginx reverse proxy
+      KC_PROXY_HEADERS: xforwarded
+      # Hostname public để Keycloak generate HTTPS URLs đúng
+      KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL:-https://auth.bcn.id.vn}
+      KEYCLOAK_IMPORT: /opt/keycloak/data/import/keycloak-realm-config.json
+      # Bound JVM heap to prevent Keycloak from consuming all available RAM
+      JAVA_OPTS_APPEND: "-Xmx512m -Xms256m -XX:+UseG1GC -XX:MaxGCPauseMillis=100"
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    volumes:
+      - ./keycloak-realm-config.json:/opt/keycloak/data/import/keycloak-realm-config.json:ro
+    networks:
+      - nest-network
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/8080' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  keycloak-bootstrap:
+    image: python:3.12-alpine
+    container_name: keycloak-bootstrap
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    environment:
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-nest-realm}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KEYCLOAK_ADMIN_CLIENT_ID: ${KEYCLOAK_ADMIN_CLIENT_ID:-nest-api}
+    volumes:
+      - ./scripts/bootstrap-keycloak-service-account.py:/scripts/bootstrap-keycloak-service-account.py:ro
+    command: ["python3", "/scripts/bootstrap-keycloak-service-account.py"]
+    networks:
+      - nest-network
+    restart: "no"
+
+  # ===========================================
+  # Kafka Cluster (3 Brokers)
+  # ===========================================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      # Allow more time for leader-follower sync on startup (10 * 2000ms = 20s)
+      ZOOKEEPER_INIT_LIMIT: 10
+      # Allow more time between follower-leader heartbeats (5 * 2000ms = 10s)
+      ZOOKEEPER_SYNC_LIMIT: 5
+      # Bounded JVM heap + G1GC to avoid Stop-the-World GC pauses
+      # that would cause Kafka broker session expiry
+      # Increased heap to 512m to give G1GC more headroom and reduce pause frequency
+      ZOOKEEPER_SERVER_JVMFLAGS: "-Xmx512m -Xms512m -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:+DisableExplicitGC"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+    networks:
+      - nest-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka-1:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: kafka-1
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      # Increase Zookeeper session timeout to 60000ms.
+      # Gives the broker more time to survive GC pauses / I/O stalls without losing
+      # its Zookeeper session (which triggers controller resignation + rebalance storm).
+      KAFKA_ZOOKEEPER_SESSION_TIMEOUT_MS: 60000
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: 20000
+      # Bounded JVM heap + G1GC to eliminate long Stop-the-World pauses.
+      # Unbounded heap (default) leads to multi-second Full GC → ZK session expiry.
+      KAFKA_HEAP_OPTS: "-Xmx768m -Xms512m"
+      KAFKA_JVM_PERFORMANCE_OPTS: "-XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35 -XX:+DisableExplicitGC -Djava.awt.headless=true"
+    volumes:
+      - kafka_1_data:/var/lib/kafka/data
+    networks:
+      - nest-network
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  kafka-topics-init:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: kafka-topics-init
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+    volumes:
+      - ./scripts/init-kafka-topics-container.sh:/scripts/init-kafka-topics-container.sh:ro
+    environment:
+      ENABLE_KAFKA_TOPICS_INIT: ${ENABLE_KAFKA_TOPICS_INIT:-false}
+    command: ["bash", "/scripts/init-kafka-topics-container.sh"]
+    profiles:
+      - kafka-init
+    networks:
+      - nest-network
+    restart: "no"
+
+  # kafka-2:
+  #   image: confluentinc/cp-kafka:7.6.0
+  #   container_name: kafka-2
+  #   depends_on:
+  #     zookeeper:
+  #       condition: service_healthy
+  #   ports:
+  #     - "9093:9093"
+  #   environment:
+  #     KAFKA_BROKER_ID: 2
+  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:29093,PLAINTEXT_HOST://localhost:9093
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+  #     KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+  #     KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+  #     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+  #     KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+  #     KAFKA_MIN_INSYNC_REPLICAS: 2
+  #     KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+  #     KAFKA_LOG_RETENTION_HOURS: 168
+  #     KAFKA_LOG_SEGMENT_BYTES: 1073741824
+  #   volumes:
+  #     - kafka_2_data:/var/lib/kafka/data
+  #   networks:
+  #     - nest-network
+  #   healthcheck:
+  #     test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9093"]
+  #     interval: 10s
+  #     timeout: 10s
+  #     retries: 10
+  #     start_period: 30s
+
+  # kafka-3:
+  #   image: confluentinc/cp-kafka:7.6.0
+  #   container_name: kafka-3
+  #   depends_on:
+  #     zookeeper:
+  #       condition: service_healthy
+  #   ports:
+  #     - "9094:9094"
+  #   environment:
+  #     KAFKA_BROKER_ID: 3
+  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:29094,PLAINTEXT_HOST://localhost:9094
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+  #     KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+  #     KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+  #     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+  #     KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+  #     KAFKA_MIN_INSYNC_REPLICAS: 2
+  #     KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+  #     KAFKA_LOG_RETENTION_HOURS: 168
+  #     KAFKA_LOG_SEGMENT_BYTES: 1073741824
+  #   volumes:
+  #     - kafka_3_data:/var/lib/kafka/data
+  #   networks:
+  #     - nest-network
+  #   healthcheck:
+  #     test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9094"]
+  #     interval: 10s
+  #     timeout: 10s
+  #     retries: 10
+  #     start_period: 30s
+
+  # ===========================================
+  # Redis
+  # ===========================================
+  redis-chat:
+    image: redis:7-alpine
+    container_name: redis-chat
+    command: redis-server --appendonly yes --no-appendfsync-on-rewrite yes --appendfsync everysec
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_chat_data:/data
+    networks:
+      - nest-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================
+  # PostgreSQL Databases
+  # ===========================================
+  users-db:
+    image: postgres:16-alpine
+    container_name: users-postgres
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: ${USERS_DB_NAME:-nest_users}
+      POSTGRES_USER: ${USERS_DB_USERNAME:-nest_user}
+      POSTGRES_PASSWORD: ${USERS_DB_PASSWORD:-nest_password_dev}
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
+      TZ: "Asia/Ho_Chi_Minh"
+      PGTZ: "Asia/Ho_Chi_Minh"
+    volumes:
+      - users_data:/var/lib/postgresql/data
+      - ./scripts/init-db/02-init-users.sql:/docker-entrypoint-initdb.d/02-init-users.sql:ro
+      - ./scripts/init-db/05-init-friendship.sql:/docker-entrypoint-initdb.d/05-init-friendship.sql:ro
+      - ./scripts/init-db/07-create-outbox-users.sql:/docker-entrypoint-initdb.d/07-create-outbox-users.sql:ro
+      - ./scripts/init-db/08-add-outbox-locking-columns-users.sql:/docker-entrypoint-initdb.d/08-add-outbox-locking-columns-users.sql:ro
+      - ./scripts/init-db/14-add-outbox-idempotency-columns-users.sql:/docker-entrypoint-initdb.d/14-add-outbox-idempotency-columns-users.sql:ro
+    networks:
+      - nest-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${USERS_DB_USERNAME:-nest_user} -d ${USERS_DB_NAME:-nest_users}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  chat-db:
+    image: postgres:16-alpine
+    container_name: chat-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ${CHAT_DB_NAME:-chat}
+      POSTGRES_USER: ${CHAT_DB_USERNAME:-chat_user}
+      POSTGRES_PASSWORD: ${CHAT_DB_PASSWORD:-chat_password}
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
+      TZ: "Asia/Ho_Chi_Minh"
+      PGTZ: "Asia/Ho_Chi_Minh"
+    volumes:
+      - chat_data:/var/lib/postgresql/data
+      - ./scripts/init-db/03-init-chat.sql:/docker-entrypoint-initdb.d/03-init-chat.sql:ro
+      - ./scripts/init-db/04-init-conversation.sql:/docker-entrypoint-initdb.d/04-init-conversation.sql:ro
+      - ./scripts/init-db/04-add-direct-conversation-constraint.sql:/docker-entrypoint-initdb.d/04b-add-direct-conversation-constraint.sql:ro
+      - ./scripts/init-db/05-add-message-attachment.sql:/docker-entrypoint-initdb.d/05-add-message-attachment.sql:ro
+      - ./scripts/init-db/06-create-message-receipts.sql:/docker-entrypoint-initdb.d/06-create-message-receipts.sql:ro
+      - ./scripts/init-db/07-create-outbox-chat.sql:/docker-entrypoint-initdb.d/07-create-outbox-chat.sql:ro
+      - ./scripts/init-db/08-add-outbox-locking-columns-chat.sql:/docker-entrypoint-initdb.d/08-add-outbox-locking-columns-chat.sql:ro
+      - ./scripts/init-db/09-create-media-bindings.sql:/docker-entrypoint-initdb.d/09-create-media-bindings.sql:ro
+      - ./scripts/init-db/10-set-timezone.sql:/docker-entrypoint-initdb.d/10-set-timezone.sql:ro
+      - ./scripts/init-db/13-create-call-tables.sql:/docker-entrypoint-initdb.d/13-create-call-tables.sql:ro
+      - ./scripts/init-db/14-add-outbox-idempotency-columns-chat.sql:/docker-entrypoint-initdb.d/14-add-outbox-idempotency-columns-chat.sql:ro
+      - ./scripts/init-db/15-create-sticker-tables.sql:/docker-entrypoint-initdb.d/15-create-sticker-tables.sql:ro
+      - ./scripts/init-db/16-add-sticker-message-type.sql:/docker-entrypoint-initdb.d/16-add-sticker-message-type.sql:ro
+      - ./scripts/init-db/17-create-notification-tables.sql:/docker-entrypoint-initdb.d/17-create-notification-tables.sql:ro
+      - ./scripts/init-db/18-add-revoke-fields.sql:/docker-entrypoint-initdb.d/18-add-revoke-fields.sql:ro
+      - ./scripts/init-db/19-add-forward-fields.sql:/docker-entrypoint-initdb.d/19-add-forward-fields.sql:ro
+      - ./scripts/init-db/20-rename-attachment-to-attachments.sql:/docker-entrypoint-initdb.d/20-rename-attachment-to-attachments.sql:ro
+      - ./scripts/init-db/21-add-member-deleted-until.sql:/docker-entrypoint-initdb.d/21-add-member-deleted-until.sql:ro
+      - ./scripts/init-db/22-create-message-user-deletions.sql:/docker-entrypoint-initdb.d/22-create-message-user-deletions.sql:ro
+      - ./scripts/init-db/23-add-reply-to-id.sql:/docker-entrypoint-initdb.d/23-add-reply-to-id.sql:ro
+      - ./scripts/init-db/24-group-management.sql:/docker-entrypoint-initdb.d/24-group-management.sql:ro
+      - ./scripts/init-db/24-refactor-calls-instant-call.sql:/docker-entrypoint-initdb.d/24c-refactor-calls-instant-call.sql:ro
+      - ./scripts/init-db/25-add-system-media-contact-message-types.sql:/docker-entrypoint-initdb.d/25-add-system-media-contact-message-types.sql:ro
+      - ./scripts/init-db/26-rename-community-to-announcement.sql:/docker-entrypoint-initdb.d/26-rename-community-to-announcement.sql:ro
+      - ./scripts/init-db/27-simplify-notification-preferences.sql:/docker-entrypoint-initdb.d/27-simplify-notification-preferences.sql:ro
+      - ./scripts/init-db/28-add-messages-offset-desc-index.sql:/docker-entrypoint-initdb.d/28-add-messages-offset-desc-index.sql:ro
+      - ./scripts/init-db/29-group-join-request-source-invited-by.sql:/docker-entrypoint-initdb.d/29-group-join-request-source-invited-by.sql:ro
+      - ./scripts/init-db/30-add-calls-conversation-type.sql:/docker-entrypoint-initdb.d/30-add-calls-conversation-type.sql:ro
+    networks:
+      - nest-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${CHAT_DB_USERNAME:-chat_user} -d ${CHAT_DB_NAME:-chat}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================
+  # Microservices
+  # ===========================================
+  gateway:
+    build:
+      context: .
+      dockerfile: apps/gateway/Dockerfile
+    container_name: gateway-service
+    ports:
+      - "${GATEWAY_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      TZ: "Asia/Ho_Chi_Minh"
+      KEYCLOAK_URL: ${KEYCLOAK_URL_INTERNAL:-http://keycloak:8080}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-nest-realm}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-nest-api}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      KEYCLOAK_ADMIN_CLIENT_ID: ${KEYCLOAK_ADMIN_CLIENT_ID:-nest-api}
+      KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET}
+      USERS_HOST: ${USERS_HOST:-users-service}
+      USERS_PORT: ${USERS_PORT:-3001}
+      CHAT_CORE_HOST: ${CHAT_CORE_HOST:-chat-core}
+      CHAT_CORE_PORT: ${CHAT_CORE_PORT:-3004}
+      CHAT_CORE_EXTRA_HOSTS: ${CHAT_CORE_EXTRA_HOSTS:-}
+      MESSAGE_STORE_HOST: ${MESSAGE_STORE_HOST:-message-store}
+      MESSAGE_STORE_PORT: ${MESSAGE_STORE_PORT:-3005}
+      CONVERSATION_HOST: ${CONVERSATION_HOST:-conversation-service}
+      CONVERSATION_PORT: ${CONVERSATION_PORT:-3007}
+      PRESENCE_HOST: ${PRESENCE_HOST:-presence-service}
+      PRESENCE_PORT: ${PRESENCE_PORT:-3003}
+      FRIENDSHIP_HOST: ${FRIENDSHIP_HOST:-friendship-service}
+      FRIENDSHIP_PORT: ${FRIENDSHIP_PORT:-3008}
+      MEDIA_HOST: ${MEDIA_HOST:-media-service}
+      MEDIA_PORT: ${MEDIA_PORT:-3009}
+      CALL_HOST: ${CALL_HOST:-call-service}
+      CALL_PORT: ${CALL_PORT:-3011}
+      NOTIFICATION_HOST: ${NOTIFICATION_HOST:-notification-service}
+      NOTIFICATION_PORT: ${NOTIFICATION_PORT:-3006}
+      REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
+      REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
+      REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
+      # VAPID public key — returned to browser for Web Push subscription
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      # OTP HMAC signing secret (forgot/reset password flow)
+      OTP_HMAC_SECRET: ${OTP_HMAC_SECRET:-changeme-replace-with-32-char-secret}
+      APP_NAME: ${APP_NAME:-BCN Chat}
+      # Feature Toggles
+      ENABLE_FRIENDSHIP_SERVICE: ${ENABLE_FRIENDSHIP_SERVICE:-false}
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      keycloak-bootstrap:
+        condition: service_completed_successfully
+      redis-chat:
+        condition: service_healthy
+      users-service:
+        condition: service_started
+      chat-core:
+        condition: service_started
+      message-store:
+        condition: service_started
+      call-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+    networks:
+      - nest-network
+    restart: unless-stopped
+
+
+  users-service:
+    build:
+      context: .
+      dockerfile: apps/users/Dockerfile
+    container_name: users-service
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      TZ: "Asia/Ho_Chi_Minh"
+      PGTZ: "Asia/Ho_Chi_Minh"
+      USERS_HOST: 0.0.0.0
+      USERS_PORT: ${USERS_PORT:-3001}
+      USERS_DB_HOST: ${USERS_DB_HOST:-users-db}
+      USERS_DB_PORT: ${USERS_DB_PORT:-5432}
+      USERS_DB_NAME: ${USERS_DB_NAME:-nest_users}
+      USERS_DB_USERNAME: ${USERS_DB_USERNAME:-nest_user}
+      USERS_DB_PASSWORD: ${USERS_DB_PASSWORD:-nest_password_dev}
+      REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
+      REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
+    depends_on:
+      users-db:
+        condition: service_healthy
+      redis-chat:
+        condition: service_healthy
+    networks:
+      - nest-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('net').connect(${USERS_PORT:-3001}, 'localhost').on('connect', () => process.exit(0)).on('error', () => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+
+  chat-core:
+    build:
+      context: .
+      dockerfile: apps/chat-core/Dockerfile
+    container_name: chat-core-service
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      TZ: "Asia/Ho_Chi_Minh"
+      CHAT_CORE_HOST: 0.0.0.0
+      CHAT_CORE_PORT: ${CHAT_CORE_PORT:-3004}
+      CHAT_DB_HOST: ${CHAT_DB_HOST:-chat-db}
+      CHAT_DB_PORT: ${CHAT_DB_PORT:-5432}
+      CHAT_DB_NAME: ${CHAT_DB_NAME:-chat}
+      CHAT_DB_USERNAME: ${CHAT_DB_USERNAME:-chat_user}
+      CHAT_DB_PASSWORD: ${CHAT_DB_PASSWORD:-chat_password}
+      REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
+      REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
+      REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
+      KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka-1:29092}
+      KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-nest-api-system}
+      # Users Service Connection
+      USERS_HOST: ${USERS_HOST:-users-service}
+      USERS_PORT: ${USERS_PORT:-3001}
+      # Friendship Service Connection
+      FRIENDSHIP_HOST: ${FRIENDSHIP_HOST:-friendship-service}
+      FRIENDSHIP_PORT: ${FRIENDSHIP_PORT:-3008}
+      # Conversation Service Connection
+      CONVERSATION_HOST: ${CONVERSATION_HOST:-conversation-service}
+      CONVERSATION_PORT: ${CONVERSATION_PORT:-3007}
+      # Message Store Service Connection
+      MESSAGE_STORE_HOST: ${MESSAGE_STORE_HOST:-message-store}
+      MESSAGE_STORE_PORT: ${MESSAGE_STORE_PORT:-3005}
+      # Media Service Connection
+      MEDIA_HOST: ${MEDIA_HOST:-media-service}
+      MEDIA_PORT: ${MEDIA_PORT:-3009}
+      # Feature Toggles
+      ENABLE_FRIENDSHIP_SERVICE: ${ENABLE_FRIENDSHIP_SERVICE:-false}
+    depends_on:
+      chat-db:
+        condition: service_healthy
+      redis-chat:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      users-service:
+        condition: service_healthy
+    networks:
+      - nest-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('net').connect(3004, 'localhost').on('connect', () => process.exit(0)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  conversation-service:
+    build:
+      context: .
+      dockerfile: apps/conversation-service/Dockerfile
+    container_name: conversation-service
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      TZ: "Asia/Ho_Chi_Minh"
+      CONVERSATION_HOST: 0.0.0.0
+      CONVERSATION_PORT: ${CONVERSATION_SERVICE_PORT:-3007}
+      CONVERSATION_DB_HOST: ${CONVERSATION_DB_HOST:-chat-db}
+      CONVERSATION_DB_PORT: ${CONVERSATION_DB_PORT:-5432}
+      CONVERSATION_DB_NAME: ${CONVERSATION_DB_NAME:-chat}
+      CONVERSATION_DB_USERNAME: ${CONVERSATION_DB_USERNAME:-chat_user}
+      CONVERSATION_DB_PASSWORD: ${CONVERSATION_DB_PASSWORD:-chat_password}
+      REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
+      REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
+      REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
+      KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka-1:29092}
+      KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-nest-api-system}
+      OUTBOX_INTERVAL_MS: ${OUTBOX_INTERVAL_MS:-30000}
+      INVITE_JWT_SECRET: ${INVITE_JWT_SECRET:-change-me-in-production}
+      APP_BASE_URL: ${APP_BASE_URL:-https://zolo-smoky.vercel.app}
+      USERS_SERVICE_HOST: ${USERS_HOST:-users-service}
+      USERS_SERVICE_PORT: ${USERS_PORT:-3001}
+    depends_on:
+      chat-db:
+        condition: service_healthy
+      redis-chat:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+    networks:
+      - nest-network
+    restart: unless-stopped
+
+  call-service:
+    build:
+      context: .
+      dockerfile: apps/call-service/Dockerfile
+    container_name: call-service
+    # No external port - TCP microservice accessed only by gateway/realtime-gateway
+    expose:
+      - "3011"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      TZ: "Asia/Ho_Chi_Minh"
+      CALL_HOST: 0.0.0.0
+      CALL_PORT: ${CALL_PORT:-3011}
+      CHAT_DB_HOST: ${CHAT_DB_HOST:-chat-db}
+      CHAT_DB_PORT: ${CHAT_DB_PORT:-5432}
+      CHAT_DB_NAME: ${CHAT_DB_NAME:-chat}
+      CHAT_DB_USERNAME: ${CHAT_DB_USERNAME:-chat_user}
+      CHAT_DB_PASSWORD: ${CHAT_DB_PASSWORD:-chat_password}
+      REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
+      REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
+      REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
+      CONVERSATION_HOST: ${CONVERSATION_HOST:-conversation-service}
+      CONVERSATION_PORT: ${CONVERSATION_PORT:-3007}
+      KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka-1:29092}
+      KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-call-service}
+      CALL_MAX_PARTICIPANTS: ${CALL_MAX_PARTICIPANTS:-100}
+      CALL_POLICY_ROLLOUT_ENFORCED: ${CALL_POLICY_ROLLOUT_ENFORCED:-true}
+      CALL_ROLLOUT_GROUP_ENABLED: ${CALL_ROLLOUT_GROUP_ENABLED:-true}
+      CALL_ROLLOUT_ANNOUNCEMENT_ENABLED: ${CALL_ROLLOUT_ANNOUNCEMENT_ENABLED:-false}
+      CALL_ROLLOUT_DIRECT_ENABLED: ${CALL_ROLLOUT_DIRECT_ENABLED:-true}
+      CALL_USER_STATUS_CACHE_TTL_MS: ${CALL_USER_STATUS_CACHE_TTL_MS:-30000}
+      CALL_CLEANUP_INTERVAL_MS: ${CALL_CLEANUP_INTERVAL_MS:-60000}
+      LIVEKIT_URL: ${LIVEKIT_URL:-ws://livekit:7880}
+      LIVEKIT_PUBLIC_URL: ${LIVEKIT_PUBLIC_URL:-ws://localhost:7880}
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-devkey}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:-secret}
+      LIVEKIT_ROOM_PREFIX: ${LIVEKIT_ROOM_PREFIX:-meeting}
+      LIVEKIT_RECORDING_ENABLED: ${LIVEKIT_RECORDING_ENABLED:-true}
+      CALL_MEDIA_TOKEN_TTL_SECONDS: ${CALL_MEDIA_TOKEN_TTL_SECONDS:-3600}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio}
+      MINIO_PORT: ${MINIO_PORT:-9000}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-media}
+      MINIO_REGION: ${MINIO_REGION:-us-east-1}
+      USERS_HOST: ${USERS_HOST:-users-service}
+      USERS_PORT: ${USERS_PORT:-3001}
+    depends_on:
+      chat-db:
+        condition: service_healthy
+      redis-chat:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      users-service:
+        condition: service_healthy
+      conversation-service:
+        condition: service_started
+      livekit:
+        condition: service_started
+      coturn:
+        condition: service_started
+    networks:
+      - nest-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('net').connect(3011, '127.0.0.1').on('connect', () => process.exit(0)).on('error', () => process.exit(1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ===========================================
+  # LiveKit SFU + TURN (Call Media Plane)
+  # ===========================================
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: livekit
+    command: ["--dev", "--bind", "0.0.0.0", "--node-ip", "${LIVEKIT_NODE_IP:-127.0.0.1}", "--keys", "${LIVEKIT_API_KEY:-devkey}: ${LIVEKIT_API_SECRET:-secret}"]
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "7882:7882/udp"
+    environment:
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY:-devkey}: ${LIVEKIT_API_SECRET:-secret}"
+      LIVEKIT_NODE_IP: ${LIVEKIT_NODE_IP:-127.0.0.1}
+    networks:
+      - nest-network
+    restart: unless-stopped
+
+  coturn:
+    image: instrumentisto/coturn:latest
+    container_name: coturn
+    command:
+      - -n
+      - --log-file=stdout
+      - --realm=${TURN_REALM:-localhost}
+      - --fingerprint
+      - --lt-cred-mech
+      - --listening-ip=0.0.0.0
+      - --listening-port=3478
+      - --min-port=49160
+      - --max-port=49200
+      - --user=${TURN_USER:-livekit}:${TURN_PASSWORD:-livekitpass}
+      - --external-ip=${TURN_EXTERNAL_IP:-127.0.0.1}
+    ports:
+      - "3478:3478/tcp"
+      - "3478:3478/udp"
+      - "49160-49200:49160-49200/udp"
+    networks:
+      - nest-network
+    restart: unless-stopped
+
+  message-store:
+    build:
+      context: .
+      dockerfile: apps/message-store/Dockerfile
+    container_name: message-store-service
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      TZ: "Asia/Ho_Chi_Minh"
+      MESSAGE_STORE_HOST: 0.0.0.0
+      MESSAGE_STORE_PORT: ${MESSAGE_STORE_PORT:-3005}
+      CHAT_DB_HOST: ${CHAT_DB_HOST:-chat-db}
+      CHAT_DB_PORT: ${CHAT_DB_PORT:-5432}
+      CHAT_DB_NAME: ${CHAT_DB_NAME:-chat}
+      CHAT_DB_USERNAME: ${CHAT_DB_USERNAME:-chat_user}
+      CHAT_DB_PASSWORD: ${CHAT_DB_PASSWORD:-chat_password}
+      KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka-1:29092}
+      KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-nest-api-system}
+      CONVERSATION_HOST: ${CONVERSATION_HOST:-conversation-service}
+      CONVERSATION_PORT: ${CONVERSATION_PORT:-3007}
+      MEDIA_SERVICE_HOST: ${MEDIA_SERVICE_HOST:-media-service}
+      MEDIA_SERVICE_PORT: ${MEDIA_SERVICE_PORT:-3009}
+      USERS_HOST: ${USERS_HOST:-users-service}
+      USERS_PORT: ${USERS_PORT:-3001}
+      REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
+      REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
+      REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
+    depends_on:
+      chat-db:
+        condition: service_healthy
+      users-service:
+        condition: service_healthy
+      conversation-service:
+        condition: service_started
+      kafka-1:
+        condition: service_healthy
+      redis-chat:
+        condition: service_healthy
+    networks:
+      - nest-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('net').connect(3005, '127.0.0.1').on('connect', () => process.exit(0)).on('error', () => process.exit(1))\""]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  presence-service:
+    build:
+      context: .
+      dockerfile: apps/presence-service/Dockerfile
+    container_name: presence-service
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      TZ: "Asia/Ho_Chi_Minh"
+      PRESENCE_HOST: 0.0.0.0
+      PRESENCE_PORT: ${PRESENCE_SERVICE_PORT:-3003}
+      REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
+      REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
+      REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
+    depends_on:
+      redis-chat:
+        condition: service_healthy
+    networks:
+      - nest-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('net').connect(3003, 'localhost').on('connect', () => process.exit(0)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  friendship-service:
+    build:
+      context: .
+      dockerfile: apps/friendship-service/Dockerfile
+    container_name: friendship-service
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      TZ: "Asia/Ho_Chi_Minh"
+      FRIENDSHIP_HOST: 0.0.0.0
+      FRIENDSHIP_PORT: ${FRIENDSHIP_SERVICE_PORT:-3008}
+      FRIENDSHIP_DB_HOST: ${FRIENDSHIP_DB_HOST:-users-db}
+      FRIENDSHIP_DB_PORT: ${FRIENDSHIP_DB_PORT:-5432}
+      FRIENDSHIP_DB_NAME: ${FRIENDSHIP_DB_NAME:-nest_users}
+      FRIENDSHIP_DB_USERNAME: ${FRIENDSHIP_DB_USERNAME:-nest_user}
+      FRIENDSHIP_DB_PASSWORD: ${FRIENDSHIP_DB_PASSWORD:-nest_password_dev}
+      KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka-1:29092}
+      KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-nest-api-system}
+      REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
+      REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
+      REDIS_CHAT_DB: ${REDIS_CHAT_DB:-1}
+      OUTBOX_INTERVAL_MS: ${OUTBOX_INTERVAL_MS:-30000}
+    depends_on:
+      users-db:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      # kafka-2:
+      #   condition: service_healthy
+      # kafka-3:
+      #   condition: service_healthy
+      redis-chat:
+        condition: service_healthy
+    networks:
+      - nest-network
+    restart: unless-stopped
+
+  # ===========================================
+  # Notification Service
+  # ===========================================
+  notification-service:
+    build:
+      context: .
+      dockerfile: apps/notification-service/Dockerfile
+    container_name: notification-service
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      TZ: "Asia/Ho_Chi_Minh"
+      NOTIFICATION_SERVICE_HOST: ${NOTIFICATION_SERVICE_HOST:-0.0.0.0}
+      NOTIFICATION_SERVICE_PORT: ${NOTIFICATION_SERVICE_PORT:-3006}
+      # PostgreSQL – uses chat-db container, separate DB
+      NOTIFICATION_DB_HOST: ${NOTIFICATION_DB_HOST:-chat-db}
+      NOTIFICATION_DB_PORT: ${NOTIFICATION_DB_PORT:-5432}
+      NOTIFICATION_DB_NAME: ${NOTIFICATION_DB_NAME:-chat}
+      NOTIFICATION_DB_USERNAME: ${NOTIFICATION_DB_USERNAME:-chat_user}
+      NOTIFICATION_DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:-chat_password}
+      KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka-1:29092}
+      KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-nest-api-system}
+      REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
+      REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
+      REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
+      # Firebase Admin SDK – service account JSON (base64 or raw JSON string)
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${FIREBASE_SERVICE_ACCOUNT_JSON:-}
+      # Web Push VAPID keys (generate with: npx web-push generate-vapid-keys)
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@example.com}
+      # BullMQ Worker concurrency
+      NOTIFICATION_WORKER_CONCURRENCY: ${NOTIFICATION_WORKER_CONCURRENCY:-10}
+      # Resend (for OTP password-reset emails)
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@bcn.id.vn}
+      APP_NAME: ${APP_NAME:-BCN Chat}
+    depends_on:
+      chat-db:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      redis-chat:
+        condition: service_healthy
+    networks:
+      - nest-network
+    restart: unless-stopped
+
+  # ===========================================
+  # MinIO (Object Storage)
+  # ===========================================
+  minio:
+    image: firstfinger/minio:latest-amd64
+    container_name: minio-server
+    ports:
+      - "9010:9000"  # MinIO API (9010 on host to avoid conflict with Kafdrop)
+      - "9011:9001"  # MinIO Console (basic)
+      - "9012:9002"  # MinIO Admin Console (full-featured)
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_REGION: ${MINIO_REGION:-us-east-1}
+      # Public URL của MinIO S3 API (dùng cho presigned URLs)
+      MINIO_SERVER_URL: ${MINIO_SERVER_URL:-https://storage.bcn.id.vn}
+      # Public URL của MinIO Console — bắt buộc để console không redirect về localhost
+      MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_REDIRECT_URL:-https://minio.bcn.id.vn}
+    volumes:
+      - ./data/minio:/data
+    networks:
+      - nest-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ===========================================
+  # MongoDB for Media Service
+  # ===========================================
+  media-mongodb:
+    image: mongo:7-jammy
+    container_name: media-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MEDIA_MONGO_USERNAME:-mediauser}
+      MONGO_INITDB_ROOT_PASSWORD: ${MEDIA_MONGO_PASSWORD:-mediapassword}
+      MONGO_INITDB_DATABASE: ${MEDIA_MONGO_DB:-media_db}
+    volumes:
+      - media_mongo_data:/data/db
+    networks:
+      - nest-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ===========================================
+  # Media Service (TCP Microservice)
+  # ===========================================
+  media-service:
+    build:
+      context: .
+      dockerfile: apps/media-service/Dockerfile
+    container_name: media-service
+    # No external port - TCP microservice accessed only by gateway
+    expose:
+      - "3009"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      TZ: "Asia/Ho_Chi_Minh"
+      MEDIA_HOST: 0.0.0.0
+      MEDIA_PORT: ${MEDIA_SERVICE_PORT:-3009}
+      # Database
+      MEDIA_MONGODB_URI: mongodb://${MEDIA_MONGO_USERNAME:-mediauser}:${MEDIA_MONGO_PASSWORD:-mediapassword}@media-mongodb:27017/${MEDIA_MONGO_DB:-media_db}?authSource=admin
+      # MinIO
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio}
+      MINIO_PORT: ${MINIO_PORT:-9000}
+      MINIO_EXTERNAL_ENDPOINT: ${MINIO_EXTERNAL_ENDPOINT:-http://localhost:9010}
+      MINIO_USE_SSL: ${MINIO_USE_SSL:-false}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-media}
+      MINIO_REGION: ${MINIO_REGION:-us-east-1}
+      # Kafka
+      KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka-1:29092}
+      KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-media-service}
+      # Service connections
+      CONVERSATION_SERVICE_HOST: ${CONVERSATION_SERVICE_HOST:-conversation-service}
+      CONVERSATION_SERVICE_PORT: ${CONVERSATION_SERVICE_PORT:-3007}
+      # Media Upload Configuration
+      MEDIA_MAX_FILE_SIZE: ${MEDIA_MAX_FILE_SIZE:-2147483648}
+      MEDIA_PRESIGNED_PUT_URL_EXPIRY: ${MEDIA_PRESIGNED_PUT_URL_EXPIRY:-900}
+      MEDIA_PRESIGNED_GET_URL_EXPIRY: ${MEDIA_PRESIGNED_GET_URL_EXPIRY:-300}
+      MEDIA_CHECKSUM_ALGORITHM: ${MEDIA_CHECKSUM_ALGORITHM:-md5}
+      # Set to 'true' to require clients to provide a checksum on every upload finalization.
+      # When false (default), checksum is optional but always verified when present.
+      MEDIA_CHECKSUM_STRICT: ${MEDIA_CHECKSUM_STRICT:-false}
+    depends_on:
+      media-mongodb:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      # kafka-2:
+      #   condition: service_healthy
+      # kafka-3:
+      #   condition: service_healthy
+    networks:
+      - nest-network
+    restart: unless-stopped
+
+  media-worker:
+    build:
+      context: .
+      dockerfile: apps/media-worker/Dockerfile
+    container_name: media-worker
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      TZ: "Asia/Ho_Chi_Minh"
+      # Database
+      MEDIA_MONGODB_URI: mongodb://${MEDIA_MONGO_USERNAME:-mediauser}:${MEDIA_MONGO_PASSWORD:-mediapassword}@media-mongodb:27017/${MEDIA_MONGO_DB:-media_db}?authSource=admin
+      # MinIO
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio}
+      MINIO_PORT: ${MINIO_PORT:-9000}
+      MINIO_EXTERNAL_ENDPOINT: ${MINIO_EXTERNAL_ENDPOINT:-http://localhost:9010}
+      MINIO_USE_SSL: ${MINIO_USE_SSL:-false}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-media}
+      MINIO_REGION: ${MINIO_REGION:-us-east-1}
+      # Kafka
+      KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka-1:29092}
+      MEDIA_WORKER_KAFKA_CLIENT_ID: ${MEDIA_WORKER_KAFKA_CLIENT_ID:-media-worker}
+      MEDIA_WORKER_KAFKA_GROUP_ID: ${MEDIA_WORKER_KAFKA_GROUP_ID:-media-worker-group}
+      # Kafka Consumer Timeouts (for long-running media processing)
+      KAFKA_SESSION_TIMEOUT: ${KAFKA_SESSION_TIMEOUT:-300000}
+      KAFKA_REBALANCE_TIMEOUT: ${KAFKA_REBALANCE_TIMEOUT:-300000}
+      KAFKA_HEARTBEAT_INTERVAL: ${KAFKA_HEARTBEAT_INTERVAL:-10000}
+      # Image Processing
+      IMAGE_THUMB_MAX_SIZE: ${IMAGE_THUMB_MAX_SIZE:-320}
+      IMAGE_THUMB_QUALITY: ${IMAGE_THUMB_QUALITY:-70}
+      IMAGE_THUMB_FORMAT: ${IMAGE_THUMB_FORMAT:-webp}
+      IMAGE_PREVIEW_MAX_SIZE: ${IMAGE_PREVIEW_MAX_SIZE:-1280}
+      IMAGE_PREVIEW_QUALITY: ${IMAGE_PREVIEW_QUALITY:-75}
+      IMAGE_PREVIEW_FORMAT: ${IMAGE_PREVIEW_FORMAT:-webp}
+      # Video Processing
+      VIDEO_POSTER_ENABLED: ${VIDEO_POSTER_ENABLED:-true}
+      VIDEO_POSTER_MAX_HEIGHT: ${VIDEO_POSTER_MAX_HEIGHT:-720}
+      VIDEO_720P_MAX_HEIGHT: ${VIDEO_720P_MAX_HEIGHT:-720}
+      VIDEO_720P_CRF: ${VIDEO_720P_CRF:-23}
+      VIDEO_720P_PRESET: ${VIDEO_720P_PRESET:-veryfast}
+      VIDEO_720P_AUDIO_BITRATE: ${VIDEO_720P_AUDIO_BITRATE:-128k}
+      VIDEO_360P_MAX_HEIGHT: ${VIDEO_360P_MAX_HEIGHT:-360}
+      VIDEO_360P_CRF: ${VIDEO_360P_CRF:-26}
+      VIDEO_360P_PRESET: ${VIDEO_360P_PRESET:-veryfast}
+      VIDEO_360P_AUDIO_BITRATE: ${VIDEO_360P_AUDIO_BITRATE:-96k}
+      # CPU Optimization: Concurrency & FFmpeg Thread Control
+      MEDIA_WORKER_CONCURRENCY: ${MEDIA_WORKER_CONCURRENCY:-3}
+      FFMPEG_THREADS: ${FFMPEG_THREADS:-2}
+      FFMPEG_NICE_LEVEL: ${FFMPEG_NICE_LEVEL:-10}
+      # Redis
+      REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
+      REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
+      REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
+    depends_on:
+      media-mongodb:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      redis-chat:
+        condition: service_healthy
+      # kafka-2:
+      #   condition: service_healthy
+      # kafka-3:
+      #   condition: service_healthy
+    networks:
+      - nest-network
+    restart: unless-stopped
+
+  realtime-gateway:
+    build:
+      context: .
+      dockerfile: apps/realtime-gateway/Dockerfile
+    container_name: realtime-gateway
+    ports:
+      - "${REALTIME_GATEWAY_PORT:-3002}:3002"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      TZ: "Asia/Ho_Chi_Minh"
+      # Cap Node.js heap to 512 MB so the kernel OOM killer never needs to
+      # intervene. Without this limit the process was silently killed with
+      # exit code 137, which caused Docker's embedded DNS resolver to become
+      # unreachable for other containers → EAI_AGAIN cascade across every service.
+      NODE_OPTIONS: "--max-old-space-size=512"
+      KEYCLOAK_URL: ${KEYCLOAK_URL_INTERNAL:-http://keycloak:8080}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-nest-realm}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-nest-api}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka-1:29092}
+      KAFKA_CLIENT_ID: nest-realtime-gateway
+      REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
+      REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
+      REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
+      PRESENCE_HOST: ${PRESENCE_HOST:-presence-service}
+      PRESENCE_PORT: ${PRESENCE_PORT:-3003}
+      CHAT_CORE_HOST: ${CHAT_CORE_HOST:-chat-core}
+      CHAT_CORE_PORT: ${CHAT_CORE_PORT:-3004}
+      FRIENDSHIP_HOST: ${FRIENDSHIP_HOST:-friendship-service}
+      FRIENDSHIP_PORT: ${FRIENDSHIP_PORT:-3008}
+      CONVERSATION_HOST: ${CONVERSATION_HOST:-conversation-service}
+      CONVERSATION_PORT: ${CONVERSATION_PORT:-3007}
+      MESSAGE_STORE_HOST: ${MESSAGE_STORE_HOST:-message-store}
+      MESSAGE_STORE_PORT: ${MESSAGE_STORE_PORT:-3005}
+      CALL_HOST: ${CALL_HOST:-call-service}
+      CALL_PORT: ${CALL_PORT:-3011}
+      CALL_WS_LIMIT_MEETING_CONTROL_WINDOW_MS: ${CALL_WS_LIMIT_MEETING_CONTROL_WINDOW_MS:-10000}
+      CALL_WS_LIMIT_MEETING_CONTROL_MAX: ${CALL_WS_LIMIT_MEETING_CONTROL_MAX:-20}
+      CALL_WS_LIMIT_MEDIA_STATE_WINDOW_MS: ${CALL_WS_LIMIT_MEDIA_STATE_WINDOW_MS:-10000}
+      CALL_WS_LIMIT_MEDIA_STATE_MAX: ${CALL_WS_LIMIT_MEDIA_STATE_MAX:-40}
+      CALL_WS_LIMIT_WEBRTC_OA_WINDOW_MS: ${CALL_WS_LIMIT_WEBRTC_OA_WINDOW_MS:-10000}
+      CALL_WS_LIMIT_WEBRTC_OA_MAX: ${CALL_WS_LIMIT_WEBRTC_OA_MAX:-60}
+      CALL_WS_LIMIT_WEBRTC_ICE_WINDOW_MS: ${CALL_WS_LIMIT_WEBRTC_ICE_WINDOW_MS:-10000}
+      CALL_WS_LIMIT_WEBRTC_ICE_MAX: ${CALL_WS_LIMIT_WEBRTC_ICE_MAX:-300}
+      CALL_WS_LIMIT_WEBRTC_LEAVE_WINDOW_MS: ${CALL_WS_LIMIT_WEBRTC_LEAVE_WINDOW_MS:-10000}
+      CALL_WS_LIMIT_WEBRTC_LEAVE_MAX: ${CALL_WS_LIMIT_WEBRTC_LEAVE_MAX:-30}
+      CALL_WS_MAX_SIGNALING_PAYLOAD_BYTES: ${CALL_WS_MAX_SIGNALING_PAYLOAD_BYTES:-64000}
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      # kafka-2:
+      #   condition: service_healthy
+      # kafka-3:
+      #   condition: service_healthy
+      redis-chat:
+        condition: service_healthy
+      friendship-service:
+        condition: service_started
+      conversation-service:
+        condition: service_started
+      presence-service:
+        condition: service_started
+      chat-core:
+        condition: service_started
+      call-service:
+        condition: service_started
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    networks:
+      - nest-network
+    restart: unless-stopped
+
+  # ===========================================
+  # Monitoring & Visualization Tools
+  # ===========================================
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=chat:redis-chat:6379:0
+    depends_on:
+      redis-chat:
+        condition: service_healthy
+    networks:
+      - nest-network
+    restart: unless-stopped
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    container_name: kafdrop
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: kafka-1:29092
+      JVM_OPTS: "-Xms32M -Xmx64M"
+      SERVER_SERVLET_CONTEXTPATH: "/"
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      # kafka-2:
+      #   condition: service_healthy
+      # kafka-3:
+      #   condition: service_healthy
+    networks:
+      - nest-network
+    restart: unless-stopped
+
+networks:
+  nest-network:
+    driver: bridge
+
+volumes:
+  keycloak_data:
+  users_data:
+  chat_data:
+  zookeeper_data:
+  zookeeper_logs:
+  kafka_1_data:
+  # kafka_2_data:
+  # kafka_3_data:
+  redis_chat_data:
+  media_mongo_data:
