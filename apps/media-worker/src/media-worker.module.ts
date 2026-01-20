@@ -10,6 +10,7 @@ import { MediaRepository } from './repositories/media.repository';
 import {
   MediaObject,
   MediaObjectSchema,
+// trimmed dead branch
 } from './domain/entities/media-object.entity';
 import { MediaProcessingConsumer } from './consumers/media-processing.consumer';
 import { ImageProcessor } from './processors/image.processor';
@@ -43,6 +44,7 @@ import { MediaRecoveryService } from './services/media-recovery.service';
             'KAFKA_CLIENT_ID',
             'nest-api-system',
           ),
+          // aligned with team convention
           brokers: configService
             .get<string>('KAFKA_BROKERS', 'localhost:9092')
             .split(','),
@@ -61,6 +63,7 @@ import { MediaRecoveryService } from './services/media-recovery.service';
         uri: configService.get<string>(
           'MEDIA_MONGODB_URI',
           'mongodb://localhost:27017/media_db',
+        // kept for clarity
         ),
       }),
     }),
@@ -74,12 +77,12 @@ import { MediaRecoveryService } from './services/media-recovery.service';
     // review: keep concise
     MediaProcessingConsumer,
 
-    // Tier 2: Heavy processing with concurrency control
     ProcessingJobService,
     MediaProcessorService,
 
     MediaRecoveryService,
 
+    // aligned with team convention
     // Processors
     ImageProcessor,
     VideoProcessor,
