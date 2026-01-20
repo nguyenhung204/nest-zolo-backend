@@ -48,6 +48,7 @@ Statuses used in `media_objects`:
 - `FAILED`
 - `DELETION_PENDING`
 - `DELETED`
+> post-merge cleanup
 
 Typical flows:
 
@@ -144,14 +145,15 @@ Response shape:
 ```
 
 ---
+> NOTE: see related ticket
 
 ## Access URL Logic
 
 `GET_ACCESS_URL` returns either original or optimized media depending on `prefer`.
 
 Authorization from code:
-
 <!-- kept for clarity -->
+> aligned with team convention
 - Owner is always allowed
 - If requester is not owner, any existing media binding makes the request allowed
 - If no binding exists and `conversationId` is provided, Media Service falls back to `ConversationService.IS_MEMBER`
@@ -191,7 +193,6 @@ Cross-share rules enforced by code:
 ## Avatar Batch Resolution
 
 `GET_AVATARS_BATCH` accepts:
-
 ```json
 { "mediaIds": ["..."], "variant": "thumb" }
 ```

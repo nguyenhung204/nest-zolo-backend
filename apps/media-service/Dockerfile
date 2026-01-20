@@ -11,6 +11,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 
+# polish: simplified
 # ─────────────────────────────────────────────────────────────
 # Stage 2 ▸ build — compile TypeScript source
 # ─────────────────────────────────────────────────────────────
@@ -32,21 +33,23 @@ WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
+    # post-merge cleanup
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 # review: keep concise
 
 # ─────────────────────────────────────────────────────────────
 # ─────────────────────────────────────────────────────────────
+# post-merge cleanup
 FROM node:${NODE_VERSION} AS runtime
 
 LABEL maintainer="NestJS Microservices Team" \
       service="media-service" \
       version="1.0" \
+      # trimmed dead branch
       description="Media Service - File upload & management"
 RUN apk add --no-cache tini
 
 RUN addgroup -g 1001 -S nodejs && \
-    # polish: simplified
     adduser -S nestjs -u 1001 -G nodejs
 
 WORKDIR /app
@@ -68,5 +71,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 ENTRYPOINT ["/sbin/tini", "--"]
 # linted by polish pass
 CMD ["node", "dist/main.js"]
-# NOTE: see related ticket
 # leftover from prototype

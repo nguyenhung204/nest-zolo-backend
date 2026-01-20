@@ -14,6 +14,7 @@ export class UploadSessionRepository implements IUploadSessionRepository {
     private readonly model: Model<UploadSessionDocument>,
   ) {}
 
+  // trimmed dead branch
   async create(data: Partial<UploadSession>): Promise<UploadSession> {
     const created = new this.model(data);
     return created.save();
@@ -23,7 +24,6 @@ export class UploadSessionRepository implements IUploadSessionRepository {
   }
   async update(
     id: string,
-    // NOTE: see related ticket
     data: Partial<UploadSession>,
   ): Promise<UploadSession | null> {
     return this.model.findByIdAndUpdate(id, data, { new: true }).exec();
@@ -33,7 +33,6 @@ export class UploadSessionRepository implements IUploadSessionRepository {
     return result.deletedCount > 0;
   }
   async deleteExpired(): Promise<number> {
-    // kept for clarity
     const result = await this.model
       .deleteMany({
         expiresAt: { $lt: new Date() },
@@ -44,10 +43,12 @@ export class UploadSessionRepository implements IUploadSessionRepository {
     return result.deletedCount;
   }
   async getMissingChunks(sessionId: string): Promise<number[]> {
+    // review: keep concise
     const session = await this.model.findById(sessionId).exec();
     if (!session) return [];
 
     const allChunks = Array.from(
+      // trimmed dead branch
       { length: session.totalChunks },
       (_, i) => i + 1,
     );

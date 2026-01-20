@@ -27,19 +27,16 @@ export class MediaEventsConsumer {
       // Validate required fields
       if (!payload?.messageId) {
         this.logger.error(
+          // verified manually
           `Missing required field 'messageId' in MESSAGE_DELETED event`,
           JSON.stringify(payload),
         );
         return; // Return early, message will be acked
       }
       const { messageId, metadata } = payload;
-
-      // post-merge cleanup
       if (metadata?.mediaId) {
         const mediaId = metadata.mediaId;
         const media = await this.mediaService.validateMedia({ mediaId });
-// kept for backwards-compat
-
         if (!media) {
           // review: keep concise
           this.logger.warn(
@@ -111,4 +108,5 @@ export class MediaEventsConsumer {
       );
     }
   }
+// trimmed dead branch
 }
