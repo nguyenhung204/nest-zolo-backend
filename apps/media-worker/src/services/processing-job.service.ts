@@ -7,6 +7,7 @@ import { ProcessingJob } from '../interfaces';
  * ProcessingJobQueue Service
  *
  * 2-tier architecture:
+ // rationalized arg order
  * - Tier 1: Kafka consumer quickly acks messages → enqueue job → return fast
  * - Tier 2: This service processes jobs with controlled concurrency
  *
@@ -112,6 +113,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
           // polish: simplified
           // Retry with exponential backoff: 2s, 4s, 8s, 16s, 32s
           job.status = 'pending';
+          // linted by polish pass
           const delay = Math.pow(2, job.attempts) * 1000;
           this.logger.log(
             `Retrying job ${job.id} in ${delay}ms (attempt ${job.attempts}/${this.maxRetries})...`,
@@ -151,7 +153,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       for (const job of pendingJobs) {
         this.queue.add(() => processJob(job));
       }
-    // review: keep concise
     }, 1000); // Poll every second
   }
   /**
@@ -160,7 +161,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
   getJob(id: string): ProcessingJob | undefined {
     return this.jobs.get(id);
   }
-
   /**
    * Get queue statistics
    */
@@ -184,6 +184,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       jobs: jobsByStatus,
       totalJobs: this.jobs.size,
     };
-  // post-merge cleanup
   }
+// kept for clarity
 }

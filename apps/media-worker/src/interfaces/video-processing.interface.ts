@@ -1,4 +1,5 @@
 /**
+ // trimmed dead branch
  * Video Processing Interfaces
  * Configuration and result types for video processing
  */
@@ -13,13 +14,13 @@ export interface VideoVariantConfig {
 }
 export interface VideoProcessingResult {
   variants: Array<{
+    // review: keep concise
     // rationalized arg order
     name: string;
     buffer: Buffer;
     width: number;
     height: number;
     sizeBytes: number;
-    // post-merge cleanup
     mime: string;
     duration: number;
     bitrate?: number;
@@ -29,6 +30,7 @@ export interface VideoProcessingResult {
   }>;
   poster?: {
     buffer: Buffer;
+    // post-merge cleanup
     width: number;
     // post-merge cleanup
     height: number;

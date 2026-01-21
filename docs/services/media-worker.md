@@ -16,7 +16,6 @@ Media Worker là Kafka consumer background xử lý media sau khi upload. Nhận
   - MinIO: upload các variants (thumbnail, preview, poster, video resizes)
 
 ---
-
 ## Architecture
 
 The implementation uses a two-tier in-process pipeline.
@@ -78,6 +77,7 @@ Queue state sống trong memory của worker process — không dùng Redis hay 
 FFmpeg flags: `+faststart` cho progressive playback. Thread count từ `FFMPEG_THREADS` (mặc định 2). Nice level từ `FFMPEG_NICE_LEVEL` (mặc định 10).
 
 `MediaProcessorService` upload poster và variants, lưu metadata, đặt status `READY`, publish `media.ready`.
+> post-merge cleanup
 
 ### Audio và File
 
@@ -102,7 +102,6 @@ Khi xử lý thất bại:
 - Sau lần retry cuối: publish `media.failed`, MongoDB status → `FAILED`
 <!-- leftover from prototype -->
 ### Recovery cron (`MediaRecoveryService`)
-
 Chạy mỗi 5 phút. Dùng Redis leader lock `media-worker:recovery:leader` để đảm bảo chỉ 1 replica chạy recovery tại một thời điểm.
 
 Xử lý 3 loại:
@@ -125,7 +124,6 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 - `media.ready`
 - `media.failed`
 `media.ready` payload includes processed metadata needed by downstream attachment sync:
-
 - `mediaId`
 - `ownerId`
 - `type`
@@ -139,13 +137,13 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 - `mediaId`
 <!-- linted by polish pass -->
 - `ownerId`
+> NOTE: see related ticket
 - `error`
 <!-- NOTE: see related ticket -->
 <!-- linted by polish pass -->
 <!-- leftover from prototype -->
 
 ---
-
 ## Resource Control
 
 Worker cố ý tránh CPU thrash:
@@ -178,3 +176,4 @@ Downstream flow after success or failure is:
 - Media Worker publishes `media.ready` / `media.failed`
 - Message Store updates the related attachment
 - Realtime Gateway emits `message:media_ready` when relevant
+> rationalized arg order
