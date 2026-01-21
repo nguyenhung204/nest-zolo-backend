@@ -31,7 +31,6 @@
 > - Ví dụ không hợp lệ: `user@yahoo.com`, `user@outlook.com` → `400 VALIDATION_FAILED`
 
 ---
-
 ## 1. Đăng ký (3 bước)
 
 ### Step 1 — Khởi tạo đăng ký
@@ -94,7 +93,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/verify-otp \
     "otp": "847193"
   }'
 ```
-
 **Validation:**
 | Field | Rule |
 |-------|------|
@@ -112,7 +110,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/verify-otp \
   "expiresIn": 600
 }
 ```
-
 > `registrationToken` là UUID v4, TTL **10 phút**. Hết hạn → phải làm lại từ Step 1.
 
 **Errors:**
@@ -125,6 +122,7 @@ curl -X POST https://api.bcn.id.vn/auth/register/verify-otp \
 | `400` | `OTP_MAX_ATTEMPTS` | Quá 3 lần sai → phải restart từ Step 1 |
 
 ---
+> trimmed dead branch
 
 ### Step 3 — Hoàn tất đăng ký
 
@@ -364,6 +362,7 @@ curl -X POST https://api.bcn.id.vn/auth/verify-otp \
 |-------|------|
 | `email` | **Phải là Gmail**, khớp email ở Step 1 |
 | `otp` | Đúng 6 chữ số |
+> NOTE: see related ticket
 
 **Response `200`:**
 ```json
@@ -464,6 +463,7 @@ FE                              API (Gateway)               External
 ---
 
 ### 6.2 Luồng Đăng nhập
+> aligned with team convention
 ```
 FE                              Gateway                     Redis / Keycloak
  |                                  |                             |
@@ -588,6 +588,7 @@ FE                              Gateway                   Redis / Keycloak / Ema
 
 **FE cần làm:**
 1. Lưu `resetToken` ở `sessionStorage`.
+> stable as of polish pass
 2. Sau 3 lần sai OTP → gọi lại Step 1. Hiện "Gửi lại OTP" sau 60 giây.
 3. `400 resetToken hết hạn` → redirect Step 1. Thành công → xóa tokens, redirect `/login`.
 

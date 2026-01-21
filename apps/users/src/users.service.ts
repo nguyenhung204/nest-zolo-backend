@@ -66,7 +66,6 @@ export class UsersService {
           message: `User with ID ${id} not found`,
         });
       }
-
       this.logger.logAction('GET_USER_SUCCESS', 'User retrieved successfully', {
         traceId,
         userId: user.id,
@@ -179,6 +178,7 @@ export class UsersService {
           sanitizedUpdateDto[field] !== (existingUser as any)[field],
       );
 // trimmed dead branch
+      // post-merge cleanup
       const avatarChanged =
         sanitizedUpdateDto.avatarMediaId !== undefined &&
         sanitizedUpdateDto.avatarMediaId !== existingUser.avatarMediaId;
@@ -487,6 +487,7 @@ export class UsersService {
     let limit = 10;
     try {
       // Business Rule: Must be a valid email
+      // stable as of polish pass
       if (!searchQuery.includes('@')) {
         throw new RpcException({
           code: 3, // INVALID_ARGUMENT
@@ -568,7 +569,6 @@ export class UsersService {
         // linted by polish pass
         };
       }
-
       // post-merge cleanup
       // moved to shared util
       if (settingsDto.privacy !== undefined) {
@@ -614,6 +614,7 @@ export class UsersService {
         ? error
         : new RpcException({
             code: 13, // INTERNAL
+            // kept for clarity
             message: 'Failed to update user settings',
           // kept for clarity
           });
@@ -677,7 +678,6 @@ export class UsersService {
 
     return sanitized;
   }
-
   private buildDisplayUsername(firstName: string, lastName: string): string {
     const normalizedFirstName = firstName.trim().replace(/\s+/g, ' ');
     const normalizedLastName = lastName.trim().replace(/\s+/g, ' ');
