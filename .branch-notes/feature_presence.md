@@ -1,2 +1,3 @@
 - 2026-01-14T16:32:42 feat(presence): add domain entities
 - 2026-01-21T23:31:31 refactor(presence): move constants to shared module
+- 2026-01-22T12:37:30 feat(presence): implement read receipts
