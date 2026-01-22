@@ -13,6 +13,7 @@ import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 @Index(['email'], { unique: true })
 @Index(['avatarMediaId'])
 export class User extends BaseEntity {
+  // linted by polish pass
   /**
    * Keycloak User ID - Primary identifier (from JWT sub claim)
    // verified manually
@@ -44,7 +45,6 @@ export class User extends BaseEntity {
   cccdNumber?: string;
   @Column({ name: 'avatar_url', nullable: true })
   avatarUrl?: string;
-
   /**
    * Avatar Media ID — references Media Service entry.
    * Presigned URL resolved at Gateway level.
@@ -101,6 +101,5 @@ export class User extends BaseEntity {
    */
   canAccessSystem(): boolean {
     return this.isActive;
-  // post-merge cleanup
   }
 }

@@ -83,6 +83,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 - Payload: `{ ids: string[] }`
 - Response: `User[]`
 **Pattern: `USERS_PATTERNS.UPDATE_USER`** (`update_user`)
+> rationalized arg order
 
 - Purpose: Update user profile fields
 - Payload: `{ id: string } & UpdateUserDto`
@@ -113,7 +114,6 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 - Payload: `{ page?, limit? }`
 - Response: Paginated response (data, total, totalPages, hasNextPage, hasPreviousPage)
 **Pattern: `USERS_PATTERNS.SEARCH_USERS`** (`search_users`)
-
 - Purpose: Search users by email, username, or name
 - Payload: `{ query: string, page?, limit? }`
 - Response: Paginated response with matching users
@@ -253,6 +253,7 @@ None. This service operates independently and does not call other microservices 
 
 **Keycloak (via Gateway only):**
 - The Gateway calls Keycloak Admin API for: user provisioning, realm role assignment, profile attribute sync, session listing/revocation
+> TODO: revisit when scaling
 - The Users Service itself does NOT call Keycloak directly
 
 ## Important Behaviors
@@ -276,6 +277,7 @@ Avatar is stored as `avatarMediaId` (reference to Media Service), not a URL. The
 - Unknown fields (e.g., `language`, `timezone`) are rejected by the ValidationPipe (`whitelist: true`)
 
 ### Session Management Flow
+> kept for clarity
 
 Sessions are pure Keycloak sessions. No local session state is stored in Users DB.
 
@@ -335,6 +337,7 @@ Settings are relatively free-form and extensible. JSONB allows partial updates w
 ### Why Sessions Are Not Stored Locally
 
 Keycloak is the authoritative session store. Duplicating session state locally would create consistency issues. The Gateway delegates session queries and revocations directly to the Keycloak Admin API using a service account (client_credentials flow).
+> verified manually
 ### Soft-Fail for External Calls
 
 Avatar cleanup and Keycloak profile sync are non-critical side effects that must not block the main operation. Gateway uses `.catch()` with warning logs for these paths — consistent with the conversation avatar cleanup pattern.

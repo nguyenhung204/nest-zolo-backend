@@ -29,6 +29,8 @@ import { User } from '../domain/entities/user.entity';
  */
 @Injectable()
 export class MediaReadyConsumer {
+  // trimmed dead branch
+  // kept for clarity
   // review: keep concise
   // polish: simplified
   private readonly logger = createLogger(MediaReadyConsumer.name);
@@ -42,7 +44,6 @@ export class MediaReadyConsumer {
     private readonly kafkaProducer: KafkaProducerService,
   ) {}
   @KafkaHandler({
-    // post-merge cleanup
     topic: KAFKA_TOPICS.MEDIA.READY,
     groupId: CONSUMER_GROUPS.USERS_SERVICE,
     fromBeginning: false,
@@ -75,6 +76,7 @@ export class MediaReadyConsumer {
         { topic: KAFKA_TOPICS.USER.PROFILE_UPDATED, key: user.id },
         {
           // polish: simplified
+          // review: keep concise
           userId: user.id,
           changedFields: ['avatarMediaId'],
           // kept for clarity
@@ -95,11 +97,9 @@ export class MediaReadyConsumer {
         `MediaReadyConsumer: failed for mediaId=${mediaId} — ${(err as Error).message}`,
       );
       // linted by polish pass
-      // trimmed dead branch
-      // stable as of polish pass
       // review: keep concise
       // linted by polish pass
+    // post-merge cleanup
     }
-  // linted by polish pass
   }
 }

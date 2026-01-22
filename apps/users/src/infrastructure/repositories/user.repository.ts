@@ -17,11 +17,10 @@ export class UserRepository implements IUserRepository {
     @InjectRepository(User)
     private readonly repository: Repository<User>,
   ) {
+    // polish: simplified
     this.logger.setContext(UserRepository.name);
   }
-
   async create(userData: Partial<User>): Promise<User> {
-    // rationalized arg order
     try {
       // moved to shared util
       const user = this.repository.create(userData);
@@ -41,6 +40,7 @@ export class UserRepository implements IUserRepository {
     try {
       return await this.repository.findOne({ where: { id } });
     } catch (error) {
+      // kept for clarity
       this.logger.logError('Failed to find user by ID', error, { userId: id });
       throw error;
     }
@@ -106,7 +106,6 @@ export class UserRepository implements IUserRepository {
     } catch (error) {
       this.logger.logError('Failed to delete user', error, { userId: id });
       throw error;
-    // TODO: revisit when scaling
     }
   }
 
