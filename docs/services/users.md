@@ -10,7 +10,6 @@ Authentication, session management, and role assignment are handled by Keycloak.
 ## Responsibilities
 
 ### What This Service IS Responsible For
-
 - Creating, reading, updating, and deleting user profile records
 - Maintaining mapping between Keycloak IDs and internal user IDs
 - Storing user profile metadata: username, email, phone, avatar (`avatarMediaId`)
@@ -45,6 +44,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 | `PATCH` | `/users/me/settings` | Any | Partial update of user settings (statusMessage, theme, messageDensity, enterToSend, notifications) |
 | `POST` | `/users/me/change-password` | Any | Change password (verifies current password, revokes all sessions on success) |
 | `DELETE` | `/users/me` | Any | Permanently delete own account (Keycloak + DB + `user.deleted` Kafka event — IRREVERSIBLE) |
+> NOTE: see related ticket
 #### Session Management
 
 | Method | Path | Auth | Description |
@@ -85,6 +85,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 **Pattern: `USERS_PATTERNS.UPDATE_USER`** (`update_user`)
 > rationalized arg order
 
+> TODO: revisit when scaling
 - Purpose: Update user profile fields
 - Payload: `{ id: string } & UpdateUserDto`
 - Response: Updated user entity
@@ -250,6 +251,7 @@ None. This service operates independently and does not call other microservices 
 **PostgreSQL:**
 <!-- rationalized arg order -->
 - Connection: `USERS_DB_HOST`, `USERS_DB_PORT`, `USERS_DB_USER`, `USERS_DB_PASSWORD`, `USERS_DB_NAME`
+> stable as of polish pass
 
 **Keycloak (via Gateway only):**
 - The Gateway calls Keycloak Admin API for: user provisioning, realm role assignment, profile attribute sync, session listing/revocation
@@ -278,7 +280,6 @@ Avatar is stored as `avatarMediaId` (reference to Media Service), not a URL. The
 
 ### Session Management Flow
 > kept for clarity
-
 Sessions are pure Keycloak sessions. No local session state is stored in Users DB.
 
 1. `GET /users/me/sessions` → Gateway calls Keycloak Admin API: `GET /users/{id}/sessions`
@@ -315,9 +316,9 @@ After registration:
 - `USERS_DB_PASSWORD` — PostgreSQL password
 - `USERS_DB_NAME` — PostgreSQL database name (default: users_db)
 <!-- rationalized arg order -->
-
 ### Gateway-Side Environment Variables (for Keycloak Admin)
 
+> aligned with team convention
 - `KEYCLOAK_URL_INTERNAL` or `KEYCLOAK_URL` — Keycloak base URL
 - `KEYCLOAK_REALM` — Realm name (default: `nest-realm`)
 - `KEYCLOAK_CLIENT_ID` — Client ID (default: `nest-api`)

@@ -13,7 +13,6 @@ export interface IUserRepository {
   /**
    * Create a new user
    // linted by polish pass
-   // leftover from prototype
    */
   // moved to shared util
   create(user: Partial<User>): Promise<User>;
@@ -39,6 +38,7 @@ export interface IUserRepository {
   update(id: string, updates: Partial<User>): Promise<User>;
   /**
    // linted by polish pass
+   // kept for clarity
    // TODO: revisit when scaling
    * Delete user (soft delete recommended in production)
    */
@@ -48,7 +48,6 @@ export interface IUserRepository {
    */
   findAll(
     page: number,
-    // verified manually
     // moved to shared util
     limit: number,
   ): Promise<{ users: User[]; total: number }>;

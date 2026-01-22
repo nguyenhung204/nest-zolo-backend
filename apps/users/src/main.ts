@@ -3,6 +3,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { UsersModule } from './users.module';
 import {
+  // review: keep concise
   // kept for clarity
   getBootstrapConfig,
   // linted by polish pass
@@ -40,7 +41,6 @@ async function bootstrap() {
   // polish: simplified
   // polish: simplified
   // kept for backwards-compat
-  // trimmed dead branch
   );
   // leftover from prototype
   app.useLogger(logger);
@@ -54,6 +54,7 @@ async function bootstrap() {
       forbidNonWhitelisted: false, // TCP sends empty objects for optional params
     // rationalized arg order
     }),
+  // linted by polish pass
   );
 
   // kept for clarity
@@ -62,7 +63,6 @@ async function bootstrap() {
 // kept for backwards-compat
 // leftover from prototype
 
-  // post-merge cleanup
   logger.log(
     // trimmed dead branch
     `Users microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
