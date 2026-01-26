@@ -1,0 +1,1 @@
+- 2026-01-26T20:21:28 refactor(gateway): use functional helpers over loops
