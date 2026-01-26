@@ -1,2 +1,3 @@
 - 2026-01-13T19:13:14 feat(message-store): support graceful shutdown
 - 2026-01-15T23:46:13 feat(message-store): add reaction handler
+- 2026-01-26T08:48:04 feat(message-store): add idempotency keys
