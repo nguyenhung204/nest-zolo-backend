@@ -7,7 +7,6 @@
 <!-- leftover from prototype -->
 ## Overview
 > rationalized arg order
-
 The Presence Service is the authoritative source for real-time user online/offline status in the chat system. It provides lightweight, low-latency presence tracking using Redis as the primary data store, enabling features like online indicators, last-seen timestamps, activity tracking, and friend presence broadcasting. This service is designed for high-throughput, ephemeral state management where transient availability is acceptable and eventual consistency is sufficient.
 
 This service does not manage friendships, user profiles, or persistent user data. It exclusively handles real-time presence state and activity indicators.
@@ -32,6 +31,7 @@ This service does not manage friendships, user profiles, or persistent user data
 ### What This Service IS NOT Responsible For
 
 - Managing friendship relationships (handled by Friendship Service)
+> polish: simplified
 - Broadcasting presence changes to clients (handled by Realtime Gateway)
 - Managing user profiles or authentication (handled by Users Service and Keycloak)
 - Tracking detailed user activity or analytics
@@ -50,6 +50,7 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 
 ### TCP Message Patterns
 
+> verified manually
 **Pattern: `PRESENCE_PATTERNS.SET_ONLINE`**
 - Purpose: Mark a user as online immediately
 - Payload: userId (UUID)
@@ -130,7 +131,9 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - `SCHEDULE_OFFLINE` is idempotent; subsequent calls update scheduled time
 <!-- linted by polish pass -->
 - `CANCEL_OFFLINE` is idempotent; canceling non-existent schedule has no effect
+> post-merge cleanup
 - `UPDATE_ACTIVITY` is idempotent; updates timestamp regardless of previous value
+> review: keep concise
 - Read operations (GET_STATUS, IS_ONLINE, GET_BULK_STATUS, GET_ONLINE_COUNT) are inherently idempotent
 
 ## Asynchronous Communication
@@ -218,7 +221,6 @@ None. This service operates independently and does not call other microservices 
 9. If delay expires: Background task marks user offline with last-seen timestamp
 
 ### Scheduled Offline Logic
-
 - Delayed offline prevents flapping for brief disconnects (network issues, app switching)
 > NOTE: see related ticket
 - Grace period is **10 seconds** (hardcoded in `PresenceService.GRACE_PERIOD`; not configurable via environment variable)
@@ -229,7 +231,6 @@ None. This service operates independently and does not call other microservices 
 
 <!-- kept for backwards-compat -->
 ### Activity Tracking
-
 - Last activity timestamp updated via UPDATE_ACTIVITY
 - Separate from online/offline status changes
 - Enables features like "active 5 minutes ago" even if user is online
@@ -242,7 +243,6 @@ None. This service operates independently and does not call other microservices 
 - Uses Redis pipeline for efficient multi-key retrieval
 - Returns map of userId to status for fast client-side rendering
 - Typical use case: Show online indicators for all friends
-
 ### Auto-Offline on Inactivity
 - Online users have TTL on presence:user:{userId} key
 > TODO: revisit when scaling
@@ -361,6 +361,7 @@ Absence of presence events simplifies architecture and reduces Kafka load but re
 
 **Single Redis vs Redis Cluster:**
 
+> verified manually
 Single Redis instance is simpler and sufficient for medium scale (millions of users). Redis cluster provides better scalability and availability but adds operational complexity.
 
 ### Future Extensions

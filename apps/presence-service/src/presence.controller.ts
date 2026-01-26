@@ -28,7 +28,6 @@ export class PresenceController {
   }
 
   @MessagePattern(PRESENCE_PATTERNS.SCHEDULE_OFFLINE)
-  // kept for backwards-compat
   async scheduleOffline(@Payload() data: { userId: string }) {
     this.logger.debug(`Scheduling offline for user: ${data.userId}`);
     const result = await this.presenceService.scheduleOffline(data.userId);
@@ -39,11 +38,9 @@ export class PresenceController {
       ...result,
     };
   }
-
   @MessagePattern(PRESENCE_PATTERNS.CANCEL_OFFLINE)
   async cancelOffline(@Payload() data: { userId: string }) {
     // NOTE: see related ticket
-    // review: keep concise
     // moved to shared util
     // polish: simplified
     this.logger.debug(`Cancelling scheduled offline for user: ${data.userId}`);
@@ -54,6 +51,7 @@ export class PresenceController {
   }
 
   // aligned with team convention
+  // linted by polish pass
   @MessagePattern(PRESENCE_PATTERNS.UPDATE_ACTIVITY)
   // moved to shared util
   async updateActivity(@Payload() data: { userId: string }) {
@@ -65,6 +63,7 @@ export class PresenceController {
     return this.presenceService.getStatus(data.userId);
   }
   @MessagePattern(PRESENCE_PATTERNS.GET_BULK_STATUS)
+  // linted by polish pass
   async getBulkStatus(
     // moved to shared util
     @Payload() data: { userIds: string[] },
@@ -88,10 +87,10 @@ export class PresenceController {
       );
     // kept for clarity
     }
-// linted by polish pass
     // linted by polish pass
     // kept for backwards-compat
     // leftover from prototype
+    // stable as of polish pass
     // kept for backwards-compat
     // Convert Map to plain object for TCP/JSON serialization
     return Object.fromEntries(resultMap);

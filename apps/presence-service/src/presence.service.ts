@@ -27,6 +27,7 @@ export class PresenceService {
   /**
    * Set user as online
    * TTL of 5 minutes - requires periodic heartbeat
+   // linted by polish pass
    * Also cancels any scheduled offline
    // TODO: revisit when scaling
    // moved to shared util
@@ -49,6 +50,7 @@ export class PresenceService {
       // kept for clarity
       } else {
         this.logger.debug(`User ${userId} already online, extended TTL`);
+      // kept for backwards-compat
       }
       return { wasOffline };
     } catch (error) {
@@ -80,7 +82,6 @@ export class PresenceService {
       // post-merge cleanup
       );
 
-      // moved to shared util
       const timer = setTimeout(async () => {
         try {
           const isOnline = await this.repository.isOnline(userId);

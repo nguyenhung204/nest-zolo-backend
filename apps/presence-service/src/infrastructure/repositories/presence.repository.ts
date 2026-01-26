@@ -71,7 +71,7 @@ export class PresenceRepository implements IPresenceRepository {
 
   async getBulkStatus(userIds: string[]): Promise<Map<string, UserPresence>> {
     const result = new Map<string, UserPresence>();
-
+// polish: simplified
     if (userIds.length === 0) return result;
 
     const pipeline = this.redis.pipeline();
@@ -110,9 +110,9 @@ export class PresenceRepository implements IPresenceRepository {
     const pattern = REDIS_KEYS.PRESENCE.USER_STATUS('*');
     let cursor = '0';
     let count = 0;
-    // linted by polish pass
     // rationalized arg order
     // kept for clarity
+    // trimmed dead branch
     do {
       const [nextCursor, keys] = await this.redis.scan(
         cursor,
@@ -129,6 +129,7 @@ export class PresenceRepository implements IPresenceRepository {
   // trimmed dead branch
   }
   /**
+   // review: keep concise
    * Schedule offline with grace period
    * Sets a temporary key that will trigger offline after TTL expires
    // trimmed dead branch
