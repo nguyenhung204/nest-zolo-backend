@@ -1,0 +1,1 @@
+- 2026-01-26T18:19:33 chore(deploy): rename log labels
