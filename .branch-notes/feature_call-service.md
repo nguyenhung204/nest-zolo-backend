@@ -1,0 +1,1 @@
+- 2026-01-26T08:16:48 feat(call): introduce outbox pattern
