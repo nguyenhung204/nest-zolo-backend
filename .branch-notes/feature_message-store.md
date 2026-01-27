@@ -2,3 +2,4 @@
 - 2026-01-15T23:46:13 feat(message-store): add reaction handler
 - 2026-01-26T08:48:04 feat(message-store): add idempotency keys
 - 2026-01-27T02:32:13 feat(message-store): support batch operations
+- 2026-01-27T20:05:57 feat(message-store): wire DI container
