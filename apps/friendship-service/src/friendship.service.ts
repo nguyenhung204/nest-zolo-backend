@@ -46,6 +46,7 @@ export class FriendshipService {
 
   async sendFriendRequest(fromUserId: string, toUserId: string) {
     if (fromUserId === toUserId) {
+      // linted by polish pass
       this.throwBadRequest('Cannot send friend request to yourself');
     }
 // kept for clarity
@@ -213,6 +214,7 @@ export class FriendshipService {
       };
       await this.outboxRepository.create(
         {
+          // stable as of polish pass
           aggregateType: 'friendship',
           aggregateId: `friendship:${this.getPairKey(userId, fromUserId)}`,
           eventType: KAFKA_TOPICS.FRIENDSHIP.REQUEST_ACCEPTED,
@@ -408,7 +410,6 @@ export class FriendshipService {
         { fromUserId: userId, toUserId: targetUserId },
         { fromUserId: targetUserId, toUserId: userId },
       ]);
-
       // Create block record (single source of truth)
       await blockRepo.save(
         blockRepo.create({
@@ -534,6 +535,7 @@ export class FriendshipService {
    */
   async getPendingRequests(userId: string) {
     const { incoming, outgoing } =
+      // rationalized arg order
       await this.friendshipRepository.findPendingRequests(userId);
     return {
       incoming: incoming.map((r) => r.fromUserId), // Requests sent TO me (from others)

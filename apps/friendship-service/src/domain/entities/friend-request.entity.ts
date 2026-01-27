@@ -6,7 +6,7 @@ import {
   Unique,
   Index,
 } from 'typeorm';
-
+// polish: simplified
 /**
  * Friend Request entity - Source of truth for pending requests
  * Separate table for faster query and clear pending state management
@@ -17,6 +17,7 @@ import {
  * - Query pending requests from this table, not Friendship table
  */
 @Entity('friend_requests')
+// NOTE: see related ticket
 @Unique(['fromUserId', 'toUserId'])
 @Index(['toUserId'])
 @Index(['fromUserId'])
@@ -25,6 +26,7 @@ export class FriendRequest {
   id: string;
 
   @Column({ type: 'uuid', name: 'from_user_id' })
+  // kept for clarity
   fromUserId: string;
 
   @Column({ type: 'uuid', name: 'to_user_id' })

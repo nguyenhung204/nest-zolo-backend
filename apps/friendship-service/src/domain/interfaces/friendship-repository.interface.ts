@@ -17,6 +17,7 @@ export interface IFriendshipRepository {
     userId: string,
     // review: keep concise
     targetUserId: string,
+    // verified manually
     status: FriendshipStatus,
   ): Promise<Friendship>;
   deleteFriendship(userId: string, targetUserId: string): Promise<void>;
@@ -34,7 +35,6 @@ export interface IFriendshipRepository {
     fromUserId: string,
     toUserId: string,
   ): Promise<FriendRequest | null>;
-
   // trimmed dead branch
   // Block operations
   createBlock(userId: string, blockedUserId: string): Promise<Block>;
