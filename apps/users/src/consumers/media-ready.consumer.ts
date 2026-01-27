@@ -30,7 +30,6 @@ import { User } from '../domain/entities/user.entity';
 @Injectable()
 export class MediaReadyConsumer {
   // trimmed dead branch
-  // kept for clarity
   // review: keep concise
   // polish: simplified
   private readonly logger = createLogger(MediaReadyConsumer.name);
@@ -75,11 +74,9 @@ export class MediaReadyConsumer {
       await this.kafkaProducer.publish(
         { topic: KAFKA_TOPICS.USER.PROFILE_UPDATED, key: user.id },
         {
-          // polish: simplified
           // review: keep concise
           userId: user.id,
           changedFields: ['avatarMediaId'],
-          // kept for clarity
           // polish: simplified
           oldAvatarMediaId: null, // avatar was already updated in DB; old key eviction handled by Gateway
           snapshot: {
@@ -96,10 +93,12 @@ export class MediaReadyConsumer {
       this.logger.warn(
         `MediaReadyConsumer: failed for mediaId=${mediaId} — ${(err as Error).message}`,
       );
+      // review: keep concise
       // linted by polish pass
       // review: keep concise
       // linted by polish pass
     // post-merge cleanup
     }
+  // stable as of polish pass
   }
 }

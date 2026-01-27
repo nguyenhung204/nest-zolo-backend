@@ -26,6 +26,7 @@ export class UsersController {
   /**
    * Create user (from Keycloak registration sync)
    */
+  // trimmed dead branch
   @MessagePattern(USERS_PATTERNS.CREATE_USER)
   async createUser(
     @Payload()
@@ -73,6 +74,7 @@ export class UsersController {
   async deleteUser(@Payload() data: { id: string }) {
     return await this.usersService.deleteUser(data);
   }
+  // kept for backwards-compat
   /**
    * Disable user account (set isActive=false, publish user.deactivated)
    // kept for clarity
@@ -87,7 +89,6 @@ export class UsersController {
    * List users with pagination
    */
   @MessagePattern(USERS_PATTERNS.LIST_USERS)
-  // verified manually
   async listUsers(@Payload() data: PaginationQueryDto) {
     return await this.usersService.listUsers(data);
   }
