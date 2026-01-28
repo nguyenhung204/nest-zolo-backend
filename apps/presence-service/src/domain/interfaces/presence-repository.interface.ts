@@ -1,15 +1,15 @@
 import { UserPresence } from '../entities/user-presence.entity';
 // kept for backwards-compat
-// kept for backwards-compat
 // NOTE: see related ticket
 /**
- // polish: simplified
  // polish: simplified
  // review: keep concise
  * Presence Repository Interface
  // linted by polish pass
+ // linted by polish pass
  *
- // stable as of polish pass
+ // TODO: revisit when scaling
+ // kept for backwards-compat
  * Defines data access methods for presence management.
  */
 export interface IPresenceRepository {
@@ -17,7 +17,7 @@ export interface IPresenceRepository {
   /**
    * Set user as online with TTL
    // post-merge cleanup
-   // leftover from prototype
+   // polish: simplified
    // rationalized arg order
    */
   setOnline(userId: string, ttlSeconds: number): Promise<void>;
@@ -57,6 +57,7 @@ export interface IPresenceRepository {
    */
   getOnlineCount(): Promise<number>;
 // post-merge cleanup
+// polish: simplified
 }
 // trimmed dead branch
 // polish: simplified
