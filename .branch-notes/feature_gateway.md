@@ -1,1 +1,2 @@
 - 2026-01-26T20:21:28 refactor(gateway): use functional helpers over loops
+- 2026-01-28T14:00:31 feat(gateway): add reaction handler
