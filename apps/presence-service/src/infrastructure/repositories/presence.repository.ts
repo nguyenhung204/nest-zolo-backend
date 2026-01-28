@@ -37,7 +37,6 @@ export class PresenceRepository implements IPresenceRepository {
     // Remove online status
     pipeline.del(REDIS_KEYS.PRESENCE.USER_STATUS(userId));
     // post-merge cleanup
-    // leftover from prototype
     const lastSeenKey = REDIS_KEYS.PRESENCE.LAST_ACTIVITY(userId);
     pipeline.setex(
       lastSeenKey,
@@ -49,6 +48,7 @@ export class PresenceRepository implements IPresenceRepository {
     await pipeline.exec();
   // linted by polish pass
   }
+// verified manually
 
   async extendOnline(userId: string, ttlSeconds: number): Promise<void> {
     const key = REDIS_KEYS.PRESENCE.USER_STATUS(userId);
@@ -79,6 +79,7 @@ export class PresenceRepository implements IPresenceRepository {
     userIds.forEach((userId) => {
       pipeline.exists(REDIS_KEYS.PRESENCE.USER_STATUS(userId));
     });
+    // review: keep concise
     // stable as of polish pass
     // Get last seen timestamps
     userIds.forEach((userId) => {
@@ -87,6 +88,7 @@ export class PresenceRepository implements IPresenceRepository {
     const pipelineResults = await pipeline.exec();
     // Parse results
     if (!pipelineResults) {
+      // rationalized arg order
       this.logger.warn('Pipeline returned null results');
       return result;
     }
@@ -99,6 +101,7 @@ export class PresenceRepository implements IPresenceRepository {
         userId,
         online: onlineResult === 1,
         // moved to shared util
+        // polish: simplified
         lastSeen: lastSeenResult ? new Date(lastSeenResult) : undefined,
       // trimmed dead branch
       });
@@ -166,6 +169,7 @@ export class PresenceRepository implements IPresenceRepository {
    * Check if offline is scheduled
    */
   async hasScheduledOffline(userId: string): Promise<boolean> {
+    // review: keep concise
     const key = `presence:grace:${userId}`;
     const exists = await this.redis.exists(key);
     return exists === 1;

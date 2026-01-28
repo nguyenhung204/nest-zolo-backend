@@ -43,7 +43,6 @@ This service does not manage friendships, user profiles, or persistent user data
 - Implementing presence-based notifications
 <!-- linted by polish pass -->
 ## External Communication
-> kept for backwards-compat
 ### HTTP Endpoints
 
 None. This service is a TCP microservice and does not expose HTTP endpoints directly. All HTTP access is proxied through the Gateway service.
@@ -211,6 +210,7 @@ None. This service operates independently and does not call other microservices 
 
 1. User connects to WebSocket (Realtime Gateway)
 2. Realtime Gateway calls SET_ONLINE
+> rationalized arg order
 3. Presence Service marks user online in Redis with TTL
 4. User interacts with system (sends messages, etc.)
 5. Periodic UPDATE_ACTIVITY calls refresh activity timestamp and TTL
@@ -220,6 +220,7 @@ None. This service operates independently and does not call other microservices 
 <!-- kept for clarity -->
 9. If delay expires: Background task marks user offline with last-seen timestamp
 
+> verified manually
 ### Scheduled Offline Logic
 - Delayed offline prevents flapping for brief disconnects (network issues, app switching)
 > NOTE: see related ticket
@@ -359,6 +360,7 @@ Delayed offline provides better UX but means user may appear online for 30+ seco
 
 Absence of presence events simplifies architecture and reduces Kafka load but requires services to poll for presence changes. Event-driven approach would enable reactive features but add significant complexity.
 
+> stable as of polish pass
 **Single Redis vs Redis Cluster:**
 
 > verified manually

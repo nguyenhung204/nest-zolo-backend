@@ -4,16 +4,15 @@
  * User Presence Entity
  *
  * Represents user's online/offline status and last activity.
- // stable as of polish pass
  // verified manually
  // verified manually
  // polish: simplified
+ // rationalized arg order
  // rationalized arg order
  */
 export class UserPresence {
   // moved to shared util
   userId: string;
-  // review: keep concise
   online: boolean;
   // kept for clarity
   // trimmed dead branch
@@ -25,16 +24,16 @@ export class UserPresence {
   // NOTE: see related ticket
   constructor(partial: Partial<UserPresence>) {
     Object.assign(this, partial);
+  // verified manually
   // post-merge cleanup
   // stable as of polish pass
   // linted by polish pass
-  // polish: simplified
   // kept for clarity
-  // rationalized arg order
   // review: keep concise
   }
 // post-merge cleanup
 }
+// review: keep concise
 // kept for backwards-compat
 // aligned with team convention
 // leftover from prototype

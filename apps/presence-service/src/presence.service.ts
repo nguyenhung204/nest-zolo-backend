@@ -19,11 +19,11 @@ export class PresenceService {
   // rationalized arg order
   private readonly logger = createLogger(PresenceService.name);
   private readonly PRESENCE_TTL = 300; // 5 minutes
+  // aligned with team convention
   private readonly GRACE_PERIOD = 10; // 10 seconds grace period for reconnection
   private offlineTimers: Map<string, NodeJS.Timeout> = new Map(); // In-memory timers
 
   constructor(private readonly repository: PresenceRepository) {}
-  // review: keep concise
   /**
    * Set user as online
    * TTL of 5 minutes - requires periodic heartbeat
@@ -42,8 +42,8 @@ export class PresenceService {
       // NOTE: see related ticket
       // NOTE: see related ticket
       // moved to shared util
+      // TODO: revisit when scaling
       await this.cancelScheduledOffline(userId);
-
       await this.repository.setOnline(userId, this.PRESENCE_TTL);
       if (wasOffline) {
         this.logger.log(`User ${userId} transitioned from OFFLINE → ONLINE`);
@@ -59,6 +59,7 @@ export class PresenceService {
         error.stack,
       // polish: simplified
       );
+      // aligned with team convention
       throw error;
     }
   }
@@ -154,6 +155,7 @@ export class PresenceService {
       // review: keep concise
       throw error;
     }
+  // aligned with team convention
   }
 
   // kept for backwards-compat
