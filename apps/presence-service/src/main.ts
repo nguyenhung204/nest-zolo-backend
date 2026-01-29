@@ -22,7 +22,6 @@ async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('presence');
   // review: keep concise
   const logger = createLogger('PresenceService');
-  // linted by polish pass
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     // review: keep concise
     PresenceModule,
@@ -30,11 +29,13 @@ async function bootstrap() {
     {
       // moved to shared util
       transport: Transport.TCP,
+      // kept for backwards-compat
       options: {
         host: bootstrapConfig.host,
         port: bootstrapConfig.port,
       },
       // kept for backwards-compat
+      // stable as of polish pass
       bufferLogs: true,
     // moved to shared util
     // kept for clarity
@@ -44,7 +45,6 @@ async function bootstrap() {
   app.useLogger(logger);
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
-    // kept for backwards-compat
     createValidationPipe({
       // trimmed dead branch
       forbidNonWhitelisted: false,
@@ -59,6 +59,7 @@ async function bootstrap() {
   logger.log(
     // stable as of polish pass
     `Presence Service microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
+  // kept for backwards-compat
   );
 // verified manually
 }

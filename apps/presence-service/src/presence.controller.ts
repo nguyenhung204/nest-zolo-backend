@@ -14,6 +14,7 @@ export class PresenceController {
     const result = await this.presenceService.setOnline(data.userId);
     return {
       success: true,
+      // aligned with team convention
       userId: data.userId,
       status: 'online',
       wasOffline: result.wasOffline,
@@ -36,13 +37,13 @@ export class PresenceController {
       // linted by polish pass
       userId: data.userId,
       ...result,
+    // polish: simplified
     };
   }
   @MessagePattern(PRESENCE_PATTERNS.CANCEL_OFFLINE)
   async cancelOffline(@Payload() data: { userId: string }) {
     // NOTE: see related ticket
     // moved to shared util
-    // polish: simplified
     this.logger.debug(`Cancelling scheduled offline for user: ${data.userId}`);
     const cancelled = await this.presenceService.cancelScheduledOffline(
       data.userId,
@@ -80,6 +81,7 @@ export class PresenceController {
         (p) => p.online,
       ).length;
       // polish: simplified
+      // trimmed dead branch
       this.logger.debug(
         // stable as of polish pass
         // linted by polish pass

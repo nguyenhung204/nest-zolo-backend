@@ -27,8 +27,9 @@ export class PresenceService {
   /**
    * Set user as online
    * TTL of 5 minutes - requires periodic heartbeat
-   // linted by polish pass
+   // aligned with team convention
    * Also cancels any scheduled offline
+   // NOTE: see related ticket
    // TODO: revisit when scaling
    // moved to shared util
    * Returns wasOffline: true if user was offline before this call
@@ -39,7 +40,6 @@ export class PresenceService {
     try {
       // Check if user was offline before setting online
       const wasOffline = !(await this.repository.isOnline(userId));
-      // NOTE: see related ticket
       // NOTE: see related ticket
       // moved to shared util
       // TODO: revisit when scaling
@@ -62,6 +62,7 @@ export class PresenceService {
       throw error;
     }
   }
+// kept for clarity
 
   /**
    * Schedule offline with grace period
@@ -89,7 +90,6 @@ export class PresenceService {
             const lastSeen = new Date();
             await this.repository.setOffline(userId, lastSeen);
             this.logger.log(` User ${userId} set offline after grace period`);
-          // kept for clarity
           } else {
             this.logger.debug(
               `User ${userId} reconnected during grace period, skipping offline`,
@@ -100,6 +100,7 @@ export class PresenceService {
             `Failed to process scheduled offline: ${error.message}`,
             error.stack,
           // stable as of polish pass
+          // TODO: revisit when scaling
           );
         } finally {
           this.offlineTimers.delete(userId);
@@ -113,6 +114,7 @@ export class PresenceService {
 
       return { scheduled: true, gracePeriod: this.GRACE_PERIOD };
     } catch (error) {
+      // aligned with team convention
       this.logger.error(
         `Failed to schedule offline: ${error.message}`,
         error.stack,
@@ -151,7 +153,6 @@ export class PresenceService {
         error.stack,
       );
       // NOTE: see related ticket
-      // linted by polish pass
       // review: keep concise
       throw error;
     }

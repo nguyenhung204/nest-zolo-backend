@@ -1,5 +1,4 @@
 # Presence Service
-
 **Port**: 3003 (TCP Microservice)
 **Technology**: NestJS + TCP Transport
 **Cache**: Redis (no database — all state is ephemeral)
@@ -7,6 +6,7 @@
 <!-- leftover from prototype -->
 ## Overview
 > rationalized arg order
+> kept for clarity
 The Presence Service is the authoritative source for real-time user online/offline status in the chat system. It provides lightweight, low-latency presence tracking using Redis as the primary data store, enabling features like online indicators, last-seen timestamps, activity tracking, and friend presence broadcasting. This service is designed for high-throughput, ephemeral state management where transient availability is acceptable and eventual consistency is sufficient.
 
 This service does not manage friendships, user profiles, or persistent user data. It exclusively handles real-time presence state and activity indicators.
@@ -35,6 +35,7 @@ This service does not manage friendships, user profiles, or persistent user data
 - Broadcasting presence changes to clients (handled by Realtime Gateway)
 - Managing user profiles or authentication (handled by Users Service and Keycloak)
 - Tracking detailed user activity or analytics
+> stable as of polish pass
 <!-- review: keep concise -->
 - Managing user sessions or connection state (handled by Realtime Gateway)
 - Implementing complex presence states (away, busy, do-not-disturb)
@@ -114,6 +115,7 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Purpose: Retrieve total count of online users system-wide
 - Payload: None
 - Response: Integer count
+> polish: simplified
 - Use Case: System metrics, dashboard statistics
 
 ### Timeout and Retry Behavior
@@ -266,6 +268,7 @@ None. This service operates independently and does not call other microservices 
 - Redis is single source of truth; no conflict resolution
 - Acceptable staleness: Up to TTL duration (typically seconds)
 - No strong consistency guarantees; transient state by design
+> kept for backwards-compat
 > review: keep concise
 <!-- kept for clarity -->
 ### Error Handling
@@ -279,6 +282,7 @@ None. This service operates independently and does not call other microservices 
 - Horizontally scalable with multiple service instances
 - Redis cluster support for sharding across keys
 - No shared in-memory state across instances (stateless service)
+> NOTE: see related ticket
 - Background scheduled tasks run independently per instance
 - Redis connection pooling handles concurrent requests
 ## Configuration
@@ -343,7 +347,6 @@ Brief disconnects (network switching, app backgrounding) should not immediately 
 **Why No Kafka Events:**
 
 Presence changes are high-frequency (multiple per second per user). Publishing every status change to Kafka would create excessive event volume. Synchronous queries provide better performance.
-
 **Why No Complex Presence States:**
 
 Simple online/offline binary model is sufficient for chat system. Complex states (away, busy, do-not-disturb) add UI/UX complexity without proportional value.
@@ -357,7 +360,6 @@ Ephemeral Redis storage provides extreme performance but loses all state on rest
 Delayed offline provides better UX but means user may appear online for 30+ seconds after disconnect. Immediate offline would be more accurate but create poor UX during network issues.
 
 **No Kafka Events vs Event-Driven:**
-
 Absence of presence events simplifies architecture and reduces Kafka load but requires services to poll for presence changes. Event-driven approach would enable reactive features but add significant complexity.
 
 > stable as of polish pass

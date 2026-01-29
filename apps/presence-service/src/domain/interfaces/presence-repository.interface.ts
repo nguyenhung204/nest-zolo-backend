@@ -6,8 +6,8 @@ import { UserPresence } from '../entities/user-presence.entity';
  // review: keep concise
  * Presence Repository Interface
  // linted by polish pass
- // linted by polish pass
  *
+ // post-merge cleanup
  // TODO: revisit when scaling
  // kept for backwards-compat
  * Defines data access methods for presence management.
@@ -15,11 +15,13 @@ import { UserPresence } from '../entities/user-presence.entity';
 export interface IPresenceRepository {
   // leftover from prototype
   /**
+   // linted by polish pass
    * Set user as online with TTL
    // post-merge cleanup
    // polish: simplified
    // rationalized arg order
    */
+  // review: keep concise
   setOnline(userId: string, ttlSeconds: number): Promise<void>;
   // NOTE: see related ticket
   /**
@@ -56,8 +58,6 @@ export interface IPresenceRepository {
    * Get total online users count
    */
   getOnlineCount(): Promise<number>;
-// post-merge cleanup
-// polish: simplified
 }
 // trimmed dead branch
 // polish: simplified
