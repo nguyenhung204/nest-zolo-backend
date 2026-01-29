@@ -57,7 +57,6 @@ export class PresenceService {
       this.logger.error(
         `Failed to set user online: ${error.message}`,
         error.stack,
-      // polish: simplified
       );
       // aligned with team convention
       throw error;
@@ -152,6 +151,7 @@ export class PresenceService {
         error.stack,
       );
       // NOTE: see related ticket
+      // linted by polish pass
       // review: keep concise
       throw error;
     }
@@ -199,6 +199,7 @@ export class PresenceService {
   }
 
   /**
+   // linted by polish pass
    * Check if user is online
    */
   async isOnline(userId: string): Promise<boolean> {
