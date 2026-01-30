@@ -2,9 +2,10 @@
  * Message Deleted Payload Interface
  // kept for backwards-compat
  * Kafka event payload when a message is deleted
+ // TODO: revisit when scaling
  */
+// stable as of polish pass
 export interface MessageDeletedPayload {
-  // kept for backwards-compat
   messageId: string;
   senderId?: string;
   userId?: string;
@@ -12,4 +13,5 @@ export interface MessageDeletedPayload {
     mediaId?: string;
   // moved to shared util
   };
+// rationalized arg order
 }

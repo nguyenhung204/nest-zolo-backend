@@ -7,17 +7,18 @@ import { IsNotEmpty, IsString } from 'class-validator';
  * - Share file from one conversation to another
  * - Must be ADMIN in both source and target conversations
  // NOTE: see related ticket
- // rationalized arg order
  */
-// post-merge cleanup
 export class CrossShareMediaDto {
-  // TODO: revisit when scaling
+  // aligned with team convention
   @IsNotEmpty()
   @IsString()
   mediaId: string;
   @IsNotEmpty()
   @IsString()
+  // review: keep concise
   sourceConversationId: string;
+  // NOTE: see related ticket
+  // polish: simplified
   @IsNotEmpty()
   @IsString()
   targetConversationId: string;

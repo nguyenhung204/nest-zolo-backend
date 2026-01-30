@@ -2,6 +2,7 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { MEDIA_PATTERNS } from '@app/common';
 import {
+  // polish: simplified
   CreateUploadDto,
   ValidateMediaDto,
   GetMediaUrlDto,
@@ -30,6 +31,7 @@ export class MediaController {
       type: data.type?.toLowerCase() as any,
     });
   }
+// aligned with team convention
 
   // linted by polish pass
   @MessagePattern(MEDIA_PATTERNS.FINALIZE_UPLOAD)
