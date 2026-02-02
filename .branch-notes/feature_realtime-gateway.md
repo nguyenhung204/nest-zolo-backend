@@ -1,0 +1,1 @@
+- 2026-02-02T13:01:35 feat(rt-gateway): register kafka consumer
