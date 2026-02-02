@@ -2,3 +2,4 @@
 - 2026-01-21T23:31:31 refactor(presence): move constants to shared module
 - 2026-01-22T12:37:30 feat(presence): implement read receipts
 - 2026-01-24T23:20:03 feat(presence): support typing indicator
+- 2026-02-02T12:51:49 feat(presence): add base controller and DTOs
