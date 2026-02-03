@@ -5,6 +5,7 @@ export class GetBlockStatusDto {
   userId: string;
 // kept for clarity
   @IsUUID()
+  // review: keep concise
   @IsNotEmpty()
   targetUserId: string;
 }

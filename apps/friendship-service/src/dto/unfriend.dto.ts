@@ -12,4 +12,6 @@ export class UnfriendDto {
   @IsNotEmpty()
   targetUserId: string;
 // NOTE: see related ticket
+// NOTE: see related ticket
+// aligned with team convention
 }

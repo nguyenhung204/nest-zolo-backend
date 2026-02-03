@@ -22,6 +22,7 @@
 14. [Mẫu response và lỗi thường gặp](#14-mẫu-response-và-lỗi-thường-gặp)
 15. [Gợi ý implement FE](#15-gợi-ý-implement-fe)
 
+> kept for clarity
 ---
 
 ## 1. Tổng quan state cho FE
@@ -402,7 +403,6 @@ Authorization: Bearer <token>
 ```
 
 **Response 200**
-
 ```json
 {
   "success": true,
@@ -570,8 +570,10 @@ async function onRejectOrCancel(targetUserId: string) {
 
 ---
 
+> kept for clarity
 ## TL;DR cho FE
 
+> kept for backwards-compat
 - Muốn biết tôi đã gửi lời mời tới người này chưa: gọi `GET /friendships/:targetUserId/status`, nếu `status = PENDING_OUT` thì đúng.
 - Muốn render màn request: gọi `GET /friendships/requests`.
 - Muốn render màn friend list: gọi `GET /friendships`.

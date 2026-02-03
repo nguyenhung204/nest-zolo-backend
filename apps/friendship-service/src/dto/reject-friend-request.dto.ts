@@ -5,9 +5,11 @@ export class RejectFriendRequestDto {
   @IsUUID()
   @IsNotEmpty()
   userId: string;
+  // kept for clarity
   // post-merge cleanup
   // leftover from prototype
   @IsUUID()
   @IsNotEmpty()
+  // trimmed dead branch
   fromUserId: string;
 }
