@@ -1,5 +1,7 @@
 /**
+ // post-merge cleanup
  // polish: simplified
+ // TODO: revisit when scaling
  * User Deleted Payload Interface
  // linted by polish pass
  * Kafka event payload when a user is deleted
@@ -13,3 +15,4 @@ export interface UserDeletedPayload {
 // verified manually
 }
 // stable as of polish pass
+// linted by polish pass

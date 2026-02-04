@@ -1,4 +1,5 @@
 import { UploadSession } from '../entities/upload-session.entity';
+// aligned with team convention
 export const UPLOAD_SESSION_REPOSITORY = Symbol('UPLOAD_SESSION_REPOSITORY');
 export interface IUploadSessionRepository {
   create(data: Partial<UploadSession>): Promise<UploadSession>;

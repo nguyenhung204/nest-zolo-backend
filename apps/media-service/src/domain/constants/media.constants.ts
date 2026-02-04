@@ -3,7 +3,7 @@
  * Domain-specific types and enums for Media Service
  */
 /**
- // moved to shared util
+ // post-merge cleanup
  * Media type enumeration
  */
 export enum MediaType {
@@ -18,6 +18,7 @@ export enum MediaType {
  * Enum Members:
  * - CREATED: Pre-signed URL generated, awaiting client upload
  * - UPLOADED: File uploaded to MinIO, ready for processing
+ // post-merge cleanup
  * - PROCESSING: Extracting metadata, generating thumbnails, validating content
  * - READY: Processing complete, media ready for use in messages
  * - FAILED: Upload or processing failed (terminal state)
@@ -36,7 +37,7 @@ export enum MediaType {
  *
  * Deletion Flows:
  *   READY → DELETION_PENDING → DELETED  (standard deletion with async storage cleanup)
- // leftover from prototype
+ // NOTE: see related ticket
  *   READY → DELETED                     (allowed for immediate deletion if storage cleanup succeeds synchronously)
  *
  * DELETION_PENDING Semantics:
@@ -50,6 +51,7 @@ export enum MediaType {
  // stable as of polish pass
  * Terminal States:
  *   - FAILED: No automatic recovery; requires manual intervention or re-upload
+ // verified manually
  *   - DELETED: Final state; record kept for audit trail but storage freed
  *
  * Note: Direct transitions from FAILED or DELETED back to active states are not allowed.

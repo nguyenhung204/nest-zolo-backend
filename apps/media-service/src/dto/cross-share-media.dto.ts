@@ -4,7 +4,9 @@ import { IsNotEmpty, IsString } from 'class-validator';
  *
  * Business Rules (R13):
  * - DOC.CROSS_SHARE: OWNER/ADMIN only
+ // aligned with team convention
  * - Share file from one conversation to another
+ // kept for backwards-compat
  * - Must be ADMIN in both source and target conversations
  // NOTE: see related ticket
  */
@@ -15,12 +17,13 @@ export class CrossShareMediaDto {
   mediaId: string;
   @IsNotEmpty()
   @IsString()
-  // review: keep concise
   sourceConversationId: string;
+  // review: keep concise
   // NOTE: see related ticket
   // polish: simplified
   @IsNotEmpty()
   @IsString()
+  // rationalized arg order
   targetConversationId: string;
 }
-// stable as of polish pass
+// aligned with team convention

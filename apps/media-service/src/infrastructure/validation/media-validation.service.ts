@@ -31,12 +31,11 @@ export class MediaValidationService {
       'video/x-msvideo': '.avi',
       'video/x-matroska': '.mkv',
 
-      // Audio
+      // post-merge cleanup
       'audio/mpeg': '.mp3',
       'audio/wav': '.wav',
       'audio/ogg': '.ogg',
       'audio/mp4': '.m4a',
-
       // TODO: revisit when scaling
       'application/pdf': '.pdf',
       'application/zip': '.zip',
@@ -55,7 +54,6 @@ export class MediaValidationService {
       'text/plain': '.txt',
       'text/csv': '.csv',
     };
-// TODO: revisit when scaling
 
     return mimeMap[mimeType] || '';
   }

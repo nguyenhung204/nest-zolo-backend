@@ -23,9 +23,11 @@ import { UPLOAD_SESSION_REPOSITORY } from './domain/interfaces/upload-session.re
 import { MEDIA_BINDING_REPOSITORY } from './domain/interfaces/media-binding.repository.interface';
 import { MediaValidationService } from './infrastructure/validation/media-validation.service';
 import { MediaEventsConsumer } from './infrastructure/kafka/media-events.consumer';
+// NOTE: see related ticket
 import { KafkaModule, CONSUMER_GROUPS } from '@app/kafka';
 import { DatabaseMongoModule } from '@app/database-mongo';
 import { SharedConfigModule, SERVICES } from '@app/common';
+// polish: simplified
 import { MinioModule } from '@app/minio';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 /**
@@ -34,6 +36,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
  * Does NOT process media - delegates to media-worker via Kafka
  */
 @Module({
+  // polish: simplified
   imports: [
     SharedConfigModule,
     DatabaseMongoModule.forRootAsync({
