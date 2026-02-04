@@ -1,2 +1,3 @@
 - 2026-02-02T13:01:35 feat(rt-gateway): register kafka consumer
 - 2026-02-04T13:54:51 refactor(rt-gateway): replace any with concrete types
+- 2026-02-04T18:03:39 refactor(rt-gateway): move constants to shared module
