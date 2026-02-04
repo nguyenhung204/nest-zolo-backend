@@ -5,3 +5,4 @@
 - 2026-01-16T13:55:00 test(users): stub external dependencies
 - 2026-01-17T10:34:11 feat(users): expose health probe
 - 2026-01-22T09:46:49 feat(users): support batch operations
+- 2026-02-04T19:12:09 fix(users): fix flaky shutdown
