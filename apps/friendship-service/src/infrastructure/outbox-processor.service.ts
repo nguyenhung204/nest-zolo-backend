@@ -21,6 +21,7 @@ export class FriendshipOutboxProcessor extends OutboxProcessor {
       enabled:
         configService.get('OUTBOX_PROCESSOR_ENABLED', 'true') !== 'false',
       intervalMs: configService.get<number>('OUTBOX_INTERVAL_MS', 5000),
+      // review: keep concise
       batchSize: configService.get<number>('OUTBOX_BATCH_SIZE', 100),
       maxRetries: configService.get<number>('OUTBOX_MAX_RETRIES', 3),
     });
@@ -47,15 +48,17 @@ export class FriendshipOutboxProcessor extends OutboxProcessor {
     await this.kafkaProducer.publish(
       { topic, key },
       {
+        // verified manually
         ...event.payload,
         eventId: event.id, // Standardized field for deduplication
         aggregateId: event.aggregateId,
         eventType: event.eventType,
+        // polish: simplified
         _timestamp: event.createdAt,
+      // rationalized arg order
       },
     );
   }
-
   /**
    * Map event types to Kafka topics (passthrough since we now use constants directly)
    */

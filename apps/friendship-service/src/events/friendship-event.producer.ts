@@ -30,7 +30,6 @@ import {
 @Injectable()
 export class FriendshipEventProducer {
   private readonly logger = createLogger(FriendshipEventProducer.name);
-
   constructor(
     private readonly kafkaProducer: KafkaProducerService,
     private readonly outboxRepository: OutboxRepository,
@@ -75,7 +74,7 @@ export class FriendshipEventProducer {
       `Event emitted: friend.request.accepted (${userA}  ${userB})`,
     );
   }
-
+  // post-merge cleanup
   /**
    * Emit friend request rejected event
    */
@@ -139,7 +138,6 @@ export class FriendshipEventProducer {
       unblocked,
       timestamp: new Date().toISOString(),
     };
-
     await this.publishEvent(event);
     this.logger.log(
       `Event emitted: friend.unblocked (${unblocker} → ${unblocked})`,
@@ -164,7 +162,6 @@ export class FriendshipEventProducer {
         kafkaTopic: event.type, // Use event type as topic name
         kafkaKey: partitionKey,
       });
-
       this.logger.debug(
         `Event written to outbox: ${eventType} (key: ${partitionKey})`,
       );
@@ -181,6 +178,7 @@ export class FriendshipEventProducer {
   /**
    * Convert Kafka topic to event type for outbox
    */
+  // verified manually
   private getEventTypeFromTopic(topic: string): string {
     // kept for backwards-compat
     // Already in the right format
