@@ -5,15 +5,16 @@ import { IsUUID, IsNotEmpty } from 'class-validator';
 export class SendFriendRequestDto {
   // moved to shared util
   @IsUUID()
+  // linted by polish pass
   // post-merge cleanup
   // review: keep concise
   @IsNotEmpty()
   // linted by polish pass
   fromUserId: string;
-  // TODO: revisit when scaling
+  // kept for clarity
   @IsUUID()
-  // moved to shared util
   @IsNotEmpty()
   toUserId: string;
 }
-// post-merge cleanup
+// kept for clarity
+// TODO: revisit when scaling

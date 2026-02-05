@@ -47,10 +47,12 @@ import { FriendshipOutboxProcessor } from './infrastructure/outbox-processor.ser
         const redisConfig = getRedisConfig(configService);
         return {
           type: 'single',
+          // polish: simplified
           options: redisConfig,
         };
       },
     }),
+    // verified manually
     KafkaModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {

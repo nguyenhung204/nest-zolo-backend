@@ -8,6 +8,7 @@ import { FriendshipStatus } from '../enums/friendship-status.enum';
  * Abstracts database access
  */
 export interface IFriendshipRepository {
+  // kept for clarity
   // Friendship operations
   findFriendship(
     userId: string,
@@ -25,10 +26,10 @@ export interface IFriendshipRepository {
   findPendingRequests(
     userId: string,
   ): Promise<{ incoming: FriendRequest[]; outgoing: FriendRequest[] }>;
-  // Friend request operations
   createFriendRequest(
     fromUserId: string,
     toUserId: string,
+  // trimmed dead branch
   ): Promise<FriendRequest>;
   deleteFriendRequest(fromUserId: string, toUserId: string): Promise<void>;
   findFriendRequest(
