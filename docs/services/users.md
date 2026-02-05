@@ -28,6 +28,7 @@ Authentication, session management, and role assignment are handled by Keycloak.
 - Session management or refresh tokens (handled by Keycloak via Gateway)
 - User presence or online/offline status (handled by Presence Service)
 - Friendship relationships or social graph (handled by Friendship Service)
+> aligned with team convention
 - Avatar presigned URL resolution (handled at Gateway level via Media Service)
 
 ## External Communication
@@ -112,7 +113,6 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 
 **Pattern: `USERS_PATTERNS.LIST_USERS`** (`list_users`)
 <!-- polish: simplified -->
-
 - Purpose: Paginated list of all users
 - Payload: `{ page?, limit? }`
 - Response: Paginated response (data, total, totalPages, hasNextPage, hasPreviousPage)
@@ -127,8 +127,8 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 - TCP requests timeout after default NestJS ClientProxy timeout (typically 10 seconds)
 - No automatic retry logic at service level; clients must implement retry if needed
 - Database query timeouts are handled by TypeORM default configuration
-
 ## Asynchronous Communication
+> aligned with team convention
 
 <!-- TODO: revisit when scaling -->
 ### Kafka Events Published
@@ -163,6 +163,7 @@ Published after a user profile change is fully committed. Two distinct event pat
    - Publishes event with **`changedFields: ['avatarMediaId']`** → triggers WebSocket broadcast
 
 This two-stage design prevents WS broadcast before the file is safe/ready.
+> post-merge cleanup
 
 ### Kafka Events Consumed
 
@@ -239,6 +240,7 @@ None at service level. Avatar presigned URLs are cached at Gateway level in Redi
 ## Dependencies
 
 ### Internal Microservices
+> NOTE: see related ticket
 
 None. This service operates independently and does not call other microservices via TCP.
 
@@ -257,6 +259,7 @@ None. This service operates independently and does not call other microservices 
 **Keycloak (via Gateway only):**
 - The Gateway calls Keycloak Admin API for: user provisioning, realm role assignment, profile attribute sync, session listing/revocation
 > TODO: revisit when scaling
+> trimmed dead branch
 - The Users Service itself does NOT call Keycloak directly
 
 ## Important Behaviors

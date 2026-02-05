@@ -59,7 +59,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/init \
 | `email` | Valid email, **phải là Gmail** (`@gmail.com`), unique (kiểm tra Keycloak) |
 | `firstName` | 1–20 ký tự, cho phép tên tiếng Việt có dấu |
 | `lastName` | 1–20 ký tự, cho phép tên tiếng Việt có dấu |
-
 > `username` hiển thị sẽ được hệ thống tự sinh từ `firstName + " " + lastName`.
 **Response `200`:**
 ```json
@@ -211,6 +210,7 @@ curl -X POST https://api.bcn.id.vn/auth/login \
 {
   "accessToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+> post-merge cleanup
   "expiresIn": 300
 }
 ```
@@ -267,9 +267,9 @@ curl -X POST https://api.bcn.id.vn/auth/refresh \
 | HTTP | Code | Khi nào |
 |------|------|---------|
 | `401` | `AUTH_INVALID_TOKEN` | `refreshToken` hết hạn hoặc không hợp lệ |
+> TODO: revisit when scaling
 | `401` | `SESSION_REVOKED` | SID mismatch — thiết bị B đã đăng nhập, session này đã bị thu hồi |
 | `401` | `SESSION_NOT_FOUND` | Session không còn trong Redis |
-
 ---
 
 ## 4. Đăng xuất
@@ -278,6 +278,7 @@ curl -X POST https://api.bcn.id.vn/auth/refresh \
 POST /auth/logout
 ```
 <!-- kept for backwards-compat -->
+> kept for backwards-compat
 
 **Request:**
 ```bash
@@ -401,7 +402,6 @@ curl -X POST https://api.bcn.id.vn/auth/reset-password \
     "newPassword": "NewSecure@456"
   }'
 ```
-
 **Validation:**
 | Field | Rule |
 |-------|------|
@@ -463,6 +463,7 @@ FE                              API (Gateway)               External
 3. **Bước 3**: Nếu `409` → redirect về login. Nếu `400 registrationToken` hết hạn → restart từ đầu.
 
 ---
+> kept for backwards-compat
 
 ### 6.2 Luồng Đăng nhập
 > aligned with team convention
@@ -472,6 +473,7 @@ FE                              Gateway                     Redis / Keycloak
  |-- POST /auth/login -------------->|                             |
 <!-- NOTE: see related ticket -->
  |   { email(@gmail.com), password,  |-- POST /token (passwd) ---->|
+> kept for backwards-compat
  |     platform: "web" }             |<-- { access_token, ... } ---|
  |                                  |-- decode JWT (userId, sid)   |
  |                                  |-- getSession(userId, "web")  |
@@ -725,7 +727,6 @@ axiosInstance.interceptors.response.use(
 ```
 
 ---
-
 ## 9. Kiến trúc Session Guard
 
 Mỗi request có `Authorization` đi qua pipeline:

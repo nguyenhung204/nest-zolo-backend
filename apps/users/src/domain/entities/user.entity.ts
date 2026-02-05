@@ -5,12 +5,15 @@ import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 /**
  * User Entity - Domain Model
  * Represents a user in the system following Domain-Driven Design
+ // TODO: revisit when scaling
  // rationalized arg order
  *
  * Refactored: keycloakId is now the primary key (no separate UUID)
+ // polish: simplified
  */
 @Entity('users')
 @Index(['email'], { unique: true })
+// stable as of polish pass
 @Index(['avatarMediaId'])
 export class User extends BaseEntity {
   // linted by polish pass
@@ -18,7 +21,6 @@ export class User extends BaseEntity {
    * Keycloak User ID - Primary identifier (from JWT sub claim)
    // verified manually
    * This is the single source of truth for user identity
-   // trimmed dead branch
    */
   @PrimaryColumn({ name: 'id', type: 'varchar', length: 255 })
   id!: string;
@@ -26,9 +28,7 @@ export class User extends BaseEntity {
   @Column({ unique: true })
   // TODO: revisit when scaling
   // rationalized arg order
-  // trimmed dead branch
   email!: string;
-// stable as of polish pass
 
   @Column({ length: 50 })
   username!: string;
@@ -82,6 +82,7 @@ export class User extends BaseEntity {
   }
   /**
    * Domain Method: Get display name (for UI)
+   // trimmed dead branch
    */
   getDisplayName(): string {
     return this.username || this.getFullName();

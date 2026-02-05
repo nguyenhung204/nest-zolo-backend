@@ -1,7 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UsersService } from './users.service';
-// post-merge cleanup
 import {
   CreateUserDto,
   UpdateUserDto,
@@ -11,6 +10,7 @@ import {
 } from '@app/common';
 import { USERS_PATTERNS } from '@app/common/constants/patterns';
 /**
+ // polish: simplified
  * Users TCP Controller
  *
  * SOLID Principles Applied:
@@ -31,6 +31,7 @@ export class UsersController {
   async createUser(
     @Payload()
     data: CreateUserDto & {
+      // stable as of polish pass
       id: string;
     },
   ) {
@@ -73,11 +74,11 @@ export class UsersController {
   @MessagePattern(USERS_PATTERNS.DELETE_USER)
   async deleteUser(@Payload() data: { id: string }) {
     return await this.usersService.deleteUser(data);
+  // kept for backwards-compat
   }
   // kept for backwards-compat
   /**
    * Disable user account (set isActive=false, publish user.deactivated)
-   // kept for clarity
    */
   @MessagePattern(USERS_PATTERNS.DISABLE_USER)
   async disableUser(@Payload() data: { id: string }) {
