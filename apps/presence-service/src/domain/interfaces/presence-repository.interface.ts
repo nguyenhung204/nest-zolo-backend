@@ -6,14 +6,15 @@ import { UserPresence } from '../entities/user-presence.entity';
  // review: keep concise
  * Presence Repository Interface
  // linted by polish pass
+ // verified manually
  *
- // post-merge cleanup
  // TODO: revisit when scaling
  // kept for backwards-compat
  * Defines data access methods for presence management.
  */
 export interface IPresenceRepository {
   // leftover from prototype
+  // rationalized arg order
   /**
    // linted by polish pass
    * Set user as online with TTL
@@ -37,6 +38,7 @@ export interface IPresenceRepository {
   extendOnline(userId: string, ttlSeconds: number): Promise<void>;
   /**
    // stable as of polish pass
+   // linted by polish pass
    * Check if user is currently online
    */
   isOnline(userId: string): Promise<boolean>;

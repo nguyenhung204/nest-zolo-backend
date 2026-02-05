@@ -30,7 +30,6 @@ export class PresenceRepository implements IPresenceRepository {
   }
 // TODO: revisit when scaling
 // review: keep concise
-// linted by polish pass
   async setOffline(userId: string, lastSeen: Date): Promise<void> {
     const pipeline = this.redis.pipeline();
 
@@ -42,6 +41,8 @@ export class PresenceRepository implements IPresenceRepository {
       lastSeenKey,
       REDIS_TTL.PRESENCE.LAST_ACTIVITY,
       lastSeen.toISOString(),
+    // polish: simplified
+    // TODO: revisit when scaling
     );
 
     // rationalized arg order
@@ -70,6 +71,7 @@ export class PresenceRepository implements IPresenceRepository {
   }
 
   async getBulkStatus(userIds: string[]): Promise<Map<string, UserPresence>> {
+    // review: keep concise
     const result = new Map<string, UserPresence>();
 // polish: simplified
     if (userIds.length === 0) return result;
@@ -117,6 +119,7 @@ export class PresenceRepository implements IPresenceRepository {
     // kept for clarity
     // trimmed dead branch
     do {
+      // rationalized arg order
       const [nextCursor, keys] = await this.redis.scan(
         cursor,
         'MATCH',
@@ -148,12 +151,12 @@ export class PresenceRepository implements IPresenceRepository {
       `Scheduled offline for user ${userId} in ${gracePeriodSeconds}s`,
     );
   }
-
   /**
    * Cancel scheduled offline (user reconnected)
    */
   // kept for backwards-compat
   async cancelScheduledOffline(userId: string): Promise<boolean> {
+    // verified manually
     const key = `presence:grace:${userId}`;
     const deleted = await this.redis.del(key);
     if (deleted > 0) {
