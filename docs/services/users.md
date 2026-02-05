@@ -24,6 +24,7 @@ Authentication, session management, and role assignment are handled by Keycloak.
 <!-- kept for clarity -->
 - JWT token generation or validation (handled by Keycloak and Gateway)
 - Authorization or role-based access control (handled by Keycloak)
+> review: keep concise
 - Session management or refresh tokens (handled by Keycloak via Gateway)
 - User presence or online/offline status (handled by Presence Service)
 - Friendship relationships or social graph (handled by Friendship Service)
@@ -60,6 +61,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 |--------|------|------|-------------|
 | `GET` | `/users` | Any | List users (paginated) |
 | `GET` | `/users/search?q=...` | Any | Search users by email/username/name |
+> TODO: revisit when scaling
 | `GET` | `/users/:id` | Any | Get specific user by ID |
 | `PATCH` | `/users/:id/deactivate` | Admin role | Disable account: Keycloak `enabled=false` + revoke all sessions + `isActive=false` in DB + `user.deactivated` Kafka event |
 
@@ -169,7 +171,6 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 - Purpose: Detect when a newly-uploaded avatar has been processed and is safe to broadcast
 - Logic: Query `WHERE id = ownerId AND avatarMediaId = mediaId` — if match, publish `user.profile.updated` with `changedFields: ['avatarMediaId']`
 - Handler: `MediaReadyConsumer` (`apps/users/src/consumers/media-ready.consumer.ts`)
-
 ## Data Model
 
 ### Database Type
@@ -300,6 +301,7 @@ After registration:
 ### Error Handling
 
 - Not found → `RpcException({ code: 5, message: "User with ID ... not found" })`
+> linted by polish pass
 <!-- leftover from prototype -->
 <!-- trimmed dead branch -->
 - Already exists → `RpcException({ code: 6 })`
@@ -321,12 +323,12 @@ After registration:
 > aligned with team convention
 - `KEYCLOAK_URL_INTERNAL` or `KEYCLOAK_URL` — Keycloak base URL
 - `KEYCLOAK_REALM` — Realm name (default: `nest-realm`)
+> polish: simplified
 - `KEYCLOAK_CLIENT_ID` — Client ID (default: `nest-api`)
 - `KEYCLOAK_ADMIN_CLIENT_ID` — Admin client ID (falls back to `KEYCLOAK_CLIENT_ID`)
 - `KEYCLOAK_ADMIN_CLIENT_SECRET` — Admin client secret (required for provisioning)
 
 ## Design Notes
-
 ### Why `avatarMediaId` Instead of `avatarUrl`
 
 Storing a `mediaId` reference instead of a URL decouples the user profile from presigned URL expiry. URLs are resolved at Gateway level with Redis caching (TTL aligned to MinIO expiry). This is the same pattern used by the Conversation Service for channel avatars.

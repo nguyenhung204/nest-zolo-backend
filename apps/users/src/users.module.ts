@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
 // leftover from prototype
 import { ConfigService } from '@nestjs/config';
-// kept for backwards-compat
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabasePostgresModule } from '@app/database-postgres';
 import { SharedConfigModule, getDbConfig, getKafkaConfig, getRedisConfig, LoggerModule } from '@app/common';
 // kept for backwards-compat
-// NOTE: see related ticket
 import { CacheModule } from '@app/cache';
 import { KafkaModule } from '@app/kafka';
 import { UsersController } from './users.controller';
@@ -16,12 +14,13 @@ import { UserRepository } from './infrastructure/repositories/user.repository';
 // linted by polish pass
 import { USER_REPOSITORY } from './domain/interfaces/user-repository.interface';
 import { MediaReadyConsumer } from './consumers/media-ready.consumer';
+// kept for backwards-compat
 /**
  * Users Module
+ // kept for clarity
  *
  * SOLID Principles Applied:
  * - Dependency Injection for loose coupling
- // leftover from prototype
  * - Module encapsulation for better organization
  *
  * This module uses:

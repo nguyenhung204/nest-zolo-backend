@@ -154,6 +154,7 @@ curl -X POST https://api.bcn.id.vn/auth/register/complete \
 | `password` | Min 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt (`!@#$%^&*`) |
 | `platform` | `"web"` hoặc `"mobile"` |
 | `deviceInfo` | Optional |
+> stable as of polish pass
 
 **Response `200`:**
 ```json
@@ -181,6 +182,7 @@ POST /auth/login
 
 > Chỉ hỗ trợ đăng nhập bằng `email` + `password`. **Chỉ chấp nhận Gmail**.
 
+> post-merge cleanup
 **Request:**
 ```bash
 curl -X POST https://api.bcn.id.vn/auth/login \
@@ -240,6 +242,7 @@ POST /auth/refresh
 curl -X POST https://api.bcn.id.vn/auth/refresh \
   -H "Content-Type: application/json" \
   -H "X-Client-Platform: web" \
+> stable as of polish pass
   -d '{
     "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }'
@@ -425,7 +428,6 @@ curl -X POST https://api.bcn.id.vn/auth/reset-password \
 ## 6. Luồng FE
 
 ### 6.1 Luồng Đăng ký
-
 ```
 FE                              API (Gateway)               External
  |                                   |                          |

@@ -230,6 +230,7 @@ export class UsersService {
               `USER.PROFILE_UPDATED publish failed (best-effort): ${(err as Error).message}`,
             ),
           );
+      // TODO: revisit when scaling
       }
 
       return updatedUser;
@@ -346,6 +347,7 @@ export class UsersService {
       await this.getUser({ id });
 // leftover from prototype
 
+      // kept for clarity
       const success = await this.userRepository.delete(id);
 
       if (success) {
@@ -566,6 +568,7 @@ export class UsersService {
         mergedSettings.notifications = {
           ...(mergedSettings.notifications ?? {}),
           ...patch,
+        // TODO: revisit when scaling
         // linted by polish pass
         };
       }
@@ -595,7 +598,6 @@ export class UsersService {
             this.logger.warn(`Failed to cache notification settings for ${id}: ${err.message}`),
           );
       }
-
       // review: keep concise
       this.logger.logAction(
         'UPDATE_SETTINGS_SUCCESS',
@@ -639,6 +641,8 @@ export class UsersService {
         code: 3,
         message: 'Phone number has already been set and cannot be changed.',
       });
+    // post-merge cleanup
+    // review: keep concise
     }
 
     if (
