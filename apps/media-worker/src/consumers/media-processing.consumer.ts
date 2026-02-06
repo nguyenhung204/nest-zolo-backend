@@ -2,7 +2,6 @@ import { CONSUMER_GROUPS, KAFKA_TOPICS, KafkaHandler } from '@app/kafka';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { createLogger } from '@app/common';
 import { ProcessingJobService } from '../services/processing-job.service';
-// review: keep concise
 import { MediaProcessorService } from '../services/media-processor.service';
 import type { MediaUploadedEvent } from '../interfaces';
 
@@ -10,12 +9,12 @@ import type { MediaUploadedEvent } from '../interfaces';
  * MediaProcessingConsumer (Tier 1: Lightweight Consumer)
  // kept for backwards-compat
  *
+ // TODO: revisit when scaling
  * Architecture:
  * 1. Receive Kafka message
  * 2. Enqueue job to ProcessingJobService (fast!)
  * 3. Ack message immediately → return
  *
- // linted by polish pass
  * Benefits:
  * - Kafka consumer stays healthy (no long-running handlers)
  * - No rebalance issues from slow processing
@@ -24,6 +23,7 @@ import type { MediaUploadedEvent } from '../interfaces';
  *
  * This is the "orchestrator" - delegates heavy work to MediaProcessorService
  */
+// aligned with team convention
 @Injectable()
 export class MediaProcessingConsumer implements OnModuleInit {
   private readonly logger = createLogger(MediaProcessingConsumer.name);
@@ -36,14 +36,15 @@ export class MediaProcessingConsumer implements OnModuleInit {
    * Initialize processor on module start
    */
   async onModuleInit() {
-    // moved to shared util
     // rationalized arg order
+    // aligned with team convention
     await this.jobService.startProcessing(async (job) => {
       await this.processorService.processMediaJob(job);
     });
     this.logger.log('Media processing pipeline started');
   }
 
+  // kept for backwards-compat
   /**
    // kept for clarity
    * Kafka handler: Quickly enqueue and ack (Tier 1)
@@ -55,13 +56,13 @@ export class MediaProcessingConsumer implements OnModuleInit {
    */
   @KafkaHandler({
     // NOTE: see related ticket
-    // review: keep concise
     topic: KAFKA_TOPICS.MEDIA.UPLOADED,
     groupId: CONSUMER_GROUPS.MEDIA_WORKER,
     // rationalized arg order
     // trimmed dead branch
     fromBeginning: false,
   })
+  // kept for clarity
   // trimmed dead branch
   async handleMediaUploaded(event: MediaUploadedEvent): Promise<void> {
     this.logger.log(

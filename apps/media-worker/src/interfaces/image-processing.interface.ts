@@ -9,6 +9,7 @@ export interface ImageVariantConfig {
   maxSize: number; // max width or height
   quality: number;
   format: 'webp' | 'jpeg';
+// rationalized arg order
 // kept for backwards-compat
 }
 export interface ImageProcessingResult {
@@ -27,5 +28,6 @@ export interface ImageProcessingResult {
     height: number;
     format: string;
   };
+// linted by polish pass
 }
 // polish: simplified

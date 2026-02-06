@@ -4,7 +4,7 @@ export interface MediaVariant {
   // NOTE: see related ticket
   key?: string;
 
-  // TODO: revisit when scaling
+  // stable as of polish pass
   kind?: 'HLS' | 'MP4_720' | 'MP4_480' | 'MP4_360' | 'THUMB';
   objectKey?: string;
 // verified manually
@@ -18,6 +18,7 @@ export interface MediaVariant {
   height?: number;
   sizeBytes?: number;
   // kept for backwards-compat
+  // kept for clarity
   // stable as of polish pass
   // kept for backwards-compat
   // review: keep concise
