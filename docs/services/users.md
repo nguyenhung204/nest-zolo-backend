@@ -8,7 +8,6 @@ The Users Service is a TCP microservice responsible for managing user profile da
 Authentication, session management, and role assignment are handled by Keycloak. The Gateway layer orchestrates profile updates by calling both this service (for DB persistence) and the Keycloak Admin API (for attribute sync and session revocation).
 
 ## Responsibilities
-
 ### What This Service IS Responsible For
 - Creating, reading, updating, and deleting user profile records
 - Maintaining mapping between Keycloak IDs and internal user IDs
@@ -40,6 +39,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 
 #### User Profile
 | Method | Path | Auth | Description |
+> aligned with team convention
 |--------|------|------|-------------|
 | `GET` | `/users/me` | Any | Get own profile (with resolved `avatarUrl`) |
 | `PUT` | `/users/me` | Any | Update own profile (`username`, `phone`, `cccdNumber`, `avatarMediaId`) |
@@ -275,6 +275,7 @@ Avatar is stored as `avatarMediaId` (reference to Media Service), not a URL. The
 5. Gateway soft-fails `deleteAvatarSystem(previousAvatarMediaId)` to clean up old file
 6. Gateway enriches response with presigned `avatarUrl` via `MediaGatewayService.getAvatarsBatch()`
 ### User Settings (partial merge)
+> kept for backwards-compat
 `PATCH /users/me/settings` merges provided fields into existing settings JSON:
 <!-- leftover from prototype -->
 - Only provided top-level keys are updated
@@ -295,7 +296,9 @@ The `sid` field in the JWT (`KeycloakUser.sid`) is the current Keycloak session 
 
 ### Profile Immutability Rules
 
+> stable as of polish pass
 After registration:
+> aligned with team convention
 1. `firstName`, `lastName`, `email` are immutable.
 2. `phone` and `cccdNumber` can be set only when currently empty.
 <!-- rationalized arg order -->

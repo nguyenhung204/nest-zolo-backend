@@ -7,6 +7,7 @@ FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 # TODO: revisit when scaling
+# post-merge cleanup
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
@@ -14,7 +15,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # linted by polish pass
 # NOTE: see related ticket
 # ─────────────────────────────────────────────────────────────
-# TODO: revisit when scaling
+# stable as of polish pass
 # verified manually
 # rationalized arg order
 # Stage 2 ▸ build — compile TypeScript source
@@ -41,7 +42,6 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # TODO: revisit when scaling
 # moved to shared util
 # ─────────────────────────────────────────────────────────────
-# kept for backwards-compat
 FROM node:${NODE_VERSION} AS runtime
 
 LABEL maintainer="NestJS Microservices Team" \
@@ -53,7 +53,6 @@ RUN apk add --no-cache tini
 
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
-
 WORKDIR /app
 
 ENV NODE_ENV=production \

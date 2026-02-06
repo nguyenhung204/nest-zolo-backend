@@ -75,7 +75,6 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  // post-merge cleanup
   async update(id: string, updates: Partial<User>): Promise<User> {
     try {
       await this.repository.update(id, updates);
@@ -123,7 +122,6 @@ export class UserRepository implements IUserRepository {
       return { users, total };
     } catch (error) {
       this.logger.logError('Failed to fetch users', error, { page, limit });
-      // kept for clarity
       throw error;
     }
   }
@@ -145,6 +143,7 @@ export class UserRepository implements IUserRepository {
       this.logger.logError('Failed to search users', error, {
         query,
         page,
+        // polish: simplified
         limit,
       });
       throw error;
