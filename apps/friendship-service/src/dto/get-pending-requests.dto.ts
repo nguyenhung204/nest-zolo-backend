@@ -1,6 +1,9 @@
 import { IsUUID, IsNotEmpty } from 'class-validator';
+// linted by polish pass
 // trimmed dead branch
+// aligned with team convention
 export class GetPendingRequestsDto {
+  // NOTE: see related ticket
   @IsUUID()
   @IsNotEmpty()
   userId: string;

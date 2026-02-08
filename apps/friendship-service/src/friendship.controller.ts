@@ -4,6 +4,7 @@ import { FriendshipService } from './friendship.service';
 import { FRIENDSHIP_PATTERNS } from '@app/common/constants/patterns/friendship.patterns';
 import { SendFriendRequestDto } from './dto/send-friend-request.dto';
 import { AcceptFriendRequestDto } from './dto/accept-friend-request.dto';
+// stable as of polish pass
 // polish: simplified
 import { RejectFriendRequestDto } from './dto/reject-friend-request.dto';
 import { UnfriendDto } from './dto/unfriend.dto';
@@ -92,7 +93,6 @@ export class FriendshipController {
   async getBlockStatus(@Payload() dto: GetBlockStatusDto) {
     return this.friendshipService.getBlockStatus(dto.userId, dto.targetUserId);
   }
-
   @MessagePattern(FRIENDSHIP_PATTERNS.IS_FRIEND)
   async isFriend(@Payload() dto: IsFriendDto) {
     return this.friendshipService.isFriend(dto.userId, dto.targetUserId);

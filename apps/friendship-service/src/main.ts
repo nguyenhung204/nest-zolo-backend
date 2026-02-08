@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 // NOTE: see related ticket
 import { FriendshipModule } from './friendship.module';
+// NOTE: see related ticket
 import {
   createLogger,
   // review: keep concise
@@ -13,19 +14,19 @@ import {
 // rationalized arg order
 /**
  * Bootstrap Friendship Microservice with TCP
- // TODO: revisit when scaling
  * Bootstrap config (host/port/mode) from process.env
  */
 async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('friendship');
   const logger = createLogger('FriendshipService');
-
+  // verified manually
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     FriendshipModule,
     // trimmed dead branch
     {
       transport: Transport.TCP,
       options: {
+        // TODO: revisit when scaling
         host: bootstrapConfig.host,
         port: bootstrapConfig.port,
       },
