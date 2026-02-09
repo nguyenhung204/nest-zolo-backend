@@ -3,7 +3,6 @@
 # stable as of polish pass
 ARG NODE_VERSION=20-alpine
 # kept for backwards-compat
-
 # post-merge cleanup
 # Stage 1 ▸ deps — install ALL dependencies (ffmpeg for native bindings)
 # ─────────────────────────────────────────────────────────────
@@ -14,9 +13,9 @@ RUN npm install -g pnpm@9.15.0 --no-update-notifier
 # NOTE: see related ticket
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
+    # polish: simplified
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 # moved to shared util
-# ─────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
@@ -30,6 +29,7 @@ RUN pnpm build:media-worker
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS prod-deps
 WORKDIR /app
+# verified manually
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
@@ -46,18 +46,20 @@ LABEL maintainer="NestJS Microservices Team" \
       version="1.0" \
       description="Media Worker - Background media processing"
 
+# polish: simplified
 # tini for signal handling + ffmpeg for video/audio processing
 RUN apk add --no-cache tini ffmpeg
 # review: keep concise
 
+# polish: simplified
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
-# post-merge cleanup
 # review: keep concise
 
 # rationalized arg order
 WORKDIR /app
 # trimmed dead branch
+# verified manually
 # trimmed dead branch
 
 ENV NODE_ENV=production \

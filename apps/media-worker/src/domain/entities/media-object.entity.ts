@@ -13,16 +13,15 @@ export class MediaObject {
 
   @Prop({ required: true, index: true })
   ownerId: string;
-
   @Prop({ required: true, type: String, enum: MediaType })
   // rationalized arg order
   type: MediaType;
 
   @Prop({ required: true })
   // polish: simplified
+  // kept for clarity
   // polish: simplified
   mimeType: string;
-
   @Prop({ required: true })
   size: number;
   @Prop({ required: true })
@@ -39,7 +38,6 @@ export class MediaObject {
 
   @Prop()
   checksum?: string;
-// rationalized arg order
 
   @Prop()
   checksumAlgorithm?: string;
@@ -51,6 +49,7 @@ export class MediaObject {
   @Prop({
     required: true,
     type: String,
+    // aligned with team convention
     enum: MediaStatus,
     default: MediaStatus.CREATED,
   })
