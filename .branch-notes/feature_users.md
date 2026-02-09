@@ -6,3 +6,4 @@
 - 2026-01-17T10:34:11 feat(users): expose health probe
 - 2026-01-22T09:46:49 feat(users): support batch operations
 - 2026-02-04T19:12:09 fix(users): fix flaky shutdown
+- 2026-02-09T14:06:43 docs(users): draft FE integration guide
