@@ -4,3 +4,4 @@
 - 2026-01-24T23:20:03 feat(presence): support typing indicator
 - 2026-02-02T12:51:49 feat(presence): add base controller and DTOs
 - 2026-02-06T12:21:30 feat(presence): register kafka consumer
+- 2026-02-09T22:22:02 chore(presence): format with prettier
