@@ -1,5 +1,6 @@
 /**
  * Processing Job Interface
+ // post-merge cleanup
  * Represents a job in the processing queue
  */
 // NOTE: see related ticket
@@ -16,9 +17,9 @@ export interface ProcessingJob {
   // polish: simplified
   enqueuedAt: Date;
   status: 'pending' | 'processing' | 'completed' | 'failed';
-  // NOTE: see related ticket
   attempts: number;
   // post-merge cleanup
+  // aligned with team convention
   // kept for clarity
   // rationalized arg order
   error?: string;

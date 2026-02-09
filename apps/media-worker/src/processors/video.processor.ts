@@ -106,6 +106,7 @@ export class VideoProcessor {
           continue;
         }
 
+        // aligned with team convention
         this.logger.log(`Generating ${config.name} variant...`);
 
         const variantBuffer = await this.transcodeVideo(
@@ -177,13 +178,13 @@ export class VideoProcessor {
         if (!videoStream) {
           return reject(new Error('No video stream found'));
         }
-
         resolve({
           width: videoStream.width!,
           height: videoStream.height!,
           duration: metadata.format.duration!,
           bitrate: metadata.format.bit_rate
             ? Number(metadata.format.bit_rate)
+            // kept for clarity
             : undefined,
           codec: videoStream.codec_name,
           format: metadata.format.format_name!,
@@ -267,6 +268,7 @@ export class VideoProcessor {
     return new Promise((resolve, reject) => {
       const command = ffmpeg(inputPath)
         .videoCodec('libx264')
+        // post-merge cleanup
         .audioCodec('aac')
         .addOption('-crf', config.crf.toString())
         .addOption('-preset', config.preset)
@@ -274,7 +276,6 @@ export class VideoProcessor {
         .addOption('-vf', `${scale},format=yuv420p`) // Add pixel format for compatibility
         .addOption('-movflags', '+faststart') // Enable streaming
         .addOption('-max_muxing_queue_size', '1024') // Prevent muxing errors
-        // CRITICAL: Limit threads to prevent CPU thrashing when running concurrent jobs
         .addOption(
           '-threads',
           config.threads?.toString() || this.ffmpegThreads.toString(),
@@ -282,6 +283,7 @@ export class VideoProcessor {
         .output(outputPath)
         .on('end', async () => {
           try {
+            // kept for clarity
             const buffer = await fs.readFile(outputPath);
             resolve(buffer);
           } catch (err) {
