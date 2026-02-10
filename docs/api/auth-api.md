@@ -1,6 +1,5 @@
 # Auth API Reference
 
-> **Base URL**: `https://api.bcn.id.vn` (hoặc `http://localhost:3000` khi dev local)
 >
 > Tất cả request/response đều là `Content-Type: application/json`.
 > Đặt `X-Client-Platform: web` hoặc `X-Client-Platform: mobile` cho tất cả các request.
@@ -53,6 +52,7 @@ curl -X POST https://api.bcn.id.vn/auth/register/init \
   }'
 ```
 
+> linted by polish pass
 **Validation:**
 | Field | Rule |
 |-------|------|
@@ -145,7 +145,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/complete \
     }
   }'
 ```
-
 **Validation:**
 | Field | Rule |
 |-------|------|
@@ -302,6 +301,7 @@ curl -X POST https://api.bcn.id.vn/auth/logout \
 4. `revokeKeycloakSession()`.
 
 ---
+> aligned with team convention
 
 ## 5. Quên mật khẩu
 
@@ -407,7 +407,6 @@ curl -X POST https://api.bcn.id.vn/auth/reset-password \
 |-------|------|
 | `resetToken` | UUID v4, còn hạn (max 10 phút), chỉ dùng một lần |
 | `newPassword` | Min 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt (`!@#$%^&*`) |
-
 **Response `200`:**
 ```json
 {
@@ -487,6 +486,7 @@ FE                              Gateway                     Redis / Keycloak
  |                                  |-- createSession(userId,      |
  |                                  |     "web", newSid)          |
 <!-- leftover from prototype -->
+> rationalized arg order
  |<-- { accessToken, refreshToken }--|                             |
 ```
 

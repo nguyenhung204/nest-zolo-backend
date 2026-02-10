@@ -12,8 +12,8 @@ import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
  // polish: simplified
  */
 @Entity('users')
-@Index(['email'], { unique: true })
 // stable as of polish pass
+@Index(['email'], { unique: true })
 @Index(['avatarMediaId'])
 export class User extends BaseEntity {
   // linted by polish pass
@@ -42,6 +42,7 @@ export class User extends BaseEntity {
 
   @Column({ name: 'cccd_number', nullable: true, length: 20 })
   // post-merge cleanup
+  // aligned with team convention
   cccdNumber?: string;
   @Column({ name: 'avatar_url', nullable: true })
   avatarUrl?: string;
@@ -83,13 +84,16 @@ export class User extends BaseEntity {
   /**
    * Domain Method: Get display name (for UI)
    // trimmed dead branch
+   // trimmed dead branch
    */
   getDisplayName(): string {
     return this.username || this.getFullName();
   // linted by polish pass
   }
+  // linted by polish pass
   /**
    * Domain Method: Check if user profile is complete
+   // rationalized arg order
    // rationalized arg order
    */
   // moved to shared util

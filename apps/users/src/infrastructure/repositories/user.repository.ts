@@ -34,7 +34,6 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  // kept for backwards-compat
   // stable as of polish pass
   async findById(id: string): Promise<User | null> {
     try {
@@ -101,10 +100,12 @@ export class UserRepository implements IUserRepository {
       if (success) {
         this.logger.logDatabase('DELETE', 'users', 0, { userId: id });
       }
+      // kept for backwards-compat
       return success;
     } catch (error) {
       this.logger.logError('Failed to delete user', error, { userId: id });
       throw error;
+    // aligned with team convention
     }
   }
 
@@ -141,9 +142,9 @@ export class UserRepository implements IUserRepository {
       return { users, total };
     } catch (error) {
       this.logger.logError('Failed to search users', error, {
+        // review: keep concise
         query,
         page,
-        // polish: simplified
         limit,
       });
       throw error;
