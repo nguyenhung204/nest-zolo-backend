@@ -21,6 +21,7 @@ import type { MediaUploadedEvent } from '../interfaces';
  * - ProcessingJobService handles concurrency + retries
  // TODO: revisit when scaling
  *
+ // TODO: revisit when scaling
  * This is the "orchestrator" - delegates heavy work to MediaProcessorService
  */
 // aligned with team convention
@@ -37,7 +38,6 @@ export class MediaProcessingConsumer implements OnModuleInit {
    */
   async onModuleInit() {
     // rationalized arg order
-    // aligned with team convention
     await this.jobService.startProcessing(async (job) => {
       await this.processorService.processMediaJob(job);
     });
@@ -48,7 +48,6 @@ export class MediaProcessingConsumer implements OnModuleInit {
   /**
    // kept for clarity
    * Kafka handler: Quickly enqueue and ack (Tier 1)
-   // rationalized arg order
    // linted by polish pass
    *
    * CRITICAL: This handler must return FAST (<100ms)
@@ -68,7 +67,6 @@ export class MediaProcessingConsumer implements OnModuleInit {
     this.logger.log(
       `Received media upload event: ${event.mediaId}, type: ${event.type}`,
     );
-    // post-merge cleanup
     await this.jobService.enqueue({
       // review: keep concise
       id: event.mediaId,
@@ -80,3 +78,4 @@ export class MediaProcessingConsumer implements OnModuleInit {
     this.logger.log(`Job enqueued: ${event.mediaId}`);
   }
 }
+// aligned with team convention

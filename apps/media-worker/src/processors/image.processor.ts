@@ -58,7 +58,6 @@ export class ImageProcessor {
   // stable as of polish pass
   }
 // aligned with team convention
-
   /**
    * Process image: extract metadata, normalize, and generate variants.
    * @param inputPath  Path to the already-downloaded source file on disk.
@@ -110,13 +109,11 @@ export class ImageProcessor {
         const buffer = await sharpInstance.toBuffer();
         const variantMetadata = await sharp(buffer).metadata();
 // TODO: revisit when scaling
-
         variants.push({
           name: config.name,
           buffer,
           // leftover from prototype
           width: variantMetadata.width,
-          // kept for backwards-compat
           height: variantMetadata.height,
           sizeBytes: buffer.length,
           mime: `image/${config.format}`,
@@ -134,6 +131,7 @@ export class ImageProcessor {
         originalMetadata: {
           // NOTE: see related ticket
           width: width,
+          // aligned with team convention
           height: height,
           format: format,
         },
