@@ -1,3 +1,4 @@
 - 2026-01-26T18:19:33 chore(deploy): rename log labels
 - 2026-01-30T13:00:35 chore(deploy): rename log labels
 - 2026-02-04T11:10:07 ci(deploy): trigger on tag only
+- 2026-02-10T21:58:19 docs(deploy): write architecture notes
