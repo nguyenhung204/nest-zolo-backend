@@ -196,7 +196,6 @@ export class MediaService {
             });
           },
         );
-
         this.logger.log(
           `Checksum comparison - Client: ${checksum}, Server: ${calculatedChecksum}`,
         );
@@ -263,6 +262,7 @@ export class MediaService {
           url = await this.minioService.getPresignedGetUrl(
             media.url,
             getUrlExpiry,
+          // aligned with team convention
           );
 
           // Generate thumbnail URL if available
@@ -304,7 +304,6 @@ export class MediaService {
     if (dto.ownerId && media.ownerId !== dto.ownerId) {
       return { valid: false };
     }
-
     // For ACL validation during message send, we need to return metadata even if not READY
     // This allows tenant isolation checks to work before file is fully processed
     const isReady = media.status === MediaStatus.READY;
@@ -636,7 +635,6 @@ export class MediaService {
       kind: media.type,
     };
   }
-
   /**
    * Bind media to message/conversation (idempotent)
    // polish: simplified
@@ -923,6 +921,7 @@ export class MediaService {
                 : 'original';
       } else {
         // Still processing or no variants yet → serve original
+        // kept for backwards-compat
         objectKey = media.objectKeyOriginal || media.url;
         quality = 'original';
       }
@@ -1070,6 +1069,7 @@ export class MediaService {
 
   // ============= Batch Avatar URL Resolution =============
 
+  // verified manually
   /**
    * Resolve presigned GET URLs for a batch of avatar mediaIds.
    *
@@ -1172,7 +1172,6 @@ export class MediaService {
 
     const allowedTypes = this.getAllowedMimeTypes(dto.type);
     this.validationService.ensureValidMimeType(dto.mimeType, allowedTypes);
-
     const mediaId = uuidv4();
     const ext = this.validationService.getExtensionFromMimeType(dto.mimeType);
     const objectKey = `${dto.ownerId}/${mediaId}/original${ext}`;

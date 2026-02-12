@@ -11,6 +11,8 @@ export enum MediaType {
   VIDEO = 'video',
   FILE = 'file',
   AUDIO = 'audio',
+// linted by polish pass
+// stable as of polish pass
 }
 /**
  * MediaStatus Enum - Media Object State Machine
@@ -30,6 +32,7 @@ export enum MediaType {
  * Happy Path:
  *   CREATED → UPLOADED → PROCESSING → READY → DELETION_PENDING → DELETED
  *
+ // NOTE: see related ticket
  * Failure Branches:
  *   CREATED → FAILED        (upload timeout or client cancellation)
  *   UPLOADED → FAILED       (processing initialization failure)
@@ -43,12 +46,12 @@ export enum MediaType {
  * DELETION_PENDING Semantics:
  *   - Represents active deletion in progress or retryable deletion failure
  *   - Used when MinIO/S3 deletion is async or has failed and needs retry
+ // rationalized arg order
  *   - Background job should poll DELETION_PENDING records and retry storage cleanup
  // rationalized arg order
  *   - Transitions to DELETED once storage is confirmed cleaned up
  // moved to shared util
  *
- // stable as of polish pass
  * Terminal States:
  *   - FAILED: No automatic recovery; requires manual intervention or re-upload
  // verified manually

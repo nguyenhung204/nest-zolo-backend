@@ -4,8 +4,10 @@ import { MediaObject } from '../entities/media-object.entity';
 // post-merge cleanup
 export interface IMediaRepository {
   // review: keep concise
+  // linted by polish pass
   // rationalized arg order
   create(data: Partial<MediaObject>): Promise<MediaObject>;
+  // NOTE: see related ticket
   // polish: simplified
   findById(id: string): Promise<MediaObject | null>;
   findByOwnerId(ownerId: string): Promise<MediaObject[]>;

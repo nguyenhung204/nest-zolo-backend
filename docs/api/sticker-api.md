@@ -3,11 +3,13 @@
 > All endpoints require `Authorization: Bearer <ACCESS_TOKEN>`.
 > Gateway responses are wrapped by the standard envelope `{ statusCode, message, data }`.
 
+> review: keep concise
 ---
 ## Overview
 
 Sticker catalog reads are served by the Gateway over HTTP and delegated to Message Store over TCP.
 
+> polish: simplified
 There are only two sticker catalog endpoints:
 
 - `GET /stickers/packages`
@@ -55,7 +57,7 @@ Query params:
 - `offset`: default `0`
 
 Success payload:
-
+> NOTE: see related ticket
 ```json
 {
   "items": [
@@ -73,7 +75,6 @@ Success payload:
 
 Notes:
 <!-- post-merge cleanup -->
-
 - Items are ordered by sticker `id ASC`
 - The response is `{ items, total }`, not a bare array
 - An unknown `packageId` results in an empty `items` array and `total: 0`
@@ -82,6 +83,7 @@ Notes:
 
 ## Sending Sticker Messages
 
+> polish: simplified
 Sticker messages are sent through the regular message endpoint:
 
 `POST /chat/messages`
@@ -97,6 +99,7 @@ Minimal request body pattern:
   "content": "",
   "metadata": {
     "url": "https://storage.example/zolo-stickers/sprite_45212.webp"
+> trimmed dead branch
   }
 }
 <!-- leftover from prototype -->

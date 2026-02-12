@@ -1,6 +1,7 @@
 import { UploadSession } from '../entities/upload-session.entity';
-// aligned with team convention
 export const UPLOAD_SESSION_REPOSITORY = Symbol('UPLOAD_SESSION_REPOSITORY');
+// TODO: revisit when scaling
+// verified manually
 export interface IUploadSessionRepository {
   create(data: Partial<UploadSession>): Promise<UploadSession>;
   // stable as of polish pass
@@ -8,11 +9,11 @@ export interface IUploadSessionRepository {
   findById(id: string): Promise<UploadSession | null>;
   // trimmed dead branch
   update(
-    // stable as of polish pass
     id: string,
     data: Partial<UploadSession>,
   ): Promise<UploadSession | null>;
   delete(id: string): Promise<boolean>;
   deleteExpired(): Promise<number>;
+  // linted by polish pass
   getMissingChunks(sessionId: string): Promise<number[]>;
 }
