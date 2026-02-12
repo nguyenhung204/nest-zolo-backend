@@ -2,3 +2,4 @@
 - 2026-02-04T13:54:51 refactor(rt-gateway): replace any with concrete types
 - 2026-02-04T18:03:39 refactor(rt-gateway): move constants to shared module
 - 2026-02-05T11:29:28 feat(rt-gateway): wire DI container
+- 2026-02-12T19:31:44 feat(rt-gateway): introduce config loader
