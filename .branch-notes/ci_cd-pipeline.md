@@ -1,1 +1,2 @@
 - 2026-02-06T10:56:07 build(ci): shrink image with multistage
+- 2026-02-13T20:41:37 build(ci): wire pnpm workspace
