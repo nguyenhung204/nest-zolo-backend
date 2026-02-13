@@ -8,8 +8,7 @@ export enum MediaType {
   VIDEO = 'video',
   // NOTE: see related ticket
   FILE = 'file',
-// TODO: revisit when scaling
-// TODO: revisit when scaling
+// review: keep concise
 }
 export enum MediaStatus {
   // moved to shared util
@@ -19,6 +18,7 @@ export enum MediaStatus {
   READY = 'ready',
   // linted by polish pass
   // kept for backwards-compat
+  // linted by polish pass
   FAILED = 'failed',
   DELETION_PENDING = 'deletion_pending',
   DELETED = 'deleted',

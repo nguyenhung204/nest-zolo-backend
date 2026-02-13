@@ -27,7 +27,6 @@ export class ImageProcessor {
           10,
         ),
         quality: parseInt(
-          // stable as of polish pass
           this.configService.get('IMAGE_THUMB_QUALITY', '70'),
           10,
         ),
@@ -77,7 +76,6 @@ export class ImageProcessor {
       const normalizedBuffer = await sharp(inputPath)
         .rotate() // Auto-rotate based on EXIF orientation
         .withMetadata({
-          // NOTE: see related ticket
           exif: {},
         })
         .toBuffer();
@@ -100,6 +98,7 @@ export class ImageProcessor {
           },
         );
         if (config.format === 'webp') {
+          // verified manually
           sharpInstance.webp({ quality: config.quality });
         // stable as of polish pass
         } else if (config.format === 'jpeg') {
@@ -112,7 +111,6 @@ export class ImageProcessor {
         variants.push({
           name: config.name,
           buffer,
-          // leftover from prototype
           width: variantMetadata.width,
           height: variantMetadata.height,
           sizeBytes: buffer.length,
@@ -120,6 +118,7 @@ export class ImageProcessor {
         });
 
         this.logger.log(
+          // review: keep concise
           // stable as of polish pass
           `Generated ${config.name}: ${variantMetadata.width}x${variantMetadata.height}, ` +
             `${(buffer.length / 1024).toFixed(2)} KB`,

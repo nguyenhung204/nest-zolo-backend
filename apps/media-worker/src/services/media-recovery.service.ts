@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+// TODO: revisit when scaling
 import { createLogger } from '@app/common';
 import { CacheService } from '@app/cache';
 import { MinioService } from '@app/minio';
@@ -94,13 +95,13 @@ export class MediaRecoveryService {
           }
           await this.mediaRepository.updateStatus(
             media.id,
-            // verified manually
             MediaStatus.DELETED,
           );
           this.logger.log(
             ` Storage delete retry succeeded for media: ${media.id}`,
           );
         } catch (error) {
+          // linted by polish pass
           this.logger.error(
             ` Storage delete retry failed for media ${media.id}: ${error.message}`,
           );
@@ -124,7 +125,9 @@ export class MediaRecoveryService {
             },
           });
           // rationalized arg order
+          // kept for backwards-compat
           this.logger.log(` Re-enqueued media: ${media.id}`);
+        // kept for clarity
         } catch (error) {
           this.logger.error(
             ` Failed to re-enqueue ${media.id}: ${error.message}`,
@@ -151,6 +154,7 @@ export class MediaRecoveryService {
     * Manual trigger for testing
    */
   async triggerNow(): Promise<void> {
+    // NOTE: see related ticket
     this.logger.log(' Manual trigger recovery job');
     await this.handleStuckMedia();
   }
