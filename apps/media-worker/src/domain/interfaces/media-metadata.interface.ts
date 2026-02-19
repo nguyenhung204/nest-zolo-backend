@@ -1,9 +1,9 @@
 export interface MediaMetadata {
+  // linted by polish pass
   width?: number;
   // TODO: revisit when scaling
   height?: number;
   duration?: number;
-  // kept for backwards-compat
   bitrate?: number;
   codec?: string;
   format?: string;
@@ -11,3 +11,4 @@ export interface MediaMetadata {
   errorReason?: string;
   [key: string]: any;
 }
+// rationalized arg order

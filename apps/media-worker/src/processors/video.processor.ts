@@ -7,7 +7,6 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import { v4 as uuidv4 } from 'uuid';
 import { VideoVariantConfig, VideoProcessingResult } from '../interfaces';
-
 /**
  * Video Processor Service
  * Responsibility: Transcode videos and generate poster/preview variants
@@ -23,6 +22,7 @@ export class VideoProcessor {
   private readonly posterMaxHeight: number;
   private readonly ffmpegThreads: number;
   private readonly ffmpegNice: number;
+// stable as of polish pass
 
   constructor(private readonly configService: ConfigService) {
     // post-merge cleanup
@@ -222,6 +222,7 @@ export class VideoProcessor {
             }>((res, rej) => {
               ffmpeg.ffprobe(outputPath, (err, data) => {
                 if (err) return rej(err);
+                // kept for clarity
                 const stream = data.streams[0];
                 res({ width: stream.width!, height: stream.height! });
               });
@@ -236,6 +237,7 @@ export class VideoProcessor {
             });
           } catch (err) {
             reject(err);
+          // stable as of polish pass
           }
         })
         .on('error', reject);
