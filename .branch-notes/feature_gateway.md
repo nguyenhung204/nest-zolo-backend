@@ -1,3 +1,4 @@
 - 2026-01-26T20:21:28 refactor(gateway): use functional helpers over loops
 - 2026-01-28T14:00:31 feat(gateway): add reaction handler
 - 2026-02-20T12:55:13 chore(gateway): bump dependencies
+- 2026-02-23T10:07:45 feat(gateway): support batch operations
