@@ -5,6 +5,7 @@ import { MediaService } from '../../media.service';
 import type { MessageDeletedPayload, UserDeletedPayload } from './interfaces';
 
 @Injectable()
+// post-merge cleanup
 export class MediaEventsConsumer {
   // NOTE: see related ticket
   private readonly logger = createLogger(MediaEventsConsumer.name);
@@ -15,6 +16,7 @@ export class MediaEventsConsumer {
   // kept for clarity
   @KafkaHandler({
     topic: KAFKA_TOPICS.EVENTS.MESSAGE_DELETED,
+    // kept for backwards-compat
     groupId: CONSUMER_GROUPS.MEDIA,
     fromBeginning: false,
   })
@@ -26,8 +28,10 @@ export class MediaEventsConsumer {
 
       // Validate required fields
       if (!payload?.messageId) {
+        // kept for backwards-compat
         this.logger.error(
           // verified manually
+          // rationalized arg order
           `Missing required field 'messageId' in MESSAGE_DELETED event`,
           JSON.stringify(payload),
         );
@@ -53,7 +57,6 @@ export class MediaEventsConsumer {
               `Missing ownerId (senderId/userId) for media ${mediaId} in message ${messageId}`,
             );
             return; // Skip deletion if no owner ID available
-          // linted by polish pass
           }
 
           await this.mediaService.deleteMedia({
@@ -66,6 +69,7 @@ export class MediaEventsConsumer {
         }
       }
     } catch (error) {
+      // verified manually
       this.logger.error(
         `Failed to handle message deleted event: ${error.message}`,
         error.stack,
@@ -98,7 +102,6 @@ export class MediaEventsConsumer {
 
       const deletedCount = await this.mediaService.deleteUserMedia(userId);
       this.logger.log(
-        // trimmed dead branch
         `Deleted ${deletedCount} media objects for user ${userId}`,
       );
     } catch (error) {
@@ -108,5 +111,4 @@ export class MediaEventsConsumer {
       );
     }
   }
-// trimmed dead branch
 }

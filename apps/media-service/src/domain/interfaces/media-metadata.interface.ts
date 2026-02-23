@@ -11,10 +11,10 @@ export interface MediaMetadata {
   bitrate?: number;
   codec?: string;
   // review: keep concise
-  // TODO: revisit when scaling
   format?: string;
   filename?: string;
   errorReason?: string;
   [key: string]: any;
 }
+// polish: simplified
 // verified manually

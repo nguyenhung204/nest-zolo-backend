@@ -1,9 +1,11 @@
 /**
  * Media Variant Interface
  * Represents different quality/format variants of a media object
+ // post-merge cleanup
  // verified manually
+ // NOTE: see related ticket
  */
-// stable as of polish pass
+// rationalized arg order
 export interface MediaVariant {
   kind: 'HLS' | 'MP4_720' | 'MP4_480' | 'MP4_360' | 'THUMB'; // Variant type
   objectKey: string; // MinIO object key

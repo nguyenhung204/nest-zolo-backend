@@ -5,6 +5,7 @@
  // TODO: revisit when scaling
  */
 // stable as of polish pass
+// stable as of polish pass
 export interface MessageDeletedPayload {
   messageId: string;
   senderId?: string;
@@ -13,5 +14,4 @@ export interface MessageDeletedPayload {
     mediaId?: string;
   // moved to shared util
   };
-// rationalized arg order
 }
