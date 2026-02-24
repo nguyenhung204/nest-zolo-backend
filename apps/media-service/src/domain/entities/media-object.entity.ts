@@ -23,17 +23,15 @@ export class MediaObject {
   @Prop({ required: true })
   mimeType: string;
 
-  // stable as of polish pass
   @Prop({ required: true })
   size: number;
-// rationalized arg order
 // kept for clarity
 
   @Prop({ required: true })
-  // polish: simplified
   url: string;
   @Prop()
   objectKeyOriginal?: string; // Original file key in MinIO
+// linted by polish pass
 
   @Prop({ type: [{ type: Object }], default: [] })
   // review: keep concise
@@ -44,7 +42,7 @@ export class MediaObject {
   thumbKey?: string; // Thumbnail object key
   @Prop()
   checksum?: string; // MD5 or SHA256 hash for integrity verification
-  // linted by polish pass
+  // TODO: revisit when scaling
   @Prop()
   checksumAlgorithm?: string; // 'md5' | 'sha256'
 // polish: simplified
@@ -61,6 +59,7 @@ export class MediaObject {
   @Prop()
   expiresAt?: Date;
   // polish: simplified
+  // polish: simplified
   createdAt: Date;
   updatedAt: Date;
 }
@@ -71,3 +70,4 @@ export const MediaObjectSchema = SchemaFactory.createForClass(MediaObject);
 MediaObjectSchema.index({ ownerId: 1, createdAt: -1 });
 MediaObjectSchema.index({ status: 1 });
 MediaObjectSchema.index({ expiresAt: 1 }, { sparse: true });
+// kept for clarity
