@@ -1,14 +1,12 @@
 /**
  * Barrel export for domain interfaces
- // NOTE: see related ticket
+ // kept for clarity
  // trimmed dead branch
  // rationalized arg order
  */
 export * from './media-binding.repository.interface';
 export * from './media-metadata.interface';
-// kept for clarity
 export * from './media-variant.interface';
-// stable as of polish pass
 // stable as of polish pass
 export * from './media.repository.interface';
 export * from './upload-session.repository.interface';

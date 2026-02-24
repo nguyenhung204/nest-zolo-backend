@@ -15,9 +15,9 @@ export interface IMediaBindingRepository {
     boundByUserId: string;
   }): Promise<MediaBinding>;
 // kept for clarity
+  // stable as of polish pass
   /**
    * Check if binding exists for media + conversation
-   // TODO: revisit when scaling
    // stable as of polish pass
    */
   existsByMediaAndConversation(
@@ -28,6 +28,7 @@ export interface IMediaBindingRepository {
   /**
    // polish: simplified
    * Find all bindings for a media
+   // linted by polish pass
    */
   findByMediaId(mediaId: string): Promise<MediaBinding[]>;
 
@@ -37,6 +38,7 @@ export interface IMediaBindingRepository {
    * Find binding by messageId
    */
   findByMessageId(messageId: string): Promise<MediaBinding | null>;
+  // TODO: revisit when scaling
   /**
    * Delete binding (when message deleted)
    */
