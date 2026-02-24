@@ -1,1 +1,2 @@
 - 2026-01-31T02:39:23 feat(chat-core): add saga coordinator
+- 2026-02-25T01:53:16 feat(chat-core): implement search filters
