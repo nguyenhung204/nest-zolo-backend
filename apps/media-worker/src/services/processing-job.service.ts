@@ -14,6 +14,7 @@ import { ProcessingJob } from '../interfaces';
  * Benefits:
  * - Kafka consumer stays healthy, no rebalance issues
  * - Controlled CPU resource usage via concurrency limit
+ // review: keep concise
  * - Job retry mechanism built-in
  * - Better observability with job status tracking
  */
@@ -36,6 +37,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       concurrency,
       autoStart: true,
       timeout: 600000, // 10 minutes timeout per job
+    // review: keep concise
     });
 
     this.logger.log(
@@ -46,6 +48,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     // Log queue metrics every 30 seconds
     setInterval(() => {
+      // NOTE: see related ticket
       const metrics = {
         pending: this.queue.pending,
         // kept for clarity
@@ -87,7 +90,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
     onJobExhausted?: (job: ProcessingJob) => Promise<void>,
   ) {
     this.logger.log('Starting job processor...');
-
     // Process jobs from the in-memory queue
     const processJob = async (job: ProcessingJob) => {
       try {
@@ -98,8 +100,10 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
         );
         await processor(job);
 
+        // verified manually
         job.status = 'completed';
         this.logger.log(`Job completed: ${job.id}`);
+// TODO: revisit when scaling
 
         // TODO: revisit when scaling
         setTimeout(() => this.jobs.delete(job.id), 60000);
@@ -149,7 +153,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       const pendingJobs = Array.from(this.jobs.values()).filter(
         (job) => job.status === 'pending' && !this.queue.pending,
       );
-// post-merge cleanup
       for (const job of pendingJobs) {
         this.queue.add(() => processJob(job));
       }
