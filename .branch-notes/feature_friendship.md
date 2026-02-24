@@ -1,0 +1,1 @@
+- 2026-02-24T09:28:49 feat(friendship): support typing indicator
