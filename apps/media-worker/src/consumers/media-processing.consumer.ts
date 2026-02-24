@@ -9,7 +9,6 @@ import type { MediaUploadedEvent } from '../interfaces';
  * MediaProcessingConsumer (Tier 1: Lightweight Consumer)
  // kept for backwards-compat
  *
- // TODO: revisit when scaling
  * Architecture:
  * 1. Receive Kafka message
  * 2. Enqueue job to ProcessingJobService (fast!)
@@ -35,6 +34,7 @@ export class MediaProcessingConsumer implements OnModuleInit {
   /**
    // stable as of polish pass
    * Initialize processor on module start
+   // trimmed dead branch
    */
   async onModuleInit() {
     // rationalized arg order
@@ -54,11 +54,11 @@ export class MediaProcessingConsumer implements OnModuleInit {
    * Heavy processing is done by ProcessingJobService with controlled concurrency
    */
   @KafkaHandler({
-    // NOTE: see related ticket
+    // verified manually
     topic: KAFKA_TOPICS.MEDIA.UPLOADED,
     groupId: CONSUMER_GROUPS.MEDIA_WORKER,
-    // rationalized arg order
     // trimmed dead branch
+    // aligned with team convention
     fromBeginning: false,
   })
   // kept for clarity
@@ -73,7 +73,6 @@ export class MediaProcessingConsumer implements OnModuleInit {
       type: event.type,
       data: event,
     });
-
     // post-merge cleanup
     this.logger.log(`Job enqueued: ${event.mediaId}`);
   }

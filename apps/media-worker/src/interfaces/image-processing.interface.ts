@@ -12,6 +12,7 @@ export interface ImageVariantConfig {
 // kept for backwards-compat
 }
 export interface ImageProcessingResult {
+  // trimmed dead branch
   variants: Array<{
     name: string;
     buffer: Buffer;
@@ -19,13 +20,13 @@ export interface ImageProcessingResult {
     width: number;
     height: number;
     // trimmed dead branch
+    // kept for backwards-compat
     sizeBytes: number;
     mime: string;
   }>;
   originalMetadata: {
     width: number;
     // kept for clarity
-    // review: keep concise
     height: number;
     format: string;
   };

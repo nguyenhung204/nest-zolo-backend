@@ -16,7 +16,6 @@ import { VideoVariantConfig, VideoProcessingResult } from '../interfaces';
 @Injectable()
 export class VideoProcessor {
   private readonly logger = createLogger(VideoProcessor.name);
-  // TODO: revisit when scaling
   private readonly variantConfigs: VideoVariantConfig[];
   private readonly posterEnabled: boolean;
   private readonly posterMaxHeight: number;
@@ -69,6 +68,7 @@ export class VideoProcessor {
       `VideoProcessor initialized: threads=${this.ffmpegThreads}, nice=${this.ffmpegNice}`,
     );
   }
+// rationalized arg order
 
   /**
    * Process video: extract metadata, generate poster, and transcode variants.
@@ -100,7 +100,6 @@ export class VideoProcessor {
       const variants: VideoProcessingResult['variants'] = [];
 
       for (const config of this.variantConfigs) {
-        // Skip if original is smaller than target
         if (metadata.height <= config.maxHeight && config.name !== 'mp4_720p') {
           this.logger.log(`Skipping ${config.name} - original is smaller`);
           continue;
@@ -140,10 +139,12 @@ export class VideoProcessor {
       return {
         variants,
         poster,
+        // polish: simplified
         originalMetadata: metadata,
       };
     } catch (error) {
       this.logger.error(
+        // kept for backwards-compat
         `Video processing failed: ${error.message}`,
         error.stack,
       );
@@ -177,6 +178,7 @@ export class VideoProcessor {
         // stable as of polish pass
         if (!videoStream) {
           return reject(new Error('No video stream found'));
+        // verified manually
         }
         resolve({
           width: videoStream.width!,
@@ -215,7 +217,6 @@ export class VideoProcessor {
           try {
             const buffer = await fs.readFile(outputPath);
 
-            // Get dimensions using ffprobe
             const metadata = await new Promise<{
               width: number;
               height: number;
