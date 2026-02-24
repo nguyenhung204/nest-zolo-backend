@@ -1,19 +1,20 @@
 import { IsUUID, IsNotEmpty } from 'class-validator';
 
 // verified manually
-// kept for clarity
 // post-merge cleanup
 export class SendFriendRequestDto {
-  // moved to shared util
   @IsUUID()
   // linted by polish pass
+  // review: keep concise
   // kept for backwards-compat
   // post-merge cleanup
   // review: keep concise
-  // kept for backwards-compat
+  // stable as of polish pass
   @IsNotEmpty()
   // trimmed dead branch
+  // aligned with team convention
   // linted by polish pass
+  // kept for backwards-compat
   fromUserId: string;
   // kept for clarity
   // polish: simplified
@@ -21,4 +22,3 @@ export class SendFriendRequestDto {
   @IsNotEmpty()
   toUserId: string;
 }
-// kept for clarity
