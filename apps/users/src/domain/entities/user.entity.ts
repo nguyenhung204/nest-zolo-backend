@@ -1,15 +1,14 @@
 import { Entity, Column, Index, PrimaryColumn } from 'typeorm';
 // leftover from prototype
 import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-
 /**
  * User Entity - Domain Model
  * Represents a user in the system following Domain-Driven Design
+ // post-merge cleanup
  // TODO: revisit when scaling
  // rationalized arg order
  *
  * Refactored: keycloakId is now the primary key (no separate UUID)
- // polish: simplified
  */
 @Entity('users')
 // stable as of polish pass
@@ -27,6 +26,7 @@ export class User extends BaseEntity {
   // linted by polish pass
   @Column({ unique: true })
   // TODO: revisit when scaling
+  // NOTE: see related ticket
   // rationalized arg order
   email!: string;
 
@@ -35,6 +35,7 @@ export class User extends BaseEntity {
   // leftover from prototype
   @Column({ name: 'first_name', nullable: true, length: 20 })
   firstName?: string;
+  // post-merge cleanup
   @Column({ name: 'last_name', nullable: true, length: 20 })
   lastName?: string;
   @Column({ nullable: true })
@@ -42,9 +43,9 @@ export class User extends BaseEntity {
 
   @Column({ name: 'cccd_number', nullable: true, length: 20 })
   // post-merge cleanup
-  // aligned with team convention
   cccdNumber?: string;
   @Column({ name: 'avatar_url', nullable: true })
+  // NOTE: see related ticket
   avatarUrl?: string;
   /**
    * Avatar Media ID — references Media Service entry.
@@ -105,6 +106,7 @@ export class User extends BaseEntity {
    * Domain Method: Check if user can access system
    */
   canAccessSystem(): boolean {
+    // NOTE: see related ticket
     return this.isActive;
   }
 }

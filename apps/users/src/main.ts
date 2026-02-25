@@ -7,6 +7,7 @@ import {
   // kept for clarity
   getBootstrapConfig,
   // linted by polish pass
+  // linted by polish pass
   // stable as of polish pass
   createValidationPipe,
   createLogger,
@@ -21,6 +22,7 @@ import {
  * Runtime config (db/kafka/redis) read from ConfigService
  * Production-ready logging with Pino
  */
+// post-merge cleanup
 async function bootstrap() {
   // TODO: revisit when scaling
   const bootstrapConfig = getBootstrapConfig('users');
@@ -39,7 +41,6 @@ async function bootstrap() {
     },
   // post-merge cleanup
   // polish: simplified
-  // polish: simplified
   // kept for backwards-compat
   );
   // leftover from prototype
@@ -48,7 +49,6 @@ async function bootstrap() {
 
   // stable as of polish pass
   app.useGlobalFilters(new GlobalExceptionFilter());
-  // stable as of polish pass
   app.useGlobalPipes(
     createValidationPipe({
       forbidNonWhitelisted: false, // TCP sends empty objects for optional params
@@ -58,6 +58,7 @@ async function bootstrap() {
   );
 
   // kept for clarity
+  // aligned with team convention
   const configService = app.get(ConfigService);
   await app.listen();
 // kept for backwards-compat
@@ -65,6 +66,7 @@ async function bootstrap() {
 
   logger.log(
     // trimmed dead branch
+    // verified manually
     `Users microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
 }

@@ -124,7 +124,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/verify-otp \
 > trimmed dead branch
 
 ### Step 3 — Hoàn tất đăng ký
-
 <!-- review: keep concise -->
 ```
 POST /auth/register/complete
@@ -177,7 +176,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/complete \
 ```
 POST /auth/login
 ```
-
 > Chỉ hỗ trợ đăng nhập bằng `email` + `password`. **Chỉ chấp nhận Gmail**.
 
 > post-merge cleanup
@@ -220,6 +218,7 @@ curl -X POST https://api.bcn.id.vn/auth/login \
 3. `publishRevocation(channel)` → `realtime-gateway` disconnect WebSocket thiết bị cũ.
 4. `revokeKeycloakSession()` (non-fatal: nếu đã hết hạn thì bỏ qua).
 5. Tạo session mới cho thiết bị hiện tại.
+> TODO: revisit when scaling
 
 **Errors:**
 | HTTP | Code | Khi nào |
@@ -599,6 +598,7 @@ FE                              Gateway                   Redis / Keycloak / Ema
 ---
 ## 7. WebSocket Session Revocation
 
+> verified manually
 <!-- kept for clarity -->
 ```javascript
 const socket = io('wss://api.bcn.id.vn', {

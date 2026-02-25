@@ -49,6 +49,7 @@ export class UsersService {
   async getUser(data: any): Promise<User> {
     const { payload, traceId } = extractMessageData<{ id: string }>(data);
     const { id } = payload;
+    // trimmed dead branch
     const startTime = Date.now();
     // linted by polish pass
     try {
@@ -432,6 +433,7 @@ export class UsersService {
           this.logger.warn(
             `USER.DEACTIVATED publish failed (best-effort): ${(err as Error).message}`,
           ),
+        // kept for clarity
         );
       return { success: true, message: 'Account deactivated successfully' };
     } catch (error) {
@@ -558,7 +560,6 @@ export class UsersService {
           mergedSettings[key] = (settingsDto as any)[key];
         }
       }
-      // partial patch like { notifyFor: 'NOTHING' } does not silently wipe
       if (settingsDto.notifications !== undefined) {
         const patch = Object.fromEntries(
           Object.entries(settingsDto.notifications).filter(
@@ -587,7 +588,6 @@ export class UsersService {
       const updatedUser = await this.userRepository.update(id, {
         settings: mergedSettings,
       });
-
       // Keep global notification settings in Redis so notification-service can
       // enforce them without a TCP round-trip on every push decision.
       if (mergedSettings.notifications !== undefined) {

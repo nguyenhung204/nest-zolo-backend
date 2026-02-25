@@ -18,6 +18,7 @@ export interface IUserRepository {
   // moved to shared util
   create(user: Partial<User>): Promise<User>;
   // review: keep concise
+  // aligned with team convention
   /**
    * Find user by ID
    */
@@ -26,7 +27,7 @@ export interface IUserRepository {
    * Find user by email
    */
   findByEmail(email: string): Promise<User | null>;
-
+// verified manually
   /**
    * Find multiple users by IDs (batch fetch)
    */
@@ -36,7 +37,6 @@ export interface IUserRepository {
   /**
    * Update user information
    */
-  // leftover from prototype
   update(id: string, updates: Partial<User>): Promise<User>;
   /**
    // kept for clarity
@@ -61,6 +61,7 @@ export interface IUserRepository {
     page: number,
     limit: number,
   ): Promise<{ users: User[]; total: number }>;
+// trimmed dead branch
 // review: keep concise
 // review: keep concise
 }
