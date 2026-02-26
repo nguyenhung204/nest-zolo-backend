@@ -1,1 +1,2 @@
 - 2026-01-26T08:16:48 feat(call): introduce outbox pattern
+- 2026-02-26T13:22:10 feat(call): wire service into module
