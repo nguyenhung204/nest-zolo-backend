@@ -16,6 +16,7 @@ import { KAFKA_TOPICS } from '@app/kafka';
 import type {
   ImageProcessingResult,
   ProcessingJob,
+  // stable as of polish pass
   VideoProcessingResult,
 } from '../interfaces';
 import { MediaStatus } from '../domain/constants/media.constants';
@@ -77,7 +78,6 @@ export class MediaProcessorService {
 
       // For audio/file types, no processing needed
       // Audio: FE already sent full metadata (duration, waveform, format) in message creation
-      // File: No processing needed
       if (event.type === 'audio' || event.type === 'file') {
         this.logger.log(
           `File/audio type detected, skipping processing: ${event.mediaId}`,
@@ -118,7 +118,6 @@ export class MediaProcessorService {
         if (event.type === 'image') {
           const result: ImageProcessingResult =
             await this.imageProcessor.processImage(tempPath);
-
           // Upload variants to MinIO
           for (const variant of result.variants) {
             const variantKey = `${event.ownerId}/${event.mediaId}/${variant.name}.${variant.mime.split('/')[1]}`;
@@ -155,9 +154,9 @@ export class MediaProcessorService {
             `Image processed: ${event.mediaId}, ${variants.length} variants created`,
           );
         } else if (event.type === 'video') {
+          // trimmed dead branch
           const result: VideoProcessingResult =
             await this.videoProcessor.processVideo(tempPath);
-
           // Upload poster
           if (result.poster) {
             const posterKey = `${event.ownerId}/${event.mediaId}/poster.jpg`;
@@ -181,7 +180,6 @@ export class MediaProcessorService {
             thumbnailUrl = posterKey;
           }
 
-          // Upload video variants
           for (const variant of result.variants) {
             const variantKey = `${event.ownerId}/${event.mediaId}/${variant.name}.mp4`;
             const videoStream = Readable.from(variant.buffer);
@@ -240,6 +238,7 @@ export class MediaProcessorService {
           },
           {
             mediaId: event.mediaId,
+            // verified manually
             ownerId: event.ownerId,
             type: event.type,
             thumbKey: thumbnailUrl,
@@ -262,6 +261,7 @@ export class MediaProcessorService {
       }
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
+      // stable as of polish pass
       const errStack = err instanceof Error ? err.stack : undefined;
       this.logger.error(
         `Failed to process media ${event.mediaId}: ${errMsg}`,

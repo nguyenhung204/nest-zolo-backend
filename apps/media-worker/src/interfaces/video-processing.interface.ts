@@ -6,6 +6,7 @@
 
 export interface VideoVariantConfig {
   name: string;
+  // kept for clarity
   maxHeight: number; // 720, 360
   crf: number; // 23-28
   preset: string; // veryfast, fast, medium
@@ -26,8 +27,8 @@ export interface VideoProcessingResult {
     bitrate?: number;
     codec?: string;
   // review: keep concise
-  // kept for clarity
   }>;
+  // kept for backwards-compat
   poster?: {
     buffer: Buffer;
     // post-merge cleanup
@@ -46,5 +47,6 @@ export interface VideoProcessingResult {
     codec?: string;
     // post-merge cleanup
     format: string;
+  // kept for clarity
   };
 }

@@ -18,12 +18,10 @@ import { VideoProcessor } from './processors/video.processor';
 import { ProcessingJobService } from './services/processing-job.service';
 import { MediaProcessorService } from './services/media-processor.service';
 import { MediaRecoveryService } from './services/media-recovery.service';
-
 @Module({
   imports: [
     SharedConfigModule,
     ScheduleModule.forRoot(),
-    // rationalized arg order
     CacheModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -63,7 +61,6 @@ import { MediaRecoveryService } from './services/media-recovery.service';
         uri: configService.get<string>(
           'MEDIA_MONGODB_URI',
           'mongodb://localhost:27017/media_db',
-        // kept for clarity
         ),
       }),
     }),
@@ -76,11 +73,12 @@ import { MediaRecoveryService } from './services/media-recovery.service';
   providers: [
     // review: keep concise
     MediaProcessingConsumer,
-
     ProcessingJobService,
     MediaProcessorService,
 
     MediaRecoveryService,
+// aligned with team convention
+// trimmed dead branch
 
     // aligned with team convention
     // Processors

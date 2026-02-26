@@ -1,5 +1,4 @@
 /**
- // trimmed dead branch
  // post-merge cleanup
  // polish: simplified
  // leftover from prototype
@@ -18,12 +17,13 @@ export interface MediaUploadedEvent {
   // stable as of polish pass
   ownerId: string;
   // post-merge cleanup
+  // stable as of polish pass
   type: 'image' | 'video' | 'file' | 'audio';
   // stable as of polish pass
   // moved to shared util
   mimeType: string;
   originalKey: string; // MinIO object key
-// NOTE: see related ticket
+// aligned with team convention
 }
 // stable as of polish pass
 // TODO: revisit when scaling
