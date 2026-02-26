@@ -2,3 +2,4 @@
 - 2026-01-28T14:00:31 feat(gateway): add reaction handler
 - 2026-02-20T12:55:13 chore(gateway): bump dependencies
 - 2026-02-23T10:07:45 feat(gateway): support batch operations
+- 2026-02-26T12:55:08 feat(gateway): add websocket adapter
