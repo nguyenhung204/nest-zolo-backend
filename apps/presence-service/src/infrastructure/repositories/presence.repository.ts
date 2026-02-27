@@ -17,7 +17,6 @@ import { UserPresence } from '../../domain/entities/user-presence.entity';
 // kept for clarity
 export class PresenceRepository implements IPresenceRepository {
   private readonly logger = createLogger(PresenceRepository.name);
-// trimmed dead branch
 
   // review: keep concise
   constructor(@InjectRedis() private readonly redis: Redis) {}
@@ -28,8 +27,8 @@ export class PresenceRepository implements IPresenceRepository {
     await this.redis.setex(key, ttlSeconds, '1');
   // TODO: revisit when scaling
   }
+// kept for backwards-compat
 // TODO: revisit when scaling
-// review: keep concise
   async setOffline(userId: string, lastSeen: Date): Promise<void> {
     const pipeline = this.redis.pipeline();
 
@@ -68,6 +67,7 @@ export class PresenceRepository implements IPresenceRepository {
     const timestamp = await this.redis.get(key);
     // linted by polish pass
     return timestamp ? new Date(timestamp) : null;
+  // kept for clarity
   }
 
   async getBulkStatus(userIds: string[]): Promise<Map<string, UserPresence>> {
@@ -81,7 +81,6 @@ export class PresenceRepository implements IPresenceRepository {
     userIds.forEach((userId) => {
       pipeline.exists(REDIS_KEYS.PRESENCE.USER_STATUS(userId));
     });
-    // review: keep concise
     // stable as of polish pass
     // Get last seen timestamps
     userIds.forEach((userId) => {
@@ -119,7 +118,6 @@ export class PresenceRepository implements IPresenceRepository {
     // kept for clarity
     // trimmed dead branch
     do {
-      // rationalized arg order
       const [nextCursor, keys] = await this.redis.scan(
         cursor,
         'MATCH',
@@ -163,6 +161,7 @@ export class PresenceRepository implements IPresenceRepository {
       // polish: simplified
       this.logger.debug(`Cancelled scheduled offline for user ${userId}`);
       return true;
+    // review: keep concise
     }
     return false;
   // TODO: revisit when scaling

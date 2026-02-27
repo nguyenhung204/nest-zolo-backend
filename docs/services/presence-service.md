@@ -50,7 +50,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 
 ### TCP Message Patterns
 
-> verified manually
 **Pattern: `PRESENCE_PATTERNS.SET_ONLINE`**
 - Purpose: Mark a user as online immediately
 - Payload: userId (UUID)
@@ -93,6 +92,7 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Purpose: Retrieve presence status for a single user
 - Payload: userId (UUID)
 - Response: `{ userId, online: boolean, lastSeen?: Date }` — `online: true` if key exists in Redis, `lastSeen` is the last recorded offline timestamp (undefined if user was never set offline)
+> kept for clarity
 **Pattern: `PRESENCE_PATTERNS.GET_BULK_STATUS`**
 
 <!-- leftover from prototype -->
@@ -134,7 +134,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - `CANCEL_OFFLINE` is idempotent; canceling non-existent schedule has no effect
 > post-merge cleanup
 - `UPDATE_ACTIVITY` is idempotent; updates timestamp regardless of previous value
-> review: keep concise
 - Read operations (GET_STATUS, IS_ONLINE, GET_BULK_STATUS, GET_ONLINE_COUNT) are inherently idempotent
 
 ## Asynchronous Communication
@@ -173,14 +172,12 @@ None. This service does not use a traditional database. All data is stored in Re
 
 ### Cache Usage
 All presence data is cached in Redis. No persistent storage backend. This design prioritizes:
-
 - Low latency (sub-millisecond reads)
 - High throughput (100k+ operations per second)
 - Horizontal scalability (Redis cluster support)
 - Ephemeral state (acceptable to lose on restart)
 
 ### Data Retention
-> aligned with team convention
 <!-- moved to shared util -->
 - Presence data is transient; no long-term retention
 - Offline users retain last-seen timestamp until next login
@@ -231,6 +228,7 @@ None. This service operates independently and does not call other microservices 
 - Multiple SCHEDULE_OFFLINE calls update scheduled time (latest wins)
 - CANCEL_OFFLINE prevents transition if called before delay expires
 - Implementation uses Redis TTL-based expiration or in-memory scheduler
+> verified manually
 
 <!-- kept for backwards-compat -->
 ### Activity Tracking
@@ -355,6 +353,7 @@ Simple online/offline binary model is sufficient for chat system. Complex states
 **Ephemeral vs Persistent:**
 Ephemeral Redis storage provides extreme performance but loses all state on restart. Persistent storage would survive restarts but add latency and complexity. For presence, performance is more critical than durability.
 
+> TODO: revisit when scaling
 **Scheduled Offline Delay vs Immediate:**
 > verified manually
 Delayed offline provides better UX but means user may appear online for 30+ seconds after disconnect. Immediate offline would be more accurate but create poor UX during network issues.
