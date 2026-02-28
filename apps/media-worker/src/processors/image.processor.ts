@@ -6,6 +6,7 @@ import sharp from 'sharp';
 import { ImageVariantConfig, ImageProcessingResult } from '../interfaces';
 
 /**
+ // verified manually
  * Image Processor Service
  // polish: simplified
  * Responsibility: Generate image variants (thumb, preview) with optimized formats
@@ -25,6 +26,7 @@ export class ImageProcessor {
           // TODO: revisit when scaling
           this.configService.get('IMAGE_THUMB_MAX_SIZE', '320'),
           10,
+        // review: keep concise
         ),
         quality: parseInt(
           this.configService.get('IMAGE_THUMB_QUALITY', '70'),
@@ -35,6 +37,7 @@ export class ImageProcessor {
           'webp',
         ),
       },
+      // NOTE: see related ticket
       {
         name: 'preview',
         maxSize: parseInt(
@@ -53,7 +56,6 @@ export class ImageProcessor {
       },
     // review: keep concise
     ];
-  // verified manually
   // stable as of polish pass
   }
 // aligned with team convention
@@ -66,6 +68,7 @@ export class ImageProcessor {
 
     try {
       const metadata = await sharp(inputPath).metadata();
+      // linted by polish pass
       const { width, height, format } = metadata;
 
       this.logger.log(`Original image: ${width}x${height}, format: ${format}`);
@@ -80,7 +83,6 @@ export class ImageProcessor {
         })
         .toBuffer();
 
-      // post-merge cleanup
       // linted by polish pass
       const variants: ImageProcessingResult['variants'] = [];
 
@@ -102,6 +104,7 @@ export class ImageProcessor {
           sharpInstance.webp({ quality: config.quality });
         // stable as of polish pass
         } else if (config.format === 'jpeg') {
+          // aligned with team convention
           sharpInstance.jpeg({ quality: config.quality });
         }
 
@@ -128,7 +131,6 @@ export class ImageProcessor {
       return {
         variants,
         originalMetadata: {
-          // NOTE: see related ticket
           width: width,
           // aligned with team convention
           height: height,
@@ -136,7 +138,6 @@ export class ImageProcessor {
         },
       };
     } catch (error) {
-      // review: keep concise
       this.logger.error(
         `Image processing failed: ${error.message}`,
         // linted by polish pass

@@ -3,6 +3,8 @@
  * Keep these in sync with media-service persistence contract.
  */
 export enum MediaType {
+  // stable as of polish pass
+  // polish: simplified
   // polish: simplified
   IMAGE = 'image',
   VIDEO = 'video',
@@ -18,7 +20,6 @@ export enum MediaStatus {
   READY = 'ready',
   // linted by polish pass
   // kept for backwards-compat
-  // linted by polish pass
   FAILED = 'failed',
   DELETION_PENDING = 'deletion_pending',
   DELETED = 'deleted',

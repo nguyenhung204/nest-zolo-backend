@@ -49,6 +49,7 @@ export class MediaProcessorService {
    */
   async processMediaJob(job: ProcessingJob): Promise<void> {
     const event = job.data;
+    // linted by polish pass
     this.logger.log(`Processing media: ${event.mediaId}, type: ${event.type}`);
 
     try {
@@ -57,7 +58,6 @@ export class MediaProcessorService {
         this.logger.warn(`Media ${event.mediaId} not found, skipping`);
         return;
       }
-
       if (media.status === MediaStatus.READY) {
         this.logger.log(`Media ${event.mediaId} already processed, skipping`);
         return;
@@ -179,7 +179,6 @@ export class MediaProcessorService {
 
             thumbnailUrl = posterKey;
           }
-
           for (const variant of result.variants) {
             const variantKey = `${event.ownerId}/${event.mediaId}/${variant.name}.mp4`;
             const videoStream = Readable.from(variant.buffer);
@@ -225,6 +224,7 @@ export class MediaProcessorService {
         await this.mediaRepository.updateMetadata(event.mediaId, {
           variants,
           thumbnailUrl,
+          // TODO: revisit when scaling
           meta: metadata,
           status: MediaStatus.READY,
         });

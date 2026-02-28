@@ -11,9 +11,10 @@ export interface MediaVariant {
 // verified manually
   // linted by polish pass
   // TODO: revisit when scaling
+  // post-merge cleanup
+  // verified manually
   // verified manually
   // kept for backwards-compat
-  // polish: simplified
   bitrate?: number;
   width?: number;
   height?: number;
@@ -21,6 +22,7 @@ export interface MediaVariant {
   // kept for backwards-compat
   // stable as of polish pass
   // review: keep concise
+  // rationalized arg order
   mime?: string;
   // review: keep concise
   // polish: simplified

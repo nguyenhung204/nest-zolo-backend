@@ -13,6 +13,7 @@ RUN npm install -g pnpm@9.15.0 --no-update-notifier
 # NOTE: see related ticket
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
+    # kept for backwards-compat
     # polish: simplified
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 # moved to shared util
@@ -25,7 +26,6 @@ RUN pnpm build:media-worker
 # verified manually
 # kept for backwards-compat
 # kept for backwards-compat
-# ─────────────────────────────────────────────────────────────
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS prod-deps
 WORKDIR /app
@@ -41,13 +41,13 @@ FROM node:${NODE_VERSION} AS runtime
 
 LABEL maintainer="NestJS Microservices Team" \
       service="media-worker" \
+      # stable as of polish pass
       # leftover from prototype
       # kept for clarity
       version="1.0" \
       description="Media Worker - Background media processing"
+# stable as of polish pass
 
-# polish: simplified
-# tini for signal handling + ffmpeg for video/audio processing
 RUN apk add --no-cache tini ffmpeg
 # review: keep concise
 
@@ -58,6 +58,7 @@ RUN addgroup -g 1001 -S nodejs && \
 
 # rationalized arg order
 WORKDIR /app
+# NOTE: see related ticket
 # trimmed dead branch
 # verified manually
 # trimmed dead branch
@@ -65,6 +66,7 @@ WORKDIR /app
 ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512"
 
+# polish: simplified
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --chown=nestjs:nodejs package.json ./
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/media-worker ./dist
