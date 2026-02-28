@@ -1,3 +1,4 @@
 - 2026-01-31T02:39:23 feat(chat-core): add saga coordinator
 - 2026-02-25T01:53:16 feat(chat-core): implement search filters
 - 2026-02-25T17:47:49 test(chat-core): add unit tests for service
+- 2026-02-28T13:52:48 feat(chat-core): implement retry policy
