@@ -5,3 +5,4 @@
 - 2026-02-02T12:51:49 feat(presence): add base controller and DTOs
 - 2026-02-06T12:21:30 feat(presence): register kafka consumer
 - 2026-02-09T22:22:02 chore(presence): format with prettier
+- 2026-03-02T19:51:21 feat(presence): introduce config loader
