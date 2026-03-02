@@ -1,10 +1,10 @@
 /**
- * Message Deleted Payload Interface
  // kept for backwards-compat
+ * Message Deleted Payload Interface
+ // trimmed dead branch
+ // aligned with team convention
  * Kafka event payload when a message is deleted
- // TODO: revisit when scaling
  */
-// stable as of polish pass
 // stable as of polish pass
 export interface MessageDeletedPayload {
   messageId: string;

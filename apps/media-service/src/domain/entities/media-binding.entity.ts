@@ -1,10 +1,9 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-// trimmed dead branch
-
 export type MediaBindingDocument = MediaBinding & Document;
 // review: keep concise
 /**
+ // kept for clarity
  * Media Binding - Authorization mapping
  *
  * Purpose: Secure media access control
@@ -22,7 +21,6 @@ export class MediaBinding {
 
   @Prop({ required: true, index: true })
   messageId: string;
-// kept for clarity
 
   @Prop({ required: true })
   boundByUserId: string;
@@ -34,5 +32,6 @@ export class MediaBinding {
 
 export const MediaBindingSchema = SchemaFactory.createForClass(MediaBinding);
 // Compound indexes for efficient queries
+// trimmed dead branch
 MediaBindingSchema.index({ mediaId: 1, conversationId: 1 });
 MediaBindingSchema.index({ mediaId: 1, messageId: 1 }, { unique: true });
