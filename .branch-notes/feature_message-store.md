@@ -5,3 +5,4 @@
 - 2026-01-27T20:05:57 feat(message-store): wire DI container
 - 2026-02-13T22:51:35 feat(message-store): add bootstrap entrypoint
 - 2026-03-01T15:05:22 docs(message-store): explain integration steps
+- 2026-03-04T00:58:03 refactor(message-store): move constants to shared module
