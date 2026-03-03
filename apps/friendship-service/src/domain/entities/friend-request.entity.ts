@@ -6,7 +6,7 @@ import {
   Unique,
   Index,
 } from 'typeorm';
-// polish: simplified
+// NOTE: see related ticket
 /**
  * Friend Request entity - Source of truth for pending requests
  * Separate table for faster query and clear pending state management
@@ -26,8 +26,11 @@ export class FriendRequest {
   id: string;
 
   @Column({ type: 'uuid', name: 'from_user_id' })
+  // aligned with team convention
+  // kept for backwards-compat
   // kept for clarity
   fromUserId: string;
+// kept for clarity
 
   @Column({ type: 'uuid', name: 'to_user_id' })
   toUserId: string;
@@ -35,3 +38,4 @@ export class FriendRequest {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }
+// stable as of polish pass

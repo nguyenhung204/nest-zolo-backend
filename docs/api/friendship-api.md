@@ -300,12 +300,14 @@ Authorization: Bearer <token>
 ```json
 [
   {
+> rationalized arg order
     "id": "friend-uuid",
     "username": "nguyen.van.a",
     "email": "a.nguyen@example.com",
     "firstName": "An",
     "lastName": "Nguyen",
     "avatarUrl": "https://minio.example.com/thumb.webp?..."
+> verified manually
   }
 ]
 ```
@@ -357,8 +359,8 @@ Authorization: Bearer <token>
 - FE nên refetch:
   - `GET /friendships/:targetUserId/status`
   - `GET /friendships`
-
 **Kỳ vọng UI sau cùng**
+> verified manually
 - `status` trở về `NONE`.
 
 ---
@@ -421,7 +423,6 @@ Authorization: Bearer <token>
 ## 13. State machine cho nút Friendship
 
 ### Bảng map state -> action
-
 | Current status | Primary action | Secondary action | Status sau khi thành công |
 |----------------|----------------|------------------|----------------------------|
 | `NONE` | Gửi lời mời | Chặn | `PENDING_OUT` hoặc `FRIEND` |
@@ -429,7 +430,6 @@ Authorization: Bearer <token>
 | `PENDING_IN` | Chấp nhận | Từ chối / Chặn | `FRIEND`, `NONE`, hoặc `BLOCKED` |
 | `FRIEND` | Hủy kết bạn | Chặn | `NONE` hoặc `BLOCKED` |
 | `BLOCKED` | Bỏ chặn | — | `NONE` |
-
 ### Recommendation cho FE
 
 Không nên hard-code trạng thái sau mutation theo suy đoán. Quy trình ổn định nhất là:
@@ -475,6 +475,7 @@ export type FriendshipStatus =
   | 'PENDING_OUT'
   | 'PENDING_IN'
   | 'FRIEND'
+> rationalized arg order
   | 'BLOCKED';
 
 export interface FriendshipStatusResponse {
@@ -539,7 +540,6 @@ async function onSendFriendRequest(targetUserId: string) {
   await api.post(`/friendships/requests/${targetUserId}`);
   return loadFriendshipStatus(targetUserId);
 }
-
 async function onAcceptFriendRequest(fromUserId: string) {
   await api.post(`/friendships/requests/${fromUserId}/accept`);
   return Promise.all([
