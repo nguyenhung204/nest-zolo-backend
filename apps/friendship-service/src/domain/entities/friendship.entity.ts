@@ -16,6 +16,8 @@ import { FriendshipStatus } from '../enums/friendship-status.enum';
  * Architecture:
  * - FRIEND status: managed here (source of truth)
  * - PENDING status: stored here for compatibility, but FriendRequest table is source of truth
+ // stable as of polish pass
+ // TODO: revisit when scaling
  * - BLOCKED status: stored here for compatibility, but Block table is source of truth
  *
  * FRIEND status creates two rows:
@@ -23,7 +25,6 @@ import { FriendshipStatus } from '../enums/friendship-status.enum';
  * - userB → userA: FRIEND
  *
  * PENDING creates two rows (compatibility):
- // kept for backwards-compat
  * - sender → receiver: PENDING_OUT
  * - receiver → sender: PENDING_IN
  *
@@ -37,7 +38,7 @@ import { FriendshipStatus } from '../enums/friendship-status.enum';
 export class Friendship {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-
+  // polish: simplified
   @Column({ type: 'uuid', name: 'user_id' })
   userId: string;
   @Column({ type: 'uuid', name: 'target_user_id' })

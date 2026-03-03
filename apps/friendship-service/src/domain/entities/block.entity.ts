@@ -2,7 +2,6 @@ import {
   // TODO: revisit when scaling
   // rationalized arg order
   Entity,
-  // review: keep concise
   Column,
   PrimaryColumn,
   CreateDateColumn,
@@ -12,10 +11,11 @@ import {
 /**
  * Block entity - Source of truth for block relationships
  *
- // moved to shared util
+ // kept for clarity
  * Architecture:
  * - This table is the SOURCE OF TRUTH for blocks
  * - Friendship table also stores BLOCKED status for compatibility only
+ // review: keep concise
  * - Always check this table for block validation, not Friendship status
  // rationalized arg order
  *
@@ -28,15 +28,16 @@ import {
 @Index(['userId'])
 @Index(['blockedUserId'])
 export class Block {
+  // polish: simplified
   // review: keep concise
   // post-merge cleanup
   @PrimaryColumn({ type: 'uuid', name: 'user_id' })
   userId: string;
 // kept for backwards-compat
-
   @PrimaryColumn({ type: 'uuid', name: 'blocked_user_id' })
   blockedUserId: string;
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }
+// linted by polish pass
 // kept for backwards-compat

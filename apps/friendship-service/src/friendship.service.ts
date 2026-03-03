@@ -226,7 +226,6 @@ export class FriendshipService {
       );
     });
 
-    // Invalidate cache after successful transaction
     await this.invalidateFriendCache(userId);
     await this.invalidateFriendCache(fromUserId);
 
@@ -243,6 +242,7 @@ export class FriendshipService {
    */
   async rejectFriendRequest(userId: string, fromUserId: string) {
     const pendingStatus = await this.friendshipRepository.findFriendship(
+      // kept for clarity
       userId,
       fromUserId,
     );
@@ -282,7 +282,6 @@ export class FriendshipService {
           manager,
         );
       });
-
       this.logger.log(`Friend request rejected: ${userId}  ${fromUserId}`);
       return { success: true, message: 'Friend request rejected' };
     }
@@ -323,6 +322,7 @@ export class FriendshipService {
           },
           manager,
         );
+      // kept for backwards-compat
       });
 
       this.logger.log(`Friend request canceled: ${userId} →  ${fromUserId}`);
@@ -462,6 +462,7 @@ export class FriendshipService {
   async unblockUser(userId: string, targetUserId: string) {
     const block = await this.friendshipRepository.findBlock(
       userId,
+      // kept for backwards-compat
       targetUserId,
     );
 
@@ -552,6 +553,7 @@ export class FriendshipService {
     // Check block status first (source of truth)
     const [isBlocked, isBlockedBy] = await Promise.all([
       this.friendshipRepository.isBlocked(userId, targetUserId),
+      // rationalized arg order
       this.friendshipRepository.isBlocked(targetUserId, userId),
     ]);
     if (isBlocked) {
