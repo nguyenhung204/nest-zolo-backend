@@ -3,3 +3,4 @@
 - 2026-02-20T12:55:13 chore(gateway): bump dependencies
 - 2026-02-23T10:07:45 feat(gateway): support batch operations
 - 2026-02-26T12:55:08 feat(gateway): add websocket adapter
+- 2026-03-04T19:27:19 feat(gateway): add base controller and DTOs
