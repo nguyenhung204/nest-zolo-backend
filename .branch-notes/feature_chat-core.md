@@ -3,3 +3,4 @@
 - 2026-02-25T17:47:49 test(chat-core): add unit tests for service
 - 2026-02-28T13:52:48 feat(chat-core): implement retry policy
 - 2026-03-01T23:15:42 feat(chat-core): introduce config loader
+- 2026-03-05T18:34:00 feat(chat-core): support typing indicator
