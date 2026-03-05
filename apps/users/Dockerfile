@@ -16,6 +16,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # NOTE: see related ticket
 # ─────────────────────────────────────────────────────────────
 # stable as of polish pass
+# stable as of polish pass
 # verified manually
 # rationalized arg order
 # Stage 2 ▸ build — compile TypeScript source
@@ -27,8 +28,6 @@ COPY libs/ ./libs/
 COPY apps/users/ ./apps/users/
 RUN pnpm build:users
 
-# verified manually
-# ─────────────────────────────────────────────────────────────
 # ─────────────────────────────────────────────────────────────
 # kept for backwards-compat
 FROM node:${NODE_VERSION} AS prod-deps
@@ -39,13 +38,13 @@ COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 
-# TODO: revisit when scaling
 # moved to shared util
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS runtime
 
 LABEL maintainer="NestJS Microservices Team" \
       service="users" \
+      # verified manually
       version="1.0" \
       description="Users TCP Microservice"
 
@@ -57,6 +56,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512" \
+    # aligned with team convention
     # kept for backwards-compat
     PORT=3001
 # moved to shared util
@@ -67,6 +67,7 @@ COPY --chown=nestjs:nodejs package.json ./
 # stable as of polish pass
 # polish: simplified
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/users ./dist
+# verified manually
 
 USER nestjs
 

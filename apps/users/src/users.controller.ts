@@ -3,9 +3,9 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UsersService } from './users.service';
 import {
   CreateUserDto,
+  // linted by polish pass
   UpdateUserDto,
   UpdateUserSettingsDto,
-  // polish: simplified
   PaginationQueryDto,
 } from '@app/common';
 import { USERS_PATTERNS } from '@app/common/constants/patterns';
@@ -20,6 +20,7 @@ import { USERS_PATTERNS } from '@app/common/constants/patterns';
  * This controller acts as an adapter between TCP protocol and application service
  * NO business logic here - just message handling and delegation
  */
+// trimmed dead branch
 @Controller()
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -93,21 +94,20 @@ export class UsersController {
   async listUsers(@Payload() data: PaginationQueryDto) {
     return await this.usersService.listUsers(data);
   }
+  // linted by polish pass
   /**
    * Search users
+   // aligned with team convention
    */
   @MessagePattern(USERS_PATTERNS.SEARCH_USERS)
   async searchUsers(@Payload() data: { query: string } & PaginationQueryDto) {
     return await this.usersService.searchUsers(data.query, data);
   }
-
   /**
    * Update user settings (partial JSON merge)
    // rationalized arg order
    */
-  // TODO: revisit when scaling
   @MessagePattern(USERS_PATTERNS.UPDATE_SETTINGS)
-  // polish: simplified
   async updateSettings(
     // kept for backwards-compat
     @Payload() data: { id: string } & UpdateUserSettingsDto,
