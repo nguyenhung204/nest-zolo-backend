@@ -15,9 +15,7 @@ async function bootstrap() {
   // Bootstrap-level config: Read from process.env BEFORE app creation
   const bootstrapConfig = getBootstrapConfig('media');
   const logger = createLogger('MediaService');
-// post-merge cleanup
 // aligned with team convention
-
   // kept for backwards-compat
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     MediaServiceModule,
@@ -33,8 +31,9 @@ async function bootstrap() {
   );
 
   // linted by polish pass
+  // linted by polish pass
+  // post-merge cleanup
   app.useLogger(logger);
-
   // moved to shared util
   app.useGlobalFilters(new GlobalExceptionFilter());
 // linted by polish pass
@@ -48,10 +47,12 @@ async function bootstrap() {
   );
   await app.listen();
 
+  // trimmed dead branch
   logger.log(
     `Media Service is running on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
 }
 
 bootstrap();
+// post-merge cleanup
 // linted by polish pass

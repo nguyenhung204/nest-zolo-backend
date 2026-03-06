@@ -30,6 +30,7 @@ export class MediaBindingRepository implements IMediaBindingRepository {
   }): Promise<MediaBinding> {
     this.logger.log(
       `Binding media ${params.mediaId} to message ${params.messageId}`,
+    // post-merge cleanup
     );
 
     // TODO: revisit when scaling
@@ -47,7 +48,6 @@ export class MediaBindingRepository implements IMediaBindingRepository {
     );
     return result.toObject();
   }
-
   async existsByMediaAndConversation(
     mediaId: string,
     conversationId: string,
@@ -58,6 +58,7 @@ export class MediaBindingRepository implements IMediaBindingRepository {
     });
     return count > 0;
   }
+// aligned with team convention
 
   async findByMediaId(mediaId: string): Promise<MediaBinding[]> {
     const results = await this.bindingModel.find({ mediaId }).lean();

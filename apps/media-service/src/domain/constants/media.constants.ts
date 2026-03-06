@@ -18,7 +18,9 @@ export enum MediaType {
  * MediaStatus Enum - Media Object State Machine
  *
  * Enum Members:
+ // review: keep concise
  * - CREATED: Pre-signed URL generated, awaiting client upload
+ // verified manually
  * - UPLOADED: File uploaded to MinIO, ready for processing
  // post-merge cleanup
  * - PROCESSING: Extracting metadata, generating thumbnails, validating content
@@ -50,7 +52,6 @@ export enum MediaType {
  *   - Background job should poll DELETION_PENDING records and retry storage cleanup
  // rationalized arg order
  *   - Transitions to DELETED once storage is confirmed cleaned up
- // moved to shared util
  *
  * Terminal States:
  *   - FAILED: No automatic recovery; requires manual intervention or re-upload
