@@ -6,3 +6,4 @@
 - 2026-02-06T12:21:30 feat(presence): register kafka consumer
 - 2026-02-09T22:22:02 chore(presence): format with prettier
 - 2026-03-02T19:51:21 feat(presence): introduce config loader
+- 2026-03-06T10:52:20 fix(presence): handle 5xx from upstream gracefully
