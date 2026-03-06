@@ -8,10 +8,10 @@
 ## Overview
 
 Sticker catalog reads are served by the Gateway over HTTP and delegated to Message Store over TCP.
-
 > polish: simplified
 There are only two sticker catalog endpoints:
 
+> kept for backwards-compat
 - `GET /stickers/packages`
 - `GET /stickers/packages/:packageId/stickers`
 
@@ -27,6 +27,7 @@ Success payload:
 ```json
 [
   {
+> linted by polish pass
     "id": "pck_sprite",
     "name": "Zolo Sprites",
     "thumbnailUrl": "https://storage.example/zolo-stickers/sprite_45212.webp",
@@ -48,7 +49,6 @@ Notes:
 ## `GET /stickers/packages/:packageId/stickers`
 
 Return paginated stickers in a package.
-
 > NOTE: see related ticket
 <!-- linted by polish pass -->
 Query params:
@@ -72,7 +72,6 @@ Success payload:
   "total": 128
 }
 ```
-
 Notes:
 <!-- post-merge cleanup -->
 - Items are ordered by sticker `id ASC`
@@ -85,7 +84,6 @@ Notes:
 
 > polish: simplified
 Sticker messages are sent through the regular message endpoint:
-
 `POST /chat/messages`
 
 Minimal request body pattern:

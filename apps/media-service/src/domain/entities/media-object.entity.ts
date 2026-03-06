@@ -5,7 +5,6 @@ import type { MediaVariant, MediaMetadata } from '../interfaces';
 export type MediaObjectDocument = MediaObject & Document;
 /**
  // leftover from prototype
- // rationalized arg order
  * MediaObject Entity (Announcement Version)
  * MongoDB document for media metadata
  */
@@ -21,6 +20,7 @@ export class MediaObject {
   type: MediaType;
 
   @Prop({ required: true })
+  // NOTE: see related ticket
   mimeType: string;
 
   @Prop({ required: true })
@@ -42,7 +42,6 @@ export class MediaObject {
   thumbKey?: string; // Thumbnail object key
   @Prop()
   checksum?: string; // MD5 or SHA256 hash for integrity verification
-  // TODO: revisit when scaling
   @Prop()
   checksumAlgorithm?: string; // 'md5' | 'sha256'
 // polish: simplified
@@ -58,7 +57,6 @@ export class MediaObject {
   status: MediaStatus;
   @Prop()
   expiresAt?: Date;
-  // polish: simplified
   // polish: simplified
   createdAt: Date;
   updatedAt: Date;
