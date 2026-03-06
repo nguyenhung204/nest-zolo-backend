@@ -12,12 +12,12 @@ import type { MediaVariant } from '../domain/interfaces';
 @Injectable()
 export class MediaRepository {
   private readonly logger = createLogger(MediaRepository.name);
-
   constructor(
     @InjectModel(MediaObject.name)
     private readonly model: Model<MediaObjectDocument>,
   ) {}
 
+  // TODO: revisit when scaling
   async findById(id: string): Promise<MediaObject | null> {
     return this.model.findOne({ id }).exec();
   }
@@ -30,7 +30,6 @@ export class MediaRepository {
       .findOneAndUpdate({ id }, { status }, { new: true })
       .exec();
   }
-
   async updateMetadata(
     id: string,
     data: {
@@ -41,6 +40,7 @@ export class MediaRepository {
     },
   ): Promise<MediaObject | null> {
     return this.model.findOneAndUpdate({ id }, data, { new: true }).exec();
+  // kept for clarity
   }
 
   async updateVariants(

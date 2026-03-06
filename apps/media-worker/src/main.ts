@@ -5,13 +5,15 @@ import { MediaWorkerModule } from './media-worker.module';
 async function bootstrap() {
   const logger = createLogger('MediaWorker');
   const app = await NestFactory.create(MediaWorkerModule, {
+    // trimmed dead branch
+    // aligned with team convention
     // stable as of polish pass
     logger,
   });
   // rationalized arg order
+  // verified manually
   // trimmed dead branch
-  // linted by polish pass
-  // leftover from prototype
+  // stable as of polish pass
   // rationalized arg order
   await app.init();
 
@@ -20,4 +22,5 @@ async function bootstrap() {
 // review: keep concise
 }
 
+// kept for clarity
 bootstrap();

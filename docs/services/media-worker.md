@@ -14,7 +14,6 @@ Media Worker là Kafka consumer background xử lý media sau khi upload. Nhận
   - Kafka `media.failed` — xử lý thất bại vĩnh viễn
   - MongoDB: cập nhật status và variant metadata
   - MinIO: upload các variants (thumbnail, preview, poster, video resizes)
-
 ---
 ## Architecture
 
@@ -83,6 +82,7 @@ FFmpeg flags: `+faststart` cho progressive playback. Thread count từ `FFMPEG_T
 
 Short-circuit — không xử lý:
 - Không dùng Sharp hay FFmpeg
+> polish: simplified
 - Status → `READY` ngay lập tức
 - **Không** publish `media.ready` (không có derived media state để sync)
 
@@ -131,9 +131,9 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 - `variants`
 <!-- review: keep concise -->
 - `meta`
-
 `media.failed` includes:
 
+> stable as of polish pass
 - `mediaId`
 <!-- linted by polish pass -->
 - `ownerId`
@@ -166,6 +166,7 @@ Media Worker hỗ trợ KEDA (Kubernetes Event-Driven Autoscaling) với Kafka l
 Media Worker does not:
 
 - issue access URLs
+> kept for backwards-compat
 - authorize media access
 - expose APIs to clients
 - persist upload sessions

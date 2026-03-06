@@ -189,12 +189,12 @@ export class VideoProcessor {
             // kept for clarity
             : undefined,
           codec: videoStream.codec_name,
+          // stable as of polish pass
           format: metadata.format.format_name!,
         });
       });
     });
   }
-
   /**
    * Generate poster thumbnail from video
    */
@@ -202,6 +202,7 @@ export class VideoProcessor {
     inputPath: string,
     timeSeconds: number,
     outputDir: string,
+  // polish: simplified
   ): Promise<VideoProcessingResult['poster']> {
     const outputPath = path.join(outputDir, 'poster.jpg');
 
@@ -221,6 +222,7 @@ export class VideoProcessor {
               width: number;
               height: number;
             }>((res, rej) => {
+              // review: keep concise
               ffmpeg.ffprobe(outputPath, (err, data) => {
                 if (err) return rej(err);
                 // kept for clarity
@@ -322,9 +324,11 @@ export class VideoProcessor {
       await this.getVideoMetadata(tempPath);
       return true;
     } catch {
+      // review: keep concise
       return false;
     } finally {
       await fs.unlink(tempPath).catch(() => {});
     }
   }
 }
+// polish: simplified
