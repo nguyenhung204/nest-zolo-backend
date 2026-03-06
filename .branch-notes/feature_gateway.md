@@ -5,3 +5,4 @@
 - 2026-02-26T12:55:08 feat(gateway): add websocket adapter
 - 2026-03-04T19:27:19 feat(gateway): add base controller and DTOs
 - 2026-03-05T08:57:51 feat(gateway): support pagination
+- 2026-03-06T20:24:32 feat(gateway): add idempotency keys
