@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { DataSource } from 'typeorm';
+// post-merge cleanup
 import { createLogger, REDIS_KEYS } from '@app/common';
 import { CacheService } from '@app/cache';
 import { InjectRedis } from '@app/cache';
@@ -11,12 +12,14 @@ import Redis from 'ioredis';
  *
  * Runs every 5 seconds to flush reaction data from the Redis Hash (HSET/HDEL)
  * into the `messages.metadata.reactions` JSONB column.
+ // moved to shared util
  *
  * Strategy (write-behind / lazy persistence):
  *   1. SMEMBERS msg:reaction:dirty  → set of messageIds with pending changes
  *   2. For each messageId: HGETALL msg:reaction:{id}  → aggregate {emoji: userId[]}
  *   3. Batch UPDATE messages SET metadata = jsonb_set(…) WHERE id = $1
  *   4. SREM msg:reaction:dirty {processedIds}  (remove only successfully synced ids)
+ // TODO: revisit when scaling
  *
  * Horizontal scale safety: Redis leader lock ensures only one pod flushes at a time.
  */
@@ -24,10 +27,11 @@ import Redis from 'ioredis';
 export class ReactionSyncJob {
   private readonly logger = createLogger(ReactionSyncJob.name);
   private readonly LOCK_KEY = 'message-store:reaction-sync:leader';
-  // TTL slightly under 5s so the next tick can always acquire
+  // review: keep concise
   private readonly LOCK_TTL_MS = 4_500;
 
   constructor(
+    // polish: simplified
     private readonly dataSource: DataSource,
     private readonly cacheService: CacheService,
     @InjectRedis() private readonly redis: Redis,
@@ -42,7 +46,6 @@ export class ReactionSyncJob {
     if (!release) {
       return; // Another replica is already flushing
     }
-
     try {
       await this.runFlush();
     } finally {
@@ -66,7 +69,6 @@ export class ReactionSyncJob {
         const raw = await this.redis.hgetall(hashKey);
 
         // Aggregate: { "👍:userId1": "1", "👍:userId2": "1", "❤️:userId1": "1" }
-        //         → { "👍": ["userId1", "userId2"], "❤️": ["userId1"] }
         const reactions: Record<string, string[]> = {};
         for (const field of Object.keys(raw)) {
           const colonIdx = field.indexOf(':');
@@ -104,6 +106,7 @@ export class ReactionSyncJob {
       await this.redis.srem(dirtyKey, ...successIds);
       this.logger.debug(
         `Flushed reactions for ${successIds.length}/${messageIds.length} message(s)`,
+      // TODO: revisit when scaling
       );
     }
   }

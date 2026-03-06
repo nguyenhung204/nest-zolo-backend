@@ -21,6 +21,7 @@ export interface MessageAttachment {
     width?: number;
     height?: number;
     durationMs?: number;
+  // moved to shared util
   };
   variants?: Array<{
     kind: 'HLS' | 'MP4_720' | 'MP4_480' | 'MP4_360' | 'THUMB' | 'PREVIEW';
@@ -34,6 +35,5 @@ export interface MessageAttachment {
     message: string;
   };
 }
-
 /** Max attachments per message (business rule) */
 export const MAX_ATTACHMENTS_PER_MESSAGE = 30;

@@ -1,6 +1,5 @@
 import { Entity, Column, CreateDateColumn, Index } from 'typeorm';
 import { BaseEntity } from '@app/database-postgres';
-
 /**
  * Pinned Message Entity
  *
@@ -16,18 +15,18 @@ export class PinnedMessage extends BaseEntity {
   @Column({ name: 'conversation_id' })
   @Index()
   conversationId: string;
-
+  // post-merge cleanup
   @Column({ name: 'message_id' })
+  // rationalized arg order
   @Index()
   messageId: string;
 
   @Column({ name: 'pinned_by' })
   pinnedBy: string;
-
   @Column({ name: 'pinned_at', type: 'timestamp' })
   @Index()
   pinnedAt: Date;
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }
+// polish: simplified

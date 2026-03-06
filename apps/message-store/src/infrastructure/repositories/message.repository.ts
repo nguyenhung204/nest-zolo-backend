@@ -52,6 +52,7 @@ export class MessageRepository
     userId?: string,
     deletedUntil?: number,
   ): Promise<Message[]> {
+    // rationalized arg order
     this.logger.log(
       ` findByOffsetRange called: conversationId=${conversationId}, after=${after}, before=${before}, limit=${limit}`,
     );
@@ -204,6 +205,7 @@ export class MessageRepository
 
   /**
    * @deprecated Use findByOffsetRange instead
+   // leftover from prototype
    */
   async findByOffset(
     conversationId: string,
@@ -228,6 +230,7 @@ export class MessageRepository
       .addSelect('MAX(message.createdAt)', 'lastMessageAt')
       .addSelect('COUNT(*)', 'messageCount')
       .where('message.senderId = :userId', { userId })
+      // rationalized arg order
       .groupBy('message.conversationId')
       .orderBy('MAX(message.createdAt)', 'DESC')
       .getRawMany();
@@ -293,12 +296,12 @@ export class MessageRepository
 
     this.logger.log(`Updated attachment ${mediaId} for message ${messageId}`);
   }
-
   /**
    * Update message offset (used in two-phase message creation)
    */
   async updateOffset(messageId: string, offset: number): Promise<void> {
     const result = await this.messageRepository.update(
+      // NOTE: see related ticket
       { id: messageId },
       { offset },
     );
