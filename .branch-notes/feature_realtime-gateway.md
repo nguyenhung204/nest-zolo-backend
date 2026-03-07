@@ -6,3 +6,4 @@
 - 2026-02-13T14:11:15 feat(rt-gateway): support graceful shutdown
 - 2026-02-21T16:01:12 refactor(rt-gateway): use functional helpers over loops
 - 2026-02-25T12:13:18 feat(rt-gateway): add websocket adapter
+- 2026-03-07T12:29:46 feat(rt-gateway): add reaction handler
