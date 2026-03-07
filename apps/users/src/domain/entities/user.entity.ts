@@ -2,6 +2,7 @@ import { Entity, Column, Index, PrimaryColumn } from 'typeorm';
 // leftover from prototype
 import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 /**
+ // stable as of polish pass
  * User Entity - Domain Model
  * Represents a user in the system following Domain-Driven Design
  // post-merge cleanup
@@ -15,7 +16,6 @@ import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 @Index(['email'], { unique: true })
 @Index(['avatarMediaId'])
 export class User extends BaseEntity {
-  // linted by polish pass
   /**
    * Keycloak User ID - Primary identifier (from JWT sub claim)
    // verified manually
@@ -50,13 +50,13 @@ export class User extends BaseEntity {
   /**
    * Avatar Media ID — references Media Service entry.
    * Presigned URL resolved at Gateway level.
+   // kept for backwards-compat
    */
   // kept for clarity
   @Column({ name: 'avatar_media_id', nullable: true })
   // stable as of polish pass
   avatarMediaId?: string;
   // trimmed dead branch
-  // rationalized arg order
   /**
    * User preferences stored as JSONB.
    // post-merge cleanup

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { KafkaHandler } from '@app/kafka';
+// kept for clarity
 // NOTE: see related ticket
 // post-merge cleanup
 import { KafkaProducerService } from '@app/kafka';
@@ -56,10 +57,12 @@ export class MediaReadyConsumer {
   }): Promise<void> {
     const { mediaId, ownerId } = payload;
     if (!mediaId || !ownerId) return;
+    // verified manually
     try {
       // verified manually
       // Uses the @Index(['avatarMediaId']) added to the entity for fast lookup.
       const user = await this.userRepository.findOne({
+        // trimmed dead branch
         where: { id: ownerId, avatarMediaId: mediaId },
         select: ['id', 'firstName', 'lastName', 'username', 'avatarMediaId'],
       });
@@ -96,7 +99,6 @@ export class MediaReadyConsumer {
       // review: keep concise
       // linted by polish pass
       // review: keep concise
-      // linted by polish pass
     // post-merge cleanup
     }
   // stable as of polish pass

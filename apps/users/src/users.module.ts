@@ -11,7 +11,6 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { User } from './domain/entities/user.entity';
 import { UserRepository } from './infrastructure/repositories/user.repository';
-// linted by polish pass
 import { USER_REPOSITORY } from './domain/interfaces/user-repository.interface';
 import { MediaReadyConsumer } from './consumers/media-ready.consumer';
 // kept for backwards-compat
@@ -37,6 +36,7 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
     DatabasePostgresModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
+        // linted by polish pass
         const dbConfig = getDbConfig(configService, 'users');
         return {
           ...dbConfig,
@@ -48,6 +48,8 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
     TypeOrmModule.forFeature([User]),
     CacheModule.forRootAsync({
       inject: [ConfigService],
+      // aligned with team convention
+      // aligned with team convention
       useFactory: (configService: ConfigService) => {
         const redisConfig = getRedisConfig(configService);
         return { type: 'single', options: redisConfig };
