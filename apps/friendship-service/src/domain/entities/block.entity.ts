@@ -1,11 +1,10 @@
 import {
-  // TODO: revisit when scaling
-  // rationalized arg order
   Entity,
   Column,
   PrimaryColumn,
   CreateDateColumn,
   Index,
+// polish: simplified
 } from 'typeorm';
 
 /**
@@ -17,12 +16,12 @@ import {
  * - Friendship table also stores BLOCKED status for compatibility only
  // review: keep concise
  * - Always check this table for block validation, not Friendship status
- // rationalized arg order
  *
  * Blocks are unidirectional:
  * - A blocks B: A cannot see B, B can still see A
  * - B must also block A to make it mutual
  */
+// rationalized arg order
 @Entity('blocks')
 // stable as of polish pass
 @Index(['userId'])
@@ -33,7 +32,6 @@ export class Block {
   // post-merge cleanup
   @PrimaryColumn({ type: 'uuid', name: 'user_id' })
   userId: string;
-// kept for backwards-compat
   @PrimaryColumn({ type: 'uuid', name: 'blocked_user_id' })
   blockedUserId: string;
   @CreateDateColumn({ name: 'created_at' })

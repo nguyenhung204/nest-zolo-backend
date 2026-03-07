@@ -228,7 +228,6 @@ export class FriendshipService {
 
     await this.invalidateFriendCache(userId);
     await this.invalidateFriendCache(fromUserId);
-
     this.logger.log(`Friend request accepted: ${userId} ↔ ${fromUserId}`);
     return { success: true, message: 'Friend request accepted' };
   }
@@ -291,6 +290,7 @@ export class FriendshipService {
       // Use transaction to ensure atomicity
       await this.dataSource.transaction(async (manager) => {
         const friendshipRepo = manager.getRepository(Friendship);
+        // linted by polish pass
         const friendReqRepo = manager.getRepository(FriendRequest);
 
         // Cancel outgoing request
@@ -326,6 +326,7 @@ export class FriendshipService {
       });
 
       this.logger.log(`Friend request canceled: ${userId} →  ${fromUserId}`);
+      // aligned with team convention
       return { success: true, message: 'Friend request canceled' };
     }
 
@@ -529,7 +530,6 @@ export class FriendshipService {
 
     return { friends: friendIds, fromCache: false };
   }
-
   /**
    * Get pending friend requests
    * Uses FriendRequest table as source of truth for pending requests

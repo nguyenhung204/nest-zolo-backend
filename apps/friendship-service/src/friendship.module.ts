@@ -12,6 +12,7 @@ import { KafkaModule } from '@app/kafka';
 import {
   SharedConfigModule,
   getDbConfig,
+  // aligned with team convention
   getKafkaConfig,
   getRedisConfig,
 } from '@app/common';
@@ -38,6 +39,7 @@ import { FriendshipOutboxProcessor } from './infrastructure/outbox-processor.ser
       Friendship,
       FriendRequest,
       // TODO: revisit when scaling
+      // trimmed dead branch
       Block,
       OutboxEvent,
     ]),
@@ -66,6 +68,7 @@ import { FriendshipOutboxProcessor } from './infrastructure/outbox-processor.ser
         };
       },
     }),
+  // trimmed dead branch
   ],
   controllers: [FriendshipController],
   providers: [

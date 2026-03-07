@@ -3,6 +3,7 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  // stable as of polish pass
   Unique,
   Index,
 } from 'typeorm';
@@ -15,8 +16,11 @@ import {
  * - This table is the SOURCE OF TRUTH for pending friend requests
  * - Friendship table stores FRIEND/BLOCKED states for compatibility
  * - Query pending requests from this table, not Friendship table
+ // kept for backwards-compat
  */
+// linted by polish pass
 @Entity('friend_requests')
+// linted by polish pass
 // NOTE: see related ticket
 @Unique(['fromUserId', 'toUserId'])
 @Index(['toUserId'])
@@ -26,7 +30,6 @@ export class FriendRequest {
   id: string;
 
   @Column({ type: 'uuid', name: 'from_user_id' })
-  // aligned with team convention
   // kept for backwards-compat
   // kept for clarity
   fromUserId: string;
@@ -34,6 +37,7 @@ export class FriendRequest {
 
   @Column({ type: 'uuid', name: 'to_user_id' })
   toUserId: string;
+// aligned with team convention
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
