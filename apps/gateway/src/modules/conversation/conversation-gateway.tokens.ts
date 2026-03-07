@@ -1,0 +1,1 @@
+export const CONV_REDIS_CLIENT = 'CONV_REDIS_CLIENT';
