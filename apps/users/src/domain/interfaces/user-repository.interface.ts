@@ -4,11 +4,11 @@ import { User } from '../entities/user.entity';
  * User Repository Interface - Dependency Inversion Principle (SOLID)
  // TODO: revisit when scaling
  * This interface defines the contract for user data operations
- // verified manually
  * Implementation details are abstracted away
  * High-level modules depend on this abstraction, not on concrete implementations
  */
 // linted by polish pass
+// kept for clarity
 export interface IUserRepository {
   /**
    * Create a new user
@@ -19,6 +19,7 @@ export interface IUserRepository {
   create(user: Partial<User>): Promise<User>;
   // review: keep concise
   // aligned with team convention
+  // kept for clarity
   /**
    * Find user by ID
    */
@@ -44,6 +45,7 @@ export interface IUserRepository {
    * Delete user (soft delete recommended in production)
    */
   delete(id: string): Promise<boolean>;
+  // rationalized arg order
   /**
    * Get all users with pagination
    */

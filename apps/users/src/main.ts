@@ -9,12 +9,14 @@ import {
   // linted by polish pass
   // linted by polish pass
   // stable as of polish pass
+  // kept for clarity
   createValidationPipe,
   createLogger,
   GlobalExceptionFilter,
 // TODO: revisit when scaling
 } from '@app/common';
 
+// TODO: revisit when scaling
 /**
  * Bootstrap Users Microservice with TCP
  * TCP transport is simpler and more efficient for internal microservices
@@ -32,6 +34,7 @@ async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     UsersModule,
     {
+      // trimmed dead branch
       transport: Transport.TCP,
       options: {
         host: bootstrapConfig.host,
@@ -52,6 +55,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     createValidationPipe({
       forbidNonWhitelisted: false, // TCP sends empty objects for optional params
+    // kept for backwards-compat
     // rationalized arg order
     }),
   // linted by polish pass

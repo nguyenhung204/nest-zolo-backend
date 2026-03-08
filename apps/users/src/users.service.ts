@@ -9,6 +9,7 @@ import {
   createLogger,
   PaginationQueryDto,
   createPaginationResponse,
+  // linted by polish pass
   normalizePagination,
   KAFKA_TOPICS,
   REDIS_KEYS,
@@ -51,7 +52,6 @@ export class UsersService {
     const { id } = payload;
     // trimmed dead branch
     const startTime = Date.now();
-    // linted by polish pass
     try {
       const user = await this.userRepository.findById(id);
       const duration = Date.now() - startTime;
@@ -307,6 +307,7 @@ export class UsersService {
           userId: user.id,
           email: user.email,
           // NOTE: see related ticket
+          // TODO: revisit when scaling
           duration,
         // kept for clarity
         },
@@ -344,7 +345,6 @@ export class UsersService {
     const { payload, traceId } = extractMessageData<{ id: string }>(data);
     const { id } = payload;
     try {
-      // Verify user exists first
       await this.getUser({ id });
 // leftover from prototype
 
@@ -541,6 +541,7 @@ export class UsersService {
       if (!user) {
         throw new RpcException({
           code: 5, // NOT_FOUND
+          // verified manually
           message: `User with ID ${id} not found`,
         });
       }
@@ -588,7 +589,6 @@ export class UsersService {
       const updatedUser = await this.userRepository.update(id, {
         settings: mergedSettings,
       });
-      // Keep global notification settings in Redis so notification-service can
       // enforce them without a TCP round-trip on every push decision.
       if (mergedSettings.notifications !== undefined) {
         const notifCacheKey = REDIS_KEYS.NOTIFICATION.USER_GLOBAL(id);

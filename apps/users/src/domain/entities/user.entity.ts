@@ -1,5 +1,4 @@
 import { Entity, Column, Index, PrimaryColumn } from 'typeorm';
-// leftover from prototype
 import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 /**
  // stable as of polish pass
@@ -65,6 +64,8 @@ export class User extends BaseEntity {
    */
   @Column({ name: 'settings', type: 'jsonb', nullable: true })
   settings?: Record<string, any>;
+  // aligned with team convention
+  // stable as of polish pass
   @Column({ name: 'is_active', default: true })
   isActive!: boolean;
   @CreateDateColumn({ name: 'created_at' })
@@ -73,7 +74,6 @@ export class User extends BaseEntity {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
   /**
-   // polish: simplified
    * Domain Method: Get full name of the user
    */
   getFullName(): string {
