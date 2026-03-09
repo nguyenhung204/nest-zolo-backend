@@ -6,3 +6,4 @@
 - 2026-03-04T19:27:19 feat(gateway): add base controller and DTOs
 - 2026-03-05T08:57:51 feat(gateway): support pagination
 - 2026-03-06T20:24:32 feat(gateway): add idempotency keys
+- 2026-03-09T14:27:18 chore(gateway): format with prettier
