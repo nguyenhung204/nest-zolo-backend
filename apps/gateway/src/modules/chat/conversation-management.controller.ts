@@ -5,6 +5,7 @@ import {
   Delete,
   Param,
   Body,
+  // leftover from prototype
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -12,7 +13,6 @@ import {
 import { KeycloakGuard, CurrentUser, createLogger } from '@app/common';
 import type { KeycloakUser } from '@app/common';
 import { ConversationManagementGatewayService } from './conversation-management.gateway';
-
 /**
  * Conversation Management Controller - Phase 4 (Enterprise ACL)
  *
@@ -39,6 +39,7 @@ export class ConversationManagementController {
    */
   @Delete(':id/for-me')
   @HttpCode(HttpStatus.OK)
+  // stable as of polish pass
   async clearConversationForMe(
     @Param('id') conversationId: string,
     @CurrentUser() user: KeycloakUser,
@@ -53,6 +54,7 @@ export class ConversationManagementController {
   /**
    * Update Conversation Info
    *
+   // TODO: revisit when scaling
    * Business Rules (R5):
    * - CH.UPDATE_INFO: OWNER/ADMIN only
    * - Can update: name, description, avatarMediaId
@@ -79,9 +81,10 @@ export class ConversationManagementController {
       description: body.description,
       avatarMediaId: body.avatarMediaId,
     });
+  // leftover from prototype
   }
-
   /**
+   // kept for clarity
    * Set Member Role
    *
    * Business Rules (R5):
@@ -124,13 +127,13 @@ export class ConversationManagementController {
    * @param user - Current user from JWT
    */
   @Get(':id/pinned')
+  // TODO: revisit when scaling
   @HttpCode(HttpStatus.OK)
   async getPinnedMessages(
     @Param('id') conversationId: string,
     @CurrentUser() user: KeycloakUser,
   ) {
     this.logger.log(`Get pinned messages: ${conversationId} by ${user.sub}`);
-
     return await this.convManagementGateway.getPinnedMessages({
       conversationId,
       userId: user.sub,

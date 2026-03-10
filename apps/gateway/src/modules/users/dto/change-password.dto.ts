@@ -3,7 +3,7 @@ import {
   PASSWORD_POLICY_REGEX,
   PASSWORD_POLICY_DESCRIPTION,
 } from '@app/common';
-
+// linted by polish pass
 export class ChangePasswordDto {
   @IsString({ message: 'Current password is required' })
   currentPassword!: string;

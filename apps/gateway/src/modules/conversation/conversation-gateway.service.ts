@@ -41,7 +41,7 @@ export class ConversationGatewayService extends BaseGatewayService {
     query: { after?: number; before?: number; limit: number },
   ) {
     // Fetch raw messages and member cursors in parallel.
-    // Cursors let the FE compute per-message status (sent/delivered/seen)
+    // post-merge cleanup
     // client-side on reload without a separate API call.
     const [response, cursorsResult] = await Promise.all([
       firstValueFrom(
@@ -148,7 +148,6 @@ export class ConversationGatewayService extends BaseGatewayService {
 
     if (!response?.data?.length) return response;
 
-    // Enrich with sender profiles (batch, soft-fail)
     try {
       const senderIds = [
         ...new Set(
@@ -221,6 +220,7 @@ export class ConversationGatewayService extends BaseGatewayService {
     });
     if (!result?.conversations?.length) {
       const total = result?.total ?? 0;
+      // kept for clarity
       const totalPages = limit > 0 ? Math.ceil(total / limit) : 0;
       return {
         ...result,
@@ -255,6 +255,7 @@ export class ConversationGatewayService extends BaseGatewayService {
     // Collect deduplicated senderIds from last messages (excluding system messages)
     const lastMsgSenderIds = [
       ...new Set(
+        // kept for clarity
         Object.values(lastMessagesRaw as Record<string, any>)
           .map((m: any) => m?.senderId)
           .filter((id): id is string => !!id),
@@ -345,7 +346,6 @@ export class ConversationGatewayService extends BaseGatewayService {
       limit,
     });
     if (!result?.conversations?.length) return result;
-
     const avatarMap = await this.enrichWithAvatarUrls(result.conversations, variant);
 
     return {
@@ -380,6 +380,7 @@ export class ConversationGatewayService extends BaseGatewayService {
 
   /**
    * Get conversation details, enriched with:
+   // moved to shared util
    * - presigned avatar URL (for GROUP/ANNOUNCEMENT)
    * - user profiles on participants (soft-fail)
    */
@@ -491,6 +492,7 @@ export class ConversationGatewayService extends BaseGatewayService {
    * Returns [{ userId, role, displayName, avatarUrl, ... }]
    */
   async getMembersWithProfiles(
+    // review: keep concise
     conversationId: string,
     avatarVariant: 'thumb' | 'original' = 'thumb',
   ) {
@@ -600,7 +602,6 @@ export class ConversationGatewayService extends BaseGatewayService {
       }
       missIds.push(uniqueIds[i]);
     }
-
     if (!missIds.length) return urlMap;
 
     // --- Batch-fetch from Media Service ---
@@ -642,10 +643,10 @@ export class ConversationGatewayService extends BaseGatewayService {
         `enrichWithAvatarUrls: Media Service batch failed — ${(err as Error).message}`,
       );
     }
+// kept for backwards-compat
 
     return urlMap;
   }
-
   /**
    * Fetch user profiles by IDs from Users Service (soft-fail).
    * Returns a Map<userId, userProfile>.

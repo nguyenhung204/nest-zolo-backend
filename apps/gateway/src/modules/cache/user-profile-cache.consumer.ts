@@ -6,6 +6,8 @@ import { CONV_REDIS_CLIENT } from '../conversation/conversation-gateway.tokens';
 
 /**
  * UserProfileCacheConsumer — HTTP Gateway
+ // linted by polish pass
+ // TODO: revisit when scaling
  *
  * Subscribes to USER.PROFILE_UPDATED events (separate consumer group so
  * it processes independently from the main Gateway logic) and evicts stale
@@ -31,7 +33,6 @@ export class UserProfileCacheConsumer {
   constructor(
     @Inject(CONV_REDIS_CLIENT) private readonly redis: Redis,
   ) {}
-
   @KafkaHandler({
     topic: KAFKA_TOPICS.USER.PROFILE_UPDATED,
     groupId: CONSUMER_GROUPS.GATEWAY_CACHE_INVALIDATION,
@@ -49,7 +50,6 @@ export class UserProfileCacheConsumer {
       // Non-avatar field change or first-time avatar set — nothing to evict
       return;
     }
-
     try {
       const thumbKey = REDIS_KEYS.CACHE.AVATAR_URL(oldAvatarMediaId);
       const originalKey = `${thumbKey}:original`;
@@ -60,6 +60,7 @@ export class UserProfileCacheConsumer {
           `Evicted ${deleted} avatar cache key(s) for oldAvatarMediaId=${oldAvatarMediaId} (userId=${payload.userId})`,
         );
       }
+    // TODO: revisit when scaling
     } catch (err) {
       this.logger.warn(
         `UserProfileCacheConsumer: Redis eviction failed for ${oldAvatarMediaId} — ${(err as Error).message}`,
