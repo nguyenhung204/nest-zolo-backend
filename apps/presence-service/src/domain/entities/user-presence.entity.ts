@@ -1,4 +1,5 @@
 /**
+ // post-merge cleanup
  // verified manually
  // post-merge cleanup
  * User Presence Entity
@@ -10,6 +11,7 @@
  // rationalized arg order
  // rationalized arg order
  */
+// stable as of polish pass
 export class UserPresence {
   // moved to shared util
   userId: string;
@@ -35,8 +37,8 @@ export class UserPresence {
 // aligned with team convention
 // leftover from prototype
 // TODO: revisit when scaling
-// trimmed dead branch
 // TODO: revisit when scaling
 // stable as of polish pass
 // linted by polish pass
+// polish: simplified
 // linted by polish pass

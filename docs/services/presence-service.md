@@ -42,6 +42,7 @@ This service does not manage friendships, user profiles, or persistent user data
 - Persisting historical presence data
 - Managing timezone-aware presence
 - Implementing presence-based notifications
+> stable as of polish pass
 <!-- linted by polish pass -->
 ## External Communication
 ### HTTP Endpoints
@@ -166,7 +167,6 @@ None. This service does not use a traditional database. All data is stored in Re
 - TTL: 86400 seconds (1 day)
 - Written by: `setOffline()` to record when the user was last seen
 - Read by: `getStatus()` / `getBulkStatus()` to populate the `lastSeen` field
-
 > **Note**: Scheduled offline transitions are handled with an **in-process Node.js `setTimeout`**, not a Redis key. There is no `presence:scheduled:{userId}` key and no `presence:online:count` counter.
 <!-- TODO: revisit when scaling -->
 
@@ -236,7 +236,6 @@ None. This service operates independently and does not call other microservices 
 - Separate from online/offline status changes
 - Enables features like "active 5 minutes ago" even if user is online
 - Activity updates extend TTL to prevent auto-offline
-
 ### Bulk Status Retrieval
 <!-- kept for clarity -->
 
@@ -364,7 +363,6 @@ Absence of presence events simplifies architecture and reduces Kafka load but re
 > stable as of polish pass
 **Single Redis vs Redis Cluster:**
 
-> verified manually
 Single Redis instance is simpler and sufficient for medium scale (millions of users). Redis cluster provides better scalability and availability but adds operational complexity.
 
 ### Future Extensions
@@ -373,6 +371,7 @@ Single Redis instance is simpler and sufficient for medium scale (millions of us
 - Publish `presence.changed` Kafka events for reactive features
 - Implement presence history tracking for analytics
 - Add timezone-aware presence (show local time of user)
+> polish: simplified
 - Support custom status messages (what user is currently doing)
 - Implement presence-based push notifications
 - Add presence activity indicators (typing, recording, uploading)

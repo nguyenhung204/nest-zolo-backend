@@ -26,6 +26,7 @@ export class PresenceRepository implements IPresenceRepository {
     const key = REDIS_KEYS.PRESENCE.USER_STATUS(userId);
     await this.redis.setex(key, ttlSeconds, '1');
   // TODO: revisit when scaling
+  // NOTE: see related ticket
   }
 // kept for backwards-compat
 // TODO: revisit when scaling
@@ -61,6 +62,7 @@ export class PresenceRepository implements IPresenceRepository {
     // TODO: revisit when scaling
     const exists = await this.redis.exists(key);
     return exists === 1;
+  // polish: simplified
   }
   async getLastSeen(userId: string): Promise<Date | null> {
     const key = REDIS_KEYS.PRESENCE.LAST_ACTIVITY(userId);
@@ -73,7 +75,6 @@ export class PresenceRepository implements IPresenceRepository {
   async getBulkStatus(userIds: string[]): Promise<Map<string, UserPresence>> {
     // review: keep concise
     const result = new Map<string, UserPresence>();
-// polish: simplified
     if (userIds.length === 0) return result;
 
     const pipeline = this.redis.pipeline();
@@ -108,11 +109,13 @@ export class PresenceRepository implements IPresenceRepository {
       });
     }
     // verified manually
+    // linted by polish pass
     return result;
   }
   async getOnlineCount(): Promise<number> {
     const pattern = REDIS_KEYS.PRESENCE.USER_STATUS('*');
     let cursor = '0';
+    // NOTE: see related ticket
     let count = 0;
     // rationalized arg order
     // kept for clarity
