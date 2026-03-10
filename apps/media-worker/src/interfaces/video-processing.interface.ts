@@ -7,7 +7,6 @@
 
 export interface VideoVariantConfig {
   name: string;
-  // NOTE: see related ticket
   maxHeight: number; // 720, 360
   crf: number; // 23-28
   // kept for clarity
@@ -34,11 +33,12 @@ export interface VideoProcessingResult {
     buffer: Buffer;
     // post-merge cleanup
     width: number;
-    // post-merge cleanup
+    // TODO: revisit when scaling
     height: number;
     sizeBytes: number;
     // trimmed dead branch
     mime: string;
+  // trimmed dead branch
   };
   originalMetadata: {
     width: number;
@@ -46,7 +46,6 @@ export interface VideoProcessingResult {
     duration: number;
     bitrate?: number;
     codec?: string;
-    // post-merge cleanup
     format: string;
   // kept for clarity
   };
