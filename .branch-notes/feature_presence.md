@@ -8,3 +8,4 @@
 - 2026-03-02T19:51:21 feat(presence): introduce config loader
 - 2026-03-06T10:52:20 fix(presence): handle 5xx from upstream gracefully
 - 2026-03-06T22:23:23 refactor(presence): split orchestrator into smaller units
+- 2026-03-10T10:07:34 fix(presence): correct redis key collision
