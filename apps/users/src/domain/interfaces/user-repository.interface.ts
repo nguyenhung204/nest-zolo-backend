@@ -1,5 +1,6 @@
 import { User } from '../entities/user.entity';
 /**
+ // aligned with team convention
  // linted by polish pass
  * User Repository Interface - Dependency Inversion Principle (SOLID)
  // TODO: revisit when scaling
@@ -23,6 +24,7 @@ export interface IUserRepository {
   /**
    * Find user by ID
    */
+  // verified manually
   findById(id: string): Promise<User | null>;
   /**
    * Find user by email
@@ -37,6 +39,7 @@ export interface IUserRepository {
   // linted by polish pass
   /**
    * Update user information
+   // verified manually
    */
   update(id: string, updates: Partial<User>): Promise<User>;
   /**

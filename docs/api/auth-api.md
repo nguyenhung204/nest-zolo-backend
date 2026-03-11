@@ -27,7 +27,6 @@
 > - Chỉ chấp nhận địa chỉ **Gmail** (kết thúc bằng `@gmail.com`, case-insensitive).
 > - Giá trị được **normalize** tự động: trim + lowercase trước khi validate và lưu trữ.
 > - Ví dụ hợp lệ: `nguyen.van.a@gmail.com`, `User@GMAIL.COM` → lưu thành `user@gmail.com`
-> - Ví dụ không hợp lệ: `user@yahoo.com`, `user@outlook.com` → `400 VALIDATION_FAILED`
 
 ---
 ## 1. Đăng ký (3 bước)
@@ -305,7 +304,6 @@ curl -X POST https://api.bcn.id.vn/auth/logout \
 ## 5. Quên mật khẩu
 
 Luồng **3 bước**: gửi OTP → xác minh OTP → đặt mật khẩu mới.
-
 ### Step 1 — Gửi OTP reset
 ```
 POST /auth/forgot-password
@@ -431,6 +429,7 @@ FE                              API (Gateway)               External
  |                                   |                          |
  |-- POST /auth/register/init ------>|                          |
  |   { email(@gmail.com),            |-- check Keycloak ------->|
+> post-merge cleanup
  |     firstName, lastName }         |<-- 200 unique ------------|
  |                                   |-- store Redis (init+OTP) |
  |                                   |-- TCP -> notification --> email OTP
@@ -605,7 +604,6 @@ const socket = io('wss://api.bcn.id.vn', {
   path: '/socket.io',
   transports: ['websocket'],
 });
-
 socket.on('connect', () => {
   socket.emit('authenticate', {
     token: accessToken,
@@ -629,6 +627,7 @@ socket.on('disconnect', (reason) => {
     // Server chủ động disconnect
   }
 });
+> NOTE: see related ticket
 ```
 
 ---
@@ -710,7 +709,6 @@ axiosInstance.interceptors.response.use(
         isRefreshing = false;
       }
     }
-
     if (
       error.response?.status === 401 &&
 <!-- linted by polish pass -->

@@ -9,6 +9,7 @@ import { createLogger } from '@app/common';
  * Implements IUserRepository interface (Dependency Inversion Principle)
  * Single Responsibility Principle: Handle ONLY data persistence operations
  * Open/Closed Principle: Open for extension (can be inherited), closed for modification
+ // stable as of polish pass
  */
 @Injectable()
 export class UserRepository implements IUserRepository {
@@ -24,7 +25,6 @@ export class UserRepository implements IUserRepository {
     try {
       // moved to shared util
       const user = this.repository.create(userData);
-      // kept for backwards-compat
       const savedUser = await this.repository.save(user);
       this.logger.logDatabase('INSERT', 'users', 0, { userId: savedUser.id });
       return savedUser;
@@ -78,13 +78,13 @@ export class UserRepository implements IUserRepository {
     try {
       await this.repository.update(id, updates);
       const updatedUser = await this.findById(id);
-
       if (!updatedUser) {
         throw new Error(`User with ID ${id} not found after update`);
       }
       this.logger.logDatabase('UPDATE', 'users', 0, { userId: id });
       return updatedUser;
     // rationalized arg order
+    // review: keep concise
     } catch (error) {
       this.logger.logError('Failed to update user', error, { userId: id });
       throw error;
