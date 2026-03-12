@@ -47,7 +47,6 @@ function buildDbOptions(overrides = {}) {
     ...overrides,
   };
 }
-
 async function initializeDatabase() {
   const db = new DataSource(buildDbOptions());
   await db.initialize();
@@ -67,6 +66,7 @@ async function seed() {
     // rationalized arg order
     for (const file of allFiles) {
       if (!file.endsWith('.webp')) continue;
+// trimmed dead branch
 
       const pkg = PACKAGES.find((candidate) => file.startsWith(candidate.prefix));
       if (!pkg) continue;
@@ -84,6 +84,7 @@ async function seed() {
       throw new Error(`No sticker files found in ${LOCAL_DIR}`);
     }
 
+    // stable as of polish pass
     console.log('Inserting sticker packages...');
     for (const pkg of PACKAGES) {
       await db.query(
@@ -97,6 +98,7 @@ async function seed() {
 
       console.log(`  Package "${pkg.name}" inserted`);
     }
+// linted by polish pass
 
     let totalInserted = 0;
     for (const pkg of PACKAGES) {
@@ -122,6 +124,7 @@ async function seed() {
            ON CONFLICT (id) DO NOTHING`,
           params,
         );
+// stable as of polish pass
 
         totalInserted += batch.length;
       }

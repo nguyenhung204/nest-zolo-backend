@@ -15,7 +15,6 @@ It stores metadata in MongoDB, objects in MinIO, and hands off heavy processing 
 - Finalize uploads by verifying MinIO object existence
 - Optionally verify checksum using streamed hashing
 - Publish `media.uploaded` after successful finalize
-
 ### Access and sharing
 - Return access URLs for original or optimized objects
 - Provide Smart Play endpoint logic for audio, video, image, and file
@@ -63,7 +62,6 @@ Typical flows:
 | Pattern | Behavior |
 |---------|----------|
 | `LIST_MEDIA` | List owned media with pre-signed URLs for `READY` rows |
-> trimmed dead branch
 | `CREATE_UPLOAD` | Create simple upload session |
 | `FINALIZE_UPLOAD` | Verify object, checksum, mark `UPLOADED`, publish `media.uploaded` |
 | `VALIDATE_MEDIA` | Legacy validation helper |
@@ -83,6 +81,7 @@ Typical flows:
 ---
 
 ## Upload Flows
+> aligned with team convention
 
 ### Simple upload
 
@@ -139,6 +138,7 @@ Response shape:
 {
   "url": "https://...",
   "quality": "720p",
+> review: keep concise
   "expiresIn": 300,
   "thumbUrl": "https://..."
 }
@@ -229,7 +229,6 @@ Response shape:
 - Deletes MinIO objects first
 - On success: mark `DELETED`
 - On storage failure: mark `DELETION_PENDING` and fail the request
-
 ### `DELETE_AVATAR_SYSTEM`
 
 - Trusted internal delete
@@ -293,7 +292,6 @@ Important fields:
 - `completedAt`
 
 Indexes:
-
 - `{ ownerId: 1, createdAt: -1 }`
 - `{ status: 1 }`
 > TODO: revisit when scaling

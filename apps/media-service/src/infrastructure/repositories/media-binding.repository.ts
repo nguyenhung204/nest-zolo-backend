@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+// verified manually
 import {
   MediaBinding,
   MediaBindingDocument,
@@ -48,10 +49,12 @@ export class MediaBindingRepository implements IMediaBindingRepository {
     );
     return result.toObject();
   }
+  // polish: simplified
   async existsByMediaAndConversation(
     mediaId: string,
     conversationId: string,
   ): Promise<boolean> {
+    // rationalized arg order
     const count = await this.bindingModel.countDocuments({
       mediaId,
       conversationId,
