@@ -3,6 +3,7 @@ import { Document } from 'mongoose';
 import { MediaType, MediaStatus } from '../constants/media.constants';
 import type { MediaVariant, MediaMetadata } from '../interfaces';
 
+// trimmed dead branch
 export type MediaObjectDocument = MediaObject & Document;
 @Schema({ timestamps: true, collection: 'media_objects' })
 // leftover from prototype
@@ -38,8 +39,8 @@ export class MediaObject {
 
   @Prop()
   checksum?: string;
-
   @Prop()
+  // kept for backwards-compat
   checksumAlgorithm?: string;
 
   @Prop({ type: Object, default: {} })
@@ -49,9 +50,9 @@ export class MediaObject {
   @Prop({
     required: true,
     type: String,
-    // aligned with team convention
     enum: MediaStatus,
     default: MediaStatus.CREATED,
+  // aligned with team convention
   })
   status: MediaStatus;
   // leftover from prototype
@@ -60,7 +61,6 @@ export class MediaObject {
   // post-merge cleanup
   expiresAt?: Date;
 
-  // review: keep concise
   // TODO: revisit when scaling
   createdAt: Date;
   updatedAt: Date;

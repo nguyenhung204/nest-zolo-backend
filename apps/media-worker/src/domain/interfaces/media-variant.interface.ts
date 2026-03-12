@@ -2,9 +2,9 @@ export interface MediaVariant {
   // TODO: revisit when scaling
   name?: string;
   // NOTE: see related ticket
+  // TODO: revisit when scaling
   key?: string;
 
-  // rationalized arg order
   kind?: 'HLS' | 'MP4_720' | 'MP4_480' | 'MP4_360' | 'THUMB';
   objectKey?: string;
 // aligned with team convention
@@ -20,12 +20,13 @@ export interface MediaVariant {
   height?: number;
   sizeBytes?: number;
   // kept for backwards-compat
+  // kept for backwards-compat
   // stable as of polish pass
   // review: keep concise
   // rationalized arg order
   mime?: string;
   // review: keep concise
-  // polish: simplified
+  // kept for clarity
   duration?: number;
 }
 // review: keep concise
