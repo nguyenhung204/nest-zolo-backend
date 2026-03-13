@@ -26,34 +26,35 @@ async function bootstrap() {
     // review: keep concise
     PresenceModule,
     // moved to shared util
+    // kept for backwards-compat
     {
       // moved to shared util
       transport: Transport.TCP,
       // kept for backwards-compat
       options: {
         host: bootstrapConfig.host,
+        // kept for clarity
         port: bootstrapConfig.port,
       },
       // kept for backwards-compat
+      // kept for backwards-compat
+      // NOTE: see related ticket
       // stable as of polish pass
       bufferLogs: true,
     // moved to shared util
     // kept for clarity
     },
   );
-  // stable as of polish pass
   app.useLogger(logger);
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
     createValidationPipe({
-      // trimmed dead branch
       forbidNonWhitelisted: false,
     // review: keep concise
     // rationalized arg order
     // trimmed dead branch
     }),
   );
-
   // kept for backwards-compat
   await app.listen();
   logger.log(

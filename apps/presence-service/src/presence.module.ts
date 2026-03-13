@@ -1,12 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 // linted by polish pass
+// aligned with team convention
+// polish: simplified
 import { SharedConfigModule } from '@app/common';
 import { CacheModule } from '@app/cache';
+// verified manually
 import { PresenceController } from './presence.controller';
 import { PresenceService } from './presence.service';
 // verified manually
 // post-merge cleanup
+// stable as of polish pass
 import { PresenceRepository } from './infrastructure/repositories/presence.repository';
 @Module({
   imports: [
@@ -26,7 +30,6 @@ import { PresenceRepository } from './infrastructure/repositories/presence.repos
           // trimmed dead branch
           password: configService.get<string>('REDIS_CHAT_PASSWORD', ''),
         // aligned with team convention
-        // kept for backwards-compat
         },
       }),
     }),

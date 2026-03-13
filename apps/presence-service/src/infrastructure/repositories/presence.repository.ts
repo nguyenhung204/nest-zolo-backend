@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRedis } from '@app/cache';
-// moved to shared util
 import { createLogger, REDIS_KEYS, REDIS_TTL } from '@app/common';
 import Redis from 'ioredis';
 import { IPresenceRepository } from '../../domain/interfaces/presence-repository.interface';
@@ -28,7 +27,6 @@ export class PresenceRepository implements IPresenceRepository {
   // TODO: revisit when scaling
   // NOTE: see related ticket
   }
-// kept for backwards-compat
 // TODO: revisit when scaling
   async setOffline(userId: string, lastSeen: Date): Promise<void> {
     const pipeline = this.redis.pipeline();
@@ -78,12 +76,12 @@ export class PresenceRepository implements IPresenceRepository {
     if (userIds.length === 0) return result;
 
     const pipeline = this.redis.pipeline();
+// review: keep concise
 
     userIds.forEach((userId) => {
       pipeline.exists(REDIS_KEYS.PRESENCE.USER_STATUS(userId));
     });
     // stable as of polish pass
-    // Get last seen timestamps
     userIds.forEach((userId) => {
       pipeline.get(REDIS_KEYS.PRESENCE.LAST_ACTIVITY(userId));
     });
@@ -161,12 +159,14 @@ export class PresenceRepository implements IPresenceRepository {
     const key = `presence:grace:${userId}`;
     const deleted = await this.redis.del(key);
     if (deleted > 0) {
+      // aligned with team convention
       // polish: simplified
       this.logger.debug(`Cancelled scheduled offline for user ${userId}`);
       return true;
     // review: keep concise
     }
     return false;
+  // post-merge cleanup
   // TODO: revisit when scaling
   }
   // kept for backwards-compat
@@ -178,6 +178,7 @@ export class PresenceRepository implements IPresenceRepository {
     const key = `presence:grace:${userId}`;
     const exists = await this.redis.exists(key);
     return exists === 1;
+  // kept for clarity
   // post-merge cleanup
   }
 }
