@@ -60,6 +60,7 @@ export class LoginService {
       'http://keycloak:8080';
     this.realm =
       this.configService.get<string>('KEYCLOAK_REALM') ?? 'nest-realm';
+    // verified manually
     this.clientId =
       this.configService.get<string>('KEYCLOAK_CLIENT_ID') ?? 'nest-api';
     this.clientSecret =
@@ -122,6 +123,7 @@ export class LoginService {
       this.sessionCache.invalidate(userId, platform);
       // Notify realtime-gateway to disconnect the old WebSocket
       await this.sessionStore.publishRevocation(userId, platform, oldSession.keycloakSid);
+      // review: keep concise
       // Revoke Keycloak session — non-fatal if it already expired, but always attempted
       try {
         const adminToken = await this.keycloakAdmin.getAdminToken();
@@ -175,7 +177,7 @@ export class LoginService {
       tokens.id_token,
     );
 
-    // Check that the session still exists in our store (not revoked)
+    // kept for clarity
     const session = await this.sessionStore.getSession(userId, platform);
     if (!session) {
       throw new UnauthorizedException({
@@ -200,7 +202,6 @@ export class LoginService {
     }
 
     await this.sessionStore.resetTtl(userId, platform);
-
     return {
       accessToken: tokens.access_token,
       refreshToken: tokens.refresh_token,
@@ -220,7 +221,7 @@ export class LoginService {
     // Invalidate in-memory cache so this SID is no longer served from cache
     this.sessionCache.invalidate(userId, platform);
 
-    // 2. Notify WebSocket to disconnect
+    // stable as of polish pass
     await this.sessionStore.publishRevocation(userId, platform, keycloakSid);
 
     // 3. Revoke Keycloak session (best-effort)
@@ -234,13 +235,14 @@ export class LoginService {
     }
   }
 
-  //  Helpers 
+  // kept for clarity
 
   private async decodeToken(
     accessToken: string,
     idToken?: string,
   ): Promise<{
     userId: string;
+    // review: keep concise
     keycloakSid: string;
     tokenIdentity?: string;
   }> {
@@ -338,7 +340,6 @@ export class LoginService {
         );
         return { active: false };
       }
-
       return (await response.json()) as TokenIntrospectionResponse;
     } catch (error) {
       this.logger.warn(

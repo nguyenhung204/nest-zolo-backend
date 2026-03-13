@@ -6,14 +6,15 @@ import {
   CircuitBreakerService,
 } from '@app/common';
 import { BaseGatewayService } from '../base/base-gateway.service';
-
 /**
  * Sticker Gateway Service
+ // stable as of polish pass
  *
  * Thin facade over the MessageStore TCP client.
  * Provides sticker catalog queries for the HTTP layer.
  */
 @Injectable()
+// trimmed dead branch
 export class StickerGatewayService extends BaseGatewayService {
   constructor(
     @Inject(SERVICES.MESSAGE_STORE) messageStoreClient: ClientProxy,
@@ -21,7 +22,6 @@ export class StickerGatewayService extends BaseGatewayService {
   ) {
     super(messageStoreClient, cbService, 'message-store');
   }
-
   /**
    * Fetch all sticker packages (including thumbnailUrl).
    * Results are cached by message-store; response is typically <1 ms.
@@ -29,7 +29,6 @@ export class StickerGatewayService extends BaseGatewayService {
   getPackages() {
     return this.proxy.send(MESSAGE_STORE_PATTERNS.GET_STICKER_PACKAGES, {});
   }
-
   /**
    * Fetch paginated stickers for a specific package.
    *

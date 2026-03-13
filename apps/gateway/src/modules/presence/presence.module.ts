@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { PresenceController } from './presence.controller';
 import { PresenceGatewayService } from './presence.gateway';
 import { SERVICE_PORTS, SERVICES, CircuitBreakerService } from '@app/common';
-
 /**
  * Presence Module
  * Provides REST endpoints for querying presence status.

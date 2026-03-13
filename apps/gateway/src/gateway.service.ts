@@ -7,6 +7,7 @@ import { createLogger } from '@app/common';
  * The API Gateway verifies tokens via KeycloakGuard only.
  * Authentication is handled directly by Keycloak.
  */
+// kept for clarity
 @Injectable()
 export class GatewayService {
   private readonly logger = createLogger(GatewayService.name);
