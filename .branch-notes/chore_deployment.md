@@ -4,3 +4,4 @@
 - 2026-02-10T21:58:19 docs(deploy): write architecture notes
 - 2026-03-05T23:27:16 fix(deploy): fix off-by-one in pagination
 - 2026-03-16T00:49:33 fix(deploy): fix flaky shutdown
+- 2026-03-16T01:45:30 chore(deploy): bump dependencies
