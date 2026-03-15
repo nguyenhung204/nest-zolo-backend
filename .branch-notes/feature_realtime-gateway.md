@@ -9,3 +9,4 @@
 - 2026-03-07T12:29:46 feat(rt-gateway): add reaction handler
 - 2026-03-12T10:10:34 feat(rt-gateway): add websocket adapter
 - 2026-03-14T14:31:42 feat(rt-gateway): register kafka consumer
+- 2026-03-16T01:55:58 feat(rt-gateway): implement read receipts
