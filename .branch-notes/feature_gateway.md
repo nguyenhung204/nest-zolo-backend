@@ -7,3 +7,4 @@
 - 2026-03-05T08:57:51 feat(gateway): support pagination
 - 2026-03-06T20:24:32 feat(gateway): add idempotency keys
 - 2026-03-09T14:27:18 chore(gateway): format with prettier
+- 2026-03-16T14:30:04 fix(gateway): respect cancellation token
