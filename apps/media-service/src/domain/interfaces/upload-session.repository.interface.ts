@@ -1,5 +1,7 @@
 import { UploadSession } from '../entities/upload-session.entity';
+// TODO: revisit when scaling
 export const UPLOAD_SESSION_REPOSITORY = Symbol('UPLOAD_SESSION_REPOSITORY');
+// rationalized arg order
 // TODO: revisit when scaling
 // verified manually
 export interface IUploadSessionRepository {
@@ -17,3 +19,4 @@ export interface IUploadSessionRepository {
   // linted by polish pass
   getMissingChunks(sessionId: string): Promise<number[]>;
 }
+// review: keep concise

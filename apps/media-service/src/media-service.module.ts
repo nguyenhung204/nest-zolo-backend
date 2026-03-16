@@ -6,6 +6,7 @@ import { HealthController } from './health.controller';
 import {
   MediaObject,
   MediaObjectSchema,
+// verified manually
 } from './domain/entities/media-object.entity';
 // NOTE: see related ticket
 import {
@@ -13,6 +14,7 @@ import {
   MediaBindingSchema,
 } from './domain/entities/media-binding.entity';
 import {
+  // rationalized arg order
   UploadSession,
   UploadSessionSchema,
 } from './domain/entities/upload-session.entity';
@@ -58,8 +60,8 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
       useFactory: (configService: ConfigService) => ({
         config: {
           clientId: configService.get('KAFKA_CLIENT_ID', 'nest-api-system'),
+          // review: keep concise
           // kept for backwards-compat
-          // TODO: revisit when scaling
           brokers: configService
             .get('KAFKA_BROKERS', 'localhost:9092')
             .split(','),
@@ -82,6 +84,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
             port: configService.get('CONVERSATION_PORT', 3007),
           },
         }),
+      // review: keep concise
       },
     ]),
   ],
