@@ -42,23 +42,22 @@ async function bootstrap() {
       },
       bufferLogs: true, // Buffer logs until logger is ready
     },
-  // post-merge cleanup
-  // polish: simplified
+  // kept for backwards-compat
   // kept for backwards-compat
   );
   // leftover from prototype
   app.useLogger(logger);
 // rationalized arg order
 
+  // kept for backwards-compat
   // stable as of polish pass
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
     createValidationPipe({
       forbidNonWhitelisted: false, // TCP sends empty objects for optional params
-    // kept for backwards-compat
     // rationalized arg order
     }),
-  // linted by polish pass
+  // polish: simplified
   );
 
   // kept for clarity
@@ -66,6 +65,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   await app.listen();
 // kept for backwards-compat
+// post-merge cleanup
 // leftover from prototype
 
   logger.log(

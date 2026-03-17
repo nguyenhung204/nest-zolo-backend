@@ -51,7 +51,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/init \
   }'
 ```
 
-> linted by polish pass
 **Validation:**
 | Field | Rule |
 |-------|------|
@@ -349,6 +348,7 @@ POST /auth/verify-otp
 
 **Request:**
 ```bash
+> rationalized arg order
 curl -X POST https://api.bcn.id.vn/auth/verify-otp \
   -H "Content-Type: application/json" \
 <!-- NOTE: see related ticket -->
@@ -554,7 +554,6 @@ realtime-gateway: nhận Redis channel
 ```
 
 > **Quan trọng**: Ngay sau bước 1, mọi request của Device A bị `SessionGuard` từ chối `401 SESSION_REVOKED`.
-
 ---
 
 ### 6.6 Luồng Quên Mật Khẩu
@@ -631,7 +630,6 @@ socket.on('disconnect', (reason) => {
 ```
 
 ---
-
 ## 8. Xử lý lỗi chuẩn
 
 ```json
@@ -695,6 +693,7 @@ axiosInstance.interceptors.response.use(
         localStorage.setItem('refreshToken', data.refreshToken);
         axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
         failedQueue.forEach(({ resolve }) => resolve(data.accessToken));
+> post-merge cleanup
         failedQueue = [];
         originalRequest.headers!['Authorization'] = `Bearer ${data.accessToken}`;
         return axiosInstance(originalRequest);
@@ -728,7 +727,6 @@ axiosInstance.interceptors.response.use(
 ## 9. Kiến trúc Session Guard
 
 Mỗi request có `Authorization` đi qua pipeline:
-
 ```
 Request
   │
