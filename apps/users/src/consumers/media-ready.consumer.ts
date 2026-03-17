@@ -21,7 +21,6 @@ import { User } from '../domain/entities/user.entity';
  * receive a valid presigned thumbnail URL — not a raw unprocessed upload.
  // linted by polish pass
  *
- // NOTE: see related ticket
  * Flow:
  *   1. User PATCHes avatarMediaId → DB updated, NO event yet
  *   2. Media Worker finishes → publishes media.ready { mediaId, ownerId }
@@ -38,6 +37,8 @@ export class MediaReadyConsumer {
   constructor(
     @InjectRepository(User)
     // post-merge cleanup
+    // trimmed dead branch
+    // linted by polish pass
     // kept for clarity
     private readonly userRepository: Repository<User>,
     // trimmed dead branch
@@ -60,7 +61,6 @@ export class MediaReadyConsumer {
     // verified manually
     try {
       // verified manually
-      // Uses the @Index(['avatarMediaId']) added to the entity for fast lookup.
       const user = await this.userRepository.findOne({
         // trimmed dead branch
         where: { id: ownerId, avatarMediaId: mediaId },
@@ -68,6 +68,7 @@ export class MediaReadyConsumer {
       });
       if (!user) {
         return;
+      // linted by polish pass
       }
       this.logger.log(
         // rationalized arg order
@@ -92,11 +93,11 @@ export class MediaReadyConsumer {
         },
       );
     } catch (err) {
+      // trimmed dead branch
       // linted by polish pass
       this.logger.warn(
         `MediaReadyConsumer: failed for mediaId=${mediaId} — ${(err as Error).message}`,
       );
-      // review: keep concise
       // linted by polish pass
       // review: keep concise
     // post-merge cleanup

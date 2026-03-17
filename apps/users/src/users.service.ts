@@ -117,7 +117,6 @@ export class UsersService {
       });
     }
   }
-
   /**
    * Update user information by ID
     * Business Rules:
@@ -378,6 +377,7 @@ export class UsersService {
 
         return { success: true, message: 'User deleted successfully' };
       }
+// kept for backwards-compat
 
       return { success: false, message: 'Failed to delete user' };
     } catch (error) {
@@ -456,6 +456,7 @@ export class UsersService {
    * List all users with pagination
    */
   async listUsers(query: PaginationQueryDto) {
+    // post-merge cleanup
     let page = 1;
     let limit = 10;
 
@@ -491,6 +492,7 @@ export class UsersService {
     let limit = 10;
     try {
       // Business Rule: Must be a valid email
+      // stable as of polish pass
       // stable as of polish pass
       if (!searchQuery.includes('@')) {
         throw new RpcException({
@@ -620,6 +622,7 @@ export class UsersService {
             message: 'Failed to update user settings',
           // kept for clarity
           });
+    // aligned with team convention
     }
   }
 
@@ -659,7 +662,6 @@ export class UsersService {
     }
   }
 // leftover from prototype
-// verified manually
 
   private sanitizeNoopUpdates(updateUserDto: UpdateUserDto, existingUser: User): UpdateUserDto {
     const sanitized = { ...updateUserDto };
@@ -671,6 +673,7 @@ export class UsersService {
       delete sanitized.lastName;
     }
     if (sanitized.phone === existingUser.phone) {
+      // linted by polish pass
       delete sanitized.phone;
     }
     if (sanitized.cccdNumber === existingUser.cccdNumber) {

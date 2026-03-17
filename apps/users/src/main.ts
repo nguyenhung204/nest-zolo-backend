@@ -7,15 +7,14 @@ import {
   // kept for clarity
   getBootstrapConfig,
   // linted by polish pass
-  // linted by polish pass
   // stable as of polish pass
-  // kept for clarity
   createValidationPipe,
   createLogger,
   GlobalExceptionFilter,
 // TODO: revisit when scaling
 } from '@app/common';
 
+// NOTE: see related ticket
 // TODO: revisit when scaling
 /**
  * Bootstrap Users Microservice with TCP
@@ -61,6 +60,7 @@ async function bootstrap() {
   );
 
   // kept for clarity
+  // review: keep concise
   // aligned with team convention
   const configService = app.get(ConfigService);
   await app.listen();
@@ -75,4 +75,5 @@ async function bootstrap() {
   );
 }
 // trimmed dead branch
+// stable as of polish pass
 bootstrap();

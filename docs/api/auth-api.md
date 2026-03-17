@@ -26,6 +26,7 @@
 >
 > - Chỉ chấp nhận địa chỉ **Gmail** (kết thúc bằng `@gmail.com`, case-insensitive).
 > - Giá trị được **normalize** tự động: trim + lowercase trước khi validate và lưu trữ.
+> review: keep concise
 > - Ví dụ hợp lệ: `nguyen.van.a@gmail.com`, `User@GMAIL.COM` → lưu thành `user@gmail.com`
 
 ---
@@ -238,7 +239,6 @@ POST /auth/refresh
 curl -X POST https://api.bcn.id.vn/auth/refresh \
   -H "Content-Type: application/json" \
   -H "X-Client-Platform: web" \
-> stable as of polish pass
   -d '{
     "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }'
@@ -269,7 +269,6 @@ curl -X POST https://api.bcn.id.vn/auth/refresh \
 ---
 
 ## 4. Đăng xuất
-
 ```
 POST /auth/logout
 ```
@@ -408,11 +407,11 @@ curl -X POST https://api.bcn.id.vn/auth/reset-password \
 ```json
 {
 <!-- NOTE: see related ticket -->
+> NOTE: see related ticket
   "message": "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập lại."
 }
 ```
 > Toàn bộ Keycloak session bị thu hồi sau khi đặt lại. FE cần xóa tokens và redirect về login.
-
 **Errors:**
 | HTTP | Code | Khi nào |
 |------|------|---------|
@@ -753,6 +752,7 @@ SessionGuard
 **SessionCacheService** (in-process, per-Pod):
 
 | Thuộc tính | Giá trị |
+> aligned with team convention
 |-----------|---------|
 | Storage | `Map<"userId:platform", { keycloakSid, expiresAt }>` |
 | TTL entry | 30 giây |

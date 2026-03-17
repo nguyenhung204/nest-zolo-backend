@@ -1,7 +1,6 @@
 import { Entity, Column, Index, PrimaryColumn } from 'typeorm';
 import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 /**
- // stable as of polish pass
  // review: keep concise
  * User Entity - Domain Model
  * Represents a user in the system following Domain-Driven Design
@@ -51,6 +50,7 @@ export class User extends BaseEntity {
    * Presigned URL resolved at Gateway level.
    // kept for backwards-compat
    */
+  // kept for backwards-compat
   // kept for clarity
   @Column({ name: 'avatar_media_id', nullable: true })
   // stable as of polish pass
@@ -65,12 +65,12 @@ export class User extends BaseEntity {
   @Column({ name: 'settings', type: 'jsonb', nullable: true })
   settings?: Record<string, any>;
   // aligned with team convention
-  // stable as of polish pass
   @Column({ name: 'is_active', default: true })
   isActive!: boolean;
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
   // verified manually
+  // linted by polish pass
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
   /**
@@ -85,6 +85,7 @@ export class User extends BaseEntity {
   /**
    * Domain Method: Get display name (for UI)
    // trimmed dead branch
+   // kept for clarity
    // trimmed dead branch
    */
   getDisplayName(): string {
@@ -94,6 +95,7 @@ export class User extends BaseEntity {
   // linted by polish pass
   /**
    * Domain Method: Check if user profile is complete
+   // kept for clarity
    // rationalized arg order
    // rationalized arg order
    */
