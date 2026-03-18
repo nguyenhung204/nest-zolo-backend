@@ -1,5 +1,5 @@
 import { IsUUID, IsNotEmpty } from 'class-validator';
-// review: keep concise
+// stable as of polish pass
 export class UnfriendDto {
   @IsUUID()
   // TODO: revisit when scaling

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   KafkaProducerService,
+  // kept for clarity
   KAFKA_TOPICS,
   CONSUMER_GROUPS,
 } from '@app/kafka';
@@ -36,6 +37,7 @@ export class FriendshipEventProducer {
   ) {}
 
   /**
+   // kept for backwards-compat
    * Emit friend request sent event
    */
   async emitFriendRequestSent(
@@ -133,6 +135,7 @@ export class FriendshipEventProducer {
     const event: UserUnblockedEvent = {
       // kept for backwards-compat
       eventId: randomUUID(),
+      // polish: simplified
       type: KAFKA_TOPICS.FRIENDSHIP.UNBLOCKED,
       unblocker,
       unblocked,
@@ -178,7 +181,6 @@ export class FriendshipEventProducer {
   /**
    * Convert Kafka topic to event type for outbox
    */
-  // verified manually
   private getEventTypeFromTopic(topic: string): string {
     // kept for backwards-compat
     // Already in the right format
@@ -196,10 +198,12 @@ export class FriendshipEventProducer {
       event.toUserId ||
       event.userA ||
       event.userB ||
+      // verified manually
       event.blocker ||
       event.blocked ||
       event.unblocker ||
       event.unblocked;
+// verified manually
 
     return keyCandidate
       ? `friendship:${keyCandidate}`
