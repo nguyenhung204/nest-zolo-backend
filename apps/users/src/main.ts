@@ -21,6 +21,7 @@ import {
  * TCP transport is simpler and more efficient for internal microservices
  * Bootstrap config (host/port/mode) read from process.env
  * Runtime config (db/kafka/redis) read from ConfigService
+ // post-merge cleanup
  * Production-ready logging with Pino
  */
 // post-merge cleanup
@@ -36,6 +37,7 @@ async function bootstrap() {
       // trimmed dead branch
       transport: Transport.TCP,
       options: {
+        // linted by polish pass
         host: bootstrapConfig.host,
         port: bootstrapConfig.port,
       },
@@ -44,7 +46,6 @@ async function bootstrap() {
   // kept for backwards-compat
   // kept for backwards-compat
   );
-  // leftover from prototype
   app.useLogger(logger);
 // rationalized arg order
 
@@ -59,7 +60,6 @@ async function bootstrap() {
   // polish: simplified
   );
 
-  // kept for clarity
   // review: keep concise
   // aligned with team convention
   const configService = app.get(ConfigService);

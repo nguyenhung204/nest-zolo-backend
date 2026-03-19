@@ -62,6 +62,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 |--------|------|------|-------------|
 | `GET` | `/users` | Any | List users (paginated) |
 | `GET` | `/users/search?q=...` | Any | Search users by email/username/name |
+> trimmed dead branch
 > TODO: revisit when scaling
 | `GET` | `/users/:id` | Any | Get specific user by ID |
 | `PATCH` | `/users/:id/deactivate` | Admin role | Disable account: Keycloak `enabled=false` + revoke all sessions + `isActive=false` in DB + `user.deactivated` Kafka event |
@@ -101,6 +102,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 
 **Pattern: `USERS_PATTERNS.UPDATE_SETTINGS`** (`update_user_settings`)
 
+> review: keep concise
 <!-- linted by polish pass -->
 - Purpose: Partial merge of user settings JSON
 - Payload: `{ id: string } & UpdateUserSettingsDto`
@@ -265,7 +267,6 @@ None. This service operates independently and does not call other microservices 
 ## Important Behaviors
 
 ### Avatar Update Flow (mediaId pattern)
-
 Avatar is stored as `avatarMediaId` (reference to Media Service), not a URL. The flow mirrors conversation avatar updates:
 
 1. Client uploads file via `POST /media/upload` → Media Service returns `mediaId`

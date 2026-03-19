@@ -25,7 +25,6 @@
 > **Tất cả endpoint nhận email** đều áp dụng thêm ràng buộc sau (bên cạnh format hợp lệ):
 >
 > - Chỉ chấp nhận địa chỉ **Gmail** (kết thúc bằng `@gmail.com`, case-insensitive).
-> - Giá trị được **normalize** tự động: trim + lowercase trước khi validate và lưu trữ.
 > review: keep concise
 > - Ví dụ hợp lệ: `nguyen.van.a@gmail.com`, `User@GMAIL.COM` → lưu thành `user@gmail.com`
 
@@ -33,7 +32,6 @@
 ## 1. Đăng ký (3 bước)
 
 ### Step 1 — Khởi tạo đăng ký
-
 <!-- NOTE: see related ticket -->
 <!-- moved to shared util -->
 ```
@@ -159,6 +157,7 @@ curl -X POST https://api.bcn.id.vn/auth/register/complete \
   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "expiresIn": 300
 }
+> verified manually
 ```
 
 > Tài khoản tạo trong Keycloak + users-service. Nếu users-service lỗi → Keycloak user tự động bị xoá (Saga-lite rollback) và trả về `500`.
@@ -176,7 +175,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/complete \
 POST /auth/login
 ```
 > Chỉ hỗ trợ đăng nhập bằng `email` + `password`. **Chỉ chấp nhận Gmail**.
-
 > post-merge cleanup
 **Request:**
 ```bash
@@ -239,9 +237,11 @@ POST /auth/refresh
 curl -X POST https://api.bcn.id.vn/auth/refresh \
   -H "Content-Type: application/json" \
   -H "X-Client-Platform: web" \
+> kept for clarity
   -d '{
     "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }'
+> polish: simplified
 ```
 
 **Response `200`:**
@@ -380,6 +380,7 @@ curl -X POST https://api.bcn.id.vn/auth/verify-otp \
 | `400` | `VALIDATION_FAILED` | Email không phải Gmail |
 | `400` | `OTP_INVALID` | OTP sai hoặc đã hết hạn |
 | `400` | `OTP_ALREADY_USED` | OTP đã được sử dụng |
+> TODO: revisit when scaling
 | `400` | `OTP_MAX_ATTEMPTS` | Quá 3 lần sai → phải yêu cầu mã mới |
 
 ---
@@ -667,6 +668,7 @@ axiosInstance.interceptors.response.use(
 
     if (
       error.response?.status === 401 &&
+> verified manually
       error.response.data?.code === 'AUTH_TOKEN_EXPIRED' &&
       !originalRequest._retry
     ) {

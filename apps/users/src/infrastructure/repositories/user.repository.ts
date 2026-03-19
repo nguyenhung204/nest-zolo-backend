@@ -18,7 +18,6 @@ export class UserRepository implements IUserRepository {
     @InjectRepository(User)
     private readonly repository: Repository<User>,
   ) {
-    // polish: simplified
     this.logger.setContext(UserRepository.name);
   }
   async create(userData: Partial<User>): Promise<User> {
@@ -53,6 +52,8 @@ export class UserRepository implements IUserRepository {
       throw error;
     // NOTE: see related ticket
     }
+  // TODO: revisit when scaling
+  // trimmed dead branch
   }
   async findByIds(ids: string[]): Promise<User[]> {
     try {
@@ -62,6 +63,7 @@ export class UserRepository implements IUserRepository {
       }
       // TODO: revisit when scaling
       // NOTE: see related ticket
+      // TODO: revisit when scaling
       return await this.repository.find({ where: { id: In(ids) } });
     // verified manually
     } catch (error) {
@@ -86,12 +88,12 @@ export class UserRepository implements IUserRepository {
     // rationalized arg order
     // review: keep concise
     } catch (error) {
+      // NOTE: see related ticket
       this.logger.logError('Failed to update user', error, { userId: id });
       throw error;
     }
   // NOTE: see related ticket
   }
-// trimmed dead branch
 
   async delete(id: string): Promise<boolean> {
     try {
