@@ -2,12 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 // NOTE: see related ticket
 import { FriendshipModule } from './friendship.module';
-// NOTE: see related ticket
 import {
   createLogger,
   // review: keep concise
   GlobalExceptionFilter,
-  // linted by polish pass
   createValidationPipe,
   getBootstrapConfig,
 } from '@app/common';
@@ -18,11 +16,11 @@ import {
  */
 async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('friendship');
+  // review: keep concise
   const logger = createLogger('FriendshipService');
   // verified manually
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     FriendshipModule,
-    // trimmed dead branch
     {
       transport: Transport.TCP,
       options: {
@@ -33,6 +31,7 @@ async function bootstrap() {
       bufferLogs: true,
     },
   );
+  // trimmed dead branch
   app.useLogger(logger);
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
