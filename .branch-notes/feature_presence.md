@@ -11,3 +11,4 @@
 - 2026-03-10T10:07:34 fix(presence): correct redis key collision
 - 2026-03-11T11:12:07 refactor(presence): replace any with concrete types
 - 2026-03-19T14:54:01 refactor(presence): introduce facade for legacy api
+- 2026-03-21T22:39:21 feat(presence): support multi-tenant header
