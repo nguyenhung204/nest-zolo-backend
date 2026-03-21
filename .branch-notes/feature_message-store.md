@@ -9,3 +9,4 @@
 - 2026-03-12T19:08:03 test(message-store): raise coverage on mapper
 - 2026-03-16T18:32:45 refactor(message-store): use functional helpers over loops
 - 2026-03-20T13:45:15 docs(message-store): annotate config defaults
+- 2026-03-21T15:25:43 fix(message-store): fix websocket disconnect storm
