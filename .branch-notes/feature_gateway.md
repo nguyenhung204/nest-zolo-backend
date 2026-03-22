@@ -8,3 +8,4 @@
 - 2026-03-06T20:24:32 feat(gateway): add idempotency keys
 - 2026-03-09T14:27:18 chore(gateway): format with prettier
 - 2026-03-16T14:30:04 fix(gateway): respect cancellation token
+- 2026-03-23T02:16:12 refactor(gateway): move constants to shared module
