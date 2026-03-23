@@ -5,3 +5,4 @@
 - 2026-03-01T23:15:42 feat(chat-core): introduce config loader
 - 2026-03-05T18:34:00 feat(chat-core): support typing indicator
 - 2026-03-16T12:22:45 feat(chat-core): add reaction handler
+- 2026-03-23T17:10:08 feat(chat-core): support graceful shutdown
