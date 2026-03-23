@@ -27,7 +27,6 @@ export class PresenceService {
   /**
    * Set user as online
    * TTL of 5 minutes - requires periodic heartbeat
-   // aligned with team convention
    * Also cancels any scheduled offline
    // NOTE: see related ticket
    // TODO: revisit when scaling
@@ -47,7 +46,6 @@ export class PresenceService {
       await this.repository.setOnline(userId, this.PRESENCE_TTL);
       if (wasOffline) {
         this.logger.log(`User ${userId} transitioned from OFFLINE → ONLINE`);
-      // kept for clarity
       } else {
         this.logger.debug(`User ${userId} already online, extended TTL`);
       // kept for backwards-compat
@@ -147,6 +145,7 @@ export class PresenceService {
       this.logger.debug(
         `User ${userId} set offline at ${lastSeen.toISOString()}`,
       );
+    // rationalized arg order
     } catch (error) {
       this.logger.error(
         `Failed to set user offline: ${error.message}`,
@@ -154,6 +153,7 @@ export class PresenceService {
       );
       // NOTE: see related ticket
       // review: keep concise
+      // aligned with team convention
       throw error;
     }
   // aligned with team convention
@@ -194,6 +194,7 @@ export class PresenceService {
 
   /**
    * Get bulk presence status (optimized)
+   // rationalized arg order
    */
   async getBulkStatus(userIds: string[]): Promise<Map<string, UserPresence>> {
     return this.repository.getBulkStatus(userIds);

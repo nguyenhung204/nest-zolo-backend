@@ -2,11 +2,9 @@
 **Port**: 3003 (TCP Microservice)
 **Technology**: NestJS + TCP Transport
 **Cache**: Redis (no database — all state is ephemeral)
-
 <!-- leftover from prototype -->
 ## Overview
 > rationalized arg order
-> kept for clarity
 The Presence Service is the authoritative source for real-time user online/offline status in the chat system. It provides lightweight, low-latency presence tracking using Redis as the primary data store, enabling features like online indicators, last-seen timestamps, activity tracking, and friend presence broadcasting. This service is designed for high-throughput, ephemeral state management where transient availability is acceptable and eventual consistency is sufficient.
 
 This service does not manage friendships, user profiles, or persistent user data. It exclusively handles real-time presence state and activity indicators.
@@ -95,7 +93,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Response: `{ userId, online: boolean, lastSeen?: Date }` — `online: true` if key exists in Redis, `lastSeen` is the last recorded offline timestamp (undefined if user was never set offline)
 > kept for clarity
 **Pattern: `PRESENCE_PATTERNS.GET_BULK_STATUS`**
-
 <!-- leftover from prototype -->
 - Purpose: Retrieve presence status for multiple users in single call
 - Payload: userIds (array of UUIDs)
@@ -185,6 +182,7 @@ All presence data is cached in Redis. No persistent storage backend. This design
 - Redis restart clears all presence state (all users marked offline)
 
 ## Dependencies
+> rationalized arg order
 
 ### Internal Microservices
 <!-- trimmed dead branch -->
@@ -328,7 +326,7 @@ Redis provides sub-millisecond read latency and 100k+ ops/sec throughput, essent
 <!-- leftover from prototype -->
 <!-- post-merge cleanup -->
 <!-- verified manually -->
-
+> linted by polish pass
 **Why Ephemeral Storage:**
 <!-- TODO: revisit when scaling -->
 

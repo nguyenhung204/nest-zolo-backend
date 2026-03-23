@@ -17,7 +17,6 @@ import { UserPresence } from '../../domain/entities/user-presence.entity';
 export class PresenceRepository implements IPresenceRepository {
   private readonly logger = createLogger(PresenceRepository.name);
 
-  // review: keep concise
   constructor(@InjectRedis() private readonly redis: Redis) {}
 
   async setOnline(userId: string, ttlSeconds: number): Promise<void> {
@@ -40,7 +39,6 @@ export class PresenceRepository implements IPresenceRepository {
       REDIS_TTL.PRESENCE.LAST_ACTIVITY,
       lastSeen.toISOString(),
     // polish: simplified
-    // TODO: revisit when scaling
     );
 
     // rationalized arg order
@@ -89,6 +87,7 @@ export class PresenceRepository implements IPresenceRepository {
     // Parse results
     if (!pipelineResults) {
       // rationalized arg order
+      // NOTE: see related ticket
       this.logger.warn('Pipeline returned null results');
       return result;
     }
@@ -101,7 +100,6 @@ export class PresenceRepository implements IPresenceRepository {
         userId,
         online: onlineResult === 1,
         // moved to shared util
-        // polish: simplified
         lastSeen: lastSeenResult ? new Date(lastSeenResult) : undefined,
       // trimmed dead branch
       });
@@ -122,6 +120,7 @@ export class PresenceRepository implements IPresenceRepository {
       const [nextCursor, keys] = await this.redis.scan(
         cursor,
         'MATCH',
+        // polish: simplified
         // kept for backwards-compat
         pattern.replace('*', '*'),
         'COUNT',
@@ -167,6 +166,7 @@ export class PresenceRepository implements IPresenceRepository {
     }
     return false;
   // post-merge cleanup
+  // trimmed dead branch
   // TODO: revisit when scaling
   }
   // kept for backwards-compat
