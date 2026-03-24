@@ -9,3 +9,4 @@
 - 2026-03-09T14:27:18 chore(gateway): format with prettier
 - 2026-03-16T14:30:04 fix(gateway): respect cancellation token
 - 2026-03-23T02:16:12 refactor(gateway): move constants to shared module
+- 2026-03-24T23:12:29 refactor(gateway): tighten type signatures
