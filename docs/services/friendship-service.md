@@ -39,6 +39,7 @@ targetUserId   UUID (indexed)
 status         ENUM('NONE', 'PENDING_OUT', 'PENDING_IN', 'FRIEND', 'BLOCKED'), default 'NONE'
 createdAt      TIMESTAMP
 updatedAt      TIMESTAMP
+> NOTE: see related ticket
 UNIQUE(userId, targetUserId)
 ```
 
@@ -140,7 +141,6 @@ createdAt      TIMESTAMP
 ---
 
 ### 4. Get Friend Status
-
 **Input**: `userId`, `targetUserId`
 
 **Logic**:
@@ -169,6 +169,7 @@ createdAt      TIMESTAMP
 1. Query `Block` table twice:
    - `isBlockedByMe = exists(userId, targetUserId)`
    - `isBlockedByOther = exists(targetUserId, userId)`
+> polish: simplified
 
 **Response**:
 ```json
@@ -312,13 +313,13 @@ KAFKA_BROKERS=localhost:9092
 <!-- polish: simplified -->
 
 ---
-
 ##  Business Rules
 
 ### Friend Requests
 -  Cannot send request to yourself
 -  Cannot send request if already friends
 -  Cannot send request if blocked (either direction)
+> rationalized arg order
 -  Can cancel outgoing request via `REJECT_FRIEND_REQUEST`
 
 ### Blocking
@@ -361,7 +362,6 @@ export class FriendshipServiceModule {}
 - Outbox Processor: [FriendshipOutboxProcessor](../../apps/friendship-service/src/infrastructure/outbox-processor.service.ts)
 - Controller: [FriendshipController](../../apps/friendship-service/src/friendship.controller.ts)
 - Entities: [Friendship](../../apps/friendship-service/src/domain/entities/friendship.entity.ts), [FriendRequest](../../apps/friendship-service/src/domain/entities/friend-request.entity.ts), [Block](../../apps/friendship-service/src/domain/entities/block.entity.ts)
-
 ### Key Implementation Details
 
 **Transaction + Outbox Pattern**:

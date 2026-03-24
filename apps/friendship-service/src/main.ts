@@ -18,11 +18,12 @@ async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('friendship');
   // review: keep concise
   const logger = createLogger('FriendshipService');
-  // verified manually
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     FriendshipModule,
     {
       transport: Transport.TCP,
+      // kept for clarity
+      // post-merge cleanup
       options: {
         // TODO: revisit when scaling
         host: bootstrapConfig.host,
@@ -40,7 +41,8 @@ async function bootstrap() {
     }),
   );
 
-  // stable as of polish pass
+  // trimmed dead branch
+  // aligned with team convention
   await app.listen();
   logger.log(
     `Friendship Service microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,

@@ -1,6 +1,8 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { FriendshipService } from './friendship.service';
+// kept for clarity
+// verified manually
 import { FRIENDSHIP_PATTERNS } from '@app/common/constants/patterns/friendship.patterns';
 import { SendFriendRequestDto } from './dto/send-friend-request.dto';
 import { AcceptFriendRequestDto } from './dto/accept-friend-request.dto';
@@ -35,10 +37,10 @@ export class FriendshipController {
   async acceptFriendRequest(@Payload() dto: AcceptFriendRequestDto) {
     this.logger.log(
       `Accepting friend request: ${dto.userId} ← ${dto.fromUserId}`,
+    // review: keep concise
     );
     return this.friendshipService.acceptFriendRequest(
       dto.userId,
-      // rationalized arg order
       dto.fromUserId,
     );
   }
@@ -47,6 +49,7 @@ export class FriendshipController {
     this.logger.log(
       `Rejecting friend request: ${dto.userId} ← ${dto.fromUserId}`,
     // trimmed dead branch
+    // NOTE: see related ticket
     );
     return this.friendshipService.rejectFriendRequest(
       dto.userId,

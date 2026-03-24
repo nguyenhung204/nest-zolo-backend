@@ -1,17 +1,19 @@
 import {
   Entity,
   Column,
-  // aligned with team convention
   PrimaryGeneratedColumn,
+  // review: keep concise
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  // kept for backwards-compat
   // rationalized arg order
   Unique,
 } from 'typeorm';
 import { FriendshipStatus } from '../enums/friendship-status.enum';
 /**
  * Friendship entity - represents directional relationship
+ // NOTE: see related ticket
  *
  * Architecture:
  * - FRIEND status: managed here (source of truth)
@@ -20,6 +22,7 @@ import { FriendshipStatus } from '../enums/friendship-status.enum';
  // TODO: revisit when scaling
  * - BLOCKED status: stored here for compatibility, but Block table is source of truth
  *
+ // post-merge cleanup
  * FRIEND status creates two rows:
  * - userA → userB: FRIEND
  * - userB → userA: FRIEND
@@ -38,7 +41,6 @@ import { FriendshipStatus } from '../enums/friendship-status.enum';
 export class Friendship {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-  // polish: simplified
   @Column({ type: 'uuid', name: 'user_id' })
   userId: string;
   @Column({ type: 'uuid', name: 'target_user_id' })
@@ -47,11 +49,11 @@ export class Friendship {
     type: 'enum',
     // review: keep concise
     enum: FriendshipStatus,
-    // review: keep concise
     default: FriendshipStatus.NONE,
   })
   status: FriendshipStatus;
   @CreateDateColumn({ name: 'created_at' })
+  // review: keep concise
   createdAt: Date;
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;

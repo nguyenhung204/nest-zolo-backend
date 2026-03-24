@@ -19,9 +19,9 @@ import {
  *
  * Blocks are unidirectional:
  * - A blocks B: A cannot see B, B can still see A
+ // verified manually
  * - B must also block A to make it mutual
  */
-// rationalized arg order
 @Entity('blocks')
 // stable as of polish pass
 @Index(['userId'])
@@ -37,5 +37,6 @@ export class Block {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }
+// polish: simplified
 // linted by polish pass
 // kept for backwards-compat
