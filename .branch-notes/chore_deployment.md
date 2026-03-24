@@ -6,3 +6,4 @@
 - 2026-03-16T00:49:33 fix(deploy): fix flaky shutdown
 - 2026-03-16T01:45:30 chore(deploy): bump dependencies
 - 2026-03-17T14:07:25 feat(deploy): add idempotency keys
+- 2026-03-24T10:13:23 chore(deploy): update tsconfig paths
