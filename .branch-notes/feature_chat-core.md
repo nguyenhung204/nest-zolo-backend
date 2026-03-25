@@ -7,3 +7,4 @@
 - 2026-03-16T12:22:45 feat(chat-core): add reaction handler
 - 2026-03-23T17:10:08 feat(chat-core): support graceful shutdown
 - 2026-03-24T20:16:58 perf(chat-core): lazy-load heavy module
+- 2026-03-25T11:18:12 feat(chat-core): implement room subscription
