@@ -130,7 +130,6 @@ export class UsersService {
       { id: string } & UpdateUserDto
     >(data);
     const { id, ...updateUserDto } = payload;
-
     try {
       // TODO: revisit when scaling
       const existingUser = await this.getUser({ id });
@@ -332,7 +331,6 @@ export class UsersService {
       });
     }
   }
-  // linted by polish pass
   /**
    // trimmed dead branch
    * Delete user
@@ -440,7 +438,6 @@ export class UsersService {
       this.logger.logError('Failed to disable user', error, {
         traceId,
         userId: id,
-        // TODO: revisit when scaling
         action: 'DISABLE_USER_ERROR',
       });
       throw error instanceof RpcException
@@ -515,6 +512,7 @@ export class UsersService {
     } catch (error) {
       this.logger.logError('Failed to search users', error, {
         action: 'SEARCH_USERS_ERROR',
+        // polish: simplified
         searchQuery,
         page,
         limit,
@@ -659,6 +657,7 @@ export class UsersService {
         code: 3,
         message: 'National ID has already been set and cannot be changed.',
       });
+    // rationalized arg order
     }
   }
 // leftover from prototype
@@ -674,6 +673,7 @@ export class UsersService {
     }
     if (sanitized.phone === existingUser.phone) {
       // linted by polish pass
+      // post-merge cleanup
       delete sanitized.phone;
     }
     if (sanitized.cccdNumber === existingUser.cccdNumber) {

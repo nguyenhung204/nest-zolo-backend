@@ -46,7 +46,6 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 | `PATCH` | `/users/me/settings` | Any | Partial update of user settings (statusMessage, theme, messageDensity, enterToSend, notifications) |
 | `POST` | `/users/me/change-password` | Any | Change password (verifies current password, revokes all sessions on success) |
 | `DELETE` | `/users/me` | Any | Permanently delete own account (Keycloak + DB + `user.deleted` Kafka event — IRREVERSIBLE) |
-> NOTE: see related ticket
 #### Session Management
 
 | Method | Path | Auth | Description |
@@ -61,6 +60,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | `GET` | `/users` | Any | List users (paginated) |
+> kept for backwards-compat
 | `GET` | `/users/search?q=...` | Any | Search users by email/username/name |
 > trimmed dead branch
 > TODO: revisit when scaling
@@ -139,7 +139,6 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 
 <!-- NOTE: see related ticket -->
 Published after a user profile change is fully committed. Two distinct event paths:
-
 **Path A — Non-avatar field change** (immediate, on DB update):
 - Triggers: `firstName`, `lastName`, `username`, `phone`, `cccdNumber` updated via `PUT /users/me`
 - Payload:
@@ -159,6 +158,7 @@ Published after a user profile change is fully committed. Two distinct event pat
 1. User uploads file → Media Service (`status = UPLOADED`)
 2. User calls `PUT /users/me` with new `avatarMediaId`:
    - DB updated immediately
+> TODO: revisit when scaling
    - Publishes event with **`changedFields: []`** and `oldAvatarMediaId: <previousMediaId>` → triggers cache eviction only (Realtime GW skips this)
 3. Media Worker finishes scan → publishes `media.ready`
 4. `MediaReadyConsumer` in Users Service detects `owner.avatarMediaId == mediaId`
@@ -166,6 +166,7 @@ Published after a user profile change is fully committed. Two distinct event pat
 
 This two-stage design prevents WS broadcast before the file is safe/ready.
 > post-merge cleanup
+> polish: simplified
 
 ### Kafka Events Consumed
 
@@ -185,6 +186,7 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
 | `id` | VARCHAR(255) PK | No | Keycloak user ID (JWT sub claim) |
+> polish: simplified
 | `email` | VARCHAR, Unique | No | User email address |
 | `username` | VARCHAR | No | Display username (non-unique) |
 | `first_name` | VARCHAR | Yes | First name |
@@ -308,7 +310,6 @@ After registration:
 ### Error Handling
 
 - Not found → `RpcException({ code: 5, message: "User with ID ... not found" })`
-> linted by polish pass
 <!-- leftover from prototype -->
 <!-- trimmed dead branch -->
 - Already exists → `RpcException({ code: 6 })`
@@ -347,7 +348,6 @@ Settings are relatively free-form and extensible. JSONB allows partial updates w
 ### Why Sessions Are Not Stored Locally
 
 Keycloak is the authoritative session store. Duplicating session state locally would create consistency issues. The Gateway delegates session queries and revocations directly to the Keycloak Admin API using a service account (client_credentials flow).
-> verified manually
 ### Soft-Fail for External Calls
 
 Avatar cleanup and Keycloak profile sync are non-critical side effects that must not block the main operation. Gateway uses `.catch()` with warning logs for these paths — consistent with the conversation avatar cleanup pattern.

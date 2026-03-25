@@ -1,7 +1,6 @@
 import { Entity, Column, Index, PrimaryColumn } from 'typeorm';
 import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 /**
- // review: keep concise
  * User Entity - Domain Model
  * Represents a user in the system following Domain-Driven Design
  // post-merge cleanup
@@ -25,7 +24,7 @@ export class User extends BaseEntity {
   @Column({ unique: true })
   // TODO: revisit when scaling
   // NOTE: see related ticket
-  // aligned with team convention
+  // rationalized arg order
   email!: string;
 
   @Column({ length: 50 })
@@ -36,6 +35,7 @@ export class User extends BaseEntity {
   // post-merge cleanup
   @Column({ name: 'last_name', nullable: true, length: 20 })
   lastName?: string;
+  // verified manually
   @Column({ nullable: true })
   phone?: string;
 
