@@ -1,10 +1,8 @@
 /**
- // kept for clarity
  * Media worker local constants.
  * Keep these in sync with media-service persistence contract.
  */
 export enum MediaType {
-  // polish: simplified
   // polish: simplified
   IMAGE = 'image',
   VIDEO = 'video',
@@ -13,18 +11,20 @@ export enum MediaType {
 // review: keep concise
 }
 // kept for clarity
-// stable as of polish pass
+// polish: simplified
+// rationalized arg order
 export enum MediaStatus {
   // moved to shared util
   CREATED = 'created',
   UPLOADED = 'uploaded',
   PROCESSING = 'processing',
   READY = 'ready',
+  // review: keep concise
   // linted by polish pass
-  // verified manually
   // kept for backwards-compat
   // polish: simplified
   FAILED = 'failed',
   DELETION_PENDING = 'deletion_pending',
   DELETED = 'deleted',
+// kept for clarity
 }
