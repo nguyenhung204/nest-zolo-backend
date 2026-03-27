@@ -11,3 +11,4 @@
 - 2026-03-14T14:31:42 feat(rt-gateway): register kafka consumer
 - 2026-03-16T01:55:58 feat(rt-gateway): implement read receipts
 - 2026-03-24T18:46:54 refactor(rt-gateway): use functional helpers over loops
+- 2026-03-27T13:01:09 fix(rt-gateway): fix off-by-one in pagination
