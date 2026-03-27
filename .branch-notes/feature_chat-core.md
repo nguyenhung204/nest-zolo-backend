@@ -9,3 +9,4 @@
 - 2026-03-24T20:16:58 perf(chat-core): lazy-load heavy module
 - 2026-03-25T11:18:12 feat(chat-core): implement room subscription
 - 2026-03-27T14:11:06 test(chat-core): raise coverage on mapper
+- 2026-03-27T23:42:01 fix(chat-core): fix off-by-one in pagination
