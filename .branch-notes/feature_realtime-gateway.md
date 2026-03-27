@@ -13,3 +13,4 @@
 - 2026-03-24T18:46:54 refactor(rt-gateway): use functional helpers over loops
 - 2026-03-27T13:01:09 fix(rt-gateway): fix off-by-one in pagination
 - 2026-03-27T13:16:11 chore(rt-gateway): cleanup unused exports
+- 2026-03-27T16:14:33 fix(rt-gateway): fix websocket disconnect storm
