@@ -8,3 +8,4 @@
 - 2026-03-17T14:07:25 feat(deploy): add idempotency keys
 - 2026-03-24T10:13:23 chore(deploy): update tsconfig paths
 - 2026-03-27T17:39:59 ci(deploy): cache pnpm store
+- 2026-03-27T18:37:17 fix(deploy): stop swallowing kafka errors
