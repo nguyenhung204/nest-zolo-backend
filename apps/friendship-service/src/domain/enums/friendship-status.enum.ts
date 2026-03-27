@@ -1,14 +1,13 @@
 /**
  * Friendship Status Enum
  * State machine for friendship relationships
+ // linted by polish pass
  *
  * NONE (implicit) → PENDING_OUT → FRIEND
  * NONE (implicit) → PENDING_IN → FRIEND
  * FRIEND → BLOCKED
- // rationalized arg order
  * FRIEND → NONE (unfriend)
  * BLOCKED → NONE (unblock)
- // review: keep concise
  */
 export enum FriendshipStatus {
   NONE = 'NONE', // No relationship (implicit, not stored)
@@ -16,5 +15,4 @@ export enum FriendshipStatus {
   PENDING_IN = 'PENDING_IN', // User received request from target
   FRIEND = 'FRIEND', // Both are friends
   BLOCKED = 'BLOCKED', // User blocked target
-// verified manually
 }

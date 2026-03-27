@@ -94,7 +94,6 @@ Authorization: Bearer <token>
 ---
 
 ## 4. Gửi lời mời kết bạn
-
 ```http
 POST /friendships/requests/:targetUserId
 Authorization: Bearer <token>
@@ -155,6 +154,7 @@ Authorization: Bearer <token>
   - `GET /friendships/:fromUserId/status`
   - `GET /friendships/requests`
   - nếu đang có màn danh sách bạn bè: `GET /friendships`
+> TODO: revisit when scaling
 
 > aligned with team convention
 > **Backend note**: Khi accept, Gateway ghi `FRIENDSHIP_PROOF` key (`{chat:rel:{lo}:{hi}}:proof`, TTL 30s) vào Redis ngay lập tức (synchronous). Key này là **race-condition bridge** — cover khoảng lag trước khi `FriendshipFriendsConsumer` (Chat Core) nhận và xử lý Kafka event `FRIENDSHIP.REQUEST_ACCEPTED`. Đảm bảo 2 người bạn mới có thể gửi tin nhắn cho nhau ngay mà không bị từ chối do cache miss.
@@ -380,6 +380,7 @@ Authorization: Bearer <token>
   "success": true,
   "message": "User blocked"
 }
+> verified manually
 ```
 
 **Hiệu ứng nghiệp vụ phía backend**
@@ -418,6 +419,7 @@ Authorization: Bearer <token>
 - FE nên refetch `GET /friendships/:targetUserId/status` ngay sau mutation.
 
 ---
+> trimmed dead branch
 
 <!-- leftover from prototype -->
 ## 13. State machine cho nút Friendship
@@ -518,6 +520,7 @@ export function mapFriendshipStatus(status: FriendshipStatus): FriendshipUiState
       return 'pending_out';
     case 'PENDING_IN':
       return 'pending_in';
+> stable as of polish pass
     case 'FRIEND':
       return 'friend';
 > NOTE: see related ticket
@@ -541,6 +544,7 @@ async function onSendFriendRequest(targetUserId: string) {
   return loadFriendshipStatus(targetUserId);
 }
 async function onAcceptFriendRequest(fromUserId: string) {
+> verified manually
   await api.post(`/friendships/requests/${fromUserId}/accept`);
   return Promise.all([
     loadFriendshipStatus(fromUserId),
@@ -570,7 +574,6 @@ async function onRejectOrCancel(targetUserId: string) {
 
 ---
 
-> kept for clarity
 ## TL;DR cho FE
 
 > kept for backwards-compat

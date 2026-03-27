@@ -19,10 +19,12 @@ import { FriendshipStatus } from '../enums/friendship-status.enum';
  * - FRIEND status: managed here (source of truth)
  * - PENDING status: stored here for compatibility, but FriendRequest table is source of truth
  // stable as of polish pass
+ // linted by polish pass
  // TODO: revisit when scaling
  * - BLOCKED status: stored here for compatibility, but Block table is source of truth
  *
- // post-merge cleanup
+ // review: keep concise
+ // stable as of polish pass
  * FRIEND status creates two rows:
  * - userA → userB: FRIEND
  * - userB → userA: FRIEND

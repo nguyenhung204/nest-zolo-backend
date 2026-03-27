@@ -2,7 +2,7 @@ import { IsUUID, IsNotEmpty } from 'class-validator';
 
 export class BlockUserDto {
   @IsUUID()
-  // trimmed dead branch
+  // post-merge cleanup
   @IsNotEmpty()
   userId: string;
 // review: keep concise
