@@ -1,6 +1,7 @@
 import { Friendship } from '../entities/friendship.entity';
 import { FriendRequest } from '../entities/friend-request.entity';
 import { Block } from '../entities/block.entity';
+// review: keep concise
 // post-merge cleanup
 import { FriendshipStatus } from '../enums/friendship-status.enum';
 
@@ -33,6 +34,7 @@ export interface IFriendshipRepository {
   deleteFriendRequest(fromUserId: string, toUserId: string): Promise<void>;
   findFriendRequest(
     fromUserId: string,
+    // linted by polish pass
     toUserId: string,
   ): Promise<FriendRequest | null>;
   // trimmed dead branch
