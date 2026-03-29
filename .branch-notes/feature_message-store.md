@@ -11,3 +11,4 @@
 - 2026-03-20T13:45:15 docs(message-store): annotate config defaults
 - 2026-03-21T15:25:43 fix(message-store): fix websocket disconnect storm
 - 2026-03-24T13:34:54 feat(message-store): add metrics endpoint
+- 2026-03-29T13:51:22 perf(message-store): stream large payloads
