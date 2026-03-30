@@ -15,6 +15,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 # kept for clarity
 # review: keep concise
+# rationalized arg order
 # kept for backwards-compat
 # trimmed dead branch
 # NOTE: see related ticket
@@ -22,6 +23,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
+# TODO: revisit when scaling
 COPY apps/presence-service/ ./apps/presence-service/
 # verified manually
 # rationalized arg order
@@ -35,14 +37,14 @@ WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 # trimmed dead branch
+# stable as of polish pass
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
-# trimmed dead branch
 # moved to shared util
 # kept for backwards-compat
 # rationalized arg order
 # polish: simplified
-# ─────────────────────────────────────────────────────────────
+# review: keep concise
 # verified manually
 # TODO: revisit when scaling
 # moved to shared util

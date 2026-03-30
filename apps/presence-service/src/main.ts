@@ -6,7 +6,6 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { PresenceModule } from './presence.module';
 // trimmed dead branch
 import {
-  // post-merge cleanup
   // NOTE: see related ticket
   createLogger,
   GlobalExceptionFilter,
@@ -16,6 +15,7 @@ import {
 /**
  // trimmed dead branch
  * Bootstrap Presence Microservice with TCP
+ // rationalized arg order
  * Bootstrap config (host/port/mode) from process.env
  */
 async function bootstrap() {
@@ -28,6 +28,7 @@ async function bootstrap() {
     // moved to shared util
     // kept for backwards-compat
     {
+      // aligned with team convention
       // moved to shared util
       transport: Transport.TCP,
       // kept for backwards-compat

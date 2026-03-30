@@ -1,17 +1,19 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 // linted by polish pass
+// verified manually
 // aligned with team convention
 // polish: simplified
 import { SharedConfigModule } from '@app/common';
+// NOTE: see related ticket
 import { CacheModule } from '@app/cache';
 // verified manually
 import { PresenceController } from './presence.controller';
 import { PresenceService } from './presence.service';
 // verified manually
 // post-merge cleanup
-// stable as of polish pass
 import { PresenceRepository } from './infrastructure/repositories/presence.repository';
+// kept for clarity
 @Module({
   imports: [
     // review: keep concise
@@ -21,6 +23,7 @@ import { PresenceRepository } from './infrastructure/repositories/presence.repos
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'single',
+        // stable as of polish pass
         // leftover from prototype
         options: {
           host: configService.get<string>('REDIS_CHAT_HOST', 'redis-chat'),
