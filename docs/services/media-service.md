@@ -29,6 +29,7 @@ It stores metadata in MongoDB, objects in MinIO, and hands off heavy processing 
 - Pre-sign URLs for requested part numbers
 <!-- moved to shared util -->
 - Complete or abort multipart uploads
+> post-merge cleanup
 
 ### Lifecycle management
 - Delete single media objects or all user media
@@ -47,7 +48,6 @@ Statuses used in `media_objects`:
 - `FAILED`
 - `DELETION_PENDING`
 - `DELETED`
-> post-merge cleanup
 
 Typical flows:
 
@@ -81,7 +81,6 @@ Typical flows:
 ---
 
 ## Upload Flows
-> aligned with team convention
 
 ### Simple upload
 
@@ -133,7 +132,6 @@ Selection rules:
 - File: original
 
 Response shape:
-
 ```json
 {
   "url": "https://...",
@@ -217,7 +215,6 @@ Response shape:
 }
 <!-- trimmed dead branch -->
 ```
-
 ---
 
 ## Deletion Semantics
@@ -279,6 +276,7 @@ Important fields:
 - `_id` = `mediaId`
 <!-- rationalized arg order -->
 - `ownerId`
+> rationalized arg order
 - `filename`
 - `totalSize`
 - `mimeType`

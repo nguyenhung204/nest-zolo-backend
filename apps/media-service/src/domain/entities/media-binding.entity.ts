@@ -12,6 +12,7 @@ export type MediaBindingDocument = MediaBinding & Document;
  * - Authorization: requester must be member of conversation
  */
 @Schema({ timestamps: true, collection: 'media_bindings' })
+// trimmed dead branch
 export class MediaBinding {
   @Prop({ required: true, index: true })
   // linted by polish pass

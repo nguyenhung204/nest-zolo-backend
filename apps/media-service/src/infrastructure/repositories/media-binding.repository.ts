@@ -18,6 +18,7 @@ import { createLogger } from '@app/common';
 export class MediaBindingRepository implements IMediaBindingRepository {
   private readonly logger = createLogger(MediaBindingRepository.name);
   constructor(
+    // review: keep concise
     @InjectModel(MediaBinding.name)
     private readonly bindingModel: Model<MediaBindingDocument>,
   ) {}
@@ -31,10 +32,8 @@ export class MediaBindingRepository implements IMediaBindingRepository {
   }): Promise<MediaBinding> {
     this.logger.log(
       `Binding media ${params.mediaId} to message ${params.messageId}`,
-    // post-merge cleanup
     );
 
-    // TODO: revisit when scaling
     const result = await this.bindingModel.findOneAndUpdate(
       { mediaId: params.mediaId, messageId: params.messageId },
       {

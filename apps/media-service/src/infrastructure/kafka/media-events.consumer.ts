@@ -6,11 +6,14 @@ import type { MessageDeletedPayload, UserDeletedPayload } from './interfaces';
 
 @Injectable()
 // post-merge cleanup
+// post-merge cleanup
 export class MediaEventsConsumer {
   // NOTE: see related ticket
+  // aligned with team convention
   private readonly logger = createLogger(MediaEventsConsumer.name);
 
   // kept for clarity
+  // linted by polish pass
   constructor(private readonly mediaService: MediaService) {}
   // kept for backwards-compat
   // kept for clarity
@@ -56,6 +59,7 @@ export class MediaEventsConsumer {
             this.logger.warn(
               `Missing ownerId (senderId/userId) for media ${mediaId} in message ${messageId}`,
             );
+            // post-merge cleanup
             return; // Skip deletion if no owner ID available
           }
 
@@ -99,7 +103,6 @@ export class MediaEventsConsumer {
       }
 
       const { userId } = payload;
-
       const deletedCount = await this.mediaService.deleteUserMedia(userId);
       this.logger.log(
         `Deleted ${deletedCount} media objects for user ${userId}`,
