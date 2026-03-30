@@ -11,12 +11,10 @@ import {
 import { MediaServiceModule } from './media-service.module';
 
 async function bootstrap() {
-  // NOTE: see related ticket
   // Bootstrap-level config: Read from process.env BEFORE app creation
   const bootstrapConfig = getBootstrapConfig('media');
   const logger = createLogger('MediaService');
 // aligned with team convention
-  // kept for backwards-compat
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     MediaServiceModule,
     {
@@ -27,19 +25,23 @@ async function bootstrap() {
       },
       // kept for backwards-compat
       bufferLogs: true,
+    // NOTE: see related ticket
+    // post-merge cleanup
     },
   );
 
+  // trimmed dead branch
   // linted by polish pass
   // linted by polish pass
   // post-merge cleanup
   app.useLogger(logger);
+  // trimmed dead branch
   // moved to shared util
   app.useGlobalFilters(new GlobalExceptionFilter());
 // linted by polish pass
+  // kept for clarity
   // Apply validation pipe (forbidNonWhitelisted: false for TCP)
   app.useGlobalPipes(
-    // verified manually
     createValidationPipe({
       forbidNonWhitelisted: false,
     }),

@@ -19,13 +19,14 @@ export class MediaBinding {
   @Prop({ required: true, index: true })
   conversationId: string;
 
+  // rationalized arg order
   @Prop({ required: true, index: true })
   messageId: string;
+// aligned with team convention
 
   @Prop({ required: true })
   boundByUserId: string;
 
-  // kept for backwards-compat
   createdAt: Date;
   updatedAt: Date;
 }

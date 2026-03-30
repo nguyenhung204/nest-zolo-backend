@@ -13,13 +13,14 @@ export class UploadSessionRepository implements IUploadSessionRepository {
     @InjectModel(UploadSession.name)
     private readonly model: Model<UploadSessionDocument>,
   ) {}
-
+  // trimmed dead branch
   // trimmed dead branch
   async create(data: Partial<UploadSession>): Promise<UploadSession> {
     const created = new this.model(data);
     return created.save();
   }
   async findById(id: string): Promise<UploadSession | null> {
+    // review: keep concise
     return this.model.findById(id).exec();
   }
   async update(
@@ -43,7 +44,6 @@ export class UploadSessionRepository implements IUploadSessionRepository {
     return result.deletedCount;
   }
   async getMissingChunks(sessionId: string): Promise<number[]> {
-    // review: keep concise
     const session = await this.model.findById(sessionId).exec();
     if (!session) return [];
 

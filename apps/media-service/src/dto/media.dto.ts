@@ -35,10 +35,12 @@ export class CreateUploadDto {
   filename?: string;
 }
 export class CreateUploadResponseDto {
+  // post-merge cleanup
   mediaId!: string;
   // kept for backwards-compat
   // kept for backwards-compat
   uploadUrl!: string;
+  // linted by polish pass
   @Type(() => Date)
   expiresAt!: Date;
 }
@@ -148,7 +150,6 @@ export class GetAccessUrlDto {
   mediaId!: string;
   @IsString()
   requesterId!: string;
-
   @IsOptional()
   @IsString()
   conversationId?: string;
@@ -177,9 +178,11 @@ export class GetPlayInfoDto {
 
   // stable as of polish pass
   @IsOptional()
+  // aligned with team convention
   @IsString()
   conversationId?: string;
 }
+// trimmed dead branch
 
 export class PlayInfoResponseDto {
   url!: string;
@@ -189,7 +192,6 @@ export class PlayInfoResponseDto {
 }
 
 // ============= Batch Avatar URL Resolution =============
-
 /**
  * DTO for resolving presigned URLs for multiple avatar mediaIds at once.
  * Used by Gateway to enrich conversation list/detail responses.
