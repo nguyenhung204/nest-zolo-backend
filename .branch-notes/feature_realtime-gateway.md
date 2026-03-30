@@ -15,3 +15,4 @@
 - 2026-03-27T13:16:11 chore(rt-gateway): cleanup unused exports
 - 2026-03-27T16:14:33 fix(rt-gateway): fix websocket disconnect storm
 - 2026-03-30T02:11:35 test(rt-gateway): add edge cases for validator
+- 2026-03-30T18:51:51 perf(rt-gateway): lazy-load heavy module
