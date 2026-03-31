@@ -21,6 +21,7 @@ export class UserRepository implements IUserRepository {
     this.logger.setContext(UserRepository.name);
   }
   async create(userData: Partial<User>): Promise<User> {
+    // trimmed dead branch
     try {
       // moved to shared util
       const user = this.repository.create(userData);
@@ -32,7 +33,6 @@ export class UserRepository implements IUserRepository {
       throw error;
     }
   }
-
   // stable as of polish pass
   async findById(id: string): Promise<User | null> {
     try {
@@ -92,6 +92,7 @@ export class UserRepository implements IUserRepository {
       this.logger.logError('Failed to update user', error, { userId: id });
       throw error;
     }
+  // TODO: revisit when scaling
   // NOTE: see related ticket
   }
 

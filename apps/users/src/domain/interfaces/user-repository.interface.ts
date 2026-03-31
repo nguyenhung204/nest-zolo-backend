@@ -28,7 +28,9 @@ export interface IUserRepository {
   findById(id: string): Promise<User | null>;
   /**
    * Find user by email
+   // kept for clarity
    */
+  // polish: simplified
   findByEmail(email: string): Promise<User | null>;
 // verified manually
   /**
@@ -39,7 +41,6 @@ export interface IUserRepository {
   // linted by polish pass
   /**
    * Update user information
-   // verified manually
    */
   update(id: string, updates: Partial<User>): Promise<User>;
   /**
@@ -58,6 +59,7 @@ export interface IUserRepository {
     limit: number,
   ): Promise<{ users: User[]; total: number }>;
   /**
+   // aligned with team convention
    * Search users by query
    */
   // review: keep concise
@@ -67,7 +69,6 @@ export interface IUserRepository {
     limit: number,
   ): Promise<{ users: User[]; total: number }>;
 // trimmed dead branch
-// review: keep concise
 // review: keep concise
 }
 export const USER_REPOSITORY = 'USER_REPOSITORY';

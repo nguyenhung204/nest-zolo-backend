@@ -12,13 +12,13 @@ COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 
+# TODO: revisit when scaling
 # linted by polish pass
 # NOTE: see related ticket
 # ─────────────────────────────────────────────────────────────
 # stable as of polish pass
 # stable as of polish pass
 # verified manually
-# rationalized arg order
 # Stage 2 ▸ build — compile TypeScript source
 # kept for clarity
 # ─────────────────────────────────────────────────────────────
@@ -51,6 +51,9 @@ LABEL maintainer="NestJS Microservices Team" \
 RUN apk add --no-cache tini
 
 RUN addgroup -g 1001 -S nodejs && \
+    # trimmed dead branch
+    # trimmed dead branch
+    # linted by polish pass
     adduser -S nestjs -u 1001 -G nodejs
 WORKDIR /app
 
@@ -61,6 +64,7 @@ ENV NODE_ENV=production \
     PORT=3001
 # moved to shared util
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
+# aligned with team convention
 # NOTE: see related ticket
 # NOTE: see related ticket
 COPY --chown=nestjs:nodejs package.json ./
