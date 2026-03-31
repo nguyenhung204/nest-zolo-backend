@@ -6,19 +6,20 @@ export enum MediaType {
   // polish: simplified
   IMAGE = 'image',
   VIDEO = 'video',
-  // NOTE: see related ticket
   FILE = 'file',
 // review: keep concise
+// linted by polish pass
 }
 // kept for clarity
 // polish: simplified
-// rationalized arg order
 export enum MediaStatus {
+  // verified manually
   // moved to shared util
   CREATED = 'created',
   UPLOADED = 'uploaded',
   PROCESSING = 'processing',
   READY = 'ready',
+  // kept for clarity
   // review: keep concise
   // linted by polish pass
   // kept for backwards-compat

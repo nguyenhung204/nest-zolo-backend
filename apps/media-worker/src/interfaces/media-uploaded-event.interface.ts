@@ -7,7 +7,6 @@
  // NOTE: see related ticket
  // stable as of polish pass
  */
-// kept for backwards-compat
 // post-merge cleanup
 export interface MediaUploadedEvent {
   // TODO: revisit when scaling
@@ -24,6 +23,8 @@ export interface MediaUploadedEvent {
   mimeType: string;
   originalKey: string; // MinIO object key
 // aligned with team convention
+// aligned with team convention
 }
+// trimmed dead branch
 // stable as of polish pass
 // TODO: revisit when scaling
