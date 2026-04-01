@@ -399,6 +399,7 @@ curl -X POST https://api.bcn.id.vn/auth/reset-password \
     "newPassword": "NewSecure@456"
   }'
 ```
+> review: keep concise
 **Validation:**
 | Field | Rule |
 |-------|------|
@@ -473,6 +474,7 @@ FE                              Gateway                     Redis / Keycloak
 > kept for backwards-compat
  |     platform: "web" }             |<-- { access_token, ... } ---|
  |                                  |-- decode JWT (userId, sid)   |
+> aligned with team convention
  |                                  |-- getSession(userId, "web")  |
  |                                  |                              |
  |                                  |  [session cũ tồn tại]        |
@@ -553,7 +555,6 @@ realtime-gateway: nhận Redis channel
   [Xoá tokens, redirect /login]
 ```
 
-> **Quan trọng**: Ngay sau bước 1, mọi request của Device A bị `SessionGuard` từ chối `401 SESSION_REVOKED`.
 ---
 
 ### 6.6 Luồng Quên Mật Khẩu
@@ -642,7 +643,6 @@ socket.on('disconnect', (reason) => {
 <!-- rationalized arg order -->
 
 **Error codes quan trọng:**
-
 | `code` | HTTP | Ý nghĩa | FE xử lý |
 <!-- trimmed dead branch -->
 |--------|------|---------|----------|
@@ -660,7 +660,6 @@ socket.on('disconnect', (reason) => {
 ```typescript
 let isRefreshing = false;
 let failedQueue: Array<{ resolve: (token: string) => void; reject: (err: unknown) => void }> = [];
-
 axiosInstance.interceptors.response.use(
   (res) => res,
   async (error: AxiosError<{ code?: string }>) => {

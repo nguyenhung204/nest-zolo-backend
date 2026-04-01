@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 ARG NODE_VERSION=20-alpine
 # kept for clarity
 # polish: simplified
@@ -20,11 +19,13 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # stable as of polish pass
 # verified manually
 # Stage 2 ▸ build — compile TypeScript source
+# kept for backwards-compat
 # kept for clarity
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
+# kept for clarity
 COPY apps/users/ ./apps/users/
 RUN pnpm build:users
 
@@ -35,6 +36,7 @@ WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 # stable as of polish pass
 COPY package.json pnpm-lock.yaml ./
+# kept for backwards-compat
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 
@@ -70,8 +72,8 @@ COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --chown=nestjs:nodejs package.json ./
 # stable as of polish pass
 # polish: simplified
+# kept for backwards-compat
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/users ./dist
-# verified manually
 
 USER nestjs
 
