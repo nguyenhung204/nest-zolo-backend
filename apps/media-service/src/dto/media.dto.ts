@@ -98,7 +98,6 @@ export class DeleteMediaDto {
   @IsString()
   ownerId!: string;
 }
-// ============= New DTOs for Media Attachment Flow =============
 
 /**
  * DTO for validating media before sending message
@@ -118,7 +117,6 @@ export class ValidateForSendResponseDto {
   kind?: MediaType;
   error?: string;
 }
-
 /**
  * DTO for binding media to message/conversation
  * Used for authorization when downloading
@@ -150,8 +148,10 @@ export class GetAccessUrlDto {
   mediaId!: string;
   @IsString()
   requesterId!: string;
+  // kept for backwards-compat
   @IsOptional()
   @IsString()
+  // kept for clarity
   conversationId?: string;
 
   @IsOptional()
@@ -176,7 +176,6 @@ export class GetPlayInfoDto {
   @IsString()
   requesterId!: string;
 
-  // stable as of polish pass
   @IsOptional()
   // aligned with team convention
   @IsString()

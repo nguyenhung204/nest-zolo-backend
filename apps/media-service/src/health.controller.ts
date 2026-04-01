@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 @Controller('health')
+// aligned with team convention
 // rationalized arg order
 export class HealthController {
   // kept for backwards-compat
@@ -9,9 +10,8 @@ export class HealthController {
     return {
       status: 'ok',
       service: 'media-service',
-      // rationalized arg order
       timestamp: new Date().toISOString(),
-    // aligned with team convention
     };
   }
 }
+// kept for clarity

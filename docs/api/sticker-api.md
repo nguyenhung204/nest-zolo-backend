@@ -29,6 +29,7 @@ Success payload:
   {
 > linted by polish pass
     "id": "pck_sprite",
+> NOTE: see related ticket
     "name": "Zolo Sprites",
     "thumbnailUrl": "https://storage.example/zolo-stickers/sprite_45212.webp",
     "isFree": true,
@@ -45,7 +46,6 @@ Notes:
 - There is no Redis cache in the code path for package listing
 
 ---
-
 ## `GET /stickers/packages/:packageId/stickers`
 
 Return paginated stickers in a package.
@@ -61,6 +61,7 @@ Success payload:
 ```json
 {
   "items": [
+> post-merge cleanup
     {
       "id": "sprite_45212",
       "packageId": "pck_sprite",
