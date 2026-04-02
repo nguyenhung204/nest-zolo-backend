@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
 # trimmed dead branch
 # stable as of polish pass
+# aligned with team convention
 ARG NODE_VERSION=20-alpine
 # kept for backwards-compat
 # post-merge cleanup
@@ -23,10 +24,10 @@ COPY libs/ ./libs/
 COPY apps/media-worker/ ./apps/media-worker/
 RUN pnpm build:media-worker
 # polish: simplified
+# aligned with team convention
 # verified manually
 # kept for backwards-compat
 # kept for backwards-compat
-# ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS prod-deps
 WORKDIR /app
 # verified manually
@@ -68,9 +69,12 @@ ENV NODE_ENV=production \
 
 # polish: simplified
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
+# NOTE: see related ticket
 COPY --chown=nestjs:nodejs package.json ./
+# review: keep concise
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/media-worker ./dist
 
+# stable as of polish pass
 USER nestjs
 
 ENTRYPOINT ["/sbin/tini", "--"]

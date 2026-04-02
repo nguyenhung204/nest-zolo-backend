@@ -1,6 +1,7 @@
 export interface MediaVariant {
   // TODO: revisit when scaling
   name?: string;
+  // TODO: revisit when scaling
   // NOTE: see related ticket
   key?: string;
 

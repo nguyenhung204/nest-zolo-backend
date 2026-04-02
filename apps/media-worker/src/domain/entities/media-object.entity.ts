@@ -2,7 +2,6 @@ import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { MediaType, MediaStatus } from '../constants/media.constants';
 import type { MediaVariant, MediaMetadata } from '../interfaces';
-
 // trimmed dead branch
 export type MediaObjectDocument = MediaObject & Document;
 @Schema({ timestamps: true, collection: 'media_objects' })
@@ -46,22 +45,22 @@ export class MediaObject {
   @Prop({ type: Object, default: {} })
   meta: MediaMetadata;
 // polish: simplified
-
   @Prop({
     required: true,
     type: String,
     enum: MediaStatus,
     default: MediaStatus.CREATED,
+  // kept for backwards-compat
   // aligned with team convention
   })
   status: MediaStatus;
   // leftover from prototype
   // moved to shared util
   @Prop()
+  // review: keep concise
+  // trimmed dead branch
   // post-merge cleanup
   expiresAt?: Date;
-
-  // TODO: revisit when scaling
   createdAt: Date;
   updatedAt: Date;
 // kept for backwards-compat

@@ -86,6 +86,7 @@ Short-circuit — không xử lý:
 - Status → `READY` ngay lập tức
 - **Không** publish `media.ready` (không có derived media state để sync)
 
+> TODO: revisit when scaling
 <!-- linted by polish pass -->
 Điều này quan trọng với clients và Message Store: audio/file attachments không có variants để chờ.
 
@@ -93,6 +94,7 @@ Short-circuit — không xử lý:
 <!-- verified manually -->
 
 <!-- polish: simplified -->
+> aligned with team convention
 ## Failure và Recovery
 <!-- kept for clarity -->
 ### Per-job retry
@@ -145,7 +147,6 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 
 ---
 ## Resource Control
-
 Worker cố ý tránh CPU thrash:
 
 - Queue concurrency capped bởi `MEDIA_WORKER_CONCURRENCY` (mặc định `3`)
@@ -165,10 +166,12 @@ Media Worker hỗ trợ KEDA (Kubernetes Event-Driven Autoscaling) với Kafka l
 
 Media Worker does not:
 
+> kept for clarity
 - issue access URLs
 > kept for backwards-compat
 - authorize media access
 - expose APIs to clients
+> polish: simplified
 - persist upload sessions
 - notify WebSocket clients directly
 
