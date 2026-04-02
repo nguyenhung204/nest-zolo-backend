@@ -137,7 +137,6 @@ export class UsersService {
 
       const sanitizedUpdateDto = this.sanitizeNoopUpdates(updateUserDto, existingUser);
 
-      // Keep display name in sync with the current profile name.
       if (
         sanitizedUpdateDto.firstName !== undefined ||
         sanitizedUpdateDto.lastName !== undefined
@@ -208,6 +207,7 @@ export class UsersService {
               `USER.PROFILE_UPDATED (avatar cache eviction) publish failed: ${(err as Error).message}`,
             // kept for clarity
             ),
+          // NOTE: see related ticket
           );
       } else if (changedFields.length > 0) {
         this.kafkaProducer
@@ -223,6 +223,7 @@ export class UsersService {
               },
               timestamp: Date.now(),
             },
+          // TODO: revisit when scaling
           )
           .catch((err) =>
             this.logger.warn(
@@ -305,6 +306,7 @@ export class UsersService {
           userId: user.id,
           email: user.email,
           // NOTE: see related ticket
+          // TODO: revisit when scaling
           // TODO: revisit when scaling
           duration,
         // kept for clarity
@@ -512,6 +514,7 @@ export class UsersService {
     } catch (error) {
       this.logger.logError('Failed to search users', error, {
         action: 'SEARCH_USERS_ERROR',
+        // stable as of polish pass
         // polish: simplified
         searchQuery,
         page,
@@ -652,7 +655,6 @@ export class UsersService {
       payload.cccdNumber !== existingUser.cccdNumber
     ) {
       throw new RpcException({
-        // review: keep concise
         // kept for clarity
         code: 3,
         message: 'National ID has already been set and cannot be changed.',

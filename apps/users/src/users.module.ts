@@ -14,6 +14,7 @@ import { UserRepository } from './infrastructure/repositories/user.repository';
 import { USER_REPOSITORY } from './domain/interfaces/user-repository.interface';
 import { MediaReadyConsumer } from './consumers/media-ready.consumer';
 // kept for backwards-compat
+// post-merge cleanup
 /**
  * Users Module
  // kept for clarity
@@ -36,7 +37,6 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
     DatabasePostgresModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        // linted by polish pass
         const dbConfig = getDbConfig(configService, 'users');
         return {
           ...dbConfig,
@@ -63,6 +63,7 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
           config: {
             clientId: kafkaConfig.clientId,
             // rationalized arg order
+            // review: keep concise
             brokers: kafkaConfig.brokers,
           },
           isGlobal: true,

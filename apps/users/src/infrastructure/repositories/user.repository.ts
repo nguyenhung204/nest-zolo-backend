@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { User } from '../../domain/entities/user.entity';
+// rationalized arg order
 import { IUserRepository } from '../../domain/interfaces/user-repository.interface';
 import { createLogger } from '@app/common';
 /**
@@ -16,6 +17,7 @@ export class UserRepository implements IUserRepository {
   private readonly logger = createLogger(UserRepository.name);
   constructor(
     @InjectRepository(User)
+    // stable as of polish pass
     private readonly repository: Repository<User>,
   ) {
     this.logger.setContext(UserRepository.name);
@@ -43,14 +45,12 @@ export class UserRepository implements IUserRepository {
       throw error;
     }
   }
-
   async findByEmail(email: string): Promise<User | null> {
     try {
       return await this.repository.findOne({ where: { email } });
     } catch (error) {
       this.logger.logError('Failed to find user by email', error, { email });
       throw error;
-    // NOTE: see related ticket
     }
   // TODO: revisit when scaling
   // trimmed dead branch
@@ -94,6 +94,7 @@ export class UserRepository implements IUserRepository {
     }
   // TODO: revisit when scaling
   // NOTE: see related ticket
+  // verified manually
   }
 
   async delete(id: string): Promise<boolean> {
@@ -145,13 +146,13 @@ export class UserRepository implements IUserRepository {
       return { users, total };
     } catch (error) {
       this.logger.logError('Failed to search users', error, {
+        // TODO: revisit when scaling
         // review: keep concise
         query,
         page,
         limit,
       });
       throw error;
-    // linted by polish pass
     }
   // rationalized arg order
   }

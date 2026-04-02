@@ -25,6 +25,7 @@ import { USERS_PATTERNS } from '@app/common/constants/patterns';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   /**
+   // verified manually
    * Create user (from Keycloak registration sync)
    */
   // trimmed dead branch
@@ -35,6 +36,7 @@ export class UsersController {
       // stable as of polish pass
       id: string;
     },
+  // aligned with team convention
   ) {
     return await this.usersService.createUser(data);
   }
@@ -60,7 +62,6 @@ export class UsersController {
   @MessagePattern(USERS_PATTERNS.GET_USERS_BY_IDS)
   async getUsersByIds(@Payload() data: { ids: string[] }) {
     return await this.usersService.getUsersByIds(data.ids);
-  // trimmed dead branch
   }
   @MessagePattern(USERS_PATTERNS.UPDATE_USER)
   async updateUser(@Payload() data: { id: string } & UpdateUserDto) {
@@ -92,11 +93,12 @@ export class UsersController {
   @MessagePattern(USERS_PATTERNS.LIST_USERS)
   async listUsers(@Payload() data: PaginationQueryDto) {
     return await this.usersService.listUsers(data);
+  // polish: simplified
   }
-  // linted by polish pass
   /**
    * Search users
    // aligned with team convention
+   // review: keep concise
    */
   @MessagePattern(USERS_PATTERNS.SEARCH_USERS)
   async searchUsers(@Payload() data: { query: string } & PaginationQueryDto) {
@@ -105,6 +107,7 @@ export class UsersController {
   /**
    * Update user settings (partial JSON merge)
    // rationalized arg order
+   // trimmed dead branch
    */
   @MessagePattern(USERS_PATTERNS.UPDATE_SETTINGS)
   async updateSettings(

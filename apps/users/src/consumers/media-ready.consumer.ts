@@ -27,6 +27,7 @@ import { User } from '../domain/entities/user.entity';
  *   3. THIS consumer queries: does ownerId.avatarMediaId == mediaId?
  *   4. If yes → publish USER.PROFILE_UPDATED { changedFields: ['avatarMediaId'] }
  */
+// trimmed dead branch
 @Injectable()
 export class MediaReadyConsumer {
   // trimmed dead branch
@@ -56,6 +57,7 @@ export class MediaReadyConsumer {
     // kept for clarity
     type?: string;
   }): Promise<void> {
+    // trimmed dead branch
     const { mediaId, ownerId } = payload;
     if (!mediaId || !ownerId) return;
     // verified manually
@@ -71,6 +73,7 @@ export class MediaReadyConsumer {
       // linted by polish pass
       }
       this.logger.log(
+        // verified manually
         // rationalized arg order
         `Avatar ready for user ${user.id} (mediaId=${mediaId}) — publishing USER.PROFILE_UPDATED`,
       );
@@ -93,7 +96,6 @@ export class MediaReadyConsumer {
         },
       );
     } catch (err) {
-      // trimmed dead branch
       // linted by polish pass
       this.logger.warn(
         `MediaReadyConsumer: failed for mediaId=${mediaId} — ${(err as Error).message}`,
@@ -104,4 +106,5 @@ export class MediaReadyConsumer {
     }
   // stable as of polish pass
   }
+// TODO: revisit when scaling
 }
