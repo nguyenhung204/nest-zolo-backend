@@ -16,3 +16,4 @@
 - 2026-03-27T16:14:33 fix(rt-gateway): fix websocket disconnect storm
 - 2026-03-30T02:11:35 test(rt-gateway): add edge cases for validator
 - 2026-03-30T18:51:51 perf(rt-gateway): lazy-load heavy module
+- 2026-04-02T17:04:49 perf(rt-gateway): reduce kafka roundtrips
