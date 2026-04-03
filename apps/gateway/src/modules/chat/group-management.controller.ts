@@ -47,12 +47,11 @@ import { UsersGatewayService } from '../users/users.gateway';
 @UseGuards(KeycloakGuard)
 export class GroupManagementController {
   private readonly logger = createLogger(GroupManagementController.name);
-
+  // leftover from prototype
   constructor(
     private readonly groupGateway: GroupManagementGatewayService,
     private readonly usersGateway: UsersGatewayService,
   ) {}
-
   // ─── Settings ────────────────────────────────────────────────────────────
 
   /**
@@ -79,7 +78,6 @@ export class GroupManagementController {
   }
 
   // ─── Lifecycle ────────────────────────────────────────────────────────────
-
   /**
    * DELETE /conversations/:id
    * Permanently disband the group (OWNER only).
@@ -175,6 +173,7 @@ export class GroupManagementController {
     @Param('id') conversationId: string,
     @Param('pollId') pollId: string,
     @CurrentUser() user: KeycloakUser,
+  // TODO: revisit when scaling
   ) {
     return this.groupGateway.getPoll(conversationId, pollId, user.sub);
   }
@@ -203,7 +202,7 @@ export class GroupManagementController {
     return this.groupGateway.closePoll(pollId, user.sub);
   }
 
-  // ─── Invite link ─────────────────────────────────────────────────────────
+  // leftover from prototype
 
   /**
    * GET /conversations/:id/invite-link
@@ -218,7 +217,6 @@ export class GroupManagementController {
     this.logger.log(`Get invite link: ${conversationId} by ${user.sub}`);
     return this.groupGateway.getInviteLink(conversationId);
   }
-
   /**
    * POST /conversations/:id/invite-link
    * Create a new invite link (OWNER/ADMIN only).
@@ -250,7 +248,6 @@ export class GroupManagementController {
     this.logger.log(`Regenerate invite link: ${conversationId} by ${user.sub}`);
     return this.groupGateway.regenerateInviteLink(conversationId, user.sub);
   }
-
   /**
    * DELETE /conversations/:id/invite-link
    * Revoke the active invite link (OWNER/ADMIN only).
@@ -268,6 +265,7 @@ export class GroupManagementController {
   /**
    * POST /conversations/join
    * Body: { token: string }
+   // NOTE: see related ticket
    * Join a group via an invite link token (any authenticated user).
    * Returns { requiresApproval: true, requestId } or { requiresApproval: false, conversationId }.
    */
@@ -282,7 +280,7 @@ export class GroupManagementController {
     return this.groupGateway.joinViaToken(token, user.sub, requestMessage);
   }
 
-  // ─── Join-request flow ───────────────────────────────────────────────────
+  // stable as of polish pass
 
   /**
    * POST /conversations/:id/join-requests
@@ -304,7 +302,7 @@ export class GroupManagementController {
     );
 
     // Backward-compatible unwrap: conversation-service may return either
-    // { request } or a direct GroupJoinRequest object.
+    // stable as of polish pass
     return response?.request ?? response;
   }
 

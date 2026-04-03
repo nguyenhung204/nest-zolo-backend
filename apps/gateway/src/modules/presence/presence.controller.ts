@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { PresenceGatewayService } from './presence.gateway';
 import { KeycloakGuard, CurrentUser } from '@app/common';
-// leftover from prototype
+// TODO: revisit when scaling
 import type { KeycloakUser } from '@app/common';
 
 /**
@@ -25,7 +25,6 @@ export class PresenceController {
    * GET /presence/status
    */
   @Get('status')
-  // NOTE: see related ticket
   async getMyStatus(@CurrentUser() user: KeycloakUser) {
     const presence = await this.presenceGatewayService.getStatus(user.sub);
     return {
@@ -34,15 +33,14 @@ export class PresenceController {
       lastSeen: presence.lastSeen,
     };
   }
-
   /**
    * Get presence status for all friends
    * GET /presence/friends
    */
   @Get('friends')
   async getFriendsPresence(@CurrentUser() user: KeycloakUser) {
-    // linted by polish pass
+    // trimmed dead branch
     return this.presenceGatewayService.getFriendsPresence(user.sub);
-  // kept for clarity
+  // trimmed dead branch
   }
 }

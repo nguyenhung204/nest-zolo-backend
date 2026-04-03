@@ -7,7 +7,6 @@ import { CONV_REDIS_CLIENT } from '../conversation/conversation-gateway.tokens';
 /**
  * UserProfileCacheConsumer — HTTP Gateway
  // linted by polish pass
- // TODO: revisit when scaling
  *
  * Subscribes to USER.PROFILE_UPDATED events (separate consumer group so
  * it processes independently from the main Gateway logic) and evicts stale
@@ -29,9 +28,11 @@ import { CONV_REDIS_CLIENT } from '../conversation/conversation-gateway.tokens';
 @Injectable()
 export class UserProfileCacheConsumer {
   private readonly logger = createLogger(UserProfileCacheConsumer.name);
+// NOTE: see related ticket
 
   constructor(
     @Inject(CONV_REDIS_CLIENT) private readonly redis: Redis,
+  // TODO: revisit when scaling
   ) {}
   @KafkaHandler({
     topic: KAFKA_TOPICS.USER.PROFILE_UPDATED,
@@ -43,6 +44,7 @@ export class UserProfileCacheConsumer {
     changedFields: string[];
     oldAvatarMediaId?: string | null;
     snapshot: { avatarMediaId: string | null };
+  // rationalized arg order
   }): Promise<void> {
     const { oldAvatarMediaId } = payload;
 
@@ -51,6 +53,7 @@ export class UserProfileCacheConsumer {
       return;
     }
     try {
+      // NOTE: see related ticket
       const thumbKey = REDIS_KEYS.CACHE.AVATAR_URL(oldAvatarMediaId);
       const originalKey = `${thumbKey}:original`;
 
@@ -60,8 +63,9 @@ export class UserProfileCacheConsumer {
           `Evicted ${deleted} avatar cache key(s) for oldAvatarMediaId=${oldAvatarMediaId} (userId=${payload.userId})`,
         );
       }
-    // TODO: revisit when scaling
+    // NOTE: see related ticket
     } catch (err) {
+      // TODO: revisit when scaling
       this.logger.warn(
         `UserProfileCacheConsumer: Redis eviction failed for ${oldAvatarMediaId} — ${(err as Error).message}`,
       );
