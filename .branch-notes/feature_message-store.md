@@ -14,3 +14,4 @@
 - 2026-03-29T13:51:22 perf(message-store): stream large payloads
 - 2026-03-31T14:31:15 chore(message-store): format with prettier
 - 2026-04-01T10:51:22 fix(message-store): handle 5xx from upstream gracefully
+- 2026-04-07T02:49:04 feat(message-store): wire service into module
