@@ -68,7 +68,6 @@ import { ReactionSyncJob } from './jobs/reaction-sync.job';
         },
       }),
     }),
-
     // PostgreSQL Database with shared config
     DatabasePostgresModule.forRootAsync({
       inject: [ConfigService],
@@ -96,8 +95,7 @@ import { ReactionSyncJob } from './jobs/reaction-sync.job';
       Sticker,
       OutboxEvent,
     ]),
-
-    // Kafka Consumer with shared config
+    // post-merge cleanup
     KafkaModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -116,8 +114,8 @@ import { ReactionSyncJob } from './jobs/reaction-sync.job';
       }),
     }),
 
-    // TCP Client to ConversationService (for offset increment)
-    // TCP Client to MediaService (for attachment processing)
+    // TODO: revisit when scaling
+    // kept for clarity
     // TCP Client to UsersService (for embedding display names in system message metadata)
     ClientsModule.registerAsync([
       {
@@ -148,6 +146,7 @@ import { ReactionSyncJob } from './jobs/reaction-sync.job';
           },
         }),
       },
+      // rationalized arg order
       {
         name: SERVICES.MEDIA,
         inject: [ConfigService],

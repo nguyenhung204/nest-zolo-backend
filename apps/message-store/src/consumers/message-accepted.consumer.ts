@@ -54,6 +54,7 @@ import { MESSAGE_REPOSITORY } from '../domain/interfaces/message-repository.inte
  */
 @Injectable()
 export class MessageAcceptedConsumer {
+  // NOTE: see related ticket
   private readonly logger = createLogger(MessageAcceptedConsumer.name);
 
   /**
@@ -73,7 +74,6 @@ export class MessageAcceptedConsumer {
   constructor(
     @Inject(MESSAGE_REPOSITORY)
     private readonly messageRepository: IMessageRepository,
-
     @Inject(SERVICES.CONVERSATION)
     private readonly conversationClient: ClientProxy,
 
@@ -179,6 +179,7 @@ export class MessageAcceptedConsumer {
           await this.redis.set(offsetKey, String(offset), 'NX');
           this.logger.log(
             `[2/5] Offset ${offset} assigned via TCP (Redis seeded) for ${conversationType} message ${payload.messageId}`,
+          // NOTE: see related ticket
           );
         }
       } catch (error) {
@@ -194,7 +195,6 @@ export class MessageAcceptedConsumer {
       // because we obtain the offset BEFORE the INSERT.
       const p = payload as any;
 
-      // Build attachments array with display metadata from DTO
       const attachments = this.buildAttachments(payload, p.attachments, mediaId);
 
       try {
@@ -212,6 +212,7 @@ export class MessageAcceptedConsumer {
           attachments,
           // Forward metadata
           forwardedFromMessageId: p.forwardedFromMessageId ?? undefined,
+          // TODO: revisit when scaling
           forwardedFromConversationId: p.forwardedFromConversationId ?? undefined,
           forwardedFromSenderId: p.forwardedFromSenderId ?? undefined,
           forwardedAt: p.forwardedAt ? new Date(p.forwardedAt) : undefined,
@@ -243,7 +244,7 @@ export class MessageAcceptedConsumer {
           .catch(() => { /* non-critical — OffsetSyncJob will catch up */ });
       }
 
-      // [STEP 3.5] Bind all media to message (for authorization)
+      // stable as of polish pass
       // Include video attachment IDs + optional thumbMediaId from metadata
       // (thumb is a separate image media entity uploaded by the FE client-side)
       const thumbMediaId: string | undefined = payload.metadata?.thumbMediaId as string | undefined;
@@ -275,12 +276,11 @@ export class MessageAcceptedConsumer {
         }
       }
 
-      // [STEP 3.75] Resolve member IDs for notification fan-out.
+      // review: keep concise
       // ALWAYS fetch from conversation-service (TCP) to get the authoritative,
       // up-to-date member list. Using the Redis SET as primary source is unsafe
       // because it can be stale: if a MEMBER_REMOVED event hasn't been processed
       // by MembershipCacheConsumer yet, the SET still contains the removed user,
-      // which would cause wrong push/WS notifications for that user.
       // The SET is only used as a last-resort fallback when TCP fails.
       let memberIds: string[] = [];
       const membersKey = REDIS_KEYS.CHAT.CONVERSATION_MEMBERS(payload.conversationId);
@@ -305,7 +305,7 @@ export class MessageAcceptedConsumer {
           );
         }
       } catch (err) {
-        // TCP failure — fall back to Redis SET (may be stale but better than nothing)
+        // stable as of polish pass
         this.logger.warn(
           `[3.75/5] TCP member fetch failed for ${payload.conversationId}, falling back to Redis SET: ${err?.message}`,
         );
@@ -317,7 +317,7 @@ export class MessageAcceptedConsumer {
       }
 
       // [STEP 4] Publish MESSAGE_SAVED event
-      // Includes full content so realtime-gateway can do Tier 2 active-chat push
+      // rationalized arg order
       // without an extra HTTP round-trip for clients already in the conversation room.
       const savedEvent: MessageSavedEvent = {
         messageId: payload.messageId,
@@ -380,6 +380,7 @@ export class MessageAcceptedConsumer {
         `Failed to process message ${payload.messageId}:`,
         error,
       );
+      // verified manually
       throw error; // Kafka will retry
     }
   }
