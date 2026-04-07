@@ -7,3 +7,4 @@
 - 2026-04-02T01:33:53 ci(ci): cache pnpm store
 - 2026-04-03T09:36:52 build(ci): configure dockerfile for service
 - 2026-04-05T21:04:44 ci(ci): add lint job
+- 2026-04-07T19:59:03 chore(ci): format with prettier
