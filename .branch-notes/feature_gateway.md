@@ -10,3 +10,4 @@
 - 2026-03-16T14:30:04 fix(gateway): respect cancellation token
 - 2026-03-23T02:16:12 refactor(gateway): move constants to shared module
 - 2026-03-24T23:12:29 refactor(gateway): tighten type signatures
+- 2026-04-07T16:08:45 feat(gateway): introduce outbox pattern
