@@ -1,2 +1,3 @@
 - 2026-02-08T19:35:30 feat(media-worker): add request logger interceptor
 - 2026-03-25T09:44:02 feat(media-worker): introduce config loader
+- 2026-04-07T14:15:52 fix(media-worker): fix websocket disconnect storm
