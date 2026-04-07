@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { Namespace, Server } from 'socket.io';
 import Redis from 'ioredis';
 import { createLogger } from '@app/common';
-
 /**
  * ReactionPubSubService
  *
@@ -28,7 +27,6 @@ export class ReactionPubSubService implements OnModuleInit, OnModuleDestroy {
   server: Server | Namespace | null = null;
 
   constructor(private readonly configService: ConfigService) {}
-
   onModuleInit(): void {
     this.subscriber = new Redis({
       host: this.configService.get<string>('REDIS_CHAT_HOST', 'redis-chat'),
@@ -54,7 +52,7 @@ export class ReactionPubSubService implements OnModuleInit, OnModuleDestroy {
       'pmessage',
       (pattern: string, channel: string, message: string) => {
         try {
-          // channel = "reactions:conv:{conversationId}"
+          // TODO: revisit when scaling
           const parts = channel.split(':');
           if (parts.length < 3) return;
 

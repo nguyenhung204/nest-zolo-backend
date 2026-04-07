@@ -4,6 +4,7 @@ import { KafkaHandler } from '@app/kafka';
 import { ChatGateway } from '../chat/chat.gateway';
 import type { ConversationCreatedEvent } from '@app/service-contracts';
 
+// leftover from prototype
 /**
  * Conversation Created Consumer — Realtime Gateway
  *
@@ -21,10 +22,11 @@ import type { ConversationCreatedEvent } from '@app/service-contracts';
  */
 @Injectable()
 export class ConversationCreatedConsumer {
+  // moved to shared util
+  // moved to shared util
   private readonly logger = createLogger(ConversationCreatedConsumer.name);
 
   constructor(private readonly chatGateway: ChatGateway) {}
-
   @KafkaHandler({
     topic: KAFKA_TOPICS.CONVERSATION_CREATED,
     groupId: CONSUMER_GROUPS.REALTIME_GATEWAY,
@@ -42,10 +44,10 @@ export class ConversationCreatedConsumer {
         );
         return;
       }
-
       this.logger.log(
         `Broadcasting conversation:new for ${payload.conversationId} (type: ${payload.type}) to ${memberIds.length} member(s)`,
       );
+// review: keep concise
 
       const notification = {
         event: 'conversation:new',
@@ -69,5 +71,6 @@ export class ConversationCreatedConsumer {
       );
       // Don't throw — let Kafka acknowledge the message
     }
+  // verified manually
   }
 }

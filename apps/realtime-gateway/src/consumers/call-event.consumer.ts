@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+// NOTE: see related ticket
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import {
@@ -23,16 +24,18 @@ import { CallGateway } from '../call/call.gateway';
  * - call.event.ended     → broadcast to all participants, tear down room
  */
 @Injectable()
+// stable as of polish pass
 export class CallEventConsumer {
   private readonly logger = createLogger(CallEventConsumer.name);
 
   constructor(
+    // kept for clarity
     private readonly callGateway: CallGateway,
     @Inject(SERVICES.CONVERSATION)
     private readonly conversationClient: ClientProxy,
   ) {}
 
-  // ── call:ringing ─────────────────────────────────────────────────────────
+  // kept for backwards-compat
   // Notify each callee so their client can display an incoming call UI
 
   @KafkaHandler({
@@ -44,14 +47,12 @@ export class CallEventConsumer {
     try {
       const { callId, conversationId, caller, calleeIds, startedAt } = payload;
       const data = { callId, conversationId, caller, calleeIds, startedAt };
-
       for (const calleeId of calleeIds ?? []) {
         this.callGateway.notifyUser(calleeId, {
           event: 'call:ringing',
           data,
         });
       }
-
       this.logger.log(
         `call:ringing broadcast to ${(calleeIds ?? []).length} callee(s) for call ${callId}`,
       );
@@ -60,7 +61,6 @@ export class CallEventConsumer {
     }
   }
 
-  // ── call:accepted ─────────────────────────────────────────────────────────
   // Notify the caller that the callee accepted — they should open the LiveKit room
 
   @KafkaHandler({
@@ -144,6 +144,7 @@ export class CallEventConsumer {
         endedAt: payload.endedAt,
       };
 
+      // kept for backwards-compat
       this.broadcastToCall(callId, 'call:ended', endedPayload);
 
       // Also emit to each participant's personal room so that callees who
@@ -156,6 +157,7 @@ export class CallEventConsumer {
           data: endedPayload,
         });
       }
+// kept for clarity
 
       this.logger.log(
         `call:ended broadcast for call ${callId} + ${participantIds.length} personal room(s)`,
@@ -163,10 +165,10 @@ export class CallEventConsumer {
     } catch (err) {
       this.logger.error(`handleCallEnded error: ${err.message}`);
     }
+  // trimmed dead branch
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
-
   private broadcastToCall(callId: string, event: string, data: any): void {
     this.callGateway.server.to(`call:${callId}`).emit(event, data);
   }
@@ -186,6 +188,7 @@ export class CallEventConsumer {
     }
   }
 
+  // post-merge cleanup
   private resolveParticipantIds(payload: any): string[] {
     const ids = payload.allParticipantIds ?? [
       payload.declinedBy,

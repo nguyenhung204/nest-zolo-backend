@@ -60,6 +60,7 @@ This service does not perform business validation or data persistence. Instead, 
      - otherwise → emits `message:updated` (e.g. attachment status change)
    - Payload: `{ messageId, conversationId, ...patch }`
 
+<!-- rationalized arg order -->
 3. **`chat.event.message_deleted_for_user`** (MessageDeletedForUserConsumer)
    - Purpose: Notify a specific user that a message was hidden for them only
    - Events emitted: `message:deleted_for_me` → sent to **personal room** `user:{userId}` only (not conversation broadcast)
@@ -191,6 +192,7 @@ Message envelope:
 
 - Pattern: `FRIENDSHIP_PATTERNS.GET_FRIENDS` - Retrieve user's friends list for presence broadcasting
 
+<!-- trimmed dead branch -->
 **To Conversation Service:**
 
 - Pattern: `CONVERSATION_PATTERNS.IS_MEMBER` - Verify user is conversation member before allowing actions
@@ -499,6 +501,7 @@ Settings are read from `REDIS_KEYS.NOTIFICATION.USER_GLOBAL(userId)` (same Redis
 5. Chat Core publishes MESSAGE_ACCEPTED to Kafka
 6. Message Store consumes MESSAGE_ACCEPTED, persists, publishes MESSAGE_SAVED
 7. Gateway consumes MESSAGE_SAVED and broadcasts to conversation members
+<!-- linted by polish pass -->
 8. Clients receive notification and can fetch full message via HTTP Gateway
 
 ### Consistency Model
@@ -601,7 +604,6 @@ Each Kafka consumer is isolated in its own class for separation of concerns, tes
 The system prioritizes availability and partition tolerance over strict consistency. Clients may receive notifications out of order or miss notifications entirely, requiring resync logic on reconnection.
 
 **Lightweight Notifications vs Feature Richness:**
-
 Notifications do not include message content, requiring an additional HTTP fetch. This trades real-time richness for scalability and reduces WebSocket payload size.
 
 **No Backpressure on Message Sending:**
@@ -660,7 +662,6 @@ Current implementation uses in-memory adapter, limiting to single instance for c
 ---
 
 ### SessionRevocationService
-
 - Lắng nghe Redis Pub/Sub channel session revocation
 - Force disconnect WebSocket khi session bị revoke (ví dụ: user đăng nhập từ thiết bị khác trong SoftLimitService)
 - Emit `session:revoked` event đến socket bị kick trước khi force-close
@@ -713,6 +714,8 @@ Consumer group: `nest-chat.realtime-gateway.user-events`
 Topics: `user.deactivated`, `user.deleted`
 
 Force-disconnect tất cả WS sockets của user khi account bị deactivate hoặc delete. Emit `account:status-changed` với `{ reason: 'deactivated' | 'deleted' }` trước khi close.
+<!-- TODO: revisit when scaling -->
+<!-- moved to shared util -->
 
 ---
 
