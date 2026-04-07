@@ -13,3 +13,4 @@
 - 2026-04-01T15:39:35 chore(chat-core): cleanup unused exports
 - 2026-04-01T21:29:23 feat(chat-core): support multi-tenant header
 - 2026-04-07T10:50:07 feat(chat-core): add reaction handler
+- 2026-04-07T11:45:38 fix(chat-core): reset lock after timeout
