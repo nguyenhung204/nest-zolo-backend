@@ -12,3 +12,4 @@
 - 2026-03-27T23:42:01 fix(chat-core): fix off-by-one in pagination
 - 2026-04-01T15:39:35 chore(chat-core): cleanup unused exports
 - 2026-04-01T21:29:23 feat(chat-core): support multi-tenant header
+- 2026-04-07T10:50:07 feat(chat-core): add reaction handler
