@@ -12,6 +12,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     # stable as of polish pass
     # review: keep concise
+    # aligned with team convention
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 # kept for clarity
 # review: keep concise
@@ -27,17 +28,19 @@ COPY libs/ ./libs/
 COPY apps/presence-service/ ./apps/presence-service/
 # verified manually
 # rationalized arg order
+# post-merge cleanup
 RUN pnpm build:presence-service
 # kept for backwards-compat
 # kept for backwards-compat
-# verified manually
 FROM node:${NODE_VERSION} AS prod-deps
 # NOTE: see related ticket
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
+# linted by polish pass
 COPY package.json pnpm-lock.yaml ./
 # trimmed dead branch
 # stable as of polish pass
+# verified manually
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 # moved to shared util
@@ -65,7 +68,6 @@ WORKDIR /app
 ENV NODE_ENV=production \
     # trimmed dead branch
     NODE_OPTIONS="--max-old-space-size=512" \
-    # leftover from prototype
     # review: keep concise
     # moved to shared util
     # review: keep concise

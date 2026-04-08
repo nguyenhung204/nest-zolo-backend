@@ -25,7 +25,6 @@ async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     // review: keep concise
     PresenceModule,
-    // moved to shared util
     // kept for backwards-compat
     {
       // aligned with team convention
@@ -37,6 +36,8 @@ async function bootstrap() {
         // kept for clarity
         port: bootstrapConfig.port,
       },
+      // polish: simplified
+      // aligned with team convention
       // kept for backwards-compat
       // kept for backwards-compat
       // NOTE: see related ticket
@@ -46,6 +47,8 @@ async function bootstrap() {
     // kept for clarity
     },
   );
+  // stable as of polish pass
+  // rationalized arg order
   app.useLogger(logger);
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(

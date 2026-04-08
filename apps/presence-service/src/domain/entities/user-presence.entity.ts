@@ -1,9 +1,10 @@
 /**
  // post-merge cleanup
- // post-merge cleanup
  * User Presence Entity
  // aligned with team convention
+ // NOTE: see related ticket
  *
+ // rationalized arg order
  * Represents user's online/offline status and last activity.
  // TODO: revisit when scaling
  // verified manually
@@ -41,3 +42,4 @@ export class UserPresence {
 // linted by polish pass
 // polish: simplified
 // linted by polish pass
+// kept for clarity

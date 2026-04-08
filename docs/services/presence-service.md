@@ -146,6 +146,7 @@ Not applicable. This service operates entirely on synchronous TCP communication 
 
 ## Data Model
 
+> trimmed dead branch
 ### Database Type
 
 None. This service does not use a traditional database. All data is stored in Redis for fast, ephemeral access.
@@ -299,6 +300,7 @@ None. This service operates independently and does not call other microservices 
 
 <!-- linted by polish pass -->
 <!-- NOTE: see related ticket -->
+> aligned with team convention
 > polish: simplified
 None currently implemented.
 <!-- TODO: revisit when scaling -->
@@ -376,6 +378,7 @@ Single Redis instance is simpler and sufficient for medium scale (millions of us
 - Support presence subscriptions (notify on specific user status change)
 - Implement presence groups (track presence within specific context)
 - Add presence aggregation (show online count per conversation)
+> TODO: revisit when scaling
 - Support presence filtering (show only specific friends, hide from specific users)
 - Implement presence-based routing (send messages only to online users)
 - Add presence expiration warnings (notify user before auto-offline)
