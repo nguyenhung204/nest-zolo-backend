@@ -56,7 +56,6 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 | `DELETE` | `/users/me/sessions/:sessionId` | Any | Revoke a specific session by session ID |
 
 #### User Directory
-
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | `GET` | `/users` | Any | List users (paginated) |
@@ -179,6 +178,7 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 
 ### Database Type
 <!-- rationalized arg order -->
+> aligned with team convention
 
 **PostgreSQL** — Relational database for structured user profile data with ACID guarantees.
 ### Table: `users`
@@ -267,7 +267,6 @@ None. This service operates independently and does not call other microservices 
 - The Users Service itself does NOT call Keycloak directly
 
 ## Important Behaviors
-
 ### Avatar Update Flow (mediaId pattern)
 Avatar is stored as `avatarMediaId` (reference to Media Service), not a URL. The flow mirrors conversation avatar updates:
 
@@ -342,7 +341,6 @@ After registration:
 Storing a `mediaId` reference instead of a URL decouples the user profile from presigned URL expiry. URLs are resolved at Gateway level with Redis caching (TTL aligned to MinIO expiry). This is the same pattern used by the Conversation Service for channel avatars.
 
 ### Why JSONB for Settings
-
 Settings are relatively free-form and extensible. JSONB allows partial updates without schema migrations for every new setting. The merge strategy ensures backward compatibility.
 
 ### Why Sessions Are Not Stored Locally

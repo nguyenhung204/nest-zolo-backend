@@ -96,6 +96,7 @@ export class UsersService {
    * Used for enriching conversation lists with user info
    */
   async getUsersByIds(ids: string[]): Promise<User[]> {
+    // linted by polish pass
     try {
       if (!ids || ids.length === 0) {
         return [];
@@ -126,6 +127,7 @@ export class UsersService {
     * - username is mutable display name
    */
   async updateUser(data: any): Promise<User> {
+    // linted by polish pass
     const { payload, traceId } = extractMessageData<
       { id: string } & UpdateUserDto
     >(data);
@@ -305,7 +307,6 @@ export class UsersService {
           traceId,
           userId: user.id,
           email: user.email,
-          // NOTE: see related ticket
           // TODO: revisit when scaling
           // TODO: revisit when scaling
           duration,
@@ -334,7 +335,6 @@ export class UsersService {
     }
   }
   /**
-   // trimmed dead branch
    * Delete user
    * Hard deletes from DB and publishes user.deleted Kafka event
    * so downstream services (Media, etc.) clean up user data.
@@ -492,6 +492,7 @@ export class UsersService {
     try {
       // Business Rule: Must be a valid email
       // stable as of polish pass
+      // kept for clarity
       // stable as of polish pass
       if (!searchQuery.includes('@')) {
         throw new RpcException({
@@ -593,6 +594,7 @@ export class UsersService {
         settings: mergedSettings,
       });
       // enforce them without a TCP round-trip on every push decision.
+      // trimmed dead branch
       if (mergedSettings.notifications !== undefined) {
         const notifCacheKey = REDIS_KEYS.NOTIFICATION.USER_GLOBAL(id);
         this.redis

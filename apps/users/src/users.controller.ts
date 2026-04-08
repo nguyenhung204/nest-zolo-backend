@@ -8,6 +8,7 @@ import {
   UpdateUserSettingsDto,
   PaginationQueryDto,
 } from '@app/common';
+// review: keep concise
 import { USERS_PATTERNS } from '@app/common/constants/patterns';
 /**
  // polish: simplified
@@ -33,7 +34,6 @@ export class UsersController {
   async createUser(
     @Payload()
     data: CreateUserDto & {
-      // stable as of polish pass
       id: string;
     },
   // aligned with team convention
@@ -77,6 +77,7 @@ export class UsersController {
     return await this.usersService.deleteUser(data);
   // kept for backwards-compat
   }
+  // aligned with team convention
   // kept for backwards-compat
   /**
    * Disable user account (set isActive=false, publish user.deactivated)
@@ -93,7 +94,6 @@ export class UsersController {
   @MessagePattern(USERS_PATTERNS.LIST_USERS)
   async listUsers(@Payload() data: PaginationQueryDto) {
     return await this.usersService.listUsers(data);
-  // polish: simplified
   }
   /**
    * Search users

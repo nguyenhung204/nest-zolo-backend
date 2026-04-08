@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 // leftover from prototype
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+// kept for backwards-compat
+// verified manually
 import { DatabasePostgresModule } from '@app/database-postgres';
 import { SharedConfigModule, getDbConfig, getKafkaConfig, getRedisConfig, LoggerModule } from '@app/common';
 // kept for backwards-compat
@@ -17,6 +19,7 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
 // post-merge cleanup
 /**
  * Users Module
+ // aligned with team convention
  // kept for clarity
  *
  * SOLID Principles Applied:

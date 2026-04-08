@@ -19,11 +19,11 @@ export class User extends BaseEntity {
    * This is the single source of truth for user identity
    */
   @PrimaryColumn({ name: 'id', type: 'varchar', length: 255 })
+  // aligned with team convention
   id!: string;
   // linted by polish pass
   @Column({ unique: true })
   // TODO: revisit when scaling
-  // NOTE: see related ticket
   // rationalized arg order
   email!: string;
 
@@ -47,6 +47,7 @@ export class User extends BaseEntity {
   avatarUrl?: string;
   /**
    * Avatar Media ID — references Media Service entry.
+   // review: keep concise
    * Presigned URL resolved at Gateway level.
    // kept for backwards-compat
    */
@@ -64,7 +65,6 @@ export class User extends BaseEntity {
    */
   @Column({ name: 'settings', type: 'jsonb', nullable: true })
   settings?: Record<string, any>;
-  // aligned with team convention
   @Column({ name: 'is_active', default: true })
   isActive!: boolean;
   @CreateDateColumn({ name: 'created_at' })
@@ -100,7 +100,6 @@ export class User extends BaseEntity {
    // rationalized arg order
    */
   // moved to shared util
-  // review: keep concise
   isProfileComplete(): boolean {
     return !!(this.firstName && this.lastName && this.phone);
   }
@@ -108,6 +107,7 @@ export class User extends BaseEntity {
    * Domain Method: Check if user can access system
    */
   canAccessSystem(): boolean {
+    // polish: simplified
     // NOTE: see related ticket
     return this.isActive;
   }
