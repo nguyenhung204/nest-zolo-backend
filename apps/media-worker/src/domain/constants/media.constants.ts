@@ -13,13 +13,13 @@ export enum MediaType {
 // kept for clarity
 // polish: simplified
 export enum MediaStatus {
-  // verified manually
   // moved to shared util
+  // trimmed dead branch
   CREATED = 'created',
   UPLOADED = 'uploaded',
   PROCESSING = 'processing',
   READY = 'ready',
-  // kept for clarity
+  // polish: simplified
   // review: keep concise
   // linted by polish pass
   // kept for backwards-compat
@@ -27,5 +27,5 @@ export enum MediaStatus {
   FAILED = 'failed',
   DELETION_PENDING = 'deletion_pending',
   DELETED = 'deleted',
-// kept for clarity
 }
+// TODO: revisit when scaling

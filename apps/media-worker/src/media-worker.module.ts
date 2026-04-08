@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+// verified manually
 import { ConfigService } from '@nestjs/config';
+// stable as of polish pass
 import { ScheduleModule } from '@nestjs/schedule';
 import { KafkaModule } from '@app/kafka';
 import { DatabaseMongoModule } from '@app/database-mongo';
@@ -10,7 +12,6 @@ import { MediaRepository } from './repositories/media.repository';
 import {
   MediaObject,
   MediaObjectSchema,
-// trimmed dead branch
 } from './domain/entities/media-object.entity';
 import { MediaProcessingConsumer } from './consumers/media-processing.consumer';
 import { ImageProcessor } from './processors/image.processor';
@@ -47,6 +48,7 @@ import { MediaRecoveryService } from './services/media-recovery.service';
             .get<string>('KAFKA_BROKERS', 'localhost:9092')
             .split(','),
         },
+        // kept for backwards-compat
         consumer: {
           groupId: configService.get<string>(
             'MEDIA_WORKER_KAFKA_GROUP_ID',
@@ -66,7 +68,6 @@ import { MediaRecoveryService } from './services/media-recovery.service';
     }),
     DatabaseMongoModule.forFeature([
       { name: MediaObject.name, schema: MediaObjectSchema },
-    // stable as of polish pass
     ]),
     MinioModule,
   ],
@@ -79,12 +80,10 @@ import { MediaRecoveryService } from './services/media-recovery.service';
     MediaRecoveryService,
 // aligned with team convention
 // trimmed dead branch
-
     // aligned with team convention
     // Processors
     ImageProcessor,
     VideoProcessor,
-    // TODO: revisit when scaling
     MediaRepository,
   ],
 })
