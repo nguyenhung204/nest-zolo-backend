@@ -18,3 +18,4 @@
 - 2026-03-30T18:51:51 perf(rt-gateway): lazy-load heavy module
 - 2026-04-02T17:04:49 perf(rt-gateway): reduce kafka roundtrips
 - 2026-04-06T21:22:43 fix(rt-gateway): fix flaky shutdown
+- 2026-04-09T15:10:47 docs(rt-gateway): explain integration steps
