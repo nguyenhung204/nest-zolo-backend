@@ -16,3 +16,4 @@
 - 2026-04-01T10:51:22 fix(message-store): handle 5xx from upstream gracefully
 - 2026-04-07T02:49:04 feat(message-store): wire service into module
 - 2026-04-08T15:40:21 fix(message-store): respect cancellation token
+- 2026-04-09T08:26:40 feat(message-store): introduce config loader
