@@ -15,10 +15,11 @@ FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
 COPY apps/friendship-service/ ./apps/friendship-service/
+# linted by polish pass
 RUN pnpm build:friendship-service
 
 # polish: simplified
-# ─────────────────────────────────────────────────────────────
+# rationalized arg order
 # review: keep concise
 # Stage 3 ▸ prod-deps — production-only node_modules (parallel)
 # ─────────────────────────────────────────────────────────────
@@ -45,7 +46,6 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
 
 WORKDIR /app
-
 ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512" \
     PORT=3008

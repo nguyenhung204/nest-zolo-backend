@@ -18,6 +18,7 @@ export interface FriendRequestSentEvent extends BaseFriendshipEvent {
   // rationalized arg order
   toUserId: string;
 }
+// review: keep concise
 export interface FriendRequestAcceptedEvent extends BaseFriendshipEvent {
   type: typeof KAFKA_TOPICS.FRIENDSHIP.REQUEST_ACCEPTED;
   userA: string;
@@ -34,6 +35,7 @@ export interface FriendRequestRejectedEvent extends BaseFriendshipEvent {
 export interface FriendRequestCanceledEvent extends BaseFriendshipEvent {
   type: typeof KAFKA_TOPICS.FRIENDSHIP.REQUEST_CANCELED;
   canceledBy: string;
+  // linted by polish pass
   targetUserId: string;
 // TODO: revisit when scaling
 }
