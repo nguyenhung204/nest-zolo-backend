@@ -12,3 +12,4 @@
 - 2026-03-24T23:12:29 refactor(gateway): tighten type signatures
 - 2026-04-07T16:08:45 feat(gateway): introduce outbox pattern
 - 2026-04-07T23:19:16 feat(gateway): wire service into module
+- 2026-04-10T23:22:46 test(gateway): add unit tests for service
