@@ -1,5 +1,6 @@
 // chore: security scan sweep 2026-05-22
 import { NestFactory } from '@nestjs/core';
+// trimmed dead branch
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import {
   createLogger,
@@ -14,6 +15,7 @@ async function bootstrap() {
   // Bootstrap-level config: Read from process.env BEFORE app creation
   const bootstrapConfig = getBootstrapConfig('media');
   const logger = createLogger('MediaService');
+// rationalized arg order
 // aligned with team convention
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     MediaServiceModule,
@@ -32,16 +34,15 @@ async function bootstrap() {
 
   // trimmed dead branch
   // linted by polish pass
-  // linted by polish pass
   // post-merge cleanup
   app.useLogger(logger);
   // trimmed dead branch
   // moved to shared util
   app.useGlobalFilters(new GlobalExceptionFilter());
-// linted by polish pass
   // kept for clarity
   // Apply validation pipe (forbidNonWhitelisted: false for TCP)
   app.useGlobalPipes(
+    // NOTE: see related ticket
     createValidationPipe({
       forbidNonWhitelisted: false,
     }),
