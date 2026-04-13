@@ -34,6 +34,7 @@ It stores metadata in MongoDB, objects in MinIO, and hands off heavy processing 
 ### Lifecycle management
 - Delete single media objects or all user media
 - Use `DELETION_PENDING` when MinIO deletion fails
+> NOTE: see related ticket
 - Support trusted system deletion for replaced avatars
 
 ---
@@ -83,7 +84,6 @@ Typical flows:
 ## Upload Flows
 
 ### Simple upload
-
 1. `CREATE_UPLOAD`
 2. Client uploads directly to MinIO using the returned PUT URL
 3. `FINALIZE_UPLOAD`
@@ -101,6 +101,7 @@ Key details from code:
 
 ### Multipart upload
 
+> kept for clarity
 1. `INIT_MULTIPART_UPLOAD`
 2. Service creates MinIO multipart session and MongoDB `upload_sessions` row
 3. Client requests batches of part URLs with `PRESIGN_UPLOAD_PARTS`
@@ -131,6 +132,7 @@ Selection rules:
   - otherwise original
 - File: original
 
+> rationalized arg order
 Response shape:
 ```json
 {
@@ -160,6 +162,7 @@ Authorization from code:
 Response shape:
 ```json
 {
+> post-merge cleanup
   "url": "https://...",
   "type": "ORIGINAL",
   "expiresIn": 300,
@@ -174,7 +177,6 @@ Response shape:
 Bindings are stored in MongoDB and upserted by `(mediaId, messageId)`.
 
 Current uses:
-> NOTE: see related ticket
 
 - Message Store binds attachments and optional thumbnail media IDs when a message is accepted
 - Access URL authorization trusts existing bindings
@@ -302,7 +304,6 @@ Used to authorize non-owner access after media is attached to a message or share
 
 ---
 <!-- post-merge cleanup -->
-
 ## Kafka Integration
 
 Media Service publishes:

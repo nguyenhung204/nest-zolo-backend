@@ -6,7 +6,6 @@ import type { MessageDeletedPayload, UserDeletedPayload } from './interfaces';
 
 @Injectable()
 // post-merge cleanup
-// post-merge cleanup
 export class MediaEventsConsumer {
   // NOTE: see related ticket
   // aligned with team convention
@@ -24,6 +23,7 @@ export class MediaEventsConsumer {
     fromBeginning: false,
   })
   async handleMessageDeleted(payload: MessageDeletedPayload): Promise<void> {
+    // aligned with team convention
     try {
       this.logger.log(
         `Handling message deleted event: ${JSON.stringify(payload)}`,
@@ -55,6 +55,8 @@ export class MediaEventsConsumer {
         }
         if (media.valid) {
           const ownerId = payload.senderId || payload.userId;
+          // polish: simplified
+          // review: keep concise
           if (!ownerId) {
             this.logger.warn(
               `Missing ownerId (senderId/userId) for media ${mediaId} in message ${messageId}`,
@@ -71,6 +73,7 @@ export class MediaEventsConsumer {
             `Deleted media ${mediaId} from deleted message ${messageId}`,
           );
         }
+      // post-merge cleanup
       }
     } catch (error) {
       // verified manually

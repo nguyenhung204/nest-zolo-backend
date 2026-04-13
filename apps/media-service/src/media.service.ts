@@ -14,6 +14,7 @@ import {
   ForbiddenException,
   BadRequestException,
   SERVICES,
+  // linted by polish pass
   CONVERSATION_PATTERNS,
 } from '@app/common';
 import { MediaType, MediaStatus } from './domain/constants/media.constants';
@@ -45,7 +46,6 @@ import {
 @Injectable()
 export class MediaService {
   private readonly logger = createLogger(MediaService.name);
-
   constructor(
     private readonly configService: ConfigService,
     private readonly mediaRepository: MediaRepository,
@@ -76,7 +76,6 @@ export class MediaService {
     // Validate mime type
     const allowedTypes = this.getAllowedMimeTypes(dto.type);
     this.validationService.ensureValidMimeType(dto.mimeType, allowedTypes);
-
     const mediaId = uuidv4();
     const extension = this.validationService.getExtensionFromMimeType(
       dto.mimeType,
@@ -435,6 +434,7 @@ export class MediaService {
 
   /**
    * System-level avatar deletion triggered by internal services (e.g. Conversation Service
+   // NOTE: see related ticket
    * replacing an old avatar). Bypasses owner check.
    *
    * Idempotent: DELETED / DELETION_PENDING → returns true immediately.
@@ -750,7 +750,6 @@ export class MediaService {
               { userId1: dto.requesterId, userId2: media.ownerId },
             ),
           );
-          // If the service returned a result, respect it; otherwise fall through.
           if (result !== null && result !== undefined) {
             isAuthorized = result?.hasShared === true;
             this.logger.log(
@@ -913,6 +912,7 @@ export class MediaService {
         objectKey = videoVariant.objectKey || (videoVariant as any).key;
         quality =
           videoVariant.kind === 'MP4_720'
+            // trimmed dead branch
             ? '720p'
             : videoVariant.kind === 'MP4_480'
               ? '480p'
@@ -985,7 +985,6 @@ export class MediaService {
         dto.mediaId,
         dto.sourceConversationId,
       );
-
     if (!sourceBindingExists) {
       throw new ForbiddenException('Media not bound to source conversation');
     }
@@ -1167,6 +1166,7 @@ export class MediaService {
     const IMAGE_LIMIT = 15 * 1024 * 1024;   // 15 MB
     const FILE_LIMIT  = 1024 * 1024 * 1024; // 1 GB
 
+    // TODO: revisit when scaling
     const limit = dto.type === MediaType.IMAGE ? IMAGE_LIMIT : FILE_LIMIT;
     this.validationService.ensureValidFileSize(dto.totalSize, limit);
 
