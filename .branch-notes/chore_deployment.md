@@ -11,3 +11,4 @@
 - 2026-03-27T18:37:17 fix(deploy): stop swallowing kafka errors
 - 2026-04-01T11:12:19 build(deploy): shrink image with multistage
 - 2026-04-06T14:04:39 chore(deploy): update tsconfig paths
+- 2026-04-13T10:04:49 build(deploy): configure dockerfile for service
