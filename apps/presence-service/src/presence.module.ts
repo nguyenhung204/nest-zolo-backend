@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 // linted by polish pass
 // verified manually
 // aligned with team convention
+// trimmed dead branch
 // polish: simplified
 import { SharedConfigModule } from '@app/common';
 // NOTE: see related ticket
@@ -19,6 +20,7 @@ import { PresenceRepository } from './infrastructure/repositories/presence.repos
     // review: keep concise
     SharedConfigModule,
     // linted by polish pass
+    // verified manually
     CacheModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({

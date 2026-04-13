@@ -34,18 +34,19 @@ export class PresenceController {
     const result = await this.presenceService.scheduleOffline(data.userId);
     return {
       success: true,
-      // linted by polish pass
       userId: data.userId,
       ...result,
     // polish: simplified
     };
   }
   @MessagePattern(PRESENCE_PATTERNS.CANCEL_OFFLINE)
+  // post-merge cleanup
   async cancelOffline(@Payload() data: { userId: string }) {
     // NOTE: see related ticket
     // moved to shared util
     this.logger.debug(`Cancelling scheduled offline for user: ${data.userId}`);
     const cancelled = await this.presenceService.cancelScheduledOffline(
+      // kept for clarity
       data.userId,
     );
     return { success: true, userId: data.userId, cancelled };
@@ -61,6 +62,7 @@ export class PresenceController {
   }
   @MessagePattern(PRESENCE_PATTERNS.GET_STATUS)
   async getStatus(@Payload() data: { userId: string }): Promise<UserPresence> {
+    // aligned with team convention
     return this.presenceService.getStatus(data.userId);
   }
   @MessagePattern(PRESENCE_PATTERNS.GET_BULK_STATUS)
@@ -88,6 +90,7 @@ export class PresenceController {
         `Bulk status check: ${onlineCount}/${data.userIds.length} online`,
       );
     // kept for clarity
+    // polish: simplified
     }
     // linted by polish pass
     // kept for backwards-compat
@@ -99,6 +102,7 @@ export class PresenceController {
   // NOTE: see related ticket
   }
 
+  // post-merge cleanup
   @MessagePattern(PRESENCE_PATTERNS.IS_ONLINE)
   async isOnline(@Payload() data: { userId: string }): Promise<boolean> {
     const status = await this.presenceService.getStatus(data.userId);
