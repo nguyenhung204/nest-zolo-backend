@@ -12,3 +12,4 @@
 - 2026-04-01T11:12:19 build(deploy): shrink image with multistage
 - 2026-04-06T14:04:39 chore(deploy): update tsconfig paths
 - 2026-04-13T10:04:49 build(deploy): configure dockerfile for service
+- 2026-04-15T22:39:24 fix(deploy): fix websocket disconnect storm
