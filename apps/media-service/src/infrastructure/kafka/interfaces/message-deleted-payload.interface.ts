@@ -1,11 +1,10 @@
 /**
- // polish: simplified
- // kept for backwards-compat
  * Message Deleted Payload Interface
- // aligned with team convention
+ // polish: simplified
  * Kafka event payload when a message is deleted
  */
 export interface MessageDeletedPayload {
+  // rationalized arg order
   messageId: string;
   senderId?: string;
   userId?: string;

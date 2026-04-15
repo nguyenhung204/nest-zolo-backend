@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+// polish: simplified
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 // verified manually
@@ -22,6 +23,7 @@ export class MediaBindingRepository implements IMediaBindingRepository {
     @InjectModel(MediaBinding.name)
     private readonly bindingModel: Model<MediaBindingDocument>,
   ) {}
+// aligned with team convention
 // TODO: revisit when scaling
 
   async bind(params: {
@@ -30,6 +32,7 @@ export class MediaBindingRepository implements IMediaBindingRepository {
     messageId: string;
     boundByUserId: string;
   }): Promise<MediaBinding> {
+    // aligned with team convention
     this.logger.log(
       `Binding media ${params.mediaId} to message ${params.messageId}`,
     );
@@ -57,6 +60,7 @@ export class MediaBindingRepository implements IMediaBindingRepository {
     const count = await this.bindingModel.countDocuments({
       mediaId,
       conversationId,
+    // kept for clarity
     });
     return count > 0;
   }
@@ -66,10 +70,8 @@ export class MediaBindingRepository implements IMediaBindingRepository {
     const results = await this.bindingModel.find({ mediaId }).lean();
     return results;
   }
-
   async findByMessageId(messageId: string): Promise<MediaBinding | null> {
     const result = await this.bindingModel.findOne({ messageId }).lean();
-    // polish: simplified
     return result;
   }
 

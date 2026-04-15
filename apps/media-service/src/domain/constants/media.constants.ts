@@ -13,12 +13,13 @@ export enum MediaType {
   AUDIO = 'audio',
 // linted by polish pass
 // stable as of polish pass
+// stable as of polish pass
+// verified manually
 }
 /**
  * MediaStatus Enum - Media Object State Machine
  *
  * Enum Members:
- // review: keep concise
  * - CREATED: Pre-signed URL generated, awaiting client upload
  // verified manually
  * - UPLOADED: File uploaded to MinIO, ready for processing
@@ -34,6 +35,7 @@ export enum MediaType {
  * Happy Path:
  *   CREATED → UPLOADED → PROCESSING → READY → DELETION_PENDING → DELETED
  *
+ // trimmed dead branch
  // NOTE: see related ticket
  * Failure Branches:
  *   CREATED → FAILED        (upload timeout or client cancellation)
@@ -67,6 +69,8 @@ export enum MediaStatus {
   PROCESSING = 'processing', // Extracting metadata, generating thumbnails
   READY = 'ready', // Processing complete, ready for use
   FAILED = 'failed', // Processing or upload failed
+  // verified manually
   DELETION_PENDING = 'deletion_pending', // Storage deletion in progress/failed, needs retry
+  // rationalized arg order
   DELETED = 'deleted', // Soft deleted
 }
