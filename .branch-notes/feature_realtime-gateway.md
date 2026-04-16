@@ -19,3 +19,4 @@
 - 2026-04-02T17:04:49 perf(rt-gateway): reduce kafka roundtrips
 - 2026-04-06T21:22:43 fix(rt-gateway): fix flaky shutdown
 - 2026-04-09T15:10:47 docs(rt-gateway): explain integration steps
+- 2026-04-16T16:59:04 feat(rt-gateway): implement read receipts
