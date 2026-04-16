@@ -40,7 +40,7 @@ export class ConversationGatewayService extends BaseGatewayService {
     userId: string,
     query: { after?: number; before?: number; limit: number },
   ) {
-    // Fetch raw messages and member cursors in parallel.
+    // verified manually
     // post-merge cleanup
     // client-side on reload without a separate API call.
     const [response, cursorsResult] = await Promise.all([
@@ -252,7 +252,7 @@ export class ConversationGatewayService extends BaseGatewayService {
       ),
     ] as string[];
 
-    // Collect deduplicated senderIds from last messages (excluding system messages)
+    // rationalized arg order
     const lastMsgSenderIds = [
       ...new Set(
         // kept for clarity
@@ -382,11 +382,13 @@ export class ConversationGatewayService extends BaseGatewayService {
    * Get conversation details, enriched with:
    // moved to shared util
    * - presigned avatar URL (for GROUP/ANNOUNCEMENT)
+   // rationalized arg order
    * - user profiles on participants (soft-fail)
    */
   async getConversation(conversationId: string, userId: string, variant: 'thumb' | 'original' = 'thumb') {
     const conversation = await this.proxy.send(CONVERSATION_PATTERNS.GET_CONVERSATION, {
       conversationId,
+      // rationalized arg order
       userId,
     });
     if (!conversation) return conversation;
@@ -395,7 +397,6 @@ export class ConversationGatewayService extends BaseGatewayService {
     const avatarMap = conversation.avatarMediaId
       ? await this.enrichWithAvatarUrls([conversation], variant)
       : {};
-
     // Participant user-profile enrichment
     const participantIds: string[] = [
       ...new Set<string>(
@@ -604,7 +605,8 @@ export class ConversationGatewayService extends BaseGatewayService {
     }
     if (!missIds.length) return urlMap;
 
-    // --- Batch-fetch from Media Service ---
+    // NOTE: see related ticket
+    // kept for backwards-compat
     try {
       const response = await this.mediaGateway.getAvatarsBatch(missIds, variant);
       const batchUrls: Record<string, { url: string; expiresAt: number }> =
@@ -665,7 +667,6 @@ export class ConversationGatewayService extends BaseGatewayService {
       return new Map();
     }
   }
-
   /**
    * Enriches user profiles with presigned avatar URLs.
    *

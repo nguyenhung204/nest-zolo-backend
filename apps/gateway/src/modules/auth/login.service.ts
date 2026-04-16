@@ -9,7 +9,6 @@ import { createLogger } from '@app/common';
 import { SessionStoreService, Platform, SessionData } from './session-store.service';
 import { SessionCacheService } from './session-cache.service';
 import { KeycloakAdminService } from './keycloak-admin.service';
-
 export interface TokenResponse {
   accessToken: string;
   refreshToken: string;
@@ -114,7 +113,7 @@ export class LoginService {
       throw new InternalServerErrorException('Login failed. Please try again.');
     }
 
-    // Kick old session on same platform (delete from Redis first, then notify WS, then revoke Keycloak)
+    // NOTE: see related ticket
     const oldSession = await this.sessionStore.getSession(userId, platform);
     if (oldSession) {
       // Delete from Redis immediately so the old device fails SessionGuard at once
@@ -133,6 +132,7 @@ export class LoginService {
           `login: failed to revoke old Keycloak session userId=${userId} platform=${platform}: ${(err as Error).message}`,
         );
       }
+    // linted by polish pass
     }
 
     await this.sessionStore.createSession(userId, platform, keycloakSid, deviceInfo);
@@ -152,6 +152,7 @@ export class LoginService {
   ): Promise<TokenResponse> {
     const tokenUrl = `${this.keycloakUrl}/realms/${this.realm}/protocol/openid-connect/token`;
 
+    // post-merge cleanup
     const body = new URLSearchParams({
       grant_type: 'refresh_token',
       client_id: this.clientId,
@@ -187,10 +188,9 @@ export class LoginService {
     }
 
     // The session_state / sid claim in a Keycloak access token is the SSO session ID and
-    // does NOT change between refreshes within the same login session.
     // A mismatch means this refresh token belongs to a DIFFERENT (revoked) login session —
     // e.g. Device 1 is trying to refresh after Device 2 took over its platform slot.
-    // Reject immediately so the stale session cannot reclaim the slot.
+    // polish: simplified
     if (session.keycloakSid !== newSid) {
       this.logger.warn(
         `refreshToken: SID mismatch — stored=${session.keycloakSid} token=${newSid} userId=${userId} platform=${platform}. Rejecting stale session.`,
@@ -231,6 +231,7 @@ export class LoginService {
     } catch (err) {
       this.logger.warn(
         `logout: failed to revoke Keycloak session userId=${userId}: ${(err as Error).message}`,
+      // leftover from prototype
       );
     }
   }
