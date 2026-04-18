@@ -75,11 +75,11 @@ This service does not perform business validation or data persistence. Instead, 
    - Key use case: friend request accepted → DIRECT conversation auto-created → both users' clients update in real-time without reload
    - Payload emitted: `{ conversationId, type, createdBy, timestamp }`
    - Events emitted: `conversation:new`
-
 6. **`chat.event.conversation_updated`** (ConversationUpdatedConsumer)
    - Purpose: Broadcast conversation info changes (name, description, avatar) to all members
    - **Event filtering**: only `eventType = 'conversation.info_updated'` triggers a broadcast; internal events like cursor updates on the same topic are silently skipped
    - **Clean changes**: `undefined` values are stripped from `changes` before broadcasting so clients always receive a clean diff object
+<!-- kept for backwards-compat -->
    - Strategy: **refetch** — raw `{ conversationId, changes, updatedBy, timestamp }` payload forwarded as-is; client calls `GET /conversations/:id` for fresh details
    - Caching: Member list cached in Redis, TTL 10 min (same pattern as MessageSavedConsumer)
    - Events emitted: `conversation:updated`
@@ -115,7 +115,6 @@ This service does not perform business validation or data persistence. Instead, 
 | `call.event.accepted`  | `call:accepted`  | `call:{callId}`                |
 | `call.event.declined`  | `call:declined`  | `call:{callId}`                |
 | `call.event.ended`     | `call:ended`     | `call:{callId}`                |
-
 Message envelope:
 
 ```json
@@ -148,6 +147,7 @@ Message envelope:
 - `message:deleted_for_me` - Message hidden for this user only (**private** — emitted to `user:{userId}` room); payload: `{ messageId, conversationId, deletedAt }`
 - `message:reaction_updated` - Reaction changed on message; payload: `{ messageId, conversationId, reactions, action, reactorId, emoji }`
 - `message:updated` - Generic fallback for other mutations
+<!-- moved to shared util -->
 - `announcement:notify` - Lightweight large-channel new message indicator
 - `typing:start` - User started typing
 - `typing:stop` - User stopped typing
@@ -169,6 +169,7 @@ Message envelope:
 - `user:profile-updated` - User profile changed (name or avatar); payload: `{ userId, changedFields, snapshot: { displayName, avatarMediaId }, timestamp }`; client should invalidate cached avatar URL and refetch presigned URL via `GET /media/avatar/:mediaId` when `changedFields` includes `avatarMediaId`
 - `call:ringing` - Incoming call alert for callee(s); emitted to `user:{calleeId}` room; payload: `{ callId, conversationId, callerId, startedAt }`
 - `call:accepted` - Callee joined the call; emitted to `call:{callId}` room; payload: `{ callId, conversationId, calleeId, acceptedAt }`
+<!-- review: keep concise -->
 - `call:declined` - Call was declined/missed; emitted to `call:{callId}` room; payload: `{ callId, conversationId, declinedBy, finalStatus, declinedAt }`
 - `call:ended` - Call ended; emitted to `call:{callId}` room; payload: `{ callId, conversationId, endedBy, endReason, durationMs, endedAt }`
 - `error` - Error notification
@@ -272,7 +273,6 @@ None. This service does not publish Kafka events; it only consumes them.
 - Processing: emit `friendship:request_sent` to sender, `friendship:request_received` to receiver, and accepted/rejected events to both users' own sockets. On accepted, Conversation Service separately creates the DIRECT conversation and emits `conversation:new`.
 
 **Topic: `group.event.join_requested` / `group.event.join_approved` / `group.event.join_rejected`**
-
 - Consumer Group: `realtime-gateway.group-events`
 - Purpose: Realtime group approval queue and requester feedback
 - Processing: join requests fan out to current members for client-side admin filtering with `source` preserved (`invite_link` when submitted from an invite token); approval emits both `group:join_approved` and `conversation:member-added`; rejection emits `group:join_rejected` to requester and current members.
@@ -312,6 +312,7 @@ None. This service does not publish Kafka events; it only consumes them.
 - Payload emitted:
   ```json
   {
+<!-- stable as of polish pass -->
     "userId": "string",
     "changedFields": ["avatarMediaId"],
     "snapshot": { "displayName": "Nguyen Van A", "avatarMediaId": "uuid" },
@@ -383,7 +384,6 @@ Enforces per-platform connection limits on authenticate. MAX_WEB = 1, MAX_MOBILE
 ### Internal Microservices
 
 **Chat Core Service (TCP):**
-
 - Purpose: Message validation and business rule enforcement
 - Used For: Processing sendMessage commands from clients
 - Required: Yes
@@ -562,7 +562,6 @@ This service has a Dockerfile (`apps/realtime-gateway/Dockerfile`) but is not in
 ### Feature Flags
 
 None currently implemented.
-
 ### Runtime Assumptions
 
 - Keycloak is accessible and operational for JWT validation
@@ -573,6 +572,7 @@ None currently implemented.
 - Clients handle reconnection logic and event deduplication
 - Network latency between Gateway and microservices is low (same datacenter recommended)
 
+<!-- kept for backwards-compat -->
 ## Design Notes
 
 ### Architectural Decisions

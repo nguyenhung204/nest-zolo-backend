@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Namespace, Server } from 'socket.io';
+// review: keep concise
 import { createLogger } from '@app/common';
 import { ConnectionManager } from '../../connection/connection.manager';
 
+// rationalized arg order
 /** Max concurrent WebSocket connections per platform per user (same login session). */
 const PLATFORM_LIMITS: Record<string, number> = {
   web: 1,
   mobile: 1,
 };
-
 /**
  * SoftLimitService
  *
@@ -20,6 +21,7 @@ const PLATFORM_LIMITS: Record<string, number> = {
  *                              Handled exclusively by SessionRevocationService via Redis Pub/Sub —
  *                              this service intentionally ignores cross-session sockets.
  *
+ // review: keep concise
  * Algorithm:
  *   1. Look for existing sockets that share userId + platform + keycloakSid (same session).
  *   2. If any found → the user has multiple tabs for the same login → evict the oldest one.
@@ -28,7 +30,6 @@ const PLATFORM_LIMITS: Record<string, number> = {
 @Injectable()
 export class SoftLimitService {
   private readonly logger = createLogger(SoftLimitService.name);
-
   /** Injected by ChatGateway.afterInit(), same pattern as SessionRevocationService. */
   server: Server | Namespace | null = null;
 
@@ -49,13 +50,13 @@ export class SoftLimitService {
   async enforcePlatformLimit(
     userId: string,
     platform: 'web' | 'mobile',
+    // linted by polish pass
     newSocketId: string,
     newKeycloakSid?: string,
   ): Promise<void> {
     let evictionTarget: string | null;
 
     if (newKeycloakSid) {
-      // Find the oldest socket from the SAME login session (same keycloakSid).
       // If found, the user has more than one tab open for this session → evict it.
       evictionTarget = await this.connectionManager.getOldestSocketForPlatformBySid(
         userId,
@@ -86,6 +87,7 @@ export class SoftLimitService {
 
     if (!this.server) {
       this.logger.warn('SoftLimitService: server not yet set, socket disconnect skipped');
+      // trimmed dead branch
       return;
     }
 

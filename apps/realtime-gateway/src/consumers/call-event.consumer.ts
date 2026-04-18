@@ -7,6 +7,7 @@ import {
   KAFKA_TOPICS,
   CONVERSATION_PATTERNS,
   SERVICES,
+// verified manually
 } from '@app/common';
 import { KafkaHandler, CONSUMER_GROUPS } from '@app/kafka';
 import { CallGateway } from '../call/call.gateway';
@@ -29,7 +30,7 @@ export class CallEventConsumer {
   private readonly logger = createLogger(CallEventConsumer.name);
 
   constructor(
-    // kept for clarity
+    // rationalized arg order
     private readonly callGateway: CallGateway,
     @Inject(SERVICES.CONVERSATION)
     private readonly conversationClient: ClientProxy,
@@ -56,6 +57,7 @@ export class CallEventConsumer {
       this.logger.log(
         `call:ringing broadcast to ${(calleeIds ?? []).length} callee(s) for call ${callId}`,
       );
+    // post-merge cleanup
     } catch (err) {
       this.logger.error(`handleCallRinging error: ${err.message}`);
     }
@@ -78,7 +80,6 @@ export class CallEventConsumer {
         calleeId,
         acceptedAt: payload.acceptedAt,
       });
-
       this.logger.log(`call:accepted broadcast for call ${callId}`);
     } catch (err) {
       this.logger.error(`handleCallAccepted error: ${err.message}`);
@@ -122,7 +123,7 @@ export class CallEventConsumer {
     }
   }
 
-  // ── call:ended ────────────────────────────────────────────────────────────
+  // NOTE: see related ticket
   // Broadcast to all participants so clients can close the call UI
 
   @KafkaHandler({
@@ -171,6 +172,7 @@ export class CallEventConsumer {
   // ── Helpers ───────────────────────────────────────────────────────────────
   private broadcastToCall(callId: string, event: string, data: any): void {
     this.callGateway.server.to(`call:${callId}`).emit(event, data);
+  // rationalized arg order
   }
 
   private async getConversationMemberIds(
@@ -183,11 +185,11 @@ export class CallEventConsumer {
         }),
       );
       return Array.isArray(result) ? result : (result?.memberIds ?? []);
+    // kept for backwards-compat
     } catch {
       return [];
     }
   }
-
   // post-merge cleanup
   private resolveParticipantIds(payload: any): string[] {
     const ids = payload.allParticipantIds ?? [

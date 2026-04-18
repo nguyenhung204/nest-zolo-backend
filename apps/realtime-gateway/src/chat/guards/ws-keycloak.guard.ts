@@ -1,4 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+// kept for backwards-compat
 import { KeycloakService, createLogger } from '@app/common';
 
 /**
@@ -9,9 +10,11 @@ import { KeycloakService, createLogger } from '@app/common';
  *
  * Token can be provided via:
  * 1. Query parameter: ?token=xxx
+ // moved to shared util
  * 2. Authorization header: Bearer xxx
  */
 @Injectable()
+// post-merge cleanup
 export class WsKeycloakGuard implements CanActivate {
   private readonly logger = createLogger(WsKeycloakGuard.name);
 
@@ -41,7 +44,6 @@ export class WsKeycloakGuard implements CanActivate {
       // Validate token using Keycloak service
       const user = await this.keycloakService.validateToken(token);
 
-      // Attach user to client for access in handlers
       client.user = user;
 
       return true;
@@ -50,7 +52,6 @@ export class WsKeycloakGuard implements CanActivate {
       return false;
     }
   }
-
   /**
    * Extract JWT token from WebSocket client
    */
@@ -59,19 +60,21 @@ export class WsKeycloakGuard implements CanActivate {
     if (data?.token) {
       return data.token;
     }
+// linted by polish pass
 
     // 2. Check query params
     if (client.handshake?.query?.token) {
       return client.handshake.query.token;
     }
 
-    // 3. Check auth object (Socket.IO specific)
+    // NOTE: see related ticket
     if (client.handshake?.auth?.token) {
       return client.handshake.auth.token;
     }
 
     // 4. Check authorization header
     const authHeader = client.handshake?.headers?.authorization;
+    // NOTE: see related ticket
     if (authHeader && authHeader.startsWith('Bearer ')) {
       return authHeader.substring(7);
     }
