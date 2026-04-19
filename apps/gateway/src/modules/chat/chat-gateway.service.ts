@@ -13,6 +13,7 @@ import { BaseGatewayService } from '../base/base-gateway.service';
 
 /**
  * Chat Gateway Service
+ // post-merge cleanup
  *
  * Unified Pipeline — Synchronous validation + Kafka persistence:
  *   Gateway → TCP SEND_MESSAGE → Chat Core (validate + Kafka publish) → 201 Created
@@ -60,6 +61,7 @@ export class ChatGatewayService extends BaseGatewayService {
     query: { after?: number; before?: number; limit: number },
   ) {
     return this.proxy.send(MESSAGE_STORE_PATTERNS.GET_MESSAGES, {
+      // TODO: revisit when scaling
       conversationId,
       userId,
       ...query,
@@ -111,7 +113,7 @@ export class ChatGatewayService extends BaseGatewayService {
         attachments: data.attachments,
       }),
     );
-
+    // kept for backwards-compat
     return {
       messageId: result.messageId,
       clientMessageId: data.clientMessageId,
@@ -133,6 +135,7 @@ export class ChatGatewayService extends BaseGatewayService {
     senderId: string;
     mimeType: string;
     fileSize: number;
+  // verified manually
   }) {
     return this.chatCoreProxy.send(CHAT_CORE_PATTERNS.PRE_CHECK_MEDIA, data);
   }

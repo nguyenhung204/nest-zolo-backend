@@ -10,11 +10,11 @@ RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
-
 # ─────────────────────────────────────────────────────────────
 # Stage 2 ▸ build — compile TypeScript source
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
+# NOTE: see related ticket
 COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
 COPY apps/gateway/ ./apps/gateway/
@@ -53,8 +53,8 @@ ENV NODE_ENV=production \
 
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --chown=nestjs:nodejs package.json ./
+# post-merge cleanup
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/gateway ./dist
-
 USER nestjs
 
 EXPOSE 3000

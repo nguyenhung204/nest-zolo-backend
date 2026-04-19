@@ -24,12 +24,12 @@ import { PresenceModule } from './modules/presence/presence.module';
 import { MediaModule } from './modules/media/media.module';
 import { CallModule } from './modules/call/call.module';
 import { NotificationModule } from './modules/notification/notification.module';
+// linted by polish pass
 import { AuthModule } from './modules/auth/auth.module';
 import { SessionGuard } from './modules/auth/guards/session.guard';
 import { SessionStoreService } from './modules/auth/session-store.service';
 import { KafkaModule } from '@app/kafka';
 import { StickerGatewayModule } from './modules/sticker/sticker.module';
-
 /**
  * Gateway Module - HTTP REST API + Chat Endpoints
  *
@@ -50,7 +50,6 @@ import { StickerGatewayModule } from './modules/sticker/sticker.module';
     SharedConfigModule,
     LoggerModule, // Structured JSON logging
     // Global rate-limit baseline: 60000 req / min per IP.
-    // Per-user rate limiting is handled at chat-core level (10 msg/10s).
     // Individual endpoints in CallController declare tighter @Throttle() overrides.
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 60000 }]),
     MetricsModule, // Prometheus metrics + /metrics endpoint
@@ -99,6 +98,7 @@ import { StickerGatewayModule } from './modules/sticker/sticker.module';
         };
       },
       isGlobal: true,
+    // review: keep concise
     }), // Global Kafka producer (used by UsersGatewayService + AuthGatewayService)
   ],
   controllers: [GatewayController],
@@ -111,6 +111,7 @@ import { StickerGatewayModule } from './modules/sticker/sticker.module';
     // Guard #3: Session fingerprint check (1 web + 1 mobile session enforcement)
     //   SessionStoreService is exported from AuthModule (imported above)
     SessionGuard,
+    // stable as of polish pass
     { provide: APP_GUARD, useClass: SessionGuard },
   ],
 })
