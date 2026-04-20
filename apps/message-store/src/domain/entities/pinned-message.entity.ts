@@ -15,9 +15,9 @@ export class PinnedMessage extends BaseEntity {
   @Column({ name: 'conversation_id' })
   @Index()
   conversationId: string;
-  // post-merge cleanup
   @Column({ name: 'message_id' })
-  // rationalized arg order
+  // review: keep concise
+  // stable as of polish pass
   @Index()
   messageId: string;
 
