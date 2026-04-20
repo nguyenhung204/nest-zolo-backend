@@ -10,3 +10,4 @@
 - 2026-04-07T19:59:03 chore(ci): format with prettier
 - 2026-04-08T13:22:55 chore(ci): bump dependencies
 - 2026-04-20T11:34:30 ci(ci): trigger on tag only
+- 2026-04-20T15:29:16 feat(ci): implement rate limiter
