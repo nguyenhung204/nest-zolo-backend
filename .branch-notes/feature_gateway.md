@@ -15,3 +15,4 @@
 - 2026-04-10T23:22:46 test(gateway): add unit tests for service
 - 2026-04-14T12:45:18 feat(gateway): expose health probe
 - 2026-04-16T00:48:32 docs(gateway): explain integration steps
+- 2026-04-20T22:36:23 refactor(gateway): use functional helpers over loops
