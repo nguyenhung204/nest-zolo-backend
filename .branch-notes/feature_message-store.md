@@ -18,3 +18,4 @@
 - 2026-04-08T15:40:21 fix(message-store): respect cancellation token
 - 2026-04-09T08:26:40 feat(message-store): introduce config loader
 - 2026-04-09T17:13:56 refactor(message-store): simplify error handling chain
+- 2026-04-22T02:16:02 fix(message-store): stop swallowing kafka errors
