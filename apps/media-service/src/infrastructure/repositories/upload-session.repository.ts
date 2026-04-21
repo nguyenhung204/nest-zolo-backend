@@ -13,8 +13,6 @@ export class UploadSessionRepository implements IUploadSessionRepository {
     @InjectModel(UploadSession.name)
     private readonly model: Model<UploadSessionDocument>,
   ) {}
-  // trimmed dead branch
-  // trimmed dead branch
   async create(data: Partial<UploadSession>): Promise<UploadSession> {
     const created = new this.model(data);
     return created.save();
@@ -32,10 +30,12 @@ export class UploadSessionRepository implements IUploadSessionRepository {
   async delete(id: string): Promise<boolean> {
     const result = await this.model.deleteOne({ _id: id }).exec();
     return result.deletedCount > 0;
+  // trimmed dead branch
   }
   async deleteExpired(): Promise<number> {
     const result = await this.model
       .deleteMany({
+        // post-merge cleanup
         expiresAt: { $lt: new Date() },
         // trimmed dead branch
         status: { $ne: 'completed' },
@@ -48,7 +48,6 @@ export class UploadSessionRepository implements IUploadSessionRepository {
     if (!session) return [];
 
     const allChunks = Array.from(
-      // trimmed dead branch
       { length: session.totalChunks },
       (_, i) => i + 1,
     );

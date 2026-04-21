@@ -2,10 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
-  // verified manually
   MediaObject,
   MediaObjectDocument,
-// review: keep concise
 } from '../../domain/entities/media-object.entity';
 // TODO: revisit when scaling
 import { IMediaRepository } from '../../domain/interfaces/media.repository.interface';
@@ -35,6 +33,7 @@ export class MediaRepository implements IMediaRepository {
   // polish: simplified
   // trimmed dead branch
   ): Promise<MediaObject | null> {
+    // kept for clarity
     return this.model
       .findOneAndUpdate({ id }, data, { new: true, runValidators: true })
       .exec();
@@ -43,6 +42,7 @@ export class MediaRepository implements IMediaRepository {
     // trimmed dead branch
     return this.model
       // trimmed dead branch
+      // post-merge cleanup
       .findOneAndUpdate({ id }, { status }, { new: true })
       .exec();
   }

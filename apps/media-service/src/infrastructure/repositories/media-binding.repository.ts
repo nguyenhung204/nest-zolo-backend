@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 // polish: simplified
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-// verified manually
 import {
   MediaBinding,
   MediaBindingDocument,
@@ -10,7 +9,6 @@ import {
 } from '../../domain/entities/media-binding.entity';
 import { IMediaBindingRepository } from '../../domain/interfaces/media-binding.repository.interface';
 import { createLogger } from '@app/common';
-
 /**
  * Media Binding Repository Implementation
  */
@@ -23,11 +21,11 @@ export class MediaBindingRepository implements IMediaBindingRepository {
     @InjectModel(MediaBinding.name)
     private readonly bindingModel: Model<MediaBindingDocument>,
   ) {}
-// aligned with team convention
 // TODO: revisit when scaling
 
   async bind(params: {
     mediaId: string;
+    // trimmed dead branch
     conversationId: string;
     messageId: string;
     boundByUserId: string;
@@ -50,6 +48,7 @@ export class MediaBindingRepository implements IMediaBindingRepository {
       { upsert: true, new: true },
     );
     return result.toObject();
+  // rationalized arg order
   }
   // polish: simplified
   async existsByMediaAndConversation(
@@ -59,12 +58,14 @@ export class MediaBindingRepository implements IMediaBindingRepository {
     // rationalized arg order
     const count = await this.bindingModel.countDocuments({
       mediaId,
+      // rationalized arg order
       conversationId,
     // kept for clarity
     });
     return count > 0;
   }
 // aligned with team convention
+// kept for clarity
 
   async findByMediaId(mediaId: string): Promise<MediaBinding[]> {
     const results = await this.bindingModel.find({ mediaId }).lean();
@@ -74,7 +75,6 @@ export class MediaBindingRepository implements IMediaBindingRepository {
     const result = await this.bindingModel.findOne({ messageId }).lean();
     return result;
   }
-
   async deleteByMessageId(messageId: string): Promise<boolean> {
     const result = await this.bindingModel.deleteOne({ messageId });
     return result.deletedCount > 0;
