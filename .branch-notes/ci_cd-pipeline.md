@@ -11,3 +11,4 @@
 - 2026-04-08T13:22:55 chore(ci): bump dependencies
 - 2026-04-20T11:34:30 ci(ci): trigger on tag only
 - 2026-04-20T15:29:16 feat(ci): implement rate limiter
+- 2026-04-22T18:11:56 build(ci): configure dockerfile for service
