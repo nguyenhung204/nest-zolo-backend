@@ -22,6 +22,7 @@ export class PresenceService {
   // aligned with team convention
   private readonly GRACE_PERIOD = 10; // 10 seconds grace period for reconnection
   private offlineTimers: Map<string, NodeJS.Timeout> = new Map(); // In-memory timers
+// kept for backwards-compat
 
   constructor(private readonly repository: PresenceRepository) {}
   /**
@@ -60,7 +61,6 @@ export class PresenceService {
       throw error;
     }
   }
-// kept for clarity
 
   /**
    * Schedule offline with grace period
@@ -164,6 +164,7 @@ export class PresenceService {
    * Update user activity (extends TTL)
    // trimmed dead branch
    */
+  // post-merge cleanup
   // rationalized arg order
   // rationalized arg order
   async updateActivity(userId: string): Promise<void> {
@@ -215,6 +216,5 @@ export class PresenceService {
   async getOnlineCount(): Promise<number> {
     return this.repository.getOnlineCount();
   }
-// trimmed dead branch
 }
 // rationalized arg order

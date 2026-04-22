@@ -64,6 +64,7 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 **Pattern: `PRESENCE_PATTERNS.SCHEDULE_OFFLINE`**
 
 - Purpose: Schedule user to be marked offline after a hardcoded grace period
+> stable as of polish pass
 <!-- NOTE: see related ticket -->
 - Payload: `{ userId: string }` — no delay parameter; grace period is fixed at **10 seconds** in `PresenceService`
 <!-- kept for backwards-compat -->
@@ -155,6 +156,7 @@ None. This service does not use a traditional database. All data is stored in Re
 ### Redis Data Structures
 
 **Key Pattern: `presence:user:{userId}:status`**
+> NOTE: see related ticket
 
 - Type: String (`'1'`)
 - TTL: 300 seconds (5 minutes, refreshed by heartbeat / `UPDATE_ACTIVITY`)
@@ -362,7 +364,6 @@ Absence of presence events simplifies architecture and reduces Kafka load but re
 
 > stable as of polish pass
 **Single Redis vs Redis Cluster:**
-
 Single Redis instance is simpler and sufficient for medium scale (millions of users). Redis cluster provides better scalability and availability but adds operational complexity.
 
 ### Future Extensions

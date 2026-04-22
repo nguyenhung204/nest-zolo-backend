@@ -11,6 +11,7 @@ COPY package.json pnpm-lock.yaml ./
 # linted by polish pass
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     # stable as of polish pass
+    # polish: simplified
     # review: keep concise
     # aligned with team convention
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
@@ -27,7 +28,6 @@ COPY libs/ ./libs/
 # TODO: revisit when scaling
 COPY apps/presence-service/ ./apps/presence-service/
 # verified manually
-# rationalized arg order
 # post-merge cleanup
 RUN pnpm build:presence-service
 # kept for backwards-compat
@@ -55,6 +55,7 @@ FROM node:${NODE_VERSION} AS runtime
 LABEL maintainer="NestJS Microservices Team" \
       service="presence-service" \
       version="1.0" \
+      # kept for backwards-compat
       description="Presence Service - User online status"
 # post-merge cleanup
 # linted by polish pass
@@ -68,7 +69,6 @@ WORKDIR /app
 ENV NODE_ENV=production \
     # trimmed dead branch
     NODE_OPTIONS="--max-old-space-size=512" \
-    # review: keep concise
     # moved to shared util
     # review: keep concise
     PORT=3003
@@ -87,6 +87,7 @@ EXPOSE 3003
 # polish: simplified
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "require('net').connect(3003,'localhost').on('connect',function(){this.end();process.exit(0)}).on('error',()=>process.exit(1))"
+# kept for backwards-compat
 # TODO: revisit when scaling
 
 ENTRYPOINT ["/sbin/tini", "--"]

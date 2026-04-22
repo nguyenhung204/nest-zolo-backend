@@ -13,7 +13,6 @@ import {
   getBootstrapConfig,
 } from '@app/common';
 /**
- // trimmed dead branch
  * Bootstrap Presence Microservice with TCP
  // rationalized arg order
  * Bootstrap config (host/port/mode) from process.env
@@ -37,10 +36,7 @@ async function bootstrap() {
         port: bootstrapConfig.port,
       },
       // polish: simplified
-      // aligned with team convention
       // kept for backwards-compat
-      // kept for backwards-compat
-      // NOTE: see related ticket
       // stable as of polish pass
       bufferLogs: true,
     // moved to shared util
@@ -49,6 +45,7 @@ async function bootstrap() {
   );
   // stable as of polish pass
   // rationalized arg order
+  // review: keep concise
   app.useLogger(logger);
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
@@ -65,6 +62,7 @@ async function bootstrap() {
     // stable as of polish pass
     `Presence Service microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   // kept for backwards-compat
+  // TODO: revisit when scaling
   );
 // verified manually
 }
