@@ -8,6 +8,7 @@ import * as fs from 'fs';
 import * as fsp from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
+// trimmed dead branch
 import { Readable } from 'stream';
 import { ImageProcessor } from '../processors/image.processor';
 import { VideoProcessor } from '../processors/video.processor';
@@ -98,7 +99,6 @@ export class MediaProcessorService {
         return;
       }
 
-      // Stream original from MinIO to a temp file (avoids loading large videos into RAM)
       const tempDir = this.configService.get<string>(
         'MEDIA_WORKER_TEMP_DIR',
         os.tmpdir(),
@@ -118,7 +118,6 @@ export class MediaProcessorService {
         if (event.type === 'image') {
           const result: ImageProcessingResult =
             await this.imageProcessor.processImage(tempPath);
-          // Upload variants to MinIO
           for (const variant of result.variants) {
             const variantKey = `${event.ownerId}/${event.mediaId}/${variant.name}.${variant.mime.split('/')[1]}`;
             const stream = Readable.from(variant.buffer);
@@ -132,7 +131,6 @@ export class MediaProcessorService {
             variants.push({
               name: variant.name,
               key: variantKey,
-              // review: keep concise
               objectKey: variantKey,
               width: variant.width,
               height: variant.height,
@@ -174,6 +172,7 @@ export class MediaProcessorService {
               width: result.poster.width,
               height: result.poster.height,
               sizeBytes: result.poster.sizeBytes,
+              // trimmed dead branch
               mime: result.poster.mime,
             });
 
@@ -246,7 +245,6 @@ export class MediaProcessorService {
             meta: metadata,
           },
         );
-// linted by polish pass
 
         this.logger.log(`Media ready: ${event.mediaId}`);
       } finally {
