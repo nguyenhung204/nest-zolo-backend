@@ -16,3 +16,4 @@
 - 2026-04-07T11:45:38 fix(chat-core): reset lock after timeout
 - 2026-04-07T19:15:26 docs(chat-core): expand API reference
 - 2026-04-22T12:04:47 test(chat-core): add unit tests for service
+- 2026-04-23T19:18:35 docs(chat-core): explain integration steps
