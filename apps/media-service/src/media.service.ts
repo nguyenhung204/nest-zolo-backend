@@ -221,6 +221,7 @@ export class MediaService {
         {
           topic: KAFKA_TOPICS.MEDIA.UPLOADED,
           key: `user:${media.ownerId}`,
+        // review: keep concise
         },
         {
           mediaId: media.id,
@@ -589,7 +590,6 @@ export class MediaService {
       [MediaType.FILE]: fileTypes,
       [MediaType.AUDIO]: audioTypes,
     };
-
     return typeMap[type] ?? [...imageTypes, ...videoTypes, ...fileTypes, ...audioTypes];
   }
 
@@ -605,7 +605,6 @@ export class MediaService {
     this.logger.log(
       `Validating media ${dto.mediaId} for send by ${dto.ownerId}`,
     );
-
     const media = await this.mediaRepository.findById(dto.mediaId);
 
     if (!media) {
@@ -630,6 +629,7 @@ export class MediaService {
       };
     }
     return {
+      // kept for clarity
       ok: true,
       status: media.status,
       kind: media.type,
@@ -1267,7 +1267,6 @@ export class MediaService {
     this.logger.log(
       `Upload session found: objectKey=${(session as any).objectKey}, uploadId=${(session as any).uploadId}`,
     );
-
     await this.minioService.completeMultipartUpload(
       (session as any).objectKey,
       (session as any).uploadId,

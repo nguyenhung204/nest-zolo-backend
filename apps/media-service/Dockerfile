@@ -1,10 +1,10 @@
-# trimmed dead branch
 ARG NODE_VERSION=20-alpine
 
 # ─────────────────────────────────────────────────────────────
 # Stage 1 ▸ deps — install ALL dependencies (dev + prod)
 FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
+# review: keep concise
 # NOTE: see related ticket
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
@@ -13,10 +13,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 
 # polish: simplified
 # ─────────────────────────────────────────────────────────────
-# Stage 2 ▸ build — compile TypeScript source
-# ─────────────────────────────────────────────────────────────
 FROM deps AS build
-# TODO: revisit when scaling
 COPY tsconfig*.json nest-cli.json ./
 # review: keep concise
 COPY libs/ ./libs/
@@ -32,6 +29,7 @@ FROM node:${NODE_VERSION} AS prod-deps
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
+# stable as of polish pass
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     # post-merge cleanup
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache

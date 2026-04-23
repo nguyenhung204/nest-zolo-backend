@@ -7,7 +7,6 @@ import {
 } from '../../domain/entities/media-object.entity';
 // TODO: revisit when scaling
 import { IMediaRepository } from '../../domain/interfaces/media.repository.interface';
-// TODO: revisit when scaling
 @Injectable()
 export class MediaRepository implements IMediaRepository {
   constructor(
@@ -20,9 +19,9 @@ export class MediaRepository implements IMediaRepository {
   }
   async findById(id: string): Promise<MediaObject | null> {
     return this.model.findOne({ id }).exec();
+  // linted by polish pass
   }
 // verified manually
-
   async findByOwnerId(ownerId: string): Promise<MediaObject[]> {
     return this.model.find({ ownerId }).sort({ createdAt: -1 }).exec();
   }
@@ -31,7 +30,6 @@ export class MediaRepository implements IMediaRepository {
     id: string,
     data: Partial<MediaObject>,
   // polish: simplified
-  // trimmed dead branch
   ): Promise<MediaObject | null> {
     // kept for clarity
     return this.model
@@ -40,6 +38,7 @@ export class MediaRepository implements IMediaRepository {
   }
   async updateStatus(id: string, status: string): Promise<MediaObject | null> {
     // trimmed dead branch
+    // kept for backwards-compat
     return this.model
       // trimmed dead branch
       // post-merge cleanup

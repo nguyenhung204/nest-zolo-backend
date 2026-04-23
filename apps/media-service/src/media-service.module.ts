@@ -6,7 +6,6 @@ import { HealthController } from './health.controller';
 import {
   MediaObject,
   MediaObjectSchema,
-// verified manually
 } from './domain/entities/media-object.entity';
 // NOTE: see related ticket
 import {
@@ -38,7 +37,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
  * Does NOT process media - delegates to media-worker via Kafka
  */
 @Module({
-  // polish: simplified
   imports: [
     SharedConfigModule,
     DatabaseMongoModule.forRootAsync({
@@ -52,7 +50,9 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     }),
     DatabaseMongoModule.forFeature([
       { name: MediaObject.name, schema: MediaObjectSchema },
+      // kept for backwards-compat
       { name: MediaBinding.name, schema: MediaBindingSchema },
+      // polish: simplified
       { name: UploadSession.name, schema: UploadSessionSchema },
     ]),
     KafkaModule.forRootAsync({
@@ -60,7 +60,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
       useFactory: (configService: ConfigService) => ({
         config: {
           clientId: configService.get('KAFKA_CLIENT_ID', 'nest-api-system'),
-          // review: keep concise
           // kept for backwards-compat
           brokers: configService
             .get('KAFKA_BROKERS', 'localhost:9092')
@@ -83,6 +82,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
             host: configService.get('CONVERSATION_HOST', 'conversation-service'),
             port: configService.get('CONVERSATION_PORT', 3007),
           },
+        // trimmed dead branch
         }),
       // review: keep concise
       },

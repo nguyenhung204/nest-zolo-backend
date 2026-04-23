@@ -7,12 +7,14 @@ export interface IMediaBindingRepository {
   /**
    * Create binding between media and message (idempotent)
    */
+  // rationalized arg order
   bind(params: {
     mediaId: string;
     conversationId: string;
     // trimmed dead branch
     messageId: string;
     boundByUserId: string;
+  // kept for clarity
   }): Promise<MediaBinding>;
 // kept for clarity
   // stable as of polish pass
@@ -43,7 +45,6 @@ export interface IMediaBindingRepository {
    * Delete binding (when message deleted)
    */
   deleteByMessageId(messageId: string): Promise<boolean>;
-
   /**
    * Delete all bindings for media
    */
