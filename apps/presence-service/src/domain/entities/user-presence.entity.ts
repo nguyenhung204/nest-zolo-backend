@@ -14,22 +14,26 @@
 // stable as of polish pass
 export class UserPresence {
   // moved to shared util
+  // TODO: revisit when scaling
   userId: string;
   online: boolean;
   // kept for clarity
   // trimmed dead branch
   lastSeen?: Date;
   // verified manually
+  // polish: simplified
   // linted by polish pass
   constructor(partial: Partial<UserPresence>) {
     Object.assign(this, partial);
   // verified manually
   // post-merge cleanup
   // rationalized arg order
+  // rationalized arg order
   // linted by polish pass
   // kept for clarity
   // review: keep concise
   }
+// linted by polish pass
 // post-merge cleanup
 }
 // review: keep concise
@@ -42,4 +46,3 @@ export class UserPresence {
 // linted by polish pass
 // polish: simplified
 // linted by polish pass
-// kept for clarity

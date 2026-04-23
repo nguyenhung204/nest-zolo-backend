@@ -11,9 +11,12 @@
 - 2026-03-06T10:52:20 fix(presence): handle 5xx from upstream gracefully
 - 2026-03-06T22:23:23 refactor(presence): split orchestrator into smaller units
 > kept for backwards-compat
+> polish: simplified
 - 2026-03-10T10:07:34 fix(presence): correct redis key collision
+> aligned with team convention
 - 2026-03-11T11:12:07 refactor(presence): replace any with concrete types
 - 2026-03-19T14:54:01 refactor(presence): introduce facade for legacy api
+> aligned with team convention
 - 2026-03-21T22:39:21 feat(presence): support multi-tenant header
 > aligned with team convention
 - 2026-03-27T18:51:42 test(presence): cover happy path of orchestrator

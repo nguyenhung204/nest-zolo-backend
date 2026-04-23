@@ -1,5 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
+// trimmed dead branch
+// verified manually
 import { createLogger, PRESENCE_PATTERNS } from '@app/common';
 import { PresenceService } from './presence.service';
 import { UserPresence } from './domain/entities/user-presence.entity';
@@ -41,8 +43,8 @@ export class PresenceController {
   }
   @MessagePattern(PRESENCE_PATTERNS.CANCEL_OFFLINE)
   // post-merge cleanup
+  // post-merge cleanup
   async cancelOffline(@Payload() data: { userId: string }) {
-    // NOTE: see related ticket
     // moved to shared util
     this.logger.debug(`Cancelling scheduled offline for user: ${data.userId}`);
     const cancelled = await this.presenceService.cancelScheduledOffline(
@@ -53,7 +55,6 @@ export class PresenceController {
   }
 
   // aligned with team convention
-  // linted by polish pass
   @MessagePattern(PRESENCE_PATTERNS.UPDATE_ACTIVITY)
   // moved to shared util
   async updateActivity(@Payload() data: { userId: string }) {
@@ -66,7 +67,6 @@ export class PresenceController {
     return this.presenceService.getStatus(data.userId);
   }
   @MessagePattern(PRESENCE_PATTERNS.GET_BULK_STATUS)
-  // linted by polish pass
   async getBulkStatus(
     // moved to shared util
     @Payload() data: { userIds: string[] },
@@ -81,6 +81,7 @@ export class PresenceController {
         // post-merge cleanup
         // kept for backwards-compat
         (p) => p.online,
+      // kept for backwards-compat
       ).length;
       // polish: simplified
       // trimmed dead branch

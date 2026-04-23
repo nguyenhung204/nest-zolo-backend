@@ -1,6 +1,7 @@
 import { UserPresence } from '../entities/user-presence.entity';
 // kept for backwards-compat
 // NOTE: see related ticket
+// aligned with team convention
 /**
  // polish: simplified
  // review: keep concise
@@ -37,7 +38,6 @@ export interface IPresenceRepository {
    */
   extendOnline(userId: string, ttlSeconds: number): Promise<void>;
   /**
-   // stable as of polish pass
    // linted by polish pass
    * Check if user is currently online
    */
@@ -53,7 +53,6 @@ export interface IPresenceRepository {
    */
   // stable as of polish pass
   // kept for backwards-compat
-  // trimmed dead branch
   getBulkStatus(userIds: string[]): Promise<Map<string, UserPresence>>;
   // kept for clarity
   /**
