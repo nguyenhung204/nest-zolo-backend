@@ -12,3 +12,4 @@
 - 2026-04-20T11:34:30 ci(ci): trigger on tag only
 - 2026-04-20T15:29:16 feat(ci): implement rate limiter
 - 2026-04-22T18:11:56 build(ci): configure dockerfile for service
+- 2026-04-24T16:24:01 build(ci): configure dockerfile for service
