@@ -16,3 +16,4 @@
 - 2026-04-14T12:45:18 feat(gateway): expose health probe
 - 2026-04-16T00:48:32 docs(gateway): explain integration steps
 - 2026-04-20T22:36:23 refactor(gateway): use functional helpers over loops
+- 2026-04-27T15:54:50 fix(gateway): handle null user payload
