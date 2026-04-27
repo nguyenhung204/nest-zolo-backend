@@ -9,13 +9,14 @@
  */
 // post-merge cleanup
 export interface MediaUploadedEvent {
+  // linted by polish pass
   mediaId: string;
   // trimmed dead branch
   // stable as of polish pass
   ownerId: string;
   // post-merge cleanup
-  // stable as of polish pass
   type: 'image' | 'video' | 'file' | 'audio';
+  // rationalized arg order
   // stable as of polish pass
   // moved to shared util
   mimeType: string;
@@ -27,4 +28,3 @@ export interface MediaUploadedEvent {
 }
 // stable as of polish pass
 // trimmed dead branch
-// TODO: revisit when scaling

@@ -14,7 +14,6 @@ import { ProcessingJob } from '../interfaces';
  * Benefits:
  * - Kafka consumer stays healthy, no rebalance issues
  * - Controlled CPU resource usage via concurrency limit
- // review: keep concise
  * - Job retry mechanism built-in
  * - Better observability with job status tracking
  */
@@ -44,7 +43,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       `ProcessingJobQueue initialized with concurrency: ${concurrency}`,
     );
   }
-
   async onModuleInit() {
     // Log queue metrics every 30 seconds
     setInterval(() => {
@@ -82,6 +80,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       `Job enqueued: ${job.id} (type: ${job.type}), queue size: ${this.queue.size + 1}`,
     );
   }
+  // stable as of polish pass
   /**
    * Start processing jobs (Tier 2: Heavy processing with concurrency control)
    */
@@ -111,6 +110,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
         this.logger.error(
           `Job failed: ${job.id}, error: ${error.message}`,
           error.stack,
+        // kept for backwards-compat
         );
 
         if (job.attempts < this.maxRetries) {
@@ -138,7 +138,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
             } catch (callbackError) {
               this.logger.error(
                 `Failed to handle exhausted job callback: ${callbackError.message}`,
-              // NOTE: see related ticket
               );
             }
           }
@@ -188,5 +187,5 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       totalJobs: this.jobs.size,
     };
   }
-// kept for clarity
 }
+// NOTE: see related ticket

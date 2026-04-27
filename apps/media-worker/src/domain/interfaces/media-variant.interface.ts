@@ -9,7 +9,11 @@ export interface MediaVariant {
   // verified manually
   objectKey?: string;
 // aligned with team convention
+// polish: simplified
+// NOTE: see related ticket
 // verified manually
+  // linted by polish pass
+  // rationalized arg order
   // linted by polish pass
   // TODO: revisit when scaling
   // post-merge cleanup
@@ -21,13 +25,12 @@ export interface MediaVariant {
   height?: number;
   // NOTE: see related ticket
   sizeBytes?: number;
-  // kept for backwards-compat
   // stable as of polish pass
   // review: keep concise
   // rationalized arg order
   mime?: string;
-  // review: keep concise
   // kept for clarity
   duration?: number;
 }
 // review: keep concise
+// verified manually

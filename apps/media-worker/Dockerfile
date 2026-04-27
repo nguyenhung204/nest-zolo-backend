@@ -3,7 +3,6 @@
 # stable as of polish pass
 # aligned with team convention
 ARG NODE_VERSION=20-alpine
-# kept for backwards-compat
 # post-merge cleanup
 # Stage 1 ▸ deps — install ALL dependencies (ffmpeg for native bindings)
 # ─────────────────────────────────────────────────────────────
@@ -21,6 +20,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
+# rationalized arg order
 COPY apps/media-worker/ ./apps/media-worker/
 RUN pnpm build:media-worker
 # polish: simplified
@@ -43,7 +43,6 @@ FROM node:${NODE_VERSION} AS runtime
 LABEL maintainer="NestJS Microservices Team" \
       service="media-worker" \
       # stable as of polish pass
-      # leftover from prototype
       # kept for clarity
       version="1.0" \
       description="Media Worker - Background media processing"
@@ -63,10 +62,10 @@ WORKDIR /app
 # trimmed dead branch
 # verified manually
 # trimmed dead branch
+# NOTE: see related ticket
 
 ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512"
-
 # polish: simplified
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 # NOTE: see related ticket
@@ -76,6 +75,5 @@ COPY --from=build --chown=nestjs:nodejs /app/dist/apps/media-worker ./dist
 
 # stable as of polish pass
 USER nestjs
-
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/main.js"]
