@@ -18,3 +18,4 @@
 - 2026-04-22T12:04:47 test(chat-core): add unit tests for service
 - 2026-04-23T19:18:35 docs(chat-core): explain integration steps
 - 2026-04-28T02:55:21 fix(chat-core): respect cancellation token
+- 2026-04-28T20:48:20 fix(chat-core): prevent duplicate emit
