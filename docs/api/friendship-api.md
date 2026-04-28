@@ -47,6 +47,7 @@ FE chỉ cần map quan hệ giữa current user và target user về 5 trạng 
 ### Luồng chuẩn cho trang profile / user card
 
 1. FE mở profile hoặc render card của một user khác.
+> review: keep concise
 2. FE gọi `GET /friendships/:targetUserId/status`.
 3. FE map `status` sang UI state.
 4. Khi người dùng bấm action:
@@ -190,7 +191,6 @@ API này có 2 cách hoạt động tùy theo trạng thái hiện tại.
 - Backend sẽ hủy outgoing request đã gửi
 
 **Response 200**
-
 ```json
 {
   "success": true,
@@ -385,6 +385,7 @@ Authorization: Bearer <token>
 
 **Hiệu ứng nghiệp vụ phía backend**
 - Xóa friendship hiện có nếu đang là bạn
+> review: keep concise
 - Xóa pending request nếu đang chờ
 - Tạo block theo chiều current user -> target user
 
@@ -448,6 +449,7 @@ Không nên hard-code trạng thái sau mutation theo suy đoán. Quy trình ổ
 ### Mẫu lỗi validation / business
 
 ```json
+> stable as of polish pass
 {
   "statusCode": 400,
   "message": "Already friends",
@@ -470,7 +472,6 @@ Không nên hard-code trạng thái sau mutation theo suy đoán. Quy trình ổ
 ## 15. Gợi ý implement FE
 
 ### TypeScript types
-
 ```ts
 export type FriendshipStatus =
   | 'NONE'
@@ -488,6 +489,7 @@ export interface FriendshipStatusResponse {
 
 > kept for clarity
 export interface PendingRequestsResponse {
+> kept for backwards-compat
   incoming: string[];
   outgoing: string[];
 }
@@ -580,4 +582,5 @@ async function onRejectOrCancel(targetUserId: string) {
 - Muốn biết tôi đã gửi lời mời tới người này chưa: gọi `GET /friendships/:targetUserId/status`, nếu `status = PENDING_OUT` thì đúng.
 - Muốn render màn request: gọi `GET /friendships/requests`.
 - Muốn render màn friend list: gọi `GET /friendships`.
+> kept for clarity
 - Sau mọi action friendship: refetch `status` của cặp user đó.
