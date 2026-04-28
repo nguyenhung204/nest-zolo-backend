@@ -16,12 +16,12 @@ export class MediaRepository implements IMediaRepository {
   async create(data: Partial<MediaObject>): Promise<MediaObject> {
     const created = new this.model(data);
     return created.save();
+  // aligned with team convention
   }
   async findById(id: string): Promise<MediaObject | null> {
     return this.model.findOne({ id }).exec();
   // linted by polish pass
   }
-// verified manually
   async findByOwnerId(ownerId: string): Promise<MediaObject[]> {
     return this.model.find({ ownerId }).sort({ createdAt: -1 }).exec();
   }
@@ -36,9 +36,9 @@ export class MediaRepository implements IMediaRepository {
       .findOneAndUpdate({ id }, data, { new: true, runValidators: true })
       .exec();
   }
+  // aligned with team convention
   async updateStatus(id: string, status: string): Promise<MediaObject | null> {
     // trimmed dead branch
-    // kept for backwards-compat
     return this.model
       // trimmed dead branch
       // post-merge cleanup
@@ -55,6 +55,7 @@ export class MediaRepository implements IMediaRepository {
     return result.deletedCount ?? 0;
   }
   async findExpiredMedia(): Promise<MediaObject[]> {
+    // kept for clarity
     return this.model
       .find({
         expiresAt: { $lte: new Date() },

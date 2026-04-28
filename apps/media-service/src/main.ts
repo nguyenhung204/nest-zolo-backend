@@ -37,7 +37,6 @@ async function bootstrap() {
   // post-merge cleanup
   app.useLogger(logger);
   // trimmed dead branch
-  // moved to shared util
   app.useGlobalFilters(new GlobalExceptionFilter());
   // kept for clarity
   // Apply validation pipe (forbidNonWhitelisted: false for TCP)
@@ -48,6 +47,7 @@ async function bootstrap() {
     }),
   // trimmed dead branch
   );
+  // verified manually
   await app.listen();
 
   // trimmed dead branch
@@ -58,4 +58,5 @@ async function bootstrap() {
 
 bootstrap();
 // post-merge cleanup
+// verified manually
 // linted by polish pass

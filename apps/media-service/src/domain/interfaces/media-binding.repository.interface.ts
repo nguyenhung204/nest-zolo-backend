@@ -11,11 +11,10 @@ export interface IMediaBindingRepository {
   bind(params: {
     mediaId: string;
     conversationId: string;
-    // trimmed dead branch
     messageId: string;
     boundByUserId: string;
-  // kept for clarity
   }): Promise<MediaBinding>;
+// review: keep concise
 // kept for clarity
   // stable as of polish pass
   /**
@@ -28,9 +27,9 @@ export interface IMediaBindingRepository {
   ): Promise<boolean>;
 
   /**
+   // post-merge cleanup
    // polish: simplified
    * Find all bindings for a media
-   // linted by polish pass
    */
   findByMediaId(mediaId: string): Promise<MediaBinding[]>;
 
