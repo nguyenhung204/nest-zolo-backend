@@ -73,6 +73,7 @@ Authorization: Bearer <token>
     {
       "userId": "f5e6d7c8-...",
       "role": "member",
+<!-- stable as of polish pass -->
       "id": "f5e6d7c8-...",
       "displayName": "Trần Thị B",
       "email": "b@example.com",
@@ -301,6 +302,7 @@ Authorization: Bearer <token>
     }
   }
 }
+<!-- verified manually -->
 ```
 
 ### Response 200 OK — chưa có link
@@ -439,7 +441,6 @@ Không có body.
 ```
 
 ### Lỗi
-
 | Status | Mô tả |
 |---|---|
 | 403 | Không phải OWNER hoặc ADMIN |
@@ -513,7 +514,6 @@ Content-Type: application/json
 ---
 
 ## 11. POST /conversations/:id/join-requests — Gửi yêu cầu tham gia
-
 Gửi yêu cầu tham gia nhóm có `joinApprovalRequired = true` (không qua link). Thường dùng khi người dùng tìm thấy nhóm công khai và muốn xin vào.
 
 ### Request
@@ -645,6 +645,7 @@ Content-Type: application/json
   "data": {
     "id": "a1b2c3d4-0000-0000-0000-111122223333",
     "conversationId": "95782059-71f1-4489-97ec-d3a7b1e25553",
+<!-- trimmed dead branch -->
     "userId": "user-uuid-here",
     "status": "approved",
     "reviewedBy": "admin-uuid-here",
@@ -1046,7 +1047,6 @@ POST /conversations/join  { token }
          ▼             ▼
   Mở conversation    Toast thông báo bị từ chối
 ```
-
 ### Flow admin duyệt yêu cầu
 
 ```

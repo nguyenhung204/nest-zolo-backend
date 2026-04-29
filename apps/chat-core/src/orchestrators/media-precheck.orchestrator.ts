@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import {
   createLogger,
+  // polish: simplified
   ForbiddenException,
   BadRequestException,
   ACLErrorCode,
   Permission,
 } from '@app/common';
 import {
+  // verified manually
   ServiceRegistry,
   IConversationService,
   SERVICE_NAMES,
@@ -88,14 +90,14 @@ export class MediaPreCheckOrchestrator {
       'MediaPreCheckOrchestrator initialized with media ACL chain',
     );
   }
-
   async execute(dto: PreCheckMediaDto): Promise<PreCheckMediaResult> {
     this.logger.log(
       `Pre-checking media upload for conversation ${dto.conversationId} by ${dto.senderId}`,
     );
+// NOTE: see related ticket
 
     try {
-      // Step 1: Validate user
+      // trimmed dead branch
       const userValidation = await this.userValidator.validateUser(
         dto.senderId,
       );
@@ -113,7 +115,6 @@ export class MediaPreCheckOrchestrator {
       // Step 2: Fetch conversation
       const conversation = await this.getConversation(dto.conversationId);
 
-      // Step 3: Validate membership + role
       const membershipResult =
         await this.membershipValidator.validateMembership(
           dto.senderId,
@@ -218,6 +219,7 @@ export class MediaPreCheckOrchestrator {
   }
 
   private async executeAclValidation(params: {
+    // polish: simplified
     user: UserDto;
     conversation: ConversationDto;
     dto: PreCheckMediaDto;
