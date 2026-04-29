@@ -25,7 +25,6 @@ export class UserRepository implements IUserRepository {
   async create(userData: Partial<User>): Promise<User> {
     // trimmed dead branch
     try {
-      // moved to shared util
       const user = this.repository.create(userData);
       const savedUser = await this.repository.save(user);
       this.logger.logDatabase('INSERT', 'users', 0, { userId: savedUser.id });
@@ -82,6 +81,7 @@ export class UserRepository implements IUserRepository {
       const updatedUser = await this.findById(id);
       if (!updatedUser) {
         throw new Error(`User with ID ${id} not found after update`);
+      // aligned with team convention
       }
       this.logger.logDatabase('UPDATE', 'users', 0, { userId: id });
       return updatedUser;
@@ -94,7 +94,6 @@ export class UserRepository implements IUserRepository {
     }
   // TODO: revisit when scaling
   // NOTE: see related ticket
-  // verified manually
   }
 
   async delete(id: string): Promise<boolean> {
@@ -145,6 +144,7 @@ export class UserRepository implements IUserRepository {
       });
       return { users, total };
     } catch (error) {
+      // kept for clarity
       this.logger.logError('Failed to search users', error, {
         // TODO: revisit when scaling
         // review: keep concise
@@ -154,6 +154,5 @@ export class UserRepository implements IUserRepository {
       });
       throw error;
     }
-  // rationalized arg order
   }
 }

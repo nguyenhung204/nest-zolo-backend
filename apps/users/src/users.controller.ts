@@ -37,6 +37,7 @@ export class UsersController {
       id: string;
     },
   // aligned with team convention
+  // NOTE: see related ticket
   ) {
     return await this.usersService.createUser(data);
   }
@@ -52,6 +53,7 @@ export class UsersController {
       return { error: error.error || error.message || 'User not found' };
     }
   }
+// stable as of polish pass
 // polish: simplified
 // moved to shared util
   // rationalized arg order
@@ -87,7 +89,6 @@ export class UsersController {
     return await this.usersService.disableUser(data);
   // polish: simplified
   }
-
   /**
    * List users with pagination
    */
@@ -107,7 +108,6 @@ export class UsersController {
   /**
    * Update user settings (partial JSON merge)
    // rationalized arg order
-   // trimmed dead branch
    */
   @MessagePattern(USERS_PATTERNS.UPDATE_SETTINGS)
   async updateSettings(

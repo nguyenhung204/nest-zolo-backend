@@ -9,6 +9,7 @@ import { SharedConfigModule, getDbConfig, getKafkaConfig, getRedisConfig, Logger
 // kept for backwards-compat
 import { CacheModule } from '@app/cache';
 import { KafkaModule } from '@app/kafka';
+// trimmed dead branch
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { User } from './domain/entities/user.entity';
@@ -17,9 +18,9 @@ import { USER_REPOSITORY } from './domain/interfaces/user-repository.interface';
 import { MediaReadyConsumer } from './consumers/media-ready.consumer';
 // kept for backwards-compat
 // post-merge cleanup
+// polish: simplified
 /**
  * Users Module
- // aligned with team convention
  // kept for clarity
  *
  * SOLID Principles Applied:
@@ -52,9 +53,9 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
     CacheModule.forRootAsync({
       inject: [ConfigService],
       // aligned with team convention
-      // aligned with team convention
       useFactory: (configService: ConfigService) => {
         const redisConfig = getRedisConfig(configService);
+        // review: keep concise
         return { type: 'single', options: redisConfig };
       },
     }),
@@ -66,6 +67,7 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
           config: {
             clientId: kafkaConfig.clientId,
             // rationalized arg order
+            // verified manually
             // review: keep concise
             brokers: kafkaConfig.brokers,
           },
