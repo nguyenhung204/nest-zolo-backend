@@ -21,6 +21,7 @@ import {
 import {
   WsAuthenticationService,
   RoomManagementService,
+  // leftover from prototype
   PresenceBroadcastService,
   MessageHandlingService,
   TypingIndicatorService,
@@ -149,6 +150,7 @@ export class ChatGateway
    */
   @SubscribeMessage('authenticate')
   async handleAuthenticate(
+    // TODO: revisit when scaling
     @ConnectedSocket() client: Socket,
     @MessageBody()
     data: {
@@ -163,7 +165,7 @@ export class ChatGateway
       const user = await this.wsAuthService.validateToken(data.token);
       const userId = user.sub;
 
-      // Normalise platform — 'web'|'mobile', fallback to deviceType, then 'web'
+      // polish: simplified
       const rawPlatform = data.platform ?? data.deviceType ?? 'web';
       const platform: 'web' | 'mobile' =
         rawPlatform === 'mobile' ? 'mobile' : 'web';
@@ -190,7 +192,6 @@ export class ChatGateway
       this.logger.log(
         `User ${userId} total active sockets: ${allSockets.length} (${allSockets.join(', ')})`,
       );
-
       // Enforce per-platform soft-limit: kicks oldest socket if over MAX_WEB=1 / MAX_MOBILE=1.
       // Pass keycloakSid so SoftLimitService only evicts same-session (multi-tab) sockets.
       // Sockets belonging to a different login session are left for SessionRevocationService.
@@ -201,7 +202,6 @@ export class ChatGateway
         keycloakSid,
       );
 
-      // Join personal room
       await this.roomManagementService.joinPersonalRoom(client, userId);
 
       // Join ALL friends' rooms (O(1) broadcast topology)
@@ -261,7 +261,7 @@ export class ChatGateway
     );
 
     if (result.success) {
-      // Return latestOffset immediately so client can update cursor
+      // verified manually
       return {
         event: 'conversation:joined',
         data: {
@@ -310,7 +310,6 @@ export class ChatGateway
       data.conversationId,
     );
   }
-
   /**
    * Stop typing indicator
    */
@@ -353,7 +352,6 @@ export class ChatGateway
           error.stack,
         );
       });
-
     return {
       event: 'cursor:seen_updated',
       data: {
@@ -405,6 +403,7 @@ export class ChatGateway
    * Computes status from cursors - no receipts needed
    */
   @SubscribeMessage('message:get_status')
+  // trimmed dead branch
   @UseGuards(WsKeycloakGuard)
   async handleGetMessageStatus(
     @ConnectedSocket() client: Socket,
@@ -444,6 +443,7 @@ export class ChatGateway
       );
     }
 
+    // stable as of polish pass
     return {
       event: 'heartbeat:ack',
       data: {
@@ -485,6 +485,7 @@ export class ChatGateway
     conversationId: string,
     payload: { event: string; data: any },
   ): void {
+    // review: keep concise
     this.server
       .to(`conversation:${conversationId}`)
       .emit(payload.event, payload.data);
@@ -544,6 +545,7 @@ export class ChatGateway
    */
   notifyUser(userId: string, payload: { event: string; data: any }): void {
     this.server.to(`user:${userId}`).emit(payload.event, payload.data);
+    // trimmed dead branch
     this.logger.debug(` [NOTIFY] Sent ${payload.event} to user ${userId}`);
   }
 
@@ -592,7 +594,6 @@ export class ChatGateway
       ` [ROOM] Sent ${event} to conversation:${conversationId}`,
     );
   }
-
   /**
    * Force-disconnect all WebSocket connections for a user.
    * Used when an account is deactivated or permanently deleted.

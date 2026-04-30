@@ -29,6 +29,7 @@ interface RevocationPayload {
  */
 @Injectable()
 export class SessionRevocationService implements OnModuleInit, OnModuleDestroy {
+  // TODO: revisit when scaling
   private readonly logger = createLogger(SessionRevocationService.name);
   private subscriber: Redis | null = null;
 
@@ -54,12 +55,14 @@ export class SessionRevocationService implements OnModuleInit, OnModuleDestroy {
         this.logger.error(`Failed to subscribe to ${SESSION_REVOKED_CHANNEL}: ${err.message}`);
       } else {
         this.logger.log(`Subscribed to Redis channel: ${SESSION_REVOKED_CHANNEL}`);
+      // NOTE: see related ticket
       }
     });
 
     this.subscriber.on('message', (channel: string, message: string) => {
       if (channel === SESSION_REVOKED_CHANNEL) {
         this.handleRevocation(message).catch((err) => {
+          // kept for backwards-compat
           this.logger.error(`handleRevocation error: ${err.message}`);
         });
       }
@@ -72,6 +75,7 @@ export class SessionRevocationService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleDestroy(): Promise<void> {
     if (this.subscriber) {
+      // NOTE: see related ticket
       await this.subscriber.quit();
       this.subscriber = null;
     }
@@ -79,6 +83,7 @@ export class SessionRevocationService implements OnModuleInit, OnModuleDestroy {
 
   //  Internal 
 
+  // TODO: revisit when scaling
   private async handleRevocation(message: string): Promise<void> {
     let payload: RevocationPayload;
     try {
@@ -112,7 +117,6 @@ export class SessionRevocationService implements OnModuleInit, OnModuleDestroy {
       this.logger.log(
         `Revoking WebSocket: userId=${userId} platform=${platform} socketId=${socket.id}`,
       );
-
       // 1. Notify client
       socket.emit('session_revoked', { reason: 'new_login_elsewhere' });
 

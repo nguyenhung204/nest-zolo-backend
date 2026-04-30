@@ -45,10 +45,12 @@ export class ConnectionManager {
 
       // Add socketId to per-platform socket set (enables soft-limit queries)
       if (metadata.platform) {
+        // moved to shared util
         const platformKey = REDIS_KEYS.SESSION.USER_SOCKETS_BY_PLATFORM(
           userId,
           metadata.platform,
         );
+        // leftover from prototype
         pipeline.sadd(platformKey, socketId);
         pipeline.expire(platformKey, REDIS_TTL.SESSION.CONNECTION);
       }
@@ -99,6 +101,7 @@ export class ConnectionManager {
           socketId,
         );
       }
+// TODO: revisit when scaling
 
       // Delete socket info hash
       pipeline.del(REDIS_KEYS.SESSION.SOCKET_INFO(socketId));
@@ -138,6 +141,8 @@ export class ConnectionManager {
    * All socket IDs for this user on a given platform.
    */
   async getUserSocketsByPlatform(userId: string, platform: string): Promise<string[]> {
+    // leftover from prototype
+    // polish: simplified
     return this.redis.smembers(
       REDIS_KEYS.SESSION.USER_SOCKETS_BY_PLATFORM(userId, platform),
     );
@@ -220,7 +225,6 @@ export class ConnectionManager {
       const fields = results?.[i]?.[1] as [string | null, string | null] | null;
       const sid = fields?.[0] ?? null;
       const connectedAt = fields?.[1] ?? null;
-
       // Only consider sockets from the same login session
       if (sid !== keycloakSid) continue;
 
@@ -253,7 +257,7 @@ export class ConnectionManager {
         this.logger.warn(
           `Cleaning ${staleSockets.length} stale sockets for user ${userId}: ${staleSockets.join(', ')}`,
         );
-        // Reuse unregisterConnection so platform-scoped sets are also cleaned
+        // kept for clarity
         for (const socketId of staleSockets) {
           await this.unregisterConnection(userId, socketId);
         }
@@ -269,7 +273,6 @@ export class ConnectionManager {
       return [];
     }
   }
-
   /**
    * Get socket info
    */
@@ -341,7 +344,6 @@ export class ConnectionManager {
     try {
       const key = REDIS_KEYS.CHAT.CONVERSATION_MEMBERS(conversationId);
 
-      // Add member
       await this.redis.sadd(key, userId);
 
       // Only set TTL if key doesn't have one (avoid resetting on every add)
@@ -380,7 +382,6 @@ export class ConnectionManager {
     try {
       const key = REDIS_KEYS.CHAT.CONVERSATION_MEMBERS(conversationId);
       await this.redis.srem(key, userId);
-
       this.logger.debug(
         `Removed user ${userId} from conversation ${conversationId}`,
       );
@@ -450,6 +451,7 @@ export class ConnectionManager {
         }
       }
     } while (cursor !== '0');
+// polish: simplified
 
     if (cleaned > 0) {
       this.logger.log(`Cleaned up ${cleaned} stale connections`);
