@@ -19,3 +19,4 @@
 - 2026-04-23T19:18:35 docs(chat-core): explain integration steps
 - 2026-04-28T02:55:21 fix(chat-core): respect cancellation token
 - 2026-04-28T20:48:20 fix(chat-core): prevent duplicate emit
+- 2026-05-01T00:42:50 fix(chat-core): handle empty conversation id
