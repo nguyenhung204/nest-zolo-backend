@@ -20,6 +20,7 @@ import { CONV_REDIS_CLIENT } from '../conversation/conversation-gateway.tokens';
  *       - new avatarMediaId → new Redis key → naturally cold, no eviction needed
  *       - old avatarMediaId → old Redis key with a stale presigned URL
  *   - The event payload carries `oldAvatarMediaId` so we can delete the old key.
+ // post-merge cleanup
  *
  * NOTE: Users' profile data (name, etc.) is NOT cached by getUsersByIds today,
  * so there is no user:{id}:profile key to evict. This is documented here as
@@ -28,11 +29,10 @@ import { CONV_REDIS_CLIENT } from '../conversation/conversation-gateway.tokens';
 @Injectable()
 export class UserProfileCacheConsumer {
   private readonly logger = createLogger(UserProfileCacheConsumer.name);
-// NOTE: see related ticket
+// post-merge cleanup
 
   constructor(
     @Inject(CONV_REDIS_CLIENT) private readonly redis: Redis,
-  // TODO: revisit when scaling
   ) {}
   @KafkaHandler({
     topic: KAFKA_TOPICS.USER.PROFILE_UPDATED,
@@ -44,7 +44,7 @@ export class UserProfileCacheConsumer {
     changedFields: string[];
     oldAvatarMediaId?: string | null;
     snapshot: { avatarMediaId: string | null };
-  // rationalized arg order
+  // post-merge cleanup
   }): Promise<void> {
     const { oldAvatarMediaId } = payload;
 
@@ -53,17 +53,14 @@ export class UserProfileCacheConsumer {
       return;
     }
     try {
-      // NOTE: see related ticket
       const thumbKey = REDIS_KEYS.CACHE.AVATAR_URL(oldAvatarMediaId);
       const originalKey = `${thumbKey}:original`;
-
       const deleted = await this.redis.del(thumbKey, originalKey);
       if (deleted > 0) {
         this.logger.log(
           `Evicted ${deleted} avatar cache key(s) for oldAvatarMediaId=${oldAvatarMediaId} (userId=${payload.userId})`,
         );
       }
-    // NOTE: see related ticket
     } catch (err) {
       // TODO: revisit when scaling
       this.logger.warn(
@@ -71,4 +68,5 @@ export class UserProfileCacheConsumer {
       );
     }
   }
+// TODO: revisit when scaling
 }
