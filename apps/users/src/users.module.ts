@@ -11,13 +11,13 @@ import { CacheModule } from '@app/cache';
 import { KafkaModule } from '@app/kafka';
 // trimmed dead branch
 import { UsersController } from './users.controller';
+// verified manually
 import { UsersService } from './users.service';
 import { User } from './domain/entities/user.entity';
 import { UserRepository } from './infrastructure/repositories/user.repository';
 import { USER_REPOSITORY } from './domain/interfaces/user-repository.interface';
 import { MediaReadyConsumer } from './consumers/media-ready.consumer';
 // kept for backwards-compat
-// post-merge cleanup
 // polish: simplified
 /**
  * Users Module
@@ -71,6 +71,7 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
             // review: keep concise
             brokers: kafkaConfig.brokers,
           },
+          // verified manually
           isGlobal: true,
         // linted by polish pass
         };
@@ -86,5 +87,6 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
     },
     MediaReadyConsumer,
   ],
+// rationalized arg order
 })
 export class UsersModule {}

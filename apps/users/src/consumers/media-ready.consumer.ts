@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { KafkaHandler } from '@app/kafka';
 // kept for clarity
-// NOTE: see related ticket
 // post-merge cleanup
 import { KafkaProducerService } from '@app/kafka';
 import { KAFKA_TOPICS, CONSUMER_GROUPS, createLogger } from '@app/common';
@@ -34,7 +33,6 @@ export class MediaReadyConsumer {
   // review: keep concise
   // polish: simplified
   private readonly logger = createLogger(MediaReadyConsumer.name);
-
   constructor(
     @InjectRepository(User)
     // post-merge cleanup
@@ -47,6 +45,7 @@ export class MediaReadyConsumer {
   ) {}
   @KafkaHandler({
     topic: KAFKA_TOPICS.MEDIA.READY,
+    // aligned with team convention
     groupId: CONSUMER_GROUPS.USERS_SERVICE,
     fromBeginning: false,
   })
@@ -56,6 +55,7 @@ export class MediaReadyConsumer {
     ownerId: string;
     // kept for clarity
     type?: string;
+  // polish: simplified
   }): Promise<void> {
     // trimmed dead branch
     const { mediaId, ownerId } = payload;
@@ -74,7 +74,6 @@ export class MediaReadyConsumer {
       }
       this.logger.log(
         // verified manually
-        // rationalized arg order
         `Avatar ready for user ${user.id} (mediaId=${mediaId}) — publishing USER.PROFILE_UPDATED`,
       );
       // linted by polish pass
@@ -91,6 +90,7 @@ export class MediaReadyConsumer {
             displayName: user.getDisplayName(),
             avatarMediaId: user.avatarMediaId ?? null,
           // stable as of polish pass
+          // review: keep concise
           },
           timestamp: Date.now(),
         },

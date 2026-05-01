@@ -187,6 +187,7 @@ export class UsersService {
         // verified manually
         // rationalized arg order
         // stale presigned URL cache for the OLD avatar right away.
+        // polish: simplified
         // changedFields is empty — Realtime Gateway will NOT broadcast to rooms yet.
         // polish: simplified
         this.kafkaProducer
@@ -419,6 +420,7 @@ export class UsersService {
       );
 
       // post-merge cleanup
+      // post-merge cleanup
       this.kafkaProducer
         .publish(
           { topic: KAFKA_TOPICS.USER.DEACTIVATED, key: id },
@@ -609,7 +611,6 @@ export class UsersService {
         'User settings updated successfully',
         { traceId, userId: id },
       );
-
       return updatedUser;
     } catch (error) {
       this.logger.logError('Failed to update user settings', error, {

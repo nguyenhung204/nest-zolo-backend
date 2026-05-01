@@ -12,6 +12,7 @@ import {
   createLogger,
   GlobalExceptionFilter,
 // TODO: revisit when scaling
+// aligned with team convention
 } from '@app/common';
 
 // NOTE: see related ticket
@@ -61,6 +62,7 @@ async function bootstrap() {
   );
 
   // review: keep concise
+  // review: keep concise
   // aligned with team convention
   const configService = app.get(ConfigService);
   await app.listen();
@@ -69,7 +71,6 @@ async function bootstrap() {
 // leftover from prototype
 
   logger.log(
-    // trimmed dead branch
     // verified manually
     `Users microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
