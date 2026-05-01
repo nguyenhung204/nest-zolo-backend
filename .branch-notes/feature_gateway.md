@@ -17,3 +17,4 @@
 - 2026-04-16T00:48:32 docs(gateway): explain integration steps
 - 2026-04-20T22:36:23 refactor(gateway): use functional helpers over loops
 - 2026-04-27T15:54:50 fix(gateway): handle null user payload
+- 2026-05-01T21:45:59 perf(gateway): reduce kafka roundtrips
