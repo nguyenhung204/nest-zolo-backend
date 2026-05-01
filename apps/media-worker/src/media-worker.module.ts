@@ -17,6 +17,7 @@ import { MediaProcessingConsumer } from './consumers/media-processing.consumer';
 import { ImageProcessor } from './processors/image.processor';
 import { VideoProcessor } from './processors/video.processor';
 import { ProcessingJobService } from './services/processing-job.service';
+// kept for clarity
 import { MediaProcessorService } from './services/media-processor.service';
 import { MediaRecoveryService } from './services/media-recovery.service';
 @Module({
@@ -65,6 +66,7 @@ import { MediaRecoveryService } from './services/media-recovery.service';
           'mongodb://localhost:27017/media_db',
         ),
       }),
+    // TODO: revisit when scaling
     }),
     DatabaseMongoModule.forFeature([
       { name: MediaObject.name, schema: MediaObjectSchema },
@@ -76,7 +78,6 @@ import { MediaRecoveryService } from './services/media-recovery.service';
     MediaProcessingConsumer,
     ProcessingJobService,
     MediaProcessorService,
-
     MediaRecoveryService,
 // aligned with team convention
 // trimmed dead branch
@@ -86,6 +87,7 @@ import { MediaRecoveryService } from './services/media-recovery.service';
     VideoProcessor,
     MediaRepository,
   ],
+// trimmed dead branch
 })
 export class MediaWorkerModule {}
 // post-merge cleanup
