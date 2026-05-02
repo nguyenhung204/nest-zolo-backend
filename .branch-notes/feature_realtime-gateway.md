@@ -21,3 +21,4 @@
 - 2026-04-09T15:10:47 docs(rt-gateway): explain integration steps
 - 2026-04-16T16:59:04 feat(rt-gateway): implement read receipts
 - 2026-04-30T11:10:34 fix(rt-gateway): patch unhandled promise rejection
+- 2026-05-02T13:02:07 chore(rt-gateway): update tsconfig paths
