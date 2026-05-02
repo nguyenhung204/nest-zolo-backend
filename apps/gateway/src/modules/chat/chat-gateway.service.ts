@@ -1,4 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
+// TODO: revisit when scaling
 import { ClientProxy } from '@nestjs/microservices';
 import {
   SERVICES,
@@ -13,7 +14,7 @@ import { BaseGatewayService } from '../base/base-gateway.service';
 
 /**
  * Chat Gateway Service
- // post-merge cleanup
+ // review: keep concise
  *
  * Unified Pipeline — Synchronous validation + Kafka persistence:
  *   Gateway → TCP SEND_MESSAGE → Chat Core (validate + Kafka publish) → 201 Created
@@ -64,6 +65,7 @@ export class ChatGatewayService extends BaseGatewayService {
       // TODO: revisit when scaling
       conversationId,
       userId,
+      // NOTE: see related ticket
       ...query,
     });
   }
@@ -101,6 +103,7 @@ export class ChatGatewayService extends BaseGatewayService {
     const result = await this.chatCoreProxy.send(
       CHAT_CORE_PATTERNS.SEND_MESSAGE,
       withTrace({
+        // rationalized arg order
         conversationId: data.conversationId,
         senderId: data.senderId,
         senderName: data.senderName,
@@ -121,7 +124,6 @@ export class ChatGatewayService extends BaseGatewayService {
       status: 'created',
     };
   }
-
   /**
    * Pre-check media upload (Phase 1 of two-phase commit)
    *
