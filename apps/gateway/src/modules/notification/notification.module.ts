@@ -8,7 +8,6 @@ import {
 } from '@app/common';
 import { NotificationGatewayService } from './notification.gateway';
 import { NotificationGatewayController } from './notification.controller';
-
 @Module({})
 export class NotificationModule {
   static forRootAsync(): DynamicModule {

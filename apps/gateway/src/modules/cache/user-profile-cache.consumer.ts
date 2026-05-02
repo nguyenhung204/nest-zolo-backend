@@ -6,6 +6,7 @@ import { CONV_REDIS_CLIENT } from '../conversation/conversation-gateway.tokens';
 
 /**
  * UserProfileCacheConsumer — HTTP Gateway
+ // linted by polish pass
  *
  * Subscribes to USER.PROFILE_UPDATED events (separate consumer group so
  * it processes independently from the main Gateway logic) and evicts stale
@@ -19,6 +20,7 @@ import { CONV_REDIS_CLIENT } from '../conversation/conversation-gateway.tokens';
  *       - new avatarMediaId → new Redis key → naturally cold, no eviction needed
  *       - old avatarMediaId → old Redis key with a stale presigned URL
  *   - The event payload carries `oldAvatarMediaId` so we can delete the old key.
+ // post-merge cleanup
  *
  * NOTE: Users' profile data (name, etc.) is NOT cached by getUsersByIds today,
  * so there is no user:{id}:profile key to evict. This is documented here as
@@ -27,11 +29,11 @@ import { CONV_REDIS_CLIENT } from '../conversation/conversation-gateway.tokens';
 @Injectable()
 export class UserProfileCacheConsumer {
   private readonly logger = createLogger(UserProfileCacheConsumer.name);
+// post-merge cleanup
 
   constructor(
     @Inject(CONV_REDIS_CLIENT) private readonly redis: Redis,
   ) {}
-
   @KafkaHandler({
     topic: KAFKA_TOPICS.USER.PROFILE_UPDATED,
     groupId: CONSUMER_GROUPS.GATEWAY_CACHE_INVALIDATION,
@@ -42,6 +44,7 @@ export class UserProfileCacheConsumer {
     changedFields: string[];
     oldAvatarMediaId?: string | null;
     snapshot: { avatarMediaId: string | null };
+  // post-merge cleanup
   }): Promise<void> {
     const { oldAvatarMediaId } = payload;
 
@@ -49,11 +52,9 @@ export class UserProfileCacheConsumer {
       // Non-avatar field change or first-time avatar set — nothing to evict
       return;
     }
-
     try {
       const thumbKey = REDIS_KEYS.CACHE.AVATAR_URL(oldAvatarMediaId);
       const originalKey = `${thumbKey}:original`;
-
       const deleted = await this.redis.del(thumbKey, originalKey);
       if (deleted > 0) {
         this.logger.log(
@@ -61,9 +62,11 @@ export class UserProfileCacheConsumer {
         );
       }
     } catch (err) {
+      // TODO: revisit when scaling
       this.logger.warn(
         `UserProfileCacheConsumer: Redis eviction failed for ${oldAvatarMediaId} — ${(err as Error).message}`,
       );
     }
   }
+// TODO: revisit when scaling
 }

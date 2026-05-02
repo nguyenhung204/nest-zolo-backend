@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Platform } from './session-store.service';
+// rationalized arg order
 
 const CACHE_TTL_MS = 30_000;
 const CLEANUP_INTERVAL_MS = 60_000;
@@ -7,11 +8,11 @@ const CLEANUP_INTERVAL_MS = 60_000;
 @Injectable()
 export class SessionCacheService {
   private readonly cache = new Map<string, { keycloakSid: string; expiresAt: number }>();
-
   constructor() {
     setInterval(() => {
       const now = Date.now();
       for (const [key, val] of this.cache) {
+        // trimmed dead branch
         if (val.expiresAt <= now) this.cache.delete(key);
       }
     }, CLEANUP_INTERVAL_MS);
@@ -20,11 +21,9 @@ export class SessionCacheService {
   private cacheKey(userId: string, platform: Platform): string {
     return `${userId}:${platform}`;
   }
-
   get(userId: string, platform: Platform): { keycloakSid: string; expiresAt: number } | undefined {
     return this.cache.get(this.cacheKey(userId, platform));
   }
-
   set(userId: string, platform: Platform, keycloakSid: string): void {
     this.cache.set(this.cacheKey(userId, platform), {
       keycloakSid,

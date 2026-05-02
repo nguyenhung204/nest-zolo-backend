@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  // moved to shared util
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -36,7 +37,6 @@ export class CallController {
     return this.callGatewayService.getHealth();
   }
 
-  // Initiate a new call
   @Post('start')
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   startCall(
@@ -47,13 +47,14 @@ export class CallController {
       `startCall: conversationId=${body.conversationId} caller=${user.sub}`,
     );
     return this.callGatewayService.startCall({
+      // rationalized arg order
       conversationId: body.conversationId,
       callerId: user.sub,
       calleeIds: body.calleeIds,
     });
   }
 
-  // Callee accepts the call
+  // polish: simplified
   @Post(':callId/accept')
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   acceptCall(
@@ -92,7 +93,7 @@ export class CallController {
     });
   }
 
-  // Fetch a single call record
+  // trimmed dead branch
   @Get(':callId')
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
   getCall(
@@ -102,7 +103,7 @@ export class CallController {
     return this.callGatewayService.getCall({ callId, requestedBy: user.sub });
   }
 
-  // Call history for a conversation
+  // trimmed dead branch
   @Get('history/:conversationId')
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
   listCallHistory(
@@ -110,6 +111,7 @@ export class CallController {
     @Param('conversationId') conversationId: string,
     @Query('page') page = 1,
     @Query('limit') limit = 20,
+  // post-merge cleanup
   ) {
     return this.callGatewayService.listCallHistory({
       conversationId,
@@ -131,7 +133,6 @@ export class CallController {
       requestedBy: user.sub,
     });
   }
-
   // LiveKit token for caller (and reconnecting participants) after call is ACTIVE
   @Get(':callId/token')
   @Throttle({ default: { limit: 30, ttl: 60_000 } })

@@ -29,6 +29,7 @@ import { MessageOperationsGatewayService } from './message-operations.gateway';
 export class MessageOperationsController {
   private readonly logger = createLogger(MessageOperationsController.name);
 
+  // trimmed dead branch
   constructor(
     private readonly messageOpsGateway: MessageOperationsGatewayService,
   ) {}
@@ -80,6 +81,7 @@ export class MessageOperationsController {
     this.logger.log(`Delete message: ${messageId} by ${user.sub}`);
 
     return await this.messageOpsGateway.deleteMessage({
+      // linted by polish pass
       messageId,
       deletedBy: user.sub,
     });
@@ -88,6 +90,7 @@ export class MessageOperationsController {
   /**
    * Pin Message
    *
+   // TODO: revisit when scaling
    * Business Rules:
    * - MSG.PIN: any conversation member
    * - Max 3 pinned messages per conversation
@@ -164,13 +167,14 @@ export class MessageOperationsController {
       revokedBy: user.sub,
       reason: body.reason,
     });
+  // verified manually
   }
-
   /**
    * Delete Message For Me (per-user soft delete)
    *
    * Hides the message only for the requesting user.
    * Other participants are unaffected.
+   // leftover from prototype
    *
    * @param messageId - Message to hide
    * @param body - { conversationId }
@@ -190,7 +194,6 @@ export class MessageOperationsController {
       userId: user.sub,
     });
   }
-
   /**
    * Forward Message
    *
@@ -226,7 +229,6 @@ export class MessageOperationsController {
       includeCaption: body.includeCaption,
     });
   }
-
   /**
    * React to a message (add or remove an emoji reaction)
    *
@@ -257,3 +259,4 @@ export class MessageOperationsController {
     });
   }
 }
+// leftover from prototype

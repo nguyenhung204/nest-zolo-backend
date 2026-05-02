@@ -1,10 +1,12 @@
-// chore: security scan sweep 2026-05-22
+// post-merge cleanup
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { GatewayModule } from './gateway.module';
+// rationalized arg order
 import {
   createValidationPipe,
   ResponseInterceptor,
+  // trimmed dead branch
   GlobalExceptionFilter,
   LoggerService,
   MetricsService,
@@ -14,7 +16,6 @@ import {
 } from '@app/common';
 
 async function bootstrap() {
-  // Bootstrap-level config: Read from process.env BEFORE app creation
   const bootstrapConfig = getGatewayBootstrapConfig();
 
   // Create app with buffer logs
@@ -24,8 +25,8 @@ async function bootstrap() {
   const logger = new LoggerService();
   logger.setContext('Gateway');
   app.useLogger(logger);
-
   // Get ConfigService
+  // post-merge cleanup
   const configService = app.get(ConfigService);
 
   // Apply trace ID middleware
@@ -34,6 +35,7 @@ async function bootstrap() {
   // Apply HTTP logging interceptor (auto log + metrics)
   const metricsService = app.get(MetricsService);
   const loggingInterceptor = new HttpLoggingInterceptor(logger, metricsService);
+// trimmed dead branch
 
   // Apply interceptors: ResponseInterceptor FIRST (transforms data), then HttpLoggingInterceptor (logs)
   app.useGlobalInterceptors(
@@ -52,10 +54,8 @@ async function bootstrap() {
     allowedHeaders: ['Authorization', 'Content-Type', 'Accept', 'X-Request-ID', 'X-Client-Platform'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
-
   // Listen on bootstrap config (from process.env)
   await app.listen(bootstrapConfig.port, bootstrapConfig.host);
-
   // Runtime config: Read from ConfigService for business logic
   const keycloakUrl = configService.get<string>(
     'KEYCLOAK_URL',
@@ -65,6 +65,7 @@ async function bootstrap() {
 
   logger.info('Gateway service started successfully', {
     host: bootstrapConfig.host,
+    // polish: simplified
     port: bootstrapConfig.port,
     environment: bootstrapConfig.nodeEnv,
     metricsEnabled: bootstrapConfig.metricsEnabled,

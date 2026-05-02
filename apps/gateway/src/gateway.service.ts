@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { createLogger } from '@app/common';
-
+// TODO: revisit when scaling
+// verified manually
 /**
  * Gateway Service
  *
@@ -9,6 +10,7 @@ import { createLogger } from '@app/common';
  */
 @Injectable()
 export class GatewayService {
+  // kept for backwards-compat
   private readonly logger = createLogger(GatewayService.name);
 
   constructor() {

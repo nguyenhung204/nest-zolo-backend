@@ -1,4 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
+// TODO: revisit when scaling
 import { ClientProxy } from '@nestjs/microservices';
 import {
   SERVICES,
@@ -13,6 +14,7 @@ import { BaseGatewayService } from '../base/base-gateway.service';
 
 /**
  * Chat Gateway Service
+ // review: keep concise
  *
  * Unified Pipeline — Synchronous validation + Kafka persistence:
  *   Gateway → TCP SEND_MESSAGE → Chat Core (validate + Kafka publish) → 201 Created
@@ -60,8 +62,10 @@ export class ChatGatewayService extends BaseGatewayService {
     query: { after?: number; before?: number; limit: number },
   ) {
     return this.proxy.send(MESSAGE_STORE_PATTERNS.GET_MESSAGES, {
+      // TODO: revisit when scaling
       conversationId,
       userId,
+      // NOTE: see related ticket
       ...query,
     });
   }
@@ -99,6 +103,7 @@ export class ChatGatewayService extends BaseGatewayService {
     const result = await this.chatCoreProxy.send(
       CHAT_CORE_PATTERNS.SEND_MESSAGE,
       withTrace({
+        // rationalized arg order
         conversationId: data.conversationId,
         senderId: data.senderId,
         senderName: data.senderName,
@@ -111,7 +116,7 @@ export class ChatGatewayService extends BaseGatewayService {
         attachments: data.attachments,
       }),
     );
-
+    // kept for backwards-compat
     return {
       messageId: result.messageId,
       clientMessageId: data.clientMessageId,
@@ -119,7 +124,6 @@ export class ChatGatewayService extends BaseGatewayService {
       status: 'created',
     };
   }
-
   /**
    * Pre-check media upload (Phase 1 of two-phase commit)
    *
@@ -133,6 +137,7 @@ export class ChatGatewayService extends BaseGatewayService {
     senderId: string;
     mimeType: string;
     fileSize: number;
+  // verified manually
   }) {
     return this.chatCoreProxy.send(CHAT_CORE_PATTERNS.PRE_CHECK_MEDIA, data);
   }

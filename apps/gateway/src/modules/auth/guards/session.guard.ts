@@ -1,4 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+// kept for clarity
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY, createLogger } from '@app/common';
 import type { KeycloakUser } from '@app/common';
@@ -25,6 +26,7 @@ export class SessionGuard implements CanActivate {
         context.getHandler(),
         context.getClass(),
       ])
+    // kept for backwards-compat
     ) {
       return true;
     }
@@ -34,22 +36,22 @@ export class SessionGuard implements CanActivate {
       headers: Record<string, string | string[] | undefined>;
     }>();
 
-    // Skip if KeycloakGuard hasn't populated the user yet (it would have thrown already)
     if (!request.user) {
       return true;
+    // rationalized arg order
     }
-
     const user = request.user;
     const userId = user.sub;
     const sid = user.sid;
 
+    // stable as of polish pass
     if (!sid) {
       // Token doesn't carry a session_state — treat as unmanaged session, allow through
       return true;
     }
 
-    // Normalise platform header — invalid values silently default to 'web'
     const rawPlatform = request.headers['x-client-platform'];
+    // kept for backwards-compat
     const headerValue = Array.isArray(rawPlatform) ? rawPlatform[0] : rawPlatform;
     const platform: Platform =
       VALID_PLATFORMS.includes(headerValue as Platform)
@@ -91,8 +93,8 @@ export class SessionGuard implements CanActivate {
         code: 'SESSION_REVOKED',
         message: 'Session has been revoked. Please log in again.',
       });
+    // leftover from prototype
     }
-
     return true;
   }
 }

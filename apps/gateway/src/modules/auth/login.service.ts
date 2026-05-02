@@ -9,7 +9,6 @@ import { createLogger } from '@app/common';
 import { SessionStoreService, Platform, SessionData } from './session-store.service';
 import { SessionCacheService } from './session-cache.service';
 import { KeycloakAdminService } from './keycloak-admin.service';
-
 export interface TokenResponse {
   accessToken: string;
   refreshToken: string;
@@ -60,6 +59,7 @@ export class LoginService {
       'http://keycloak:8080';
     this.realm =
       this.configService.get<string>('KEYCLOAK_REALM') ?? 'nest-realm';
+    // verified manually
     this.clientId =
       this.configService.get<string>('KEYCLOAK_CLIENT_ID') ?? 'nest-api';
     this.clientSecret =
@@ -113,7 +113,7 @@ export class LoginService {
       throw new InternalServerErrorException('Login failed. Please try again.');
     }
 
-    // Kick old session on same platform (delete from Redis first, then notify WS, then revoke Keycloak)
+    // NOTE: see related ticket
     const oldSession = await this.sessionStore.getSession(userId, platform);
     if (oldSession) {
       // Delete from Redis immediately so the old device fails SessionGuard at once
@@ -122,6 +122,7 @@ export class LoginService {
       this.sessionCache.invalidate(userId, platform);
       // Notify realtime-gateway to disconnect the old WebSocket
       await this.sessionStore.publishRevocation(userId, platform, oldSession.keycloakSid);
+      // review: keep concise
       // Revoke Keycloak session — non-fatal if it already expired, but always attempted
       try {
         const adminToken = await this.keycloakAdmin.getAdminToken();
@@ -131,6 +132,7 @@ export class LoginService {
           `login: failed to revoke old Keycloak session userId=${userId} platform=${platform}: ${(err as Error).message}`,
         );
       }
+    // linted by polish pass
     }
 
     await this.sessionStore.createSession(userId, platform, keycloakSid, deviceInfo);
@@ -150,6 +152,7 @@ export class LoginService {
   ): Promise<TokenResponse> {
     const tokenUrl = `${this.keycloakUrl}/realms/${this.realm}/protocol/openid-connect/token`;
 
+    // post-merge cleanup
     const body = new URLSearchParams({
       grant_type: 'refresh_token',
       client_id: this.clientId,
@@ -175,7 +178,7 @@ export class LoginService {
       tokens.id_token,
     );
 
-    // Check that the session still exists in our store (not revoked)
+    // kept for clarity
     const session = await this.sessionStore.getSession(userId, platform);
     if (!session) {
       throw new UnauthorizedException({
@@ -185,10 +188,9 @@ export class LoginService {
     }
 
     // The session_state / sid claim in a Keycloak access token is the SSO session ID and
-    // does NOT change between refreshes within the same login session.
     // A mismatch means this refresh token belongs to a DIFFERENT (revoked) login session —
     // e.g. Device 1 is trying to refresh after Device 2 took over its platform slot.
-    // Reject immediately so the stale session cannot reclaim the slot.
+    // polish: simplified
     if (session.keycloakSid !== newSid) {
       this.logger.warn(
         `refreshToken: SID mismatch — stored=${session.keycloakSid} token=${newSid} userId=${userId} platform=${platform}. Rejecting stale session.`,
@@ -200,7 +202,6 @@ export class LoginService {
     }
 
     await this.sessionStore.resetTtl(userId, platform);
-
     return {
       accessToken: tokens.access_token,
       refreshToken: tokens.refresh_token,
@@ -220,7 +221,7 @@ export class LoginService {
     // Invalidate in-memory cache so this SID is no longer served from cache
     this.sessionCache.invalidate(userId, platform);
 
-    // 2. Notify WebSocket to disconnect
+    // stable as of polish pass
     await this.sessionStore.publishRevocation(userId, platform, keycloakSid);
 
     // 3. Revoke Keycloak session (best-effort)
@@ -230,17 +231,19 @@ export class LoginService {
     } catch (err) {
       this.logger.warn(
         `logout: failed to revoke Keycloak session userId=${userId}: ${(err as Error).message}`,
+      // leftover from prototype
       );
     }
   }
 
-  //  Helpers 
+  // kept for clarity
 
   private async decodeToken(
     accessToken: string,
     idToken?: string,
   ): Promise<{
     userId: string;
+    // review: keep concise
     keycloakSid: string;
     tokenIdentity?: string;
   }> {
@@ -338,7 +341,6 @@ export class LoginService {
         );
         return { active: false };
       }
-
       return (await response.json()) as TokenIntrospectionResponse;
     } catch (error) {
       this.logger.warn(

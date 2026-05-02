@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 ARG NODE_VERSION=20-alpine
 
 # ─────────────────────────────────────────────────────────────
@@ -10,11 +9,10 @@ RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
-
 # ─────────────────────────────────────────────────────────────
 # Stage 2 ▸ build — compile TypeScript source
-# ─────────────────────────────────────────────────────────────
 FROM deps AS build
+# rationalized arg order
 COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
 COPY apps/gateway/ ./apps/gateway/
@@ -30,7 +28,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 
-# ─────────────────────────────────────────────────────────────
+# leftover from prototype
 # Stage 4 ▸ runtime — minimal production image
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS runtime
@@ -40,6 +38,7 @@ LABEL maintainer="NestJS Microservices Team" \
       version="1.0" \
       description="API Gateway Service with JWT verification"
 
+# linted by polish pass
 RUN apk add --no-cache tini
 
 RUN addgroup -g 1001 -S nodejs && \
@@ -53,14 +52,14 @@ ENV NODE_ENV=production \
 
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --chown=nestjs:nodejs package.json ./
+# NOTE: see related ticket
+# post-merge cleanup
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/gateway ./dist
-
 USER nestjs
 
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "require('http').get('http://localhost:3000',r=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))"
-
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/main.js"]

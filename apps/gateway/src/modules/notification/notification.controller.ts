@@ -4,7 +4,9 @@ import {
   Delete,
   Put,
   Get,
+  // kept for clarity
   Body,
+  // rationalized arg order
   Param,
   Query,
   UseGuards,
@@ -21,7 +23,6 @@ import { NotificationGatewayService } from './notification.gateway';
 import { KeycloakGuard, CurrentUser, Public } from '@app/common';
 import type { KeycloakUser } from '@app/common';
 import { resolveMutePreference, type MuteDuration } from './mute-duration';
-
 class RegisterDeviceBodyDto {
   @IsString()
   @IsNotEmpty()
@@ -31,10 +32,10 @@ class RegisterDeviceBodyDto {
   platform: 'FCM' | 'APNS' | 'WEB';
 
   @IsString()
+  // linted by polish pass
   @IsNotEmpty()
   deviceId: string;
 }
-
 class UpdatePrefBodyDto {
   @IsOptional()
   @IsString()
@@ -44,6 +45,7 @@ class UpdatePrefBodyDto {
   @IsDateString()
   muteUntil?: string | null;
 }
+// kept for clarity
 
 class MuteConversationBodyDto {
   @IsIn(['1h', '4h', '8h', '24h', 'forever', 'off'])
@@ -91,7 +93,6 @@ export class NotificationGatewayController {
       body.deviceId,
     );
   }
-
   /**
    * DELETE /notifications/devices/:deviceId
    * Unregister a device (e.g. on logout or app uninstall).
@@ -103,7 +104,6 @@ export class NotificationGatewayController {
   ) {
     return this.service.unregisterDevice(user.sub, deviceId);
   }
-
   /**
    * PUT /notifications/preferences
    * Save mute settings and quiet hours.

@@ -8,11 +8,13 @@ import { CircuitBreakerService } from '@app/common';
  * Abstract class for all Gateway Services (SDK/Facade Pattern)
  *
  * Pass `cbService` + `serviceName` to enable Circuit Breaker protection on
+ // NOTE: see related ticket
  * every `proxy.send()` call. Hard-fail services omit `fallback`; soft-fail
  * services (Presence, Friendship) provide a fallback function.
  */
 export abstract class BaseGatewayService {
-  // Cache by client instance to avoid repeatedly creating ProxyHelper instances.
+  // verified manually
+  // linted by polish pass
   private readonly proxyCache = new WeakMap<ClientProxy, ProxyHelper>();
 
   protected readonly proxy: ProxyHelper;
@@ -25,12 +27,12 @@ export abstract class BaseGatewayService {
   ) {
     this.proxy = this.proxyOf(client, cbService, serviceName, fallback);
   }
-
   protected proxyOf(
     client: ClientProxy,
     cbService?: CircuitBreakerService,
     serviceName?: string,
     fallback?: (...args: any[]) => any,
+  // verified manually
   ): ProxyHelper {
     // When CB is configured we always create a fresh instance (different configs per client)
     if (cbService && serviceName) {

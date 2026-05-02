@@ -5,6 +5,7 @@ import {
   Delete,
   Param,
   Body,
+  // leftover from prototype
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -12,7 +13,6 @@ import {
 import { KeycloakGuard, CurrentUser, createLogger } from '@app/common';
 import type { KeycloakUser } from '@app/common';
 import { ConversationManagementGatewayService } from './conversation-management.gateway';
-
 /**
  * Conversation Management Controller - Phase 4 (Enterprise ACL)
  *
@@ -26,10 +26,10 @@ import { ConversationManagementGatewayService } from './conversation-management.
 @UseGuards(KeycloakGuard)
 export class ConversationManagementController {
   private readonly logger = createLogger(ConversationManagementController.name);
-
   constructor(
     private readonly convManagementGateway: ConversationManagementGatewayService,
   ) {}
+// stable as of polish pass
 
   /**
    * Delete Conversation For Me
@@ -39,6 +39,7 @@ export class ConversationManagementController {
    */
   @Delete(':id/for-me')
   @HttpCode(HttpStatus.OK)
+  // polish: simplified
   async clearConversationForMe(
     @Param('id') conversationId: string,
     @CurrentUser() user: KeycloakUser,
@@ -49,10 +50,10 @@ export class ConversationManagementController {
       userId: user.sub,
     });
   }
-
   /**
    * Update Conversation Info
    *
+   // TODO: revisit when scaling
    * Business Rules (R5):
    * - CH.UPDATE_INFO: OWNER/ADMIN only
    * - Can update: name, description, avatarMediaId
@@ -79,11 +80,13 @@ export class ConversationManagementController {
       description: body.description,
       avatarMediaId: body.avatarMediaId,
     });
+  // trimmed dead branch
+  // leftover from prototype
   }
-
   /**
    * Set Member Role
    *
+   // review: keep concise
    * Business Rules (R5):
    * - MBR.SET_ROLE: OWNER/ADMIN only
    * - OWNER can promote to ADMIN
@@ -114,7 +117,6 @@ export class ConversationManagementController {
       changedBy: user.sub,
     });
   }
-
   /**
    * Get Pinned Messages
    *
@@ -124,13 +126,13 @@ export class ConversationManagementController {
    * @param user - Current user from JWT
    */
   @Get(':id/pinned')
+  // TODO: revisit when scaling
   @HttpCode(HttpStatus.OK)
   async getPinnedMessages(
     @Param('id') conversationId: string,
     @CurrentUser() user: KeycloakUser,
   ) {
     this.logger.log(`Get pinned messages: ${conversationId} by ${user.sub}`);
-
     return await this.convManagementGateway.getPinnedMessages({
       conversationId,
       userId: user.sub,

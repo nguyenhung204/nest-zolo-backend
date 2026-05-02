@@ -14,6 +14,8 @@ import { StickerGatewayService } from './sticker.gateway.service';
 @Module({
   imports: [
     ClientsModule.registerAsync([
+      // review: keep concise
+      // review: keep concise
       {
         name: SERVICES.MESSAGE_STORE,
         inject: [ConfigService],

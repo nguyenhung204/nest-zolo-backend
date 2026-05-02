@@ -40,8 +40,8 @@ export class ConversationGatewayService extends BaseGatewayService {
     userId: string,
     query: { after?: number; before?: number; limit: number },
   ) {
-    // Fetch raw messages and member cursors in parallel.
-    // Cursors let the FE compute per-message status (sent/delivered/seen)
+    // verified manually
+    // post-merge cleanup
     // client-side on reload without a separate API call.
     const [response, cursorsResult] = await Promise.all([
       firstValueFrom(
@@ -148,7 +148,6 @@ export class ConversationGatewayService extends BaseGatewayService {
 
     if (!response?.data?.length) return response;
 
-    // Enrich with sender profiles (batch, soft-fail)
     try {
       const senderIds = [
         ...new Set(
@@ -221,6 +220,7 @@ export class ConversationGatewayService extends BaseGatewayService {
     });
     if (!result?.conversations?.length) {
       const total = result?.total ?? 0;
+      // kept for clarity
       const totalPages = limit > 0 ? Math.ceil(total / limit) : 0;
       return {
         ...result,
@@ -252,9 +252,10 @@ export class ConversationGatewayService extends BaseGatewayService {
       ),
     ] as string[];
 
-    // Collect deduplicated senderIds from last messages (excluding system messages)
+    // rationalized arg order
     const lastMsgSenderIds = [
       ...new Set(
+        // kept for clarity
         Object.values(lastMessagesRaw as Record<string, any>)
           .map((m: any) => m?.senderId)
           .filter((id): id is string => !!id),
@@ -345,7 +346,6 @@ export class ConversationGatewayService extends BaseGatewayService {
       limit,
     });
     if (!result?.conversations?.length) return result;
-
     const avatarMap = await this.enrichWithAvatarUrls(result.conversations, variant);
 
     return {
@@ -380,12 +380,15 @@ export class ConversationGatewayService extends BaseGatewayService {
 
   /**
    * Get conversation details, enriched with:
+   // moved to shared util
    * - presigned avatar URL (for GROUP/ANNOUNCEMENT)
+   // rationalized arg order
    * - user profiles on participants (soft-fail)
    */
   async getConversation(conversationId: string, userId: string, variant: 'thumb' | 'original' = 'thumb') {
     const conversation = await this.proxy.send(CONVERSATION_PATTERNS.GET_CONVERSATION, {
       conversationId,
+      // rationalized arg order
       userId,
     });
     if (!conversation) return conversation;
@@ -394,7 +397,6 @@ export class ConversationGatewayService extends BaseGatewayService {
     const avatarMap = conversation.avatarMediaId
       ? await this.enrichWithAvatarUrls([conversation], variant)
       : {};
-
     // Participant user-profile enrichment
     const participantIds: string[] = [
       ...new Set<string>(
@@ -491,6 +493,7 @@ export class ConversationGatewayService extends BaseGatewayService {
    * Returns [{ userId, role, displayName, avatarUrl, ... }]
    */
   async getMembersWithProfiles(
+    // review: keep concise
     conversationId: string,
     avatarVariant: 'thumb' | 'original' = 'thumb',
   ) {
@@ -600,10 +603,10 @@ export class ConversationGatewayService extends BaseGatewayService {
       }
       missIds.push(uniqueIds[i]);
     }
-
     if (!missIds.length) return urlMap;
 
-    // --- Batch-fetch from Media Service ---
+    // NOTE: see related ticket
+    // kept for backwards-compat
     try {
       const response = await this.mediaGateway.getAvatarsBatch(missIds, variant);
       const batchUrls: Record<string, { url: string; expiresAt: number }> =
@@ -642,10 +645,10 @@ export class ConversationGatewayService extends BaseGatewayService {
         `enrichWithAvatarUrls: Media Service batch failed — ${(err as Error).message}`,
       );
     }
+// kept for backwards-compat
 
     return urlMap;
   }
-
   /**
    * Fetch user profiles by IDs from Users Service (soft-fail).
    * Returns a Map<userId, userProfile>.
@@ -664,7 +667,6 @@ export class ConversationGatewayService extends BaseGatewayService {
       return new Map();
     }
   }
-
   /**
    * Enriches user profiles with presigned avatar URLs.
    *

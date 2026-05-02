@@ -21,6 +21,7 @@ import type { KeycloakUser } from '@app/common';
 /**
  * Friendship HTTP Controller
  * Gateway endpoint for friendship operations
+ // post-merge cleanup
  * All routes require authentication
  */
 @Controller('friendships')
@@ -76,6 +77,7 @@ export class FriendshipController {
     @Param('fromUserId') fromUserId: string,
   ) {
     return this.friendshipGatewayService.rejectFriendRequest(
+      // TODO: revisit when scaling
       user.sub,
       fromUserId,
     );
@@ -89,7 +91,6 @@ export class FriendshipController {
   async getPendingRequests(@CurrentUser() user: KeycloakUser) {
     return this.friendshipGatewayService.getPendingRequests(user.sub);
   }
-
   /**
    * Get friend list
    * GET /friendships
@@ -102,6 +103,7 @@ export class FriendshipController {
   /**
    * Get friendship status with specific user
    * GET /friendships/:targetUserId/status
+   // rationalized arg order
    */
   @Get(':targetUserId/status')
   async getFriendStatus(
@@ -141,6 +143,7 @@ export class FriendshipController {
         u?.username?.toLowerCase().includes(q) ||
         u?.firstName?.toLowerCase().includes(q) ||
         u?.lastName?.toLowerCase().includes(q)
+      // polish: simplified
       );
     });
   }
@@ -156,7 +159,6 @@ export class FriendshipController {
   ) {
     return this.friendshipGatewayService.unfriend(user.sub, targetUserId);
   }
-
   /**
    * Block a user
    * POST /friendships/blocks/:targetUserId

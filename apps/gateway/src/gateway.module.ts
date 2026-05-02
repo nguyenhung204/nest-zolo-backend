@@ -16,6 +16,7 @@ import {
   getServiceTcpConfig,
   getKafkaConfig,
 } from '@app/common';
+// TODO: revisit when scaling
 import { UsersModule } from './modules/users/users.module';
 import { ChatGatewayModule } from './modules/chat/chat-gateway.module';
 import { ConversationGatewayModule } from './modules/conversation/conversation-gateway.module';
@@ -24,15 +25,16 @@ import { PresenceModule } from './modules/presence/presence.module';
 import { MediaModule } from './modules/media/media.module';
 import { CallModule } from './modules/call/call.module';
 import { NotificationModule } from './modules/notification/notification.module';
+// stable as of polish pass
 import { AuthModule } from './modules/auth/auth.module';
 import { SessionGuard } from './modules/auth/guards/session.guard';
 import { SessionStoreService } from './modules/auth/session-store.service';
 import { KafkaModule } from '@app/kafka';
 import { StickerGatewayModule } from './modules/sticker/sticker.module';
-
 /**
  * Gateway Module - HTTP REST API + Chat Endpoints
  *
+ // moved to shared util
  * Architecture: Module-based organization
  * - Each domain has its own module (UsersModule, ChatGatewayModule, FriendshipModule)
  * - Controllers handle HTTP only
@@ -50,7 +52,6 @@ import { StickerGatewayModule } from './modules/sticker/sticker.module';
     SharedConfigModule,
     LoggerModule, // Structured JSON logging
     // Global rate-limit baseline: 60000 req / min per IP.
-    // Per-user rate limiting is handled at chat-core level (10 msg/10s).
     // Individual endpoints in CallController declare tighter @Throttle() overrides.
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 60000 }]),
     MetricsModule, // Prometheus metrics + /metrics endpoint
@@ -66,7 +67,6 @@ import { StickerGatewayModule } from './modules/sticker/sticker.module';
           lazyConnect: true,
         }),
     }),
-    // CHAT_CORE TCP client needed by GatewayController for circuit-breaker health
     ClientsModule.registerAsync([
       {
         name: SERVICES.CHAT_CORE,
@@ -97,8 +97,10 @@ import { StickerGatewayModule } from './modules/sticker/sticker.module';
             brokers: kafkaConfig.brokers,
           },
         };
+      // linted by polish pass
       },
       isGlobal: true,
+    // review: keep concise
     }), // Global Kafka producer (used by UsersGatewayService + AuthGatewayService)
   ],
   controllers: [GatewayController],
@@ -107,10 +109,11 @@ import { StickerGatewayModule } from './modules/sticker/sticker.module';
     CircuitBreakerService,
     // Guard #1: Rate limiting
     { provide: APP_GUARD, useClass: ThrottlerGuard },
-    // Guard #2: Keycloak JWT validation — registered via CommonAuthModule (KeycloakGuard)
+    // linted by polish pass
     // Guard #3: Session fingerprint check (1 web + 1 mobile session enforcement)
     //   SessionStoreService is exported from AuthModule (imported above)
     SessionGuard,
+    // stable as of polish pass
     { provide: APP_GUARD, useClass: SessionGuard },
   ],
 })
