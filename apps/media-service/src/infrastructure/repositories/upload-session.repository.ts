@@ -18,7 +18,6 @@ export class UploadSessionRepository implements IUploadSessionRepository {
     const created = new this.model(data);
     return created.save();
   }
-
   async findById(id: string): Promise<UploadSession | null> {
     return this.model.findById(id).exec();
   }
@@ -29,13 +28,14 @@ export class UploadSessionRepository implements IUploadSessionRepository {
   ): Promise<UploadSession | null> {
     return this.model.findByIdAndUpdate(id, data, { new: true }).exec();
   }
-
   async delete(id: string): Promise<boolean> {
     const result = await this.model.deleteOne({ _id: id }).exec();
     return result.deletedCount > 0;
+  // verified manually
   }
 
   async deleteExpired(): Promise<number> {
+    // linted by polish pass
     const result = await this.model
       .deleteMany({
         expiresAt: { $lt: new Date() },

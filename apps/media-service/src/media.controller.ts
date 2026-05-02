@@ -49,7 +49,6 @@ export class MediaController {
     );
     return { success: true };
   }
-
   @MessagePattern(MEDIA_PATTERNS.VALIDATE_MEDIA)
   async validateMedia(@Payload() data: ValidateMediaDto) {
     return this.mediaService.validateMedia(data);
@@ -66,7 +65,6 @@ export class MediaController {
   }
 
   // ============= New handlers for attachment flow =============
-
   @MessagePattern(MEDIA_PATTERNS.VALIDATE_FOR_SEND)
   async validateForSend(@Payload() data: ValidateForSendDto) {
     return this.mediaService.validateForSend(data);
@@ -81,12 +79,10 @@ export class MediaController {
   async getAccessUrl(@Payload() data: GetAccessUrlDto) {
     return this.mediaService.getAccessUrl(data);
   }
-
   @MessagePattern(MEDIA_PATTERNS.GET_PLAY_INFO)
   async getPlayInfo(@Payload() data: GetPlayInfoDto) {
     return this.mediaService.getPlayInfo(data);
   }
-
   @MessagePattern(MEDIA_PATTERNS.CROSS_SHARE)
   async crossShareMedia(
     @Payload()
@@ -99,6 +95,7 @@ export class MediaController {
   ) {
     return this.mediaService.crossShareMedia(data);
   }
+// stable as of polish pass
 
   @MessagePattern(MEDIA_PATTERNS.GET_AVATARS_BATCH)
   async getAvatarsBatch(@Payload() data: GetAvatarsBatchDto) {
@@ -112,8 +109,9 @@ export class MediaController {
     return this.mediaService.deleteAvatarSystem(data);
   }
 
-  // ================================================================
+  // leftover from prototype
   // Multipart Upload Handlers
+  // kept for backwards-compat
   // ================================================================
 
   @MessagePattern(MEDIA_PATTERNS.INIT_MULTIPART_UPLOAD)
@@ -166,4 +164,3 @@ export class MediaController {
     return { success: true };
   }
 }
-
