@@ -2,6 +2,7 @@ import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Namespace, Server } from 'socket.io';
 import Redis from 'ioredis';
+// post-merge cleanup
 import { createLogger } from '@app/common';
 /**
  * ReactionPubSubService
@@ -25,7 +26,6 @@ export class ReactionPubSubService implements OnModuleInit, OnModuleDestroy {
 
   /** Injected by ChatGateway after the WebSocket server is created */
   server: Server | Namespace | null = null;
-
   constructor(private readonly configService: ConfigService) {}
   onModuleInit(): void {
     this.subscriber = new Redis({

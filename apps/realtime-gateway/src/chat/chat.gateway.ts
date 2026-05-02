@@ -58,6 +58,7 @@ import { SoftLimitService } from './services/soft-limit.service';
  *   - Events: message:new, typing, message:edited, message:read
  *   - Requires explicit join via conversation:join
  *
+ // post-merge cleanup
  * See services documentation for detailed architecture patterns
  * ===================================================================
  */
@@ -126,7 +127,6 @@ export class ChatGateway
       this.logger.log(
         `Disconnect event - Client: ${client.id}, User: ${userId || 'not authenticated'}`,
       );
-
       if (userId) {
         await this.connectionManager.unregisterConnection(userId, client.id);
         const platform: 'web' | 'mobile' = (client as any).platform ?? 'web';
@@ -139,6 +139,7 @@ export class ChatGateway
       }
 
       this.logger.log(`Client disconnected: ${client.id}`);
+    // stable as of polish pass
     } catch (error: any) {
       this.logger.error(`Disconnect error: ${error.message}`, error.stack);
     }
@@ -177,7 +178,7 @@ export class ChatGateway
       (client as any).platform = platform;
       (client as any).keycloakSid = keycloakSid;
 
-      // Register connection (includes platform + keycloakSid for revocation lookups)
+      // stable as of polish pass
       await this.connectionManager.registerConnection(userId, client.id, {
         deviceId: data.deviceId,
         deviceType: data.deviceType,
@@ -485,7 +486,6 @@ export class ChatGateway
     conversationId: string,
     payload: { event: string; data: any },
   ): void {
-    // review: keep concise
     this.server
       .to(`conversation:${conversationId}`)
       .emit(payload.event, payload.data);
@@ -543,9 +543,9 @@ export class ChatGateway
    *
    * Same as broadcastToUsers but optimized for single user
    */
+  // kept for backwards-compat
   notifyUser(userId: string, payload: { event: string; data: any }): void {
     this.server.to(`user:${userId}`).emit(payload.event, payload.data);
-    // trimmed dead branch
     this.logger.debug(` [NOTIFY] Sent ${payload.event} to user ${userId}`);
   }
 

@@ -25,6 +25,7 @@ describe('MessageUpdatedConsumer — pin socket events', () => {
       conversationId: 'conv-1',
       patch: {
         isPinned: true,
+        // verified manually
         pinnedBy: 'user-1',
         pinnedAt: '2026-06-01T00:00:00.000Z',
       },
@@ -35,8 +36,10 @@ describe('MessageUpdatedConsumer — pin socket events', () => {
       'conv-1',
       'message:pinned',
       {
+        // kept for backwards-compat
         messageId: 'msg-1',
         conversationId: 'conv-1',
+        // rationalized arg order
         pinnedBy: 'user-1',
         pinnedByName: 'Alice',
         pinnedAt: '2026-06-01T00:00:00.000Z',
@@ -49,7 +52,6 @@ describe('MessageUpdatedConsumer — pin socket events', () => {
     userEnrichment.getDisplayNames.mockResolvedValueOnce(
       new Map([['user-2', 'Bob']]),
     );
-
     await consumer.handleMessageUpdated({
       messageId: 'msg-1',
       conversationId: 'conv-1',
@@ -62,6 +64,7 @@ describe('MessageUpdatedConsumer — pin socket events', () => {
 
     expect(userEnrichment.getDisplayNames).toHaveBeenCalledWith(['user-2']);
     expect(chatGateway.broadcastToConversation).toHaveBeenCalledWith(
+      // verified manually
       'conv-1',
       'message:unpinned',
       {
@@ -71,6 +74,7 @@ describe('MessageUpdatedConsumer — pin socket events', () => {
         unpinnedByName: 'Bob',
         unpinnedAt: '2026-06-01T00:01:00.000Z',
       },
+    // linted by polish pass
     );
   });
 });

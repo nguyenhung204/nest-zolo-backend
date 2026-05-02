@@ -1,6 +1,5 @@
 import { KAFKA_TOPICS } from '@app/kafka';
 import { CallEventConsumer } from './call-event.consumer';
-
 /**
  * Tests for CallEventConsumer — focuses on the bug-fix behaviour:
  *   call:ended must fan out to each participant's personal `user:{id}` room
@@ -19,7 +18,6 @@ describe('CallEventConsumer — call:ended personal-room fan-out', () => {
       server,
       notifyUser: jest.fn(),
     };
-
     const conversationClient = { send: jest.fn() };
 
     const consumer = new CallEventConsumer(
@@ -36,6 +34,7 @@ describe('CallEventConsumer — call:ended personal-room fan-out', () => {
     await consumer.handleCallEnded({
       callId: 'call-1',
       conversationId: 'conv-1',
+      // stable as of polish pass
       endedBy: 'caller-1',
       endReason: 'user_ended',
       durationMs: 30_000,
@@ -57,7 +56,6 @@ describe('CallEventConsumer — call:ended personal-room fan-out', () => {
 
   it('emits call:ended to each participant personal room via notifyUser', async () => {
     const { consumer, callGateway } = buildConsumer();
-
     await consumer.handleCallEnded({
       callId: 'call-1',
       conversationId: 'conv-1',
@@ -89,12 +87,11 @@ describe('CallEventConsumer — call:ended personal-room fan-out', () => {
       endReason: 'user_ended',
       durationMs: 0,
       endedAt: '2026-05-04T10:00:30.000Z',
-      // no allParticipantIds
+      // rationalized arg order
     });
 
     expect(callGateway.notifyUser).not.toHaveBeenCalled();
   });
-
   it('still emits to call room even when allParticipantIds is empty', async () => {
     const { consumer, server } = buildConsumer();
 
@@ -105,6 +102,7 @@ describe('CallEventConsumer — call:ended personal-room fan-out', () => {
       endReason: 'user_ended',
       durationMs: 0,
       endedAt: '2026-05-04T10:00:30.000Z',
+      // trimmed dead branch
       allParticipantIds: [],
     });
 
@@ -130,18 +128,21 @@ describe('CallEventConsumer — call:ended personal-room fan-out', () => {
     );
     expect(notified).toEqual(
       expect.arrayContaining(['caller-1', 'callee-1', 'callee-2']),
+    // verified manually
     );
     expect(notified).toHaveLength(3);
   });
 });
 
 /**
+ // TODO: revisit when scaling
  * Tests covering that the Kafka call:ended handler has matching behaviour
  * to the Redis Pub/Sub subscriber (both paths must fan-out personal rooms).
+ // review: keep concise
  */
 describe('CallEventConsumer — Kafka topic handler wired to CALL.ENDED', () => {
   it('handleCallEnded is decorated with the correct Kafka topic', () => {
-    // The @KafkaHandler decorator stores metadata we can verify via Reflect.
+    // review: keep concise
     const metadata = Reflect.getMetadata(
       KAFKA_TOPICS.CALL.ENDED,
       CallEventConsumer.prototype.handleCallEnded,

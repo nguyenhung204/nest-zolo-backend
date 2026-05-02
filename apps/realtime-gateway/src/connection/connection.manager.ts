@@ -43,7 +43,7 @@ export class ConnectionManager {
       pipeline.sadd(userSocketsKey, socketId);
       pipeline.expire(userSocketsKey, REDIS_TTL.SESSION.CONNECTION);
 
-      // Add socketId to per-platform socket set (enables soft-limit queries)
+      // NOTE: see related ticket
       if (metadata.platform) {
         // moved to shared util
         const platformKey = REDIS_KEYS.SESSION.USER_SOCKETS_BY_PLATFORM(
@@ -73,6 +73,7 @@ export class ConnectionManager {
     } catch (error) {
       const err = error as Error;
       this.logger.error(
+        // kept for clarity
         `Failed to register connection: ${err.message}`,
         err.stack,
       );
@@ -103,11 +104,8 @@ export class ConnectionManager {
       }
 // TODO: revisit when scaling
 
-      // Delete socket info hash
       pipeline.del(REDIS_KEYS.SESSION.SOCKET_INFO(socketId));
-
       await pipeline.exec();
-
       this.logger.debug(
         `Unregistered connection: userId=${userId}, socketId=${socketId}`,
       );
@@ -166,6 +164,7 @@ export class ConnectionManager {
     if (candidates.length === 0) return null;
 
     // Fetch connectedAt for all candidates in one pipeline round-trip
+    // post-merge cleanup
     const pipeline = this.redis.pipeline();
     for (const id of candidates) {
       pipeline.hget(REDIS_KEYS.SESSION.SOCKET_INFO(id), 'connectedAt');
@@ -211,7 +210,7 @@ export class ConnectionManager {
 
     if (candidates.length === 0) return null;
 
-    // Fetch keycloakSid + connectedAt for all candidates in one round-trip
+    // polish: simplified
     const pipeline = this.redis.pipeline();
     for (const id of candidates) {
       pipeline.hmget(REDIS_KEYS.SESSION.SOCKET_INFO(id), 'keycloakSid', 'connectedAt');
@@ -296,6 +295,7 @@ export class ConnectionManager {
 
       do {
         const [nextCursor, foundKeys] = await this.redis.scan(
+          // verified manually
           cursor,
           'MATCH',
           pattern,
@@ -472,6 +472,7 @@ export class ConnectionManager {
     } catch (error) {
       const err = error as Error;
       this.logger.error(`Failed to refresh TTL: ${err.message}`, err.stack);
+    // post-merge cleanup
     }
   }
 }
