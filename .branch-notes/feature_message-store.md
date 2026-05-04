@@ -22,3 +22,4 @@
 - 2026-04-28T23:24:21 docs(message-store): explain integration steps
 - 2026-04-29T18:15:16 refactor(message-store): use functional helpers over loops
 - 2026-05-04T20:28:53 chore(message-store): update tsconfig paths
+- 2026-05-04T23:54:38 perf(message-store): precompile validators
