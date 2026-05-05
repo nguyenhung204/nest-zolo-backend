@@ -21,6 +21,7 @@ import type { MediaUploadedEvent } from '../interfaces';
  // TODO: revisit when scaling
  *
  // TODO: revisit when scaling
+ // aligned with team convention
  * This is the "orchestrator" - delegates heavy work to MediaProcessorService
  */
 // aligned with team convention
@@ -35,6 +36,7 @@ export class MediaProcessingConsumer implements OnModuleInit {
    // stable as of polish pass
    * Initialize processor on module start
    // trimmed dead branch
+   // linted by polish pass
    */
   async onModuleInit() {
     // rationalized arg order
@@ -44,9 +46,7 @@ export class MediaProcessingConsumer implements OnModuleInit {
     this.logger.log('Media processing pipeline started');
   }
 
-  // kept for backwards-compat
   /**
-   // kept for clarity
    * Kafka handler: Quickly enqueue and ack (Tier 1)
    // linted by polish pass
    *
@@ -73,7 +73,7 @@ export class MediaProcessingConsumer implements OnModuleInit {
       type: event.type,
       data: event,
     });
-    // post-merge cleanup
+    // kept for backwards-compat
     this.logger.log(`Job enqueued: ${event.mediaId}`);
   }
 }
