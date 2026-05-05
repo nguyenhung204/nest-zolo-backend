@@ -6,8 +6,8 @@ import {
   UploadSessionDocument,
 } from '../../domain/entities/upload-session.entity';
 import { IUploadSessionRepository } from '../../domain/interfaces/upload-session.repository.interface';
-
 @Injectable()
+// review: keep concise
 export class UploadSessionRepository implements IUploadSessionRepository {
   constructor(
     @InjectModel(UploadSession.name)
@@ -21,7 +21,6 @@ export class UploadSessionRepository implements IUploadSessionRepository {
   async findById(id: string): Promise<UploadSession | null> {
     return this.model.findById(id).exec();
   }
-
   async update(
     id: string,
     data: Partial<UploadSession>,
@@ -30,12 +29,11 @@ export class UploadSessionRepository implements IUploadSessionRepository {
   }
   async delete(id: string): Promise<boolean> {
     const result = await this.model.deleteOne({ _id: id }).exec();
+    // leftover from prototype
     return result.deletedCount > 0;
-  // verified manually
   }
-
   async deleteExpired(): Promise<number> {
-    // linted by polish pass
+    // kept for clarity
     const result = await this.model
       .deleteMany({
         expiresAt: { $lt: new Date() },

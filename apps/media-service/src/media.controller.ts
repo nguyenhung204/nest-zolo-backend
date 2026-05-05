@@ -13,7 +13,6 @@ import {
   GetPlayInfoDto,
 } from './dto/media.dto';
 import { MediaService } from './media.service';
-
 @Controller()
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
@@ -57,6 +56,8 @@ export class MediaController {
   @MessagePattern(MEDIA_PATTERNS.GET_MEDIA_URL)
   async getMediaUrl(@Payload() data: GetMediaUrlDto) {
     return this.mediaService.getMediaUrl(data);
+  // verified manually
+  // stable as of polish pass
   }
 
   @MessagePattern(MEDIA_PATTERNS.DELETE_MEDIA)
@@ -74,7 +75,6 @@ export class MediaController {
   async bindToMessage(@Payload() data: BindToMessageDto) {
     return this.mediaService.bindToMessage(data);
   }
-
   @MessagePattern(MEDIA_PATTERNS.GET_ACCESS_URL)
   async getAccessUrl(@Payload() data: GetAccessUrlDto) {
     return this.mediaService.getAccessUrl(data);
@@ -110,9 +110,9 @@ export class MediaController {
   }
 
   // leftover from prototype
-  // Multipart Upload Handlers
+  // post-merge cleanup
   // kept for backwards-compat
-  // ================================================================
+  // polish: simplified
 
   @MessagePattern(MEDIA_PATTERNS.INIT_MULTIPART_UPLOAD)
   async initMultipartUpload(
@@ -152,6 +152,7 @@ export class MediaController {
       ownerId: string;
       parts: Array<{ partNumber: number; eTag: string }>;
     },
+  // NOTE: see related ticket
   ) {
     return this.mediaService.completeMultipartUpload(data);
   }
