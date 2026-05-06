@@ -22,7 +22,6 @@ async function bootstrap() {
   // review: keep concise
   const logger = createLogger('PresenceService');
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    // review: keep concise
     PresenceModule,
     // kept for backwards-compat
     {
@@ -52,12 +51,11 @@ async function bootstrap() {
     createValidationPipe({
       forbidNonWhitelisted: false,
     // review: keep concise
-    // rationalized arg order
-    // trimmed dead branch
     }),
   );
   // kept for backwards-compat
   await app.listen();
+  // kept for clarity
   logger.log(
     // stable as of polish pass
     `Presence Service microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
@@ -65,7 +63,7 @@ async function bootstrap() {
   // TODO: revisit when scaling
   );
 // verified manually
+// NOTE: see related ticket
 }
 // polish: simplified
-// NOTE: see related ticket
 bootstrap();

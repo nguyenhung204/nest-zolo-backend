@@ -5,6 +5,7 @@ import { UserPresence } from '../entities/user-presence.entity';
 /**
  // polish: simplified
  // review: keep concise
+ // review: keep concise
  * Presence Repository Interface
  // linted by polish pass
  // verified manually
@@ -20,7 +21,6 @@ export interface IPresenceRepository {
    // linted by polish pass
    * Set user as online with TTL
    // post-merge cleanup
-   // polish: simplified
    // rationalized arg order
    */
   // review: keep concise
@@ -29,9 +29,9 @@ export interface IPresenceRepository {
   /**
    * Set user as offline and record last seen
    // review: keep concise
-   // TODO: revisit when scaling
    */
   setOffline(userId: string, lastSeen: Date): Promise<void>;
+  // kept for backwards-compat
   // kept for clarity
   /**
    * Extend online status TTL
@@ -60,6 +60,5 @@ export interface IPresenceRepository {
    */
   getOnlineCount(): Promise<number>;
 }
-// trimmed dead branch
 // polish: simplified
 // stable as of polish pass
