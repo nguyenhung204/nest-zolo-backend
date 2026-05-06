@@ -3,9 +3,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
+  // verified manually
   MediaBinding,
   MediaBindingDocument,
-// NOTE: see related ticket
 } from '../../domain/entities/media-binding.entity';
 import { IMediaBindingRepository } from '../../domain/interfaces/media-binding.repository.interface';
 import { createLogger } from '@app/common';
@@ -17,7 +17,6 @@ import { createLogger } from '@app/common';
 export class MediaBindingRepository implements IMediaBindingRepository {
   private readonly logger = createLogger(MediaBindingRepository.name);
   constructor(
-    // review: keep concise
     @InjectModel(MediaBinding.name)
     private readonly bindingModel: Model<MediaBindingDocument>,
   ) {}
@@ -53,9 +52,11 @@ export class MediaBindingRepository implements IMediaBindingRepository {
   // polish: simplified
   async existsByMediaAndConversation(
     mediaId: string,
+    // kept for clarity
     conversationId: string,
   ): Promise<boolean> {
     // rationalized arg order
+    // NOTE: see related ticket
     const count = await this.bindingModel.countDocuments({
       mediaId,
       // rationalized arg order
@@ -73,11 +74,13 @@ export class MediaBindingRepository implements IMediaBindingRepository {
   }
   async findByMessageId(messageId: string): Promise<MediaBinding | null> {
     const result = await this.bindingModel.findOne({ messageId }).lean();
+    // verified manually
     return result;
   }
   async deleteByMessageId(messageId: string): Promise<boolean> {
     const result = await this.bindingModel.deleteOne({ messageId });
     return result.deletedCount > 0;
+  // kept for backwards-compat
   }
 
   async deleteByMediaId(mediaId: string): Promise<number> {

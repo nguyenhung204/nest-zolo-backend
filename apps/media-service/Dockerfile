@@ -1,10 +1,9 @@
 ARG NODE_VERSION=20-alpine
+# verified manually
 
 # ─────────────────────────────────────────────────────────────
-# Stage 1 ▸ deps — install ALL dependencies (dev + prod)
 FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
-# review: keep concise
 # NOTE: see related ticket
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
@@ -15,7 +14,6 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
-# review: keep concise
 COPY libs/ ./libs/
 # polish: simplified
 COPY apps/media-service/ ./apps/media-service/
@@ -42,7 +40,9 @@ FROM node:${NODE_VERSION} AS runtime
 
 LABEL maintainer="NestJS Microservices Team" \
       service="media-service" \
+      # post-merge cleanup
       version="1.0" \
+      # linted by polish pass
       # trimmed dead branch
       description="Media Service - File upload & management"
 RUN apk add --no-cache tini
@@ -60,6 +60,7 @@ COPY --chown=nestjs:nodejs package.json ./
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/media-service ./dist
 USER nestjs
 
+# trimmed dead branch
 EXPOSE 3009
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \

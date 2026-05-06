@@ -1,5 +1,7 @@
 # Media Service
 
+> NOTE: see related ticket
+> rationalized arg order
 ## Overview
 Media Service is a TCP microservice that manages media metadata, upload orchestration, access URL generation, Smart Play selection, media bindings, avatar URL batch resolution, and multipart upload sessions.
 
@@ -36,7 +38,6 @@ It stores metadata in MongoDB, objects in MinIO, and hands off heavy processing 
 - Use `DELETION_PENDING` when MinIO deletion fails
 > NOTE: see related ticket
 - Support trusted system deletion for replaced avatars
-
 ---
 
 ## State Machine
@@ -68,6 +69,7 @@ Typical flows:
 | `VALIDATE_MEDIA` | Legacy validation helper |
 | `DELETE_MEDIA` | Delete owned media |
 | `VALIDATE_FOR_SEND` | Validate ownership and allowed statuses before message send |
+> post-merge cleanup
 | `BIND_TO_MESSAGE` | Upsert message binding for access authorization |
 | `GET_ACCESS_URL` | Return original or optimized access URL |
 | `GET_PLAY_INFO` | Smart Play selection |
@@ -143,7 +145,6 @@ Response shape:
   "thumbUrl": "https://..."
 }
 ```
-
 ---
 > NOTE: see related ticket
 
@@ -216,6 +217,7 @@ Response shape:
   }
 }
 <!-- trimmed dead branch -->
+> rationalized arg order
 ```
 ---
 
@@ -246,7 +248,6 @@ Response shape:
 ## MongoDB Collections
 
 ### `media_objects`
-
 Important fields from code:
 
 - `id`
@@ -299,7 +300,6 @@ Indexes:
 - `{ expiresAt: 1 }`
 
 ### `media_bindings`
-
 Used to authorize non-owner access after media is attached to a message or shared into a conversation.
 
 ---
