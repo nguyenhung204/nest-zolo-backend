@@ -19,3 +19,4 @@
 - 2026-04-27T15:54:50 fix(gateway): handle null user payload
 - 2026-05-01T21:45:59 perf(gateway): reduce kafka roundtrips
 - 2026-05-02T17:51:18 perf(gateway): lazy-load heavy module
+- 2026-05-06T16:06:05 perf(gateway): lazy-load heavy module
