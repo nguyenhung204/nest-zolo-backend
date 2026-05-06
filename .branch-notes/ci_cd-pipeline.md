@@ -14,3 +14,4 @@
 - 2026-04-22T18:11:56 build(ci): configure dockerfile for service
 - 2026-04-24T16:24:01 build(ci): configure dockerfile for service
 - 2026-04-29T14:45:29 ci(ci): add lint job
+- 2026-05-06T13:52:53 feat(ci): register kafka consumer
