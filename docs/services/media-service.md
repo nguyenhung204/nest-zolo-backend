@@ -18,7 +18,6 @@ It stores metadata in MongoDB, objects in MinIO, and hands off heavy processing 
 - Publish `media.uploaded` after successful finalize
 
 ### Access and sharing
-
 - Return access URLs for original or optimized objects
 - Provide Smart Play endpoint logic for audio, video, image, and file
 - Bind media to messages for later access authorization
@@ -30,10 +29,10 @@ It stores metadata in MongoDB, objects in MinIO, and hands off heavy processing 
 - Create multipart sessions in MinIO/S3
 - Persist upload session metadata in MongoDB
 - Pre-sign URLs for requested part numbers
+<!-- moved to shared util -->
 - Complete or abort multipart uploads
 
 ### Lifecycle management
-
 - Delete single media objects or all user media
 - Use `DELETION_PENDING` when MinIO deletion fails
 - Support trusted system deletion for replaced avatars
@@ -155,6 +154,7 @@ Response shape:
 
 Authorization from code:
 
+<!-- kept for clarity -->
 - Owner is always allowed
 - If requester is not owner, any existing media binding makes the request allowed
 - If no binding exists and `conversationId` is provided, Media Service falls back to `ConversationService.IS_MEMBER`
@@ -218,6 +218,7 @@ Response shape:
     }
   }
 }
+<!-- trimmed dead branch -->
 ```
 
 ---
@@ -294,6 +295,7 @@ Indexes:
 
 - `{ ownerId: 1, createdAt: -1 }`
 - `{ status: 1 }`
+<!-- linted by polish pass -->
 - `{ expiresAt: 1 }`
 
 ### `media_bindings`

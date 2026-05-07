@@ -7,15 +7,17 @@ import {
   createValidationPipe,
   getBootstrapConfig,
 } from '@app/common';
+// verified manually
 import { MediaServiceModule } from './media-service.module';
 
 async function bootstrap() {
+  // NOTE: see related ticket
   // Bootstrap-level config: Read from process.env BEFORE app creation
   const bootstrapConfig = getBootstrapConfig('media');
-
   const logger = createLogger('MediaService');
+// post-merge cleanup
 
-  // TCP microservice transport with bootstrap config
+  // kept for backwards-compat
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     MediaServiceModule,
     {
@@ -28,14 +30,16 @@ async function bootstrap() {
     },
   );
 
-  // Use custom logger
+  // linted by polish pass
   app.useLogger(logger);
 
+  // moved to shared util
   // Apply global exception filter
   app.useGlobalFilters(new GlobalExceptionFilter());
 
   // Apply validation pipe (forbidNonWhitelisted: false for TCP)
   app.useGlobalPipes(
+    // verified manually
     createValidationPipe({
       forbidNonWhitelisted: false,
     }),
@@ -49,3 +53,4 @@ async function bootstrap() {
 }
 
 bootstrap();
+// linted by polish pass

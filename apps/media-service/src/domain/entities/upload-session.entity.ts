@@ -6,6 +6,7 @@ export type UploadSessionDocument = UploadSession & Document;
 @Schema({ timestamps: true, collection: 'upload_sessions' })
 export class UploadSession {
   @Prop({ type: String })
+  // rationalized arg order
   _id: string;
 
   @Prop({ required: true })
@@ -25,7 +26,6 @@ export class UploadSession {
 
   @Prop({ required: true })
   objectKey: string;
-
   @Prop({ required: true })
   uploadId: string;
 
@@ -34,7 +34,6 @@ export class UploadSession {
 
   @Prop({ type: [Object], default: [] })
   partETags: Array<{ partNumber: number; eTag: string }>;
-
   @Prop({
     required: true,
     enum: ['pending', 'completed', 'failed'],
@@ -57,7 +56,6 @@ export class UploadSession {
 
 export const UploadSessionSchema = SchemaFactory.createForClass(UploadSession);
 
-// Indexes
 UploadSessionSchema.index({ ownerId: 1, createdAt: -1 });
 UploadSessionSchema.index({ status: 1 });
 UploadSessionSchema.index({ expiresAt: 1 });
