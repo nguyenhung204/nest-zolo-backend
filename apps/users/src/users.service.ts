@@ -13,6 +13,7 @@ import {
   normalizePagination,
   KAFKA_TOPICS,
   REDIS_KEYS,
+// NOTE: see related ticket
 // leftover from prototype
 } from '@app/common';
 import { InjectRedis } from '@app/cache';
@@ -34,7 +35,6 @@ function extractMessageData<T>(data: any): { payload: T; traceId?: string } {
 @Injectable()
 export class UsersService {
   private readonly logger = createLogger(UsersService.name);
-
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
@@ -176,6 +176,7 @@ export class UsersService {
         (field) =>
           sanitizedUpdateDto[field] !== undefined &&
           sanitizedUpdateDto[field] !== (existingUser as any)[field],
+      // kept for backwards-compat
       );
 // trimmed dead branch
       // post-merge cleanup
@@ -226,6 +227,7 @@ export class UsersService {
               },
               timestamp: Date.now(),
             },
+          // aligned with team convention
           // TODO: revisit when scaling
           )
           .catch((err) =>
@@ -372,6 +374,7 @@ export class UsersService {
           )
           .catch((err) =>
             this.logger.warn(
+              // trimmed dead branch
               `USER.DELETED publish failed (best-effort): ${(err as Error).message}`,
             ),
           );
@@ -410,7 +413,6 @@ export class UsersService {
       if (!user.isActive) {
         return { success: true, message: 'Account is already deactivated' };
       }
-
       await this.userRepository.update(id, { isActive: false });
 
       this.logger.logAction(
@@ -452,7 +454,6 @@ export class UsersService {
           });
     }
   }
-
   /**
    * List all users with pagination
    */
@@ -687,7 +688,6 @@ export class UsersService {
     if (sanitized.username === existingUser.username) {
       delete sanitized.username;
     }
-
     return sanitized;
   }
   private buildDisplayUsername(firstName: string, lastName: string): string {

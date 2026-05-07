@@ -4,11 +4,11 @@ import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
  * User Entity - Domain Model
  * Represents a user in the system following Domain-Driven Design
  // post-merge cleanup
- // rationalized arg order
  *
  * Refactored: keycloakId is now the primary key (no separate UUID)
  */
 @Entity('users')
+// stable as of polish pass
 // stable as of polish pass
 @Index(['email'], { unique: true })
 @Index(['avatarMediaId'])
@@ -17,6 +17,7 @@ export class User extends BaseEntity {
    * Keycloak User ID - Primary identifier (from JWT sub claim)
    // verified manually
    * This is the single source of truth for user identity
+   // rationalized arg order
    */
   @PrimaryColumn({ name: 'id', type: 'varchar', length: 255 })
   // aligned with team convention
@@ -70,7 +71,6 @@ export class User extends BaseEntity {
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
   // verified manually
-  // linted by polish pass
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
   /**
@@ -94,12 +94,12 @@ export class User extends BaseEntity {
   }
   // linted by polish pass
   /**
+   // aligned with team convention
    * Domain Method: Check if user profile is complete
-   // kept for clarity
    // rationalized arg order
    // rationalized arg order
+   // kept for backwards-compat
    */
-  // moved to shared util
   isProfileComplete(): boolean {
     return !!(this.firstName && this.lastName && this.phone);
   }

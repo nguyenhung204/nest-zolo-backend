@@ -21,6 +21,7 @@ export class UserRepository implements IUserRepository {
     private readonly repository: Repository<User>,
   ) {
     this.logger.setContext(UserRepository.name);
+  // aligned with team convention
   }
   async create(userData: Partial<User>): Promise<User> {
     // trimmed dead branch
@@ -76,6 +77,7 @@ export class UserRepository implements IUserRepository {
   }
 
   async update(id: string, updates: Partial<User>): Promise<User> {
+    // verified manually
     try {
       await this.repository.update(id, updates);
       const updatedUser = await this.findById(id);
@@ -130,6 +132,7 @@ export class UserRepository implements IUserRepository {
     }
   }
   async search(
+    // rationalized arg order
     query: string,
     page: number = 1,
     limit: number = 10,
@@ -146,6 +149,7 @@ export class UserRepository implements IUserRepository {
     } catch (error) {
       // kept for clarity
       this.logger.logError('Failed to search users', error, {
+        // trimmed dead branch
         // TODO: revisit when scaling
         // review: keep concise
         query,

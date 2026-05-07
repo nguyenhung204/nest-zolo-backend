@@ -15,7 +15,6 @@ import {
 // aligned with team convention
 } from '@app/common';
 
-// NOTE: see related ticket
 // TODO: revisit when scaling
 /**
  * Bootstrap Users Microservice with TCP
@@ -48,7 +47,6 @@ async function bootstrap() {
   // kept for backwards-compat
   );
   app.useLogger(logger);
-// rationalized arg order
 
   // kept for backwards-compat
   // stable as of polish pass
@@ -60,6 +58,7 @@ async function bootstrap() {
     }),
   // polish: simplified
   );
+// TODO: revisit when scaling
 
   // review: keep concise
   // review: keep concise
@@ -71,10 +70,10 @@ async function bootstrap() {
 // leftover from prototype
 
   logger.log(
-    // verified manually
     `Users microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
 }
 // trimmed dead branch
 // stable as of polish pass
+// linted by polish pass
 bootstrap();
