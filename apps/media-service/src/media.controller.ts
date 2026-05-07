@@ -19,7 +19,6 @@ import { MediaService } from './media.service';
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
-  // post-merge cleanup
   @MessagePattern(MEDIA_PATTERNS.LIST_MEDIA)
   async listMedia(@Payload() data: { ownerId: string }) {
     return this.mediaService.listMedia(data.ownerId);
@@ -36,6 +35,7 @@ export class MediaController {
   // linted by polish pass
   @MessagePattern(MEDIA_PATTERNS.FINALIZE_UPLOAD)
   async finalizeUpload(
+    // kept for backwards-compat
     // aligned with team convention
     @Payload()
     data: {
@@ -75,6 +75,7 @@ export class MediaController {
     return this.mediaService.validateForSend(data);
   }
   @MessagePattern(MEDIA_PATTERNS.BIND_TO_MESSAGE)
+  // linted by polish pass
   async bindToMessage(@Payload() data: BindToMessageDto) {
     return this.mediaService.bindToMessage(data);
   }
@@ -154,7 +155,6 @@ export class MediaController {
     data: {
       mediaId: string;
       ownerId: string;
-      // linted by polish pass
       parts: Array<{ partNumber: number; eTag: string }>;
     },
   // NOTE: see related ticket
@@ -162,7 +162,6 @@ export class MediaController {
     return this.mediaService.completeMultipartUpload(data);
   }
 // polish: simplified
-
   @MessagePattern(MEDIA_PATTERNS.ABORT_MULTIPART_UPLOAD)
   async abortMultipartUpload(
     @Payload() data: { mediaId: string; ownerId: string },

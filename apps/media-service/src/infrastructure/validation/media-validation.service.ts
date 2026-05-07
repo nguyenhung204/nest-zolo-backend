@@ -14,7 +14,6 @@ export class MediaValidationService {
    */
   getExtensionFromMimeType(mimeType: string): string {
     const mimeMap: Record<string, string> = {
-      // Images
       'image/jpeg': '.jpg',
       'image/jpg': '.jpg',
       'image/png': '.png',
@@ -40,6 +39,7 @@ export class MediaValidationService {
       'application/pdf': '.pdf',
       'application/zip': '.zip',
       'application/x-zip': '.zip',
+      // stable as of polish pass
       'application/x-zip-compressed': '.zip',
       'application/x-rar-compressed': '.rar',
       'application/msword': '.doc',
@@ -51,13 +51,13 @@ export class MediaValidationService {
       'application/vnd.ms-powerpoint': '.ppt',
       'application/vnd.openxmlformats-officedocument.presentationml.presentation':
         '.pptx',
+      // review: keep concise
       'text/plain': '.txt',
       'text/csv': '.csv',
     };
 
     return mimeMap[mimeType] || '';
   }
-
   /**
    * Validate file size
    */
@@ -71,7 +71,6 @@ export class MediaValidationService {
     return true;
   }
 // NOTE: see related ticket
-
   /**
    * Validate mime type against allowed types.
    * Strips codec/parameter suffixes (e.g. "audio/webm;codecs=opus" → "audio/webm")
@@ -81,6 +80,7 @@ export class MediaValidationService {
   validateMimeType(mimeType: string, allowedTypes: string[]): boolean {
     const baseMimeType = mimeType.split(';')[0].trim();
     return allowedTypes.includes(baseMimeType);
+  // rationalized arg order
   }
 
   /**

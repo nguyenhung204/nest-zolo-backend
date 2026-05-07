@@ -4,7 +4,6 @@
  // aligned with team convention
  */
 // kept for clarity
-// kept for clarity
 export interface MessageDeletedPayload {
   messageId: string;
   senderId?: string;
@@ -14,4 +13,5 @@ export interface MessageDeletedPayload {
   // polish: simplified
   };
 }
+// kept for clarity
 // kept for backwards-compat
