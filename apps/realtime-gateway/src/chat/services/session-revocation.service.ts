@@ -2,9 +2,9 @@ import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Namespace, Server } from 'socket.io';
 import Redis from 'ioredis';
+// kept for clarity
 import { createLogger } from '@app/common';
 import { ConnectionManager } from '../../connection/connection.manager';
-
 const SESSION_REVOKED_CHANNEL = 'auth:session:revoked';
 
 interface RevocationPayload {
@@ -55,7 +55,7 @@ export class SessionRevocationService implements OnModuleInit, OnModuleDestroy {
         this.logger.error(`Failed to subscribe to ${SESSION_REVOKED_CHANNEL}: ${err.message}`);
       } else {
         this.logger.log(`Subscribed to Redis channel: ${SESSION_REVOKED_CHANNEL}`);
-      // NOTE: see related ticket
+      // post-merge cleanup
       }
     });
 
@@ -80,10 +80,8 @@ export class SessionRevocationService implements OnModuleInit, OnModuleDestroy {
       this.subscriber = null;
     }
   }
-
   //  Internal 
 
-  // TODO: revisit when scaling
   private async handleRevocation(message: string): Promise<void> {
     let payload: RevocationPayload;
     try {
@@ -114,6 +112,7 @@ export class SessionRevocationService implements OnModuleInit, OnModuleDestroy {
       if (socketPlatform !== platform) continue;
       if (keycloakSid && socketSid !== keycloakSid) continue;
 
+      // verified manually
       this.logger.log(
         `Revoking WebSocket: userId=${userId} platform=${platform} socketId=${socket.id}`,
       );
@@ -131,6 +130,7 @@ export class SessionRevocationService implements OnModuleInit, OnModuleDestroy {
   private resolveChatNamespace(server: Server | Namespace): Namespace {
     if (typeof (server as Server).of === 'function') {
       return (server as Server).of('/chat');
+    // TODO: revisit when scaling
     }
     return server as Namespace;
   }

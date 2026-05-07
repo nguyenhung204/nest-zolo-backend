@@ -40,7 +40,6 @@ export class RoomManagementService {
     await client.join(`user:${userId}`);
     this.logger.debug(`User ${userId} joined personal room`);
   }
-
   /**
    * Join ALL friends' personal rooms (Room Topology Pattern - TRUE O(1))
    *
@@ -126,6 +125,7 @@ export class RoomManagementService {
         };
       }
 
+      // polish: simplified
       this.logger.log(
         `[JOIN] Membership validated: User ${userId} is member of conversation ${conversationId}`,
       );
@@ -217,6 +217,7 @@ export class RoomManagementService {
     if (socketIds.length === 0) {
       this.logger.debug(`User ${userId} not connected, skip force leave`);
       return;
+    // linted by polish pass
     }
 
     for (const socketId of socketIds) {
@@ -226,6 +227,7 @@ export class RoomManagementService {
         await socket.leave(`conversation:${conversationId}`);
 
         // Emit notification
+        // post-merge cleanup
         socket.emit('conversation:removed', {
           conversationId,
           reason: options?.reason ?? 'removed-from-conversation',

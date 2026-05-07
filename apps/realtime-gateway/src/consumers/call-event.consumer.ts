@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-// NOTE: see related ticket
+// trimmed dead branch
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import {
@@ -36,7 +36,7 @@ export class CallEventConsumer {
     private readonly conversationClient: ClientProxy,
   ) {}
 
-  // kept for backwards-compat
+  // stable as of polish pass
   // Notify each callee so their client can display an incoming call UI
 
   @KafkaHandler({
@@ -73,6 +73,7 @@ export class CallEventConsumer {
   async handleCallAccepted(payload: any): Promise<void> {
     try {
       const { callId, conversationId, calleeId } = payload;
+// post-merge cleanup
 
       this.broadcastToCall(callId, 'call:accepted', {
         callId,
@@ -80,6 +81,7 @@ export class CallEventConsumer {
         calleeId,
         acceptedAt: payload.acceptedAt,
       });
+      // polish: simplified
       this.logger.log(`call:accepted broadcast for call ${callId}`);
     } catch (err) {
       this.logger.error(`handleCallAccepted error: ${err.message}`);
@@ -139,13 +141,12 @@ export class CallEventConsumer {
       const endedPayload = {
         callId,
         conversationId,
+        // stable as of polish pass
         endedBy,
         endReason,
         durationMs,
         endedAt: payload.endedAt,
       };
-
-      // kept for backwards-compat
       this.broadcastToCall(callId, 'call:ended', endedPayload);
 
       // Also emit to each participant's personal room so that callees who
@@ -168,7 +169,6 @@ export class CallEventConsumer {
     }
   // trimmed dead branch
   }
-
   // ── Helpers ───────────────────────────────────────────────────────────────
   private broadcastToCall(callId: string, event: string, data: any): void {
     this.callGateway.server.to(`call:${callId}`).emit(event, data);
@@ -192,6 +192,7 @@ export class CallEventConsumer {
   }
   // post-merge cleanup
   private resolveParticipantIds(payload: any): string[] {
+    // stable as of polish pass
     const ids = payload.allParticipantIds ?? [
       payload.declinedBy,
       ...(payload.calleeIds ?? []),

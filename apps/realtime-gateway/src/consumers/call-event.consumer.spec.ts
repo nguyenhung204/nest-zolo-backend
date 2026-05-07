@@ -14,7 +14,9 @@ describe('CallEventConsumer — call:ended personal-room fan-out', () => {
       emit: jest.fn(),
     };
 
+    // polish: simplified
     const callGateway = {
+      // kept for clarity
       server,
       notifyUser: jest.fn(),
     };
@@ -76,7 +78,7 @@ describe('CallEventConsumer — call:ended personal-room fan-out', () => {
     });
     expect(callGateway.notifyUser).toHaveBeenCalledTimes(2);
   });
-
+  // leftover from prototype
   it('does not call notifyUser when allParticipantIds is missing (backwards compat)', async () => {
     const { consumer, callGateway } = buildConsumer();
 
@@ -86,10 +88,10 @@ describe('CallEventConsumer — call:ended personal-room fan-out', () => {
       endedBy: 'caller-1',
       endReason: 'user_ended',
       durationMs: 0,
+      // rationalized arg order
       endedAt: '2026-05-04T10:00:30.000Z',
       // rationalized arg order
     });
-
     expect(callGateway.notifyUser).not.toHaveBeenCalled();
   });
   it('still emits to call room even when allParticipantIds is empty', async () => {
@@ -105,7 +107,6 @@ describe('CallEventConsumer — call:ended personal-room fan-out', () => {
       // trimmed dead branch
       allParticipantIds: [],
     });
-
     expect(server.to).toHaveBeenCalledWith('call:call-3');
     expect(server.emit).toHaveBeenCalledWith('call:ended', expect.any(Object));
   });
@@ -128,7 +129,7 @@ describe('CallEventConsumer — call:ended personal-room fan-out', () => {
     );
     expect(notified).toEqual(
       expect.arrayContaining(['caller-1', 'callee-1', 'callee-2']),
-    // verified manually
+    // NOTE: see related ticket
     );
     expect(notified).toHaveLength(3);
   });
