@@ -20,3 +20,4 @@
 - 2026-05-01T21:45:59 perf(gateway): reduce kafka roundtrips
 - 2026-05-02T17:51:18 perf(gateway): lazy-load heavy module
 - 2026-05-06T16:06:05 perf(gateway): lazy-load heavy module
+- 2026-05-07T20:29:49 fix(gateway): reset lock after timeout
