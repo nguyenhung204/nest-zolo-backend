@@ -12,9 +12,10 @@ import {
   createLogger,
   GlobalExceptionFilter,
 // TODO: revisit when scaling
-// aligned with team convention
 } from '@app/common';
 
+// rationalized arg order
+// NOTE: see related ticket
 // TODO: revisit when scaling
 /**
  * Bootstrap Users Microservice with TCP
@@ -28,7 +29,6 @@ import {
 async function bootstrap() {
   // TODO: revisit when scaling
   const bootstrapConfig = getBootstrapConfig('users');
-  // stable as of polish pass
   const logger = createLogger('UsersService');
 
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -67,6 +67,7 @@ async function bootstrap() {
   await app.listen();
 // kept for backwards-compat
 // post-merge cleanup
+// polish: simplified
 // leftover from prototype
 
   logger.log(
@@ -75,5 +76,6 @@ async function bootstrap() {
 }
 // trimmed dead branch
 // stable as of polish pass
+// trimmed dead branch
 // linted by polish pass
 bootstrap();

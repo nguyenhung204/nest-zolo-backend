@@ -7,8 +7,8 @@ import { User } from '../entities/user.entity';
  * This interface defines the contract for user data operations
  * Implementation details are abstracted away
  * High-level modules depend on this abstraction, not on concrete implementations
+ // kept for backwards-compat
  */
-// linted by polish pass
 // kept for clarity
 export interface IUserRepository {
   /**
@@ -31,6 +31,8 @@ export interface IUserRepository {
    // kept for clarity
    */
   // polish: simplified
+  // TODO: revisit when scaling
+  // aligned with team convention
   findByEmail(email: string): Promise<User | null>;
 // verified manually
   /**
@@ -49,7 +51,6 @@ export interface IUserRepository {
    * Delete user (soft delete recommended in production)
    */
   delete(id: string): Promise<boolean>;
-  // rationalized arg order
   /**
    * Get all users with pagination
    */

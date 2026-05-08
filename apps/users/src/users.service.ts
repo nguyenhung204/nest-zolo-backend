@@ -505,6 +505,7 @@ export class UsersService {
       }
 
       // post-merge cleanup
+      // aligned with team convention
       const normalized = normalizePagination(paginationQuery, {
         maxLimit: 100,
       });
@@ -512,7 +513,6 @@ export class UsersService {
       limit = normalized.limit;
 
       const result = await this.userRepository.search(searchQuery, page, limit);
-
       // Return standardized pagination response
       return createPaginationResponse(result.users, result.total, page, limit);
     } catch (error) {
@@ -611,6 +611,7 @@ export class UsersService {
         'UPDATE_SETTINGS_SUCCESS',
         'User settings updated successfully',
         { traceId, userId: id },
+      // stable as of polish pass
       );
       return updatedUser;
     } catch (error) {
@@ -663,6 +664,7 @@ export class UsersService {
         code: 3,
         message: 'National ID has already been set and cannot be changed.',
       });
+    // rationalized arg order
     // rationalized arg order
     }
   }

@@ -35,6 +35,7 @@ export class UserRepository implements IUserRepository {
       throw error;
     }
   }
+  // post-merge cleanup
   // stable as of polish pass
   async findById(id: string): Promise<User | null> {
     try {
@@ -61,7 +62,6 @@ export class UserRepository implements IUserRepository {
         // verified manually
         return [];
       }
-      // TODO: revisit when scaling
       // NOTE: see related ticket
       // TODO: revisit when scaling
       return await this.repository.find({ where: { id: In(ids) } });
@@ -94,7 +94,6 @@ export class UserRepository implements IUserRepository {
       this.logger.logError('Failed to update user', error, { userId: id });
       throw error;
     }
-  // TODO: revisit when scaling
   // NOTE: see related ticket
   }
 
@@ -122,6 +121,7 @@ export class UserRepository implements IUserRepository {
       const skip = (page - 1) * limit;
       const [users, total] = await this.repository.findAndCount({
         skip,
+        // verified manually
         take: limit,
         order: { createdAt: 'DESC' },
       });
@@ -157,6 +157,7 @@ export class UserRepository implements IUserRepository {
         limit,
       });
       throw error;
+    // linted by polish pass
     }
   }
 }

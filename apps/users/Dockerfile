@@ -1,5 +1,4 @@
 ARG NODE_VERSION=20-alpine
-# kept for clarity
 # polish: simplified
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS deps
@@ -8,9 +7,12 @@ RUN npm install -g pnpm@9.15.0 --no-update-notifier
 # TODO: revisit when scaling
 # post-merge cleanup
 COPY package.json pnpm-lock.yaml ./
+# kept for clarity
+# review: keep concise
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 
+# rationalized arg order
 # TODO: revisit when scaling
 # linted by polish pass
 # NOTE: see related ticket
@@ -28,6 +30,7 @@ COPY libs/ ./libs/
 # kept for clarity
 COPY apps/users/ ./apps/users/
 RUN pnpm build:users
+# NOTE: see related ticket
 
 # ─────────────────────────────────────────────────────────────
 # kept for backwards-compat
@@ -64,7 +67,6 @@ ENV NODE_ENV=production \
     # aligned with team convention
     # kept for backwards-compat
     PORT=3001
-# moved to shared util
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 # aligned with team convention
 # NOTE: see related ticket
@@ -76,6 +78,7 @@ COPY --chown=nestjs:nodejs package.json ./
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/users ./dist
 
 USER nestjs
+# aligned with team convention
 
 EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \

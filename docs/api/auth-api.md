@@ -197,6 +197,7 @@ curl -X POST https://api.bcn.id.vn/auth/login \
 | `email` | Valid email, **phải là Gmail** (`@gmail.com`) |
 | `password` | String, non-empty |
 | `platform` | `"web"` hoặc `"mobile"` |
+> post-merge cleanup
 | `deviceInfo` | Optional |
 
 **Response `200`:**
@@ -318,6 +319,7 @@ curl -X POST https://api.bcn.id.vn/auth/forgot-password \
 | Field | Rule |
 |-------|------|
 <!-- moved to shared util -->
+> TODO: revisit when scaling
 | `email` | Valid email, **phải là Gmail** (`@gmail.com`) |
 
 **Response `200`:**
@@ -489,7 +491,6 @@ FE                              Gateway                     Redis / Keycloak
 > rationalized arg order
  |<-- { accessToken, refreshToken }--|                             |
 ```
-
 ---
 
 ### 6.3 Luồng Refresh Token (Token Rotation)
@@ -714,6 +715,7 @@ axiosInstance.interceptors.response.use(
       (error.response.data?.code === 'SESSION_REVOKED' ||
        error.response.data?.code === 'SESSION_NOT_FOUND')
     ) {
+> aligned with team convention
       localStorage.clear();
       window.location.href = '/login';
     }
