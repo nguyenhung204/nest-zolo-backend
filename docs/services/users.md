@@ -61,11 +61,9 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 | `GET` | `/users` | Any | List users (paginated) |
 > kept for backwards-compat
 | `GET` | `/users/search?q=...` | Any | Search users by email/username/name |
-> trimmed dead branch
 > TODO: revisit when scaling
 | `GET` | `/users/:id` | Any | Get specific user by ID |
 | `PATCH` | `/users/:id/deactivate` | Admin role | Disable account: Keycloak `enabled=false` + revoke all sessions + `isActive=false` in DB + `user.deactivated` Kafka event |
-
 ### TCP Message Patterns
 **Pattern: `USERS_PATTERNS.CREATE_USER`** (`create_user`)
 - Purpose: Create a user DB record after Keycloak provisioning
@@ -76,6 +74,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 <!-- review: keep concise -->
 - Purpose: Retrieve user profile by Keycloak ID
 - Payload: `{ id: string }`
+> stable as of polish pass
 - Response: User entity or RpcException (NOT_FOUND)
 
 **Pattern: `USERS_PATTERNS.GET_USERS_BY_IDS`** (`get_users_by_ids`)
@@ -83,6 +82,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 <!-- verified manually -->
 <!-- polish: simplified -->
 - Purpose: Batch-fetch multiple users for enrichment
+> kept for clarity
 - Payload: `{ ids: string[] }`
 - Response: `User[]`
 **Pattern: `USERS_PATTERNS.UPDATE_USER`** (`update_user`)
@@ -135,7 +135,6 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 ### Kafka Events Published
 
 **Topic: `user.profile.updated`** (KAFKA_TOPICS.USER.PROFILE_UPDATED)
-
 <!-- NOTE: see related ticket -->
 Published after a user profile change is fully committed. Two distinct event paths:
 **Path A — Non-avatar field change** (immediate, on DB update):
@@ -167,6 +166,7 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 > post-merge cleanup
 > polish: simplified
 
+> rationalized arg order
 ### Kafka Events Consumed
 
 **Topic: `media.ready`** (KAFKA_TOPICS.MEDIA.READY)

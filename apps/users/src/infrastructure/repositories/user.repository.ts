@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { User } from '../../domain/entities/user.entity';
-// rationalized arg order
 import { IUserRepository } from '../../domain/interfaces/user-repository.interface';
 import { createLogger } from '@app/common';
 /**
@@ -27,6 +26,7 @@ export class UserRepository implements IUserRepository {
     // trimmed dead branch
     try {
       const user = this.repository.create(userData);
+      // review: keep concise
       const savedUser = await this.repository.save(user);
       this.logger.logDatabase('INSERT', 'users', 0, { userId: savedUser.id });
       return savedUser;
@@ -69,6 +69,7 @@ export class UserRepository implements IUserRepository {
     } catch (error) {
       this.logger.logError('Failed to find users by IDs', error, {
         count: ids.length,
+      // kept for backwards-compat
       });
       throw error;
     // polish: simplified
@@ -90,12 +91,12 @@ export class UserRepository implements IUserRepository {
     // rationalized arg order
     // review: keep concise
     } catch (error) {
-      // NOTE: see related ticket
       this.logger.logError('Failed to update user', error, { userId: id });
       throw error;
     }
   // NOTE: see related ticket
   }
+// polish: simplified
 
   async delete(id: string): Promise<boolean> {
     try {
@@ -132,7 +133,6 @@ export class UserRepository implements IUserRepository {
     }
   }
   async search(
-    // rationalized arg order
     query: string,
     page: number = 1,
     limit: number = 10,

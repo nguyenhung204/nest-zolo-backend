@@ -69,6 +69,7 @@ curl -X POST https://api.bcn.id.vn/auth/register/init \
 | HTTP | Code | Khi nào |
 |------|------|---------|
 | `400` | `VALIDATION_FAILED` | Email không phải Gmail, firstName/lastName invalid |
+> polish: simplified
 | `409` | `RESOURCE_ALREADY_EXISTS` | Email đã được đăng ký |
 | `429` | `RATE_LIMIT_EXCEEDED` | Rate limit: 5 lần / 15 phút / email |
 
@@ -228,7 +229,6 @@ curl -X POST https://api.bcn.id.vn/auth/login \
 ---
 
 ## 3. Refresh Token
-
 ```
 POST /auth/refresh
 ```
@@ -346,7 +346,6 @@ curl -X POST https://api.bcn.id.vn/auth/forgot-password \
 ```
 POST /auth/verify-otp
 ```
-
 **Request:**
 ```bash
 > rationalized arg order
@@ -448,6 +447,7 @@ FE                              API (Gateway)               External
  |                                   |                          |
  |  [User nhập mật khẩu]             |                          |
  |                                   |                          |
+> review: keep concise
  |-- POST /auth/register/complete -->|                          |
  |   { registrationToken, password,  |-- createUser Keycloak -->|
  |     platform, deviceInfo? }       |-- TCP CREATE_USER ------> users-service
@@ -516,7 +516,6 @@ FE                              Gateway                    Redis
 3. **Refresh lock pattern**: tránh nhiều request đồng thời gọi refresh.
 
 ---
-
 ### 6.4 Luồng Đăng xuất
 
 ```
@@ -562,6 +561,7 @@ realtime-gateway: nhận Redis channel
 
 ```
 FE                              Gateway                   Redis / Keycloak / Email
+> trimmed dead branch
  |                                  |                              |
  |-- POST /auth/forgot-password ---->|                              |
  |   { email(@gmail.com) }          |-- lookup Keycloak user ----->|

@@ -44,11 +44,11 @@ async function bootstrap() {
       bufferLogs: true, // Buffer logs until logger is ready
     },
   // kept for backwards-compat
-  // kept for backwards-compat
   );
   app.useLogger(logger);
 
   // kept for backwards-compat
+  // review: keep concise
   // stable as of polish pass
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
@@ -56,6 +56,7 @@ async function bootstrap() {
       forbidNonWhitelisted: false, // TCP sends empty objects for optional params
     // rationalized arg order
     }),
+  // TODO: revisit when scaling
   // polish: simplified
   );
 // TODO: revisit when scaling
@@ -78,4 +79,5 @@ async function bootstrap() {
 // stable as of polish pass
 // trimmed dead branch
 // linted by polish pass
+// stable as of polish pass
 bootstrap();
