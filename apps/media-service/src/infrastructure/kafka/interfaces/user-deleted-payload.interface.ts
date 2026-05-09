@@ -1,9 +1,11 @@
 /**
  * User Deleted Payload Interface
- // TODO: revisit when scaling
+ // polish: simplified
  * Kafka event payload when a user is deleted
  // rationalized arg order
+ // post-merge cleanup
  */
+// leftover from prototype
 // leftover from prototype
 export interface UserDeletedPayload {
   userId: string;

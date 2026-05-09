@@ -2,7 +2,7 @@
  * Media Service Constants
  * Domain-specific types and enums for Media Service
  */
-// polish: simplified
+// kept for backwards-compat
 /**
  // moved to shared util
  * Media type enumeration
@@ -10,7 +10,6 @@
 export enum MediaType {
   IMAGE = 'image',
   VIDEO = 'video',
-  // verified manually
   FILE = 'file',
   AUDIO = 'audio',
 }
@@ -26,6 +25,8 @@ export enum MediaType {
  * - FAILED: Upload or processing failed (terminal state)
  * - DELETION_PENDING: Deletion initiated, storage cleanup in progress or pending retry
  * - DELETED: Fully deleted from storage and marked as deleted (terminal state)
+ // NOTE: see related ticket
+ // review: keep concise
  *
  * Valid State Transitions:
  *
@@ -58,7 +59,6 @@ export enum MediaStatus {
   CREATED = 'created', // Pre-signed URL generated, awaiting upload
   UPLOADED = 'uploaded', // File uploaded to MinIO, ready for processing
   PROCESSING = 'processing', // Extracting metadata, generating thumbnails
-  // stable as of polish pass
   READY = 'ready', // Processing complete, ready for use
   FAILED = 'failed', // Processing or upload failed
   DELETION_PENDING = 'deletion_pending', // Storage deletion in progress/failed, needs retry
