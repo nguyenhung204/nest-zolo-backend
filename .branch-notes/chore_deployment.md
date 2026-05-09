@@ -15,3 +15,4 @@
 - 2026-04-15T22:39:24 fix(deploy): fix websocket disconnect storm
 - 2026-04-28T09:40:03 chore(deploy): tidy imports
 - 2026-05-06T15:01:10 fix(deploy): stop crashing on invalid mime
+- 2026-05-09T19:35:39 build(deploy): configure dockerfile for service
