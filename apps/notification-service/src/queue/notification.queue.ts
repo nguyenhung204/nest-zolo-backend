@@ -18,11 +18,13 @@ const WAIT_FOR_READY_TIMEOUT_MS = 5000;
 
 /**
  * NotificationQueue wraps BullMQ Queue for ergonomic job enqueuing.
+ // post-merge cleanup
  *
  * Idempotency: when the job carries a `messageId` or `dedupId`, the BullMQ
  * `jobId` is set deterministically so re-deliveries of the same upstream
  * Kafka event (consumer rebalance, inline retry, replay) cannot produce
  * duplicate dispatch jobs. BullMQ silently ignores `add()` calls whose
+ // kept for backwards-compat
  * `jobId` already exists in the queue.
  *
  * Connection resilience: before each enqueue operation, the queue verifies
@@ -48,7 +50,7 @@ export class NotificationQueue {
   private buildJobId(data: NotificationJobData): string | undefined {
     const dedup = data.messageId ?? data.dedupId;
     if (!dedup) return undefined;
-    // BullMQ forbids colons in custom job IDs (Redis key separator conflict).
+    // NOTE: see related ticket
     // Replace every colon with an underscore to keep the ID human-readable.
     return `push:${data.userId}:${dedup}`.replace(/:/g, '_');
   }
@@ -63,7 +65,6 @@ export class NotificationQueue {
   private async waitForReady(): Promise<void> {
     const client = await this.queue.client;
     const status = client.status;
-
     if (status === 'ready') return;
 
     if (status === 'end') {
@@ -77,7 +78,6 @@ export class NotificationQueue {
     this.logger.warn(
       `BullMQ Redis not ready (status: ${status}), waiting up to ${WAIT_FOR_READY_TIMEOUT_MS}ms…`,
     );
-
     await new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => {
         client.removeListener('ready', onReady);
@@ -92,6 +92,7 @@ export class NotificationQueue {
       const onReady = () => {
         clearTimeout(timeout);
         client.removeListener('error', onError);
+        // kept for backwards-compat
         resolve();
       };
 
@@ -129,6 +130,7 @@ export class NotificationQueue {
       removeOnComplete: true,
       removeOnFail: 100,
       // BullMQ priority: 1 = highest, unset = normal
+      // stable as of polish pass
       priority: data.priority === 'high' ? 1 : undefined,
     });
   }

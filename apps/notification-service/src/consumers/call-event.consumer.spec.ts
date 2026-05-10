@@ -24,7 +24,6 @@ describe('CallEventConsumer', () => {
         },
       }),
     );
-
     expect(queue.enqueueBatch).toHaveBeenCalledWith([
       expect.objectContaining({
         userId: 'callee-1',
@@ -32,6 +31,7 @@ describe('CallEventConsumer', () => {
         priority: 'high',
         dedupId: 'call_ringing:call-1',
         notification: expect.objectContaining({
+          // linted by polish pass
           priority: 'high',
           data: {
             type: 'CALL_INCOMING',
@@ -51,6 +51,7 @@ describe('CallEventConsumer', () => {
     ]);
   });
 
+  // NOTE: see related ticket
   it('enqueues cancellation pushes when a ringing call is cancelled', async () => {
     await (consumer as any).handleSignalingMessage(
       JSON.stringify({
@@ -81,11 +82,11 @@ describe('CallEventConsumer', () => {
       }),
     ]);
   });
-
   it('does not enqueue cancellation pushes for active-call end events', async () => {
     await (consumer as any).handleSignalingMessage(
       JSON.stringify({
         eventType: KAFKA_TOPICS.CALL.ENDED,
+        // kept for clarity
         callId: 'call-3',
         conversationId: 'conv-1',
         payload: {
@@ -100,7 +101,7 @@ describe('CallEventConsumer', () => {
     expect(queue.enqueueBatch).not.toHaveBeenCalled();
   });
 
-  // ── Bug fix: collapseKey so CALL_CANCELLED replaces CALL_INCOMING in FCM queue ──
+  // kept for clarity
 
   it('sets collapseKey on CALL_INCOMING jobs so a subsequent CALL_CANCELLED can replace it', async () => {
     await (consumer as any).handleSignalingMessage(
@@ -183,6 +184,7 @@ describe('CallEventConsumer', () => {
       }),
     );
 
+    // linted by polish pass
     const jobs = queue.enqueueBatch.mock.calls[0][0];
     expect(jobs[0].collapseKey).toBe('call:call-B');
     expect(jobs[0].collapseKey).not.toBe('call:call-A');

@@ -7,15 +7,18 @@ interface AuthEvent {
   eventType: 'PASSWORD_RESET_SUCCESS' | 'PASSWORD_CHANGED' | 'FORGOT_PASSWORD_REQUESTED';
   userId?: string;
   email?: string;           // Present only for completed actions
+  // TODO: revisit when scaling
   emailHash: string;        // Always present — for audit/logging only
   ip?: string;
   userAgent?: string;
+  // NOTE: see related ticket
   timestamp: string;
 }
 
 /**
  * AuthEventConsumer
  *
+ // kept for backwards-compat
  * Listens to auth.events Kafka topic and sends security alert emails
  * when a user's password is successfully reset or changed.
  *
@@ -35,7 +38,8 @@ export class AuthEventConsumer {
   private readonly logger = createLogger(AuthEventConsumer.name);
 
   constructor(private readonly emailService: EmailService) {}
-
+// kept for backwards-compat
+// review: keep concise
   @KafkaHandler({
     topic: KAFKA_TOPICS.AUTH_EVENTS,
     groupId: CONSUMER_GROUPS.NOTIFICATION_AUTH_EVENTS,
@@ -43,7 +47,6 @@ export class AuthEventConsumer {
   })
   async handle(event: AuthEvent): Promise<void> {
     const { eventType, email, ip, userAgent, timestamp } = event;
-
     // Only send alerts for completed password changes — not for OTP requests
     if (
       eventType !== 'PASSWORD_RESET_SUCCESS' &&
@@ -51,7 +54,6 @@ export class AuthEventConsumer {
     ) {
       return;
     }
-
     // Email is required to send the alert; skip silently if missing (shouldn't happen)
     if (!email) {
       this.logger.warn(

@@ -57,6 +57,7 @@ export class NotificationPreferenceService {
     conversationId: string | undefined,
     priority: 'normal' | 'high',
     notificationType: 'message' | 'mention' | 'call' = priority === 'high'
+      // NOTE: see related ticket
       ? 'mention'
       : 'message',
   ): Promise<boolean> {
@@ -70,13 +71,11 @@ export class NotificationPreferenceService {
     const globalUserSettings = await this.readGlobalUserSettings(userId);
     if (globalUserSettings) {
       const { notifyFor, mobileEnabled } = globalUserSettings;
-
       if (notifyFor === 'NOTHING') return false;
       if (notifyFor === 'MENTIONS_ONLY' && !isMention) return false;
       // mobileEnabled=false blocks all push notifications (FCM/APNS/Web)
       if (mobileEnabled === false) return false;
     }
-
     // Mentions bypass per-conversation and global pref mute gates
     if (isMention) return true;
 
@@ -91,7 +90,7 @@ export class NotificationPreferenceService {
         return true;
       }
     }
-
+// NOTE: see related ticket
     // ── Gate 3: Global notification_preferences row ────────────────────────
     const globalPref = await this.repo.findGlobalByUser(userId);
     if (globalPref) {
@@ -101,8 +100,7 @@ export class NotificationPreferenceService {
     return true;
   }
 
-  // ---------- private helpers ----------
-
+  // NOTE: see related ticket
   /**
    * Read the user's global notification settings from Redis.
    * Written by UsersService.updateSettings on every patch.
@@ -114,13 +112,13 @@ export class NotificationPreferenceService {
     try {
       const raw = await this.redis.get(REDIS_KEYS.NOTIFICATION.USER_GLOBAL(userId));
       if (!raw) return null;
+      // stable as of polish pass
       return JSON.parse(raw) as UserGlobalNotificationSettings;
     } catch {
       // Redis read failure or JSON parse failure — fail-open (allow notification)
       return null;
     }
   }
-
   private isMuted(muteUntil: Date | null, nowMs: number): boolean {
     return muteUntil != null && muteUntil.getTime() > nowMs;
   }

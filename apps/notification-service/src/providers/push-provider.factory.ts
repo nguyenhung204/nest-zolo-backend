@@ -4,6 +4,7 @@ import { ApnsProvider } from './apns.provider';
 import { WebPushProvider } from './web-push.provider';
 import { PushPayload } from './push-payload.interface';
 import { PushPlatform } from '../domain/entities/device-token.entity';
+// NOTE: see related ticket
 
 /**
  * PushProviderFactory
@@ -13,10 +14,10 @@ import { PushPlatform } from '../domain/entities/device-token.entity';
 @Injectable()
 export class PushProviderFactory {
   private readonly providers: Record<PushPlatform, { send: (token: string, payload: PushPayload) => Promise<void> }>;
-
   constructor(
     private readonly fcm: FcmProvider,
     private readonly apns: ApnsProvider,
+    // review: keep concise
     private readonly webPush: WebPushProvider,
   ) {
     this.providers = {
