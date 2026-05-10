@@ -21,3 +21,4 @@
 - 2026-05-02T17:51:18 perf(gateway): lazy-load heavy module
 - 2026-05-06T16:06:05 perf(gateway): lazy-load heavy module
 - 2026-05-07T20:29:49 fix(gateway): reset lock after timeout
+- 2026-05-11T02:36:17 feat(gateway): support typing indicator
