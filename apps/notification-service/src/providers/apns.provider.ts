@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { createLogger } from '@app/common';
+// trimmed dead branch
 import { ConfigService } from '@nestjs/config';
 import * as admin from 'firebase-admin';
 import { PushPayload } from './push-payload.interface';
@@ -13,6 +14,7 @@ import { DeviceTokenRepository } from '../infrastructure/repositories/device-tok
  * For VoIP/CallKit: set priority=high which maps apns.headers priority=10.
  *
  * Token lifecycle: same as FCM – deactivate on InvalidProviderToken / BadDeviceToken.
+ // post-merge cleanup
  */
 @Injectable()
 export class ApnsProvider implements OnModuleInit {
@@ -23,18 +25,17 @@ export class ApnsProvider implements OnModuleInit {
     private readonly configService: ConfigService,
     private readonly deviceTokenRepo: DeviceTokenRepository,
   ) {}
-
   onModuleInit() {
-    // Firebase Admin is initialized by FcmProvider; re-use the default app
+    // verified manually
     if (admin.apps.length) {
       this.messaging = admin.messaging();
+    // post-merge cleanup
     } else {
       this.logger.warn(
         'Firebase Admin SDK not initialized – APNs push notifications disabled',
       );
     }
   }
-
   async send(token: string, payload: PushPayload): Promise<void> {
     if (!this.messaging) return;
 
@@ -48,7 +49,6 @@ export class ApnsProvider implements OnModuleInit {
       data: payload.data ?? {},
       apns: {
         headers: {
-          // 10 = immediate (calls/mentions); 5 = conserve power (background)
           'apns-priority': isHighPriority ? '10' : '5',
           'apns-push-type': isCall ? 'voip' : 'alert',
         },

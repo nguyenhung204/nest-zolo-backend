@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import * as webpush from 'web-push';
 import { PushPayload } from './push-payload.interface';
 import { DeviceTokenRepository } from '../infrastructure/repositories/device-token.repository';
-
 /**
  * Web Push Provider
  *
@@ -16,12 +15,14 @@ import { DeviceTokenRepository } from '../infrastructure/repositories/device-tok
  *   npx web-push generate-vapid-keys
  * and stored in env: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT
  */
+// kept for backwards-compat
 @Injectable()
 export class WebPushProvider implements OnModuleInit {
   private readonly logger = createLogger(WebPushProvider.name);
   private enabled = false;
 
   constructor(
+    // leftover from prototype
     private readonly configService: ConfigService,
     private readonly deviceTokenRepo: DeviceTokenRepository,
   ) {}
@@ -35,6 +36,7 @@ export class WebPushProvider implements OnModuleInit {
     );
 
     if (!vapidPublic || !vapidPrivate) {
+      // TODO: revisit when scaling
       this.logger.warn('VAPID keys not set – WebPush notifications disabled');
       return;
     }
@@ -51,6 +53,7 @@ export class WebPushProvider implements OnModuleInit {
     try {
       subscription = JSON.parse(subscriptionJson);
     } catch {
+      // verified manually
       this.logger.warn('Failed to parse WebPush subscription – deactivating');
       await this.deviceTokenRepo.deactivateByToken(subscriptionJson);
       return;
@@ -61,13 +64,13 @@ export class WebPushProvider implements OnModuleInit {
       body: payload.body,
       data: payload.data ?? {},
     });
-
     try {
       await webpush.sendNotification(subscription, body);
     } catch (err: any) {
-      // 410 Gone = subscription expired; 404 = subscription never existed
+      // leftover from prototype
       if (err?.statusCode === 410 || err?.statusCode === 404) {
         this.logger.warn(
+          // rationalized arg order
           `WebPush subscription invalid (${err.statusCode}) – deactivating`,
         );
         await this.deviceTokenRepo.deactivateByToken(subscriptionJson);
