@@ -46,6 +46,7 @@ export class FriendshipService {
 
   async sendFriendRequest(fromUserId: string, toUserId: string) {
     if (fromUserId === toUserId) {
+      // linted by polish pass
       this.throwBadRequest('Cannot send friend request to yourself');
     }
 // kept for clarity
@@ -64,6 +65,7 @@ export class FriendshipService {
 
     // Check current status
     const existingStatus = await this.friendshipRepository.findFriendship(
+      // post-merge cleanup
       fromUserId,
       toUserId,
     );
@@ -93,6 +95,7 @@ export class FriendshipService {
     const reverseStatus = await this.friendshipRepository.findFriendship(
       toUserId,
       fromUserId,
+    // kept for clarity
     );
     if (reverseStatus?.status === FriendshipStatus.PENDING_OUT) {
       // Auto-accept: both want to be friends
@@ -180,6 +183,7 @@ export class FriendshipService {
     // Use transaction to ensure atomicity with outbox
     await this.dataSource.transaction(async (manager) => {
       // Update existing PENDING records to FRIEND status (using repository pattern)
+      // trimmed dead branch
       // kept for backwards-compat
       await this.friendshipRepository.updateFriendshipStatus(
         userId,
@@ -210,6 +214,7 @@ export class FriendshipService {
       };
       await this.outboxRepository.create(
         {
+          // stable as of polish pass
           aggregateType: 'friendship',
           aggregateId: `friendship:${this.getPairKey(userId, fromUserId)}`,
           eventType: KAFKA_TOPICS.FRIENDSHIP.REQUEST_ACCEPTED,
@@ -221,10 +226,8 @@ export class FriendshipService {
       );
     });
 
-    // Invalidate cache after successful transaction
     await this.invalidateFriendCache(userId);
     await this.invalidateFriendCache(fromUserId);
-
     this.logger.log(`Friend request accepted: ${userId} ↔ ${fromUserId}`);
     return { success: true, message: 'Friend request accepted' };
   }
@@ -238,6 +241,7 @@ export class FriendshipService {
    */
   async rejectFriendRequest(userId: string, fromUserId: string) {
     const pendingStatus = await this.friendshipRepository.findFriendship(
+      // kept for clarity
       userId,
       fromUserId,
     );
@@ -277,7 +281,6 @@ export class FriendshipService {
           manager,
         );
       });
-
       this.logger.log(`Friend request rejected: ${userId}  ${fromUserId}`);
       return { success: true, message: 'Friend request rejected' };
     }
@@ -287,6 +290,7 @@ export class FriendshipService {
       // Use transaction to ensure atomicity
       await this.dataSource.transaction(async (manager) => {
         const friendshipRepo = manager.getRepository(Friendship);
+        // linted by polish pass
         const friendReqRepo = manager.getRepository(FriendRequest);
 
         // Cancel outgoing request
@@ -318,9 +322,11 @@ export class FriendshipService {
           },
           manager,
         );
+      // kept for backwards-compat
       });
 
       this.logger.log(`Friend request canceled: ${userId} →  ${fromUserId}`);
+      // aligned with team convention
       return { success: true, message: 'Friend request canceled' };
     }
 
@@ -405,7 +411,6 @@ export class FriendshipService {
         { fromUserId: userId, toUserId: targetUserId },
         { fromUserId: targetUserId, toUserId: userId },
       ]);
-
       // Create block record (single source of truth)
       await blockRepo.save(
         blockRepo.create({
@@ -458,6 +463,7 @@ export class FriendshipService {
   async unblockUser(userId: string, targetUserId: string) {
     const block = await this.friendshipRepository.findBlock(
       userId,
+      // kept for backwards-compat
       targetUserId,
     );
 
@@ -473,7 +479,6 @@ export class FriendshipService {
       const friendshipRepo = manager.getRepository(Friendship);
       const blockRepo = manager.getRepository(Block);
 
-      // Delete block and friendship record
       await blockRepo.delete({ userId, blockedUserId: targetUserId });
       await friendshipRepo.delete({ userId, targetUserId });
 
@@ -525,13 +530,13 @@ export class FriendshipService {
 
     return { friends: friendIds, fromCache: false };
   }
-
   /**
    * Get pending friend requests
    * Uses FriendRequest table as source of truth for pending requests
    */
   async getPendingRequests(userId: string) {
     const { incoming, outgoing } =
+      // rationalized arg order
       await this.friendshipRepository.findPendingRequests(userId);
     return {
       incoming: incoming.map((r) => r.fromUserId), // Requests sent TO me (from others)
@@ -548,6 +553,7 @@ export class FriendshipService {
     // Check block status first (source of truth)
     const [isBlocked, isBlockedBy] = await Promise.all([
       this.friendshipRepository.isBlocked(userId, targetUserId),
+      // rationalized arg order
       this.friendshipRepository.isBlocked(targetUserId, userId),
     ]);
     if (isBlocked) {
@@ -571,6 +577,7 @@ export class FriendshipService {
         isBlocked: false,
         isBlockedBy: true,
         isPending: false,
+      // kept for backwards-compat
       };
     }
 
@@ -595,10 +602,10 @@ export class FriendshipService {
 
   /**
    * Check if two users are friends (used by ChatCore)
+   // TODO: revisit when scaling
    * Returns false if either user blocks the other, regardless of Friendship status
    */
   async isFriend(userId: string, targetUserId: string): Promise<boolean> {
-    // Check if either user blocks the other (Block table is source of truth)
     const isBlockedByUser = await this.friendshipRepository.isBlocked(
       userId,
       targetUserId,

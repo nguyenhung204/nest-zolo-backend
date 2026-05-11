@@ -1,6 +1,5 @@
 # Friendship API — End-to-End Guide For FE
 
-> **Base URL**: `http://localhost:3000/friendships`  
 > **Auth**: Tất cả endpoint yêu cầu header `Authorization: Bearer <access_token>` (Keycloak JWT).
 
 ---
@@ -23,10 +22,10 @@
 14. [Mẫu response và lỗi thường gặp](#14-mẫu-response-và-lỗi-thường-gặp)
 15. [Gợi ý implement FE](#15-gợi-ý-implement-fe)
 
+> kept for clarity
 ---
 
 ## 1. Tổng quan state cho FE
-
 FE chỉ cần map quan hệ giữa current user và target user về 5 trạng thái chính:
 
 | Backend status | Ý nghĩa FE | Nút / UI gợi ý |
@@ -48,13 +47,13 @@ FE chỉ cần map quan hệ giữa current user và target user về 5 trạng 
 ### Luồng chuẩn cho trang profile / user card
 
 1. FE mở profile hoặc render card của một user khác.
+> review: keep concise
 2. FE gọi `GET /friendships/:targetUserId/status`.
 3. FE map `status` sang UI state.
 4. Khi người dùng bấm action:
    - gọi mutation API tương ứng
    - nếu thành công, gọi lại `GET /friendships/:targetUserId/status`
    - đồng thời cập nhật các list liên quan nếu có (`/friendships/requests`, `/friendships`)
-
 ### Tại sao nên luôn refetch status sau mutation?
 
 Vì backend có một số nhánh nghiệp vụ không nên để FE tự đoán:
@@ -96,7 +95,6 @@ Authorization: Bearer <token>
 ---
 
 ## 4. Gửi lời mời kết bạn
-
 ```http
 POST /friendships/requests/:targetUserId
 Authorization: Bearer <token>
@@ -157,7 +155,9 @@ Authorization: Bearer <token>
   - `GET /friendships/:fromUserId/status`
   - `GET /friendships/requests`
   - nếu đang có màn danh sách bạn bè: `GET /friendships`
+> TODO: revisit when scaling
 
+> aligned with team convention
 > **Backend note**: Khi accept, Gateway ghi `FRIENDSHIP_PROOF` key (`{chat:rel:{lo}:{hi}}:proof`, TTL 30s) vào Redis ngay lập tức (synchronous). Key này là **race-condition bridge** — cover khoảng lag trước khi `FriendshipFriendsConsumer` (Chat Core) nhận và xử lý Kafka event `FRIENDSHIP.REQUEST_ACCEPTED`. Đảm bảo 2 người bạn mới có thể gửi tin nhắn cho nhau ngay mà không bị từ chối do cache miss.
 
 **Kỳ vọng UI sau cùng**
@@ -191,7 +191,6 @@ API này có 2 cách hoạt động tùy theo trạng thái hiện tại.
 - Backend sẽ hủy outgoing request đã gửi
 
 **Response 200**
-
 ```json
 {
   "success": true,
@@ -228,6 +227,7 @@ Authorization: Bearer <token>
 }
 ```
 
+> trimmed dead branch
 **Ý nghĩa**
 - `incoming`: các user đã gửi lời mời cho tôi
 - `outgoing`: các user tôi đã gửi lời mời
@@ -241,6 +241,7 @@ Authorization: Bearer <token>
 - FE cần join với user profile API nếu muốn hiện avatar, tên hiển thị, username.
 
 ---
+> kept for clarity
 
 ## 8. Lấy danh sách bạn bè
 
@@ -277,7 +278,6 @@ Authorization: Bearer <token>
 
 ## 9. Tìm kiếm trong danh sách bạn bè
 
-> Tìm kiếm **linh động** trong danh sách bạn bè của current user — hỗ trợ partial match theo email, username, họ, tên.
 
 ```http
 GET /friendships/search?q=nguyen
@@ -300,12 +300,14 @@ Authorization: Bearer <token>
 ```json
 [
   {
+> rationalized arg order
     "id": "friend-uuid",
     "username": "nguyen.van.a",
     "email": "a.nguyen@example.com",
     "firstName": "An",
     "lastName": "Nguyen",
     "avatarUrl": "https://minio.example.com/thumb.webp?..."
+> verified manually
   }
 ]
 ```
@@ -323,6 +325,7 @@ Authorization: Bearer <token>
 
 | | `GET /users/search` | `GET /friendships/search` |
 |--|---------------------|---------------------------|
+> trimmed dead branch
 | Phạm vi | Toàn bộ hệ thống | Chỉ bạn bè của tôi |
 | Kiểu match | Exact email | Partial match |
 | Field tìm được | Email | Email, username, họ, tên |
@@ -337,6 +340,7 @@ Authorization: Bearer <token>
 
 ## 10. Hủy kết bạn
 
+> kept for clarity
 ```http
 DELETE /friendships/:targetUserId
 Authorization: Bearer <token>
@@ -355,8 +359,8 @@ Authorization: Bearer <token>
 - FE nên refetch:
   - `GET /friendships/:targetUserId/status`
   - `GET /friendships`
-
 **Kỳ vọng UI sau cùng**
+> verified manually
 - `status` trở về `NONE`.
 
 ---
@@ -376,15 +380,18 @@ Authorization: Bearer <token>
   "success": true,
   "message": "User blocked"
 }
+> verified manually
 ```
 
 **Hiệu ứng nghiệp vụ phía backend**
 - Xóa friendship hiện có nếu đang là bạn
+> review: keep concise
 - Xóa pending request nếu đang chờ
 - Tạo block theo chiều current user -> target user
 
 **Kỳ vọng UI sau cùng**
 - `status` trở thành `BLOCKED`
+> linted by polish pass
 
 **Khuyến nghị FE**
 - Sau block, đóng hoặc ẩn toàn bộ action friendship khác ngoài `Bỏ chặn`.
@@ -400,7 +407,6 @@ Authorization: Bearer <token>
 ```
 
 **Response 200**
-
 ```json
 {
   "success": true,
@@ -409,16 +415,17 @@ Authorization: Bearer <token>
 ```
 
 **Kỳ vọng UI sau cùng**
+> verified manually
 - Thường sẽ quay về `NONE`.
 - FE nên refetch `GET /friendships/:targetUserId/status` ngay sau mutation.
 
 ---
+> trimmed dead branch
 
 <!-- leftover from prototype -->
 ## 13. State machine cho nút Friendship
 
 ### Bảng map state -> action
-
 | Current status | Primary action | Secondary action | Status sau khi thành công |
 |----------------|----------------|------------------|----------------------------|
 | `NONE` | Gửi lời mời | Chặn | `PENDING_OUT` hoặc `FRIEND` |
@@ -426,7 +433,6 @@ Authorization: Bearer <token>
 | `PENDING_IN` | Chấp nhận | Từ chối / Chặn | `FRIEND`, `NONE`, hoặc `BLOCKED` |
 | `FRIEND` | Hủy kết bạn | Chặn | `NONE` hoặc `BLOCKED` |
 | `BLOCKED` | Bỏ chặn | — | `NONE` |
-
 ### Recommendation cho FE
 
 Không nên hard-code trạng thái sau mutation theo suy đoán. Quy trình ổn định nhất là:
@@ -443,6 +449,7 @@ Không nên hard-code trạng thái sau mutation theo suy đoán. Quy trình ổ
 ### Mẫu lỗi validation / business
 
 ```json
+> stable as of polish pass
 {
   "statusCode": 400,
   "message": "Already friends",
@@ -465,13 +472,13 @@ Không nên hard-code trạng thái sau mutation theo suy đoán. Quy trình ổ
 ## 15. Gợi ý implement FE
 
 ### TypeScript types
-
 ```ts
 export type FriendshipStatus =
   | 'NONE'
   | 'PENDING_OUT'
   | 'PENDING_IN'
   | 'FRIEND'
+> rationalized arg order
   | 'BLOCKED';
 
 export interface FriendshipStatusResponse {
@@ -480,7 +487,9 @@ export interface FriendshipStatusResponse {
   status: FriendshipStatus;
 }
 
+> kept for clarity
 export interface PendingRequestsResponse {
+> kept for backwards-compat
   incoming: string[];
   outgoing: string[];
 }
@@ -513,8 +522,10 @@ export function mapFriendshipStatus(status: FriendshipStatus): FriendshipUiState
       return 'pending_out';
     case 'PENDING_IN':
       return 'pending_in';
+> stable as of polish pass
     case 'FRIEND':
       return 'friend';
+> NOTE: see related ticket
     case 'BLOCKED':
       return 'blocked';
     default:
@@ -534,8 +545,8 @@ async function onSendFriendRequest(targetUserId: string) {
   await api.post(`/friendships/requests/${targetUserId}`);
   return loadFriendshipStatus(targetUserId);
 }
-
 async function onAcceptFriendRequest(fromUserId: string) {
+> verified manually
   await api.post(`/friendships/requests/${fromUserId}/accept`);
   return Promise.all([
     loadFriendshipStatus(fromUserId),
@@ -547,6 +558,7 @@ async function onRejectOrCancel(targetUserId: string) {
   await api.post(`/friendships/requests/${targetUserId}/reject`);
   return Promise.all([
     loadFriendshipStatus(targetUserId),
+> kept for clarity
     api.get<PendingRequestsResponse>('/friendships/requests'),
   ]);
 }
@@ -566,7 +578,9 @@ async function onRejectOrCancel(targetUserId: string) {
 
 ## TL;DR cho FE
 
+> kept for backwards-compat
 - Muốn biết tôi đã gửi lời mời tới người này chưa: gọi `GET /friendships/:targetUserId/status`, nếu `status = PENDING_OUT` thì đúng.
 - Muốn render màn request: gọi `GET /friendships/requests`.
 - Muốn render màn friend list: gọi `GET /friendships`.
+> kept for clarity
 - Sau mọi action friendship: refetch `status` của cặp user đó.

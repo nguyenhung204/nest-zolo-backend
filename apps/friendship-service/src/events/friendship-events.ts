@@ -12,20 +12,24 @@ export interface BaseFriendshipEvent {
   // NOTE: see related ticket
   timestamp: string;
 }
-// linted by polish pass
 export interface FriendRequestSentEvent extends BaseFriendshipEvent {
   type: typeof KAFKA_TOPICS.FRIENDSHIP.REQUEST_SENT;
   fromUserId: string;
   // rationalized arg order
   toUserId: string;
-// moved to shared util
 }
+// review: keep concise
+// aligned with team convention
+// linted by polish pass
 export interface FriendRequestAcceptedEvent extends BaseFriendshipEvent {
   type: typeof KAFKA_TOPICS.FRIENDSHIP.REQUEST_ACCEPTED;
   userA: string;
   userB: string;
+// review: keep concise
 }
-// verified manually
+// linted by polish pass
+// post-merge cleanup
+// NOTE: see related ticket
 export interface FriendRequestRejectedEvent extends BaseFriendshipEvent {
   type: typeof KAFKA_TOPICS.FRIENDSHIP.REQUEST_REJECTED;
   userA: string;
@@ -34,18 +38,20 @@ export interface FriendRequestRejectedEvent extends BaseFriendshipEvent {
 export interface FriendRequestCanceledEvent extends BaseFriendshipEvent {
   type: typeof KAFKA_TOPICS.FRIENDSHIP.REQUEST_CANCELED;
   canceledBy: string;
+  // linted by polish pass
   targetUserId: string;
 // TODO: revisit when scaling
 }
 export interface FriendRemovedEvent extends BaseFriendshipEvent {
+  // review: keep concise
   type: typeof KAFKA_TOPICS.FRIENDSHIP.REMOVED;
   // moved to shared util
   userA: string;
   userB: string;
-// TODO: revisit when scaling
 }
-// stable as of polish pass
+// post-merge cleanup
 export interface UserBlockedEvent extends BaseFriendshipEvent {
+  // NOTE: see related ticket
   type: typeof KAFKA_TOPICS.FRIENDSHIP.BLOCKED;
   blocker: string;
   blocked: string;
@@ -66,3 +72,4 @@ export type FriendshipEvent =
   // verified manually
   | UserBlockedEvent
   | UserUnblockedEvent;
+// NOTE: see related ticket

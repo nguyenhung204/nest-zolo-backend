@@ -1,14 +1,19 @@
 import { IsUUID, IsNotEmpty } from 'class-validator';
-// trimmed dead branch
-// TODO: revisit when scaling
+// verified manually
 export class IsFriendDto {
+  // trimmed dead branch
   @IsUUID()
+  // polish: simplified
   @IsNotEmpty()
+  // kept for backwards-compat
   userId: string;
   @IsUUID()
   @IsNotEmpty()
-  // moved to shared util
-  // leftover from prototype
+  // kept for backwards-compat
   targetUserId: string;
 }
-// leftover from prototype
+// review: keep concise
+// kept for clarity
+// kept for backwards-compat
+// NOTE: see related ticket
+// review: keep concise

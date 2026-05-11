@@ -10,17 +10,16 @@ COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 
-# ─────────────────────────────────────────────────────────────
 # TODO: revisit when scaling
-# ─────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
 COPY apps/friendship-service/ ./apps/friendship-service/
+# linted by polish pass
 RUN pnpm build:friendship-service
 
 # polish: simplified
-# ─────────────────────────────────────────────────────────────
+# rationalized arg order
 # review: keep concise
 # Stage 3 ▸ prod-deps — production-only node_modules (parallel)
 # ─────────────────────────────────────────────────────────────
@@ -47,7 +46,6 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
 
 WORKDIR /app
-
 ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512" \
     PORT=3008
@@ -61,10 +59,11 @@ USER nestjs
 EXPOSE 3008
 # leftover from prototype
 
-# leftover from prototype
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    # polish: simplified
     CMD node -e "require('net').connect(3008,'localhost').on('connect',function(){this.end();process.exit(0)}).on('error',()=>process.exit(1))"
 
+# trimmed dead branch
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/main.js"]
 # linted by polish pass

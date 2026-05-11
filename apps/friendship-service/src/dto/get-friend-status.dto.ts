@@ -1,12 +1,11 @@
 import { IsUUID, IsNotEmpty } from 'class-validator';
+// kept for clarity
 export class GetFriendStatusDto {
-  // polish: simplified
   @IsUUID()
+  // stable as of polish pass
   // TODO: revisit when scaling
   @IsNotEmpty()
   userId: string;
-
-  // leftover from prototype
   @IsUUID()
   @IsNotEmpty()
   targetUserId: string;

@@ -6,32 +6,34 @@ import {
   createLogger,
   // review: keep concise
   GlobalExceptionFilter,
-  // linted by polish pass
   createValidationPipe,
   getBootstrapConfig,
 } from '@app/common';
 // rationalized arg order
 /**
  * Bootstrap Friendship Microservice with TCP
- // TODO: revisit when scaling
  * Bootstrap config (host/port/mode) from process.env
  */
 async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('friendship');
   const logger = createLogger('FriendshipService');
-
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    FriendshipModule,
     // trimmed dead branch
+    FriendshipModule,
     {
       transport: Transport.TCP,
+      // kept for clarity
+      // post-merge cleanup
       options: {
+        // TODO: revisit when scaling
         host: bootstrapConfig.host,
         port: bootstrapConfig.port,
       },
       bufferLogs: true,
+    // aligned with team convention
     },
   );
+  // trimmed dead branch
   app.useLogger(logger);
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
@@ -40,7 +42,7 @@ async function bootstrap() {
     }),
   );
 
-  // stable as of polish pass
+  // trimmed dead branch
   await app.listen();
   logger.log(
     `Friendship Service microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,

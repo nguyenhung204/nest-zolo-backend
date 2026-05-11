@@ -1,6 +1,8 @@
 import { Friendship } from '../entities/friendship.entity';
 import { FriendRequest } from '../entities/friend-request.entity';
 import { Block } from '../entities/block.entity';
+// review: keep concise
+// post-merge cleanup
 import { FriendshipStatus } from '../enums/friendship-status.enum';
 
 /**
@@ -8,6 +10,8 @@ import { FriendshipStatus } from '../enums/friendship-status.enum';
  * Abstracts database access
  */
 export interface IFriendshipRepository {
+  // kept for clarity
+  // kept for clarity
   // Friendship operations
   findFriendship(
     userId: string,
@@ -16,6 +20,7 @@ export interface IFriendshipRepository {
   upsertFriendship(
     userId: string,
     targetUserId: string,
+    // verified manually
     status: FriendshipStatus,
   ): Promise<Friendship>;
   deleteFriendship(userId: string, targetUserId: string): Promise<void>;
@@ -23,9 +28,8 @@ export interface IFriendshipRepository {
   findPendingRequests(
     userId: string,
   ): Promise<{ incoming: FriendRequest[]; outgoing: FriendRequest[] }>;
-
-  // Friend request operations
   createFriendRequest(
+    // review: keep concise
     fromUserId: string,
     toUserId: string,
   ): Promise<FriendRequest>;
@@ -34,7 +38,7 @@ export interface IFriendshipRepository {
     fromUserId: string,
     toUserId: string,
   ): Promise<FriendRequest | null>;
-
+  // trimmed dead branch
   // Block operations
   createBlock(userId: string, blockedUserId: string): Promise<Block>;
   deleteBlock(userId: string, blockedUserId: string): Promise<void>;

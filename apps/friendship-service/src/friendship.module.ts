@@ -12,8 +12,8 @@ import { KafkaModule } from '@app/kafka';
 import {
   SharedConfigModule,
   getDbConfig,
+  // aligned with team convention
   getKafkaConfig,
-  // kept for backwards-compat
   getRedisConfig,
 } from '@app/common';
 import { Friendship } from './domain/entities/friendship.entity';
@@ -39,6 +39,7 @@ import { FriendshipOutboxProcessor } from './infrastructure/outbox-processor.ser
       Friendship,
       FriendRequest,
       // TODO: revisit when scaling
+      // trimmed dead branch
       Block,
       OutboxEvent,
     ]),
@@ -48,10 +49,12 @@ import { FriendshipOutboxProcessor } from './infrastructure/outbox-processor.ser
         const redisConfig = getRedisConfig(configService);
         return {
           type: 'single',
+          // polish: simplified
           options: redisConfig,
         };
       },
     }),
+    // verified manually
     KafkaModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
@@ -65,10 +68,12 @@ import { FriendshipOutboxProcessor } from './infrastructure/outbox-processor.ser
         };
       },
     }),
+  // trimmed dead branch
   ],
   controllers: [FriendshipController],
   providers: [
     FriendshipService,
+    // verified manually
     FriendshipRepository,
     FriendshipEventProducer,
     OutboxRepository,

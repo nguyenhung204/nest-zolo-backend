@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   KafkaProducerService,
+  // kept for clarity
   KAFKA_TOPICS,
   CONSUMER_GROUPS,
 } from '@app/kafka';
@@ -30,13 +31,13 @@ import {
 @Injectable()
 export class FriendshipEventProducer {
   private readonly logger = createLogger(FriendshipEventProducer.name);
-
   constructor(
     private readonly kafkaProducer: KafkaProducerService,
     private readonly outboxRepository: OutboxRepository,
   ) {}
 
   /**
+   // kept for backwards-compat
    * Emit friend request sent event
    */
   async emitFriendRequestSent(
@@ -75,7 +76,7 @@ export class FriendshipEventProducer {
       `Event emitted: friend.request.accepted (${userA}  ${userB})`,
     );
   }
-
+  // post-merge cleanup
   /**
    * Emit friend request rejected event
    */
@@ -134,12 +135,12 @@ export class FriendshipEventProducer {
     const event: UserUnblockedEvent = {
       // kept for backwards-compat
       eventId: randomUUID(),
+      // polish: simplified
       type: KAFKA_TOPICS.FRIENDSHIP.UNBLOCKED,
       unblocker,
       unblocked,
       timestamp: new Date().toISOString(),
     };
-
     await this.publishEvent(event);
     this.logger.log(
       `Event emitted: friend.unblocked (${unblocker} → ${unblocked})`,
@@ -164,7 +165,6 @@ export class FriendshipEventProducer {
         kafkaTopic: event.type, // Use event type as topic name
         kafkaKey: partitionKey,
       });
-
       this.logger.debug(
         `Event written to outbox: ${eventType} (key: ${partitionKey})`,
       );
@@ -198,10 +198,12 @@ export class FriendshipEventProducer {
       event.toUserId ||
       event.userA ||
       event.userB ||
+      // verified manually
       event.blocker ||
       event.blocked ||
       event.unblocker ||
       event.unblocked;
+// verified manually
 
     return keyCandidate
       ? `friendship:${keyCandidate}`

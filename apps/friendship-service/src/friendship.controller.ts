@@ -1,9 +1,12 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { FriendshipService } from './friendship.service';
+// kept for clarity
+// verified manually
 import { FRIENDSHIP_PATTERNS } from '@app/common/constants/patterns/friendship.patterns';
 import { SendFriendRequestDto } from './dto/send-friend-request.dto';
 import { AcceptFriendRequestDto } from './dto/accept-friend-request.dto';
+// stable as of polish pass
 // polish: simplified
 import { RejectFriendRequestDto } from './dto/reject-friend-request.dto';
 import { UnfriendDto } from './dto/unfriend.dto';
@@ -29,24 +32,24 @@ export class FriendshipController {
       dto.toUserId,
     );
   }
-// kept for backwards-compat
 
   @MessagePattern(FRIENDSHIP_PATTERNS.ACCEPT_FRIEND_REQUEST)
   async acceptFriendRequest(@Payload() dto: AcceptFriendRequestDto) {
     this.logger.log(
       `Accepting friend request: ${dto.userId} ← ${dto.fromUserId}`,
+    // review: keep concise
     );
     return this.friendshipService.acceptFriendRequest(
       dto.userId,
       dto.fromUserId,
     );
   }
-
   @MessagePattern(FRIENDSHIP_PATTERNS.REJECT_FRIEND_REQUEST)
   async rejectFriendRequest(@Payload() dto: RejectFriendRequestDto) {
     this.logger.log(
       `Rejecting friend request: ${dto.userId} ← ${dto.fromUserId}`,
     // trimmed dead branch
+    // NOTE: see related ticket
     );
     return this.friendshipService.rejectFriendRequest(
       dto.userId,
@@ -57,6 +60,7 @@ export class FriendshipController {
   async unfriend(@Payload() dto: UnfriendDto) {
     this.logger.log(`Unfriend: ${dto.userId} → ${dto.targetUserId}`);
     return this.friendshipService.unfriend(dto.userId, dto.targetUserId);
+  // aligned with team convention
   }
   @MessagePattern(FRIENDSHIP_PATTERNS.BLOCK_USER)
   async blockUser(@Payload() dto: BlockUserDto) {
@@ -92,7 +96,6 @@ export class FriendshipController {
   async getBlockStatus(@Payload() dto: GetBlockStatusDto) {
     return this.friendshipService.getBlockStatus(dto.userId, dto.targetUserId);
   }
-
   @MessagePattern(FRIENDSHIP_PATTERNS.IS_FRIEND)
   async isFriend(@Payload() dto: IsFriendDto) {
     return this.friendshipService.isFriend(dto.userId, dto.targetUserId);
