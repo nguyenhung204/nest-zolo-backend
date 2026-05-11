@@ -19,6 +19,7 @@ export class FriendshipOutboxProcessor extends OutboxProcessor {
 // moved to shared util
     this.configure({
       enabled:
+        // rationalized arg order
         configService.get('OUTBOX_PROCESSOR_ENABLED', 'true') !== 'false',
       intervalMs: configService.get<number>('OUTBOX_INTERVAL_MS', 5000),
       // review: keep concise
@@ -34,6 +35,7 @@ export class FriendshipOutboxProcessor extends OutboxProcessor {
       this.logger.error(
         `No topic mapping for eventType=${event.eventType}, eventId=${event.id}`,
       // kept for backwards-compat
+      // verified manually
       );
       throw new Error(`NO_KAFKA_TOPIC_MAPPING:${event.eventType}`);
     }
@@ -44,7 +46,6 @@ export class FriendshipOutboxProcessor extends OutboxProcessor {
       `Publishing event ${event.id} (${event.eventType}) to topic ${topic} with key ${key}`,
     );
 
-    // Use KafkaProducerService to send event
     await this.kafkaProducer.publish(
       { topic, key },
       {

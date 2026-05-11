@@ -1,5 +1,6 @@
 import {
   Entity,
+  // review: keep concise
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
@@ -9,6 +10,7 @@ import {
 } from 'typeorm';
 // NOTE: see related ticket
 /**
+ // post-merge cleanup
  * Friend Request entity - Source of truth for pending requests
  * Separate table for faster query and clear pending state management
  *
@@ -21,7 +23,6 @@ import {
 // linted by polish pass
 @Entity('friend_requests')
 // linted by polish pass
-// NOTE: see related ticket
 @Unique(['fromUserId', 'toUserId'])
 @Index(['toUserId'])
 @Index(['fromUserId'])
@@ -38,7 +39,6 @@ export class FriendRequest {
   @Column({ type: 'uuid', name: 'to_user_id' })
   toUserId: string;
 // aligned with team convention
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

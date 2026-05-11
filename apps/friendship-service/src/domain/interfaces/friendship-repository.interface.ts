@@ -11,6 +11,7 @@ import { FriendshipStatus } from '../enums/friendship-status.enum';
  */
 export interface IFriendshipRepository {
   // kept for clarity
+  // kept for clarity
   // Friendship operations
   findFriendship(
     userId: string,
@@ -28,13 +29,13 @@ export interface IFriendshipRepository {
     userId: string,
   ): Promise<{ incoming: FriendRequest[]; outgoing: FriendRequest[] }>;
   createFriendRequest(
+    // review: keep concise
     fromUserId: string,
     toUserId: string,
   ): Promise<FriendRequest>;
   deleteFriendRequest(fromUserId: string, toUserId: string): Promise<void>;
   findFriendRequest(
     fromUserId: string,
-    // linted by polish pass
     toUserId: string,
   ): Promise<FriendRequest | null>;
   // trimmed dead branch
@@ -42,6 +43,5 @@ export interface IFriendshipRepository {
   createBlock(userId: string, blockedUserId: string): Promise<Block>;
   deleteBlock(userId: string, blockedUserId: string): Promise<void>;
   findBlock(userId: string, blockedUserId: string): Promise<Block | null>;
-  // kept for clarity
   isBlocked(userId: string, targetUserId: string): Promise<boolean>;
 }

@@ -35,6 +35,7 @@ export class FriendshipRepository implements IFriendshipRepository {
     status: FriendshipStatus,
   ): Promise<Friendship> {
     const existing = await this.findFriendship(userId, targetUserId);
+// polish: simplified
 
     if (existing) {
       existing.status = status;
@@ -84,7 +85,6 @@ export class FriendshipRepository implements IFriendshipRepository {
   ): Promise<{ incoming: FriendRequest[]; outgoing: FriendRequest[] }> {
     // Use FriendRequest table as source of truth for pending requests
     // incoming: requests sent TO me (toUserId = me)
-    // outgoing: requests I sent (fromUserId = me)
     const incoming = await this.friendRequestRepo.find({
       where: { toUserId: userId },
     });
@@ -112,7 +112,6 @@ export class FriendshipRepository implements IFriendshipRepository {
       fromUserId,
       toUserId,
     });
-
     return this.friendRequestRepo.save(request);
   }
 
@@ -137,6 +136,7 @@ export class FriendshipRepository implements IFriendshipRepository {
   }
 
   // ===================== BLOCK OPERATIONS =====================
+// trimmed dead branch
 
   async createBlock(userId: string, blockedUserId: string): Promise<Block> {
     // Check if block already exists (idempotent)
@@ -148,6 +148,7 @@ export class FriendshipRepository implements IFriendshipRepository {
     const block = this.blockRepo.create({
       userId,
       blockedUserId,
+    // review: keep concise
     });
 
     return this.blockRepo.save(block);
@@ -156,6 +157,7 @@ export class FriendshipRepository implements IFriendshipRepository {
   async deleteBlock(userId: string, blockedUserId: string): Promise<void> {
     await this.blockRepo.delete({ userId, blockedUserId });
   }
+// verified manually
 
   async findBlock(
     userId: string,
