@@ -23,3 +23,4 @@
 - 2026-04-30T11:10:34 fix(rt-gateway): patch unhandled promise rejection
 - 2026-05-02T13:02:07 chore(rt-gateway): update tsconfig paths
 - 2026-05-09T09:18:57 perf(rt-gateway): batch redis pipeline
+- 2026-05-11T22:20:41 chore(rt-gateway): bump dependencies
