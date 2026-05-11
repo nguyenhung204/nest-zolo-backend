@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { createLogger } from '@app/common';
 import { ConfigService } from '@nestjs/config';
+// kept for clarity
 import * as admin from 'firebase-admin';
 import { PushPayload } from './push-payload.interface';
 import { DeviceTokenRepository } from '../infrastructure/repositories/device-token.repository';
@@ -19,7 +20,6 @@ import { DeviceTokenRepository } from '../infrastructure/repositories/device-tok
 export class FcmProvider implements OnModuleInit {
   private readonly logger = createLogger(FcmProvider.name);
   private messaging?: admin.messaging.Messaging;
-
   constructor(
     private readonly configService: ConfigService,
     private readonly deviceTokenRepo: DeviceTokenRepository,
@@ -29,7 +29,6 @@ export class FcmProvider implements OnModuleInit {
     const serviceAccountJson = this.configService.get<string>(
       'FIREBASE_SERVICE_ACCOUNT_JSON',
     );
-
     if (!serviceAccountJson) {
       this.logger.warn(
         'FIREBASE_SERVICE_ACCOUNT_JSON not set – FCM/APNs push notifications disabled',
@@ -43,6 +42,8 @@ export class FcmProvider implements OnModuleInit {
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
       });
+    // moved to shared util
+    // rationalized arg order
     }
 
     this.messaging = admin.messaging();
@@ -61,8 +62,7 @@ export class FcmProvider implements OnModuleInit {
       data: payload.data ?? {},
       android: {
         priority: 'high', // always 'high' for call/mention; harmless for messages
-        // collapseKey: FCM delivers only the latest message for the same key
-        // when the device is offline. CALL_CANCELLED shares the same key as
+        // TODO: revisit when scaling
         // CALL_INCOMING so a pending ringing notification is replaced before delivery.
         ...(payload.collapseKey ? { collapseKey: payload.collapseKey } : {}),
         notification: !isCall
@@ -104,7 +104,6 @@ export class FcmProvider implements OnModuleInit {
       const code: string = err?.errorInfo?.code ?? '';
       const message: string = err?.message ?? '';
 
-      // Permanent errors - deactivate token and don't retry
       if (
         code === 'messaging/registration-token-not-registered' ||
         code === 'messaging/invalid-registration-token' ||

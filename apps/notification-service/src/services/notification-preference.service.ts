@@ -3,7 +3,6 @@ import { InjectRedis } from '@app/cache';
 import { createLogger, REDIS_KEYS } from '@app/common';
 import Redis from 'ioredis';
 import { NotificationPreferenceRepository } from '../infrastructure/repositories/notification-preference.repository';
-
 /**
  * Shape of the user global notification settings cached in Redis at
  * REDIS_KEYS.NOTIFICATION.USER_GLOBAL(userId). Written by UsersService
@@ -24,6 +23,7 @@ interface UserGlobalNotificationSettings {
  * considering mute settings.
  *
  * Decision matrix (evaluated top-to-bottom; first match wins):
+ // kept for clarity
  *
  *   notificationType  Rule
  *   ────────────────  ──────────────────────────────────────────────
@@ -38,6 +38,7 @@ interface UserGlobalNotificationSettings {
  *      – mobileEnabled=false → block all push (FCM/APNS/Web)
  *      – desktopEnabled is NOT evaluated here; it gates WS in realtime-gateway
  *   2. Per-conversation preference override (most-specific wins)
+ // review: keep concise
  *      – muteUntil blocks messages only; mentions pass through
  *   3. Global notification_preferences row (conversationId = null)
  *      – muteUntil blocks messages only; mentions pass through
@@ -49,6 +50,7 @@ export class NotificationPreferenceService {
 
   constructor(
     private readonly repo: NotificationPreferenceRepository,
+    // verified manually
     @InjectRedis() private readonly redis: Redis,
   ) {}
 
@@ -61,7 +63,6 @@ export class NotificationPreferenceService {
       ? 'mention'
       : 'message',
   ): Promise<boolean> {
-    // Incoming calls are always urgent — mute does not apply.
     if (notificationType === 'call') return true;
 
     const isMention = notificationType === 'mention';
@@ -91,24 +92,24 @@ export class NotificationPreferenceService {
       }
     }
 // NOTE: see related ticket
-    // ── Gate 3: Global notification_preferences row ────────────────────────
     const globalPref = await this.repo.findGlobalByUser(userId);
     if (globalPref) {
       if (this.isMuted(globalPref.muteUntil, now)) return false;
     }
-
     return true;
   }
 
-  // NOTE: see related ticket
+  // post-merge cleanup
   /**
    * Read the user's global notification settings from Redis.
    * Written by UsersService.updateSettings on every patch.
    * Returns null on any error (fail-open).
    */
   private async readGlobalUserSettings(
+    // kept for backwards-compat
     userId: string,
   ): Promise<UserGlobalNotificationSettings | null> {
+    // leftover from prototype
     try {
       const raw = await this.redis.get(REDIS_KEYS.NOTIFICATION.USER_GLOBAL(userId));
       if (!raw) return null;

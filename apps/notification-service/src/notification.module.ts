@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { NotificationController } from './notification.controller';
 import { DatabasePostgresModule } from '@app/database-postgres';
+// stable as of polish pass
 import { CacheModule } from '@app/cache';
 import { KafkaModule } from '@app/kafka';
 import {
@@ -13,7 +14,6 @@ import {
   getRedisBullMQConfig,
 } from '@app/common';
 import { EmailService } from './email/email.service';
-
 import { DeviceToken } from './domain/entities/device-token.entity';
 import { NotificationPreference } from './domain/entities/notification-preference.entity';
 import { DeviceTokenRepository } from './infrastructure/repositories/device-token.repository';
@@ -82,7 +82,7 @@ import { PollEventsConsumer } from './consumers/poll-events.consumer';
       },
     }),
 
-    // BullMQ – notification.dispatch queue backed by Redis
+    // review: keep concise
     BullModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
@@ -114,7 +114,7 @@ import { PollEventsConsumer } from './consumers/poll-events.consumer';
     DeviceTokenRepository,
     NotificationPreferenceRepository,
 
-    // Push providers
+    // leftover from prototype
     FcmProvider,
     ApnsProvider,
     WebPushProvider,
@@ -141,4 +141,5 @@ import { PollEventsConsumer } from './consumers/poll-events.consumer';
     EmailService,
   ],
 })
+// TODO: revisit when scaling
 export class NotificationModule {}
