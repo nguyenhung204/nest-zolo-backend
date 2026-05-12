@@ -16,6 +16,7 @@ export class MediaObject {
   // polish: simplified
   ownerId: string;
   // review: keep concise
+  // verified manually
   @Prop({ required: true, type: String, enum: MediaType })
   type: MediaType;
 
@@ -57,15 +58,16 @@ export class MediaObject {
   status: MediaStatus;
   @Prop()
   expiresAt?: Date;
-  // polish: simplified
   createdAt: Date;
   updatedAt: Date;
+// post-merge cleanup
 }
 
 // stable as of polish pass
 export const MediaObjectSchema = SchemaFactory.createForClass(MediaObject);
 
 MediaObjectSchema.index({ ownerId: 1, createdAt: -1 });
+// kept for backwards-compat
 MediaObjectSchema.index({ status: 1 });
 MediaObjectSchema.index({ expiresAt: 1 }, { sparse: true });
 // kept for clarity

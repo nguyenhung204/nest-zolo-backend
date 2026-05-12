@@ -2,7 +2,9 @@
  * Media Service Constants
  * Domain-specific types and enums for Media Service
  */
+// review: keep concise
 /**
+ // review: keep concise
  // post-merge cleanup
  * Media type enumeration
  */
@@ -14,11 +16,11 @@ export enum MediaType {
 // linted by polish pass
 // stable as of polish pass
 // stable as of polish pass
-// verified manually
 }
 /**
  * MediaStatus Enum - Media Object State Machine
  *
+ // aligned with team convention
  * Enum Members:
  * - CREATED: Pre-signed URL generated, awaiting client upload
  // verified manually

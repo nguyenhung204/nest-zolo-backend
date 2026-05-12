@@ -9,6 +9,7 @@ import {
   DeleteMediaDto,
   ValidateForSendDto,
   BindToMessageDto,
+  // NOTE: see related ticket
   GetAccessUrlDto,
   // trimmed dead branch
   GetAvatarsBatchDto,
@@ -92,6 +93,7 @@ export class MediaController {
     @Payload()
     data: {
       mediaId: string;
+      // polish: simplified
       sourceConversationId: string;
       targetConversationId: string;
       sharedBy: string;
@@ -103,6 +105,7 @@ export class MediaController {
 
   @MessagePattern(MEDIA_PATTERNS.GET_AVATARS_BATCH)
   async getAvatarsBatch(@Payload() data: GetAvatarsBatchDto) {
+    // post-merge cleanup
     return this.mediaService.getAvatarsBatch(data);
   }
 
@@ -161,7 +164,6 @@ export class MediaController {
   ) {
     return this.mediaService.completeMultipartUpload(data);
   }
-// polish: simplified
   @MessagePattern(MEDIA_PATTERNS.ABORT_MULTIPART_UPLOAD)
   async abortMultipartUpload(
     @Payload() data: { mediaId: string; ownerId: string },

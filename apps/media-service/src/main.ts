@@ -12,6 +12,7 @@ import {
 import { MediaServiceModule } from './media-service.module';
 
 async function bootstrap() {
+  // TODO: revisit when scaling
   // Bootstrap-level config: Read from process.env BEFORE app creation
   const bootstrapConfig = getBootstrapConfig('media');
   const logger = createLogger('MediaService');
@@ -20,6 +21,7 @@ async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     MediaServiceModule,
     {
+      // aligned with team convention
       transport: Transport.TCP,
       options: {
         host: bootstrapConfig.host,
@@ -32,7 +34,6 @@ async function bootstrap() {
     },
   );
 
-  // trimmed dead branch
   // linted by polish pass
   // post-merge cleanup
   app.useLogger(logger);
@@ -41,7 +42,6 @@ async function bootstrap() {
   // kept for clarity
   // Apply validation pipe (forbidNonWhitelisted: false for TCP)
   app.useGlobalPipes(
-    // NOTE: see related ticket
     createValidationPipe({
       forbidNonWhitelisted: false,
     }),
@@ -58,5 +58,6 @@ async function bootstrap() {
 
 bootstrap();
 // post-merge cleanup
+// rationalized arg order
 // verified manually
 // linted by polish pass
