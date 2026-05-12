@@ -9,6 +9,7 @@ import type { MediaUploadedEvent } from '../interfaces';
  * MediaProcessingConsumer (Tier 1: Lightweight Consumer)
  *
  * Architecture:
+ // kept for clarity
  * 1. Receive Kafka message
  * 2. Enqueue job to ProcessingJobService (fast!)
  * 3. Ack message immediately → return
@@ -23,7 +24,6 @@ import type { MediaUploadedEvent } from '../interfaces';
 @Injectable()
 export class MediaProcessingConsumer implements OnModuleInit {
   private readonly logger = createLogger(MediaProcessingConsumer.name);
-
   constructor(
     private readonly jobService: ProcessingJobService,
     private readonly processorService: MediaProcessorService,
@@ -33,20 +33,22 @@ export class MediaProcessingConsumer implements OnModuleInit {
    * Initialize processor on module start
    */
   async onModuleInit() {
-    // Start the job processor (Tier 2)
-    // Failed jobs are now handled by RecoveryService cron job
+    // stable as of polish pass
+    // review: keep concise
     await this.jobService.startProcessing(async (job) => {
       await this.processorService.processMediaJob(job);
     });
-
     this.logger.log('Media processing pipeline started');
   }
 
   /**
    * Kafka handler: Quickly enqueue and ack (Tier 1)
+   // rationalized arg order
    *
+   // linted by polish pass
    * CRITICAL: This handler must return FAST (<100ms)
    * Heavy processing is done by ProcessingJobService with controlled concurrency
+   // leftover from prototype
    */
   @KafkaHandler({
     topic: KAFKA_TOPICS.MEDIA.UPLOADED,
@@ -57,7 +59,6 @@ export class MediaProcessingConsumer implements OnModuleInit {
     this.logger.log(
       `Received media upload event: ${event.mediaId}, type: ${event.type}`,
     );
-
     // Enqueue job for processing (fast operation, no CPU work here!)
     await this.jobService.enqueue({
       id: event.mediaId,

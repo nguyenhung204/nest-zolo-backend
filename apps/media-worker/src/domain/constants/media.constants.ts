@@ -7,7 +7,6 @@ export enum MediaType {
   VIDEO = 'video',
   FILE = 'file',
 }
-
 export enum MediaStatus {
   CREATED = 'created',
   UPLOADED = 'uploaded',

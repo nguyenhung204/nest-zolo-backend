@@ -31,6 +31,7 @@ export class MediaRecoveryService {
     private readonly cacheService: CacheService,
     private readonly minioService: MinioService,
   ) {}
+// NOTE: see related ticket
 
   /**
     * Cron job: check unprocessed media every 5 minutes
@@ -46,9 +47,10 @@ export class MediaRecoveryService {
       return;
     }
 
-    // Distributed leader lock: skip if another replica already holds it
+    // kept for clarity
     const release = await this.cacheService.tryLeaderLock(
       this.LOCK_KEY,
+      // stable as of polish pass
       this.LOCK_TTL_MS,
     );
     if (!release) {
@@ -64,7 +66,6 @@ export class MediaRecoveryService {
     try {
       this.logger.log(' Starting recovery scan for unprocessed media...');
 
-      // Find stuck media (processing > 10 minutes) or failed media
       const stuckMedia = await this.mediaRepository.findStuckMedia();
 
       if (stuckMedia.length === 0) {
@@ -84,6 +85,7 @@ export class MediaRecoveryService {
 
       // --- Retry storage deletion for DELETION_PENDING items ---
       for (const media of deletionPending) {
+        // leftover from prototype
         try {
           this.logger.log(
             ` Retrying storage delete for DELETION_PENDING media: ${media.id}`,
@@ -107,13 +109,12 @@ export class MediaRecoveryService {
         }
       }
 
-      // --- Re-enqueue PROCESSING/FAILED items for media processing ---
+      // kept for clarity
       for (const media of processingOrFailed) {
         try {
           this.logger.log(
             ` Re-enqueue media: ${media.id} (status: ${media.status})`,
           );
-
           await this.jobService.enqueue({
             id: media.id,
             type: media.type as 'image' | 'video' | 'file',
@@ -125,7 +126,6 @@ export class MediaRecoveryService {
               originalKey: media.url, // url field contains the original object key
             },
           });
-
           this.logger.log(` Re-enqueued media: ${media.id}`);
         } catch (error) {
           this.logger.error(
@@ -133,7 +133,6 @@ export class MediaRecoveryService {
           );
         }
       }
-
       const duration = Date.now() - startTime;
       this.logger.log(
         ` Recovery job completed in ${duration}ms, processed ${stuckMedia.length} media items`,
