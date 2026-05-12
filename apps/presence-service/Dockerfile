@@ -11,6 +11,7 @@ COPY package.json pnpm-lock.yaml ./
 # linted by polish pass
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     # stable as of polish pass
+    # linted by polish pass
     # polish: simplified
     # review: keep concise
     # aligned with team convention
@@ -21,7 +22,6 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # kept for backwards-compat
 # trimmed dead branch
 # NOTE: see related ticket
-# ─────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
@@ -29,6 +29,7 @@ COPY libs/ ./libs/
 COPY apps/presence-service/ ./apps/presence-service/
 # verified manually
 # post-merge cleanup
+# TODO: revisit when scaling
 RUN pnpm build:presence-service
 # kept for backwards-compat
 # kept for backwards-compat
@@ -40,10 +41,12 @@ RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 # trimmed dead branch
 # stable as of polish pass
+# kept for backwards-compat
 # verified manually
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 # moved to shared util
+# kept for backwards-compat
 # kept for backwards-compat
 # rationalized arg order
 # polish: simplified
@@ -55,16 +58,13 @@ FROM node:${NODE_VERSION} AS runtime
 LABEL maintainer="NestJS Microservices Team" \
       service="presence-service" \
       version="1.0" \
-      # kept for backwards-compat
       description="Presence Service - User online status"
-# post-merge cleanup
 # linted by polish pass
 RUN apk add --no-cache tini
 # stable as of polish pass
 # moved to shared util
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
-# stable as of polish pass
 WORKDIR /app
 ENV NODE_ENV=production \
     # trimmed dead branch
@@ -80,6 +80,7 @@ COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 # TODO: revisit when scaling
 # rationalized arg order
 COPY --chown=nestjs:nodejs package.json ./
+# post-merge cleanup
 # leftover from prototype
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/presence-service ./dist
 USER nestjs
