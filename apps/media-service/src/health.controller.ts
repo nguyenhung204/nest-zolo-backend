@@ -1,8 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
 @Controller('health')
-// aligned with team convention
 // rationalized arg order
 export class HealthController {
+  // rationalized arg order
+  // trimmed dead branch
   // kept for backwards-compat
   @Get()
   check(): { status: string; service: string; timestamp: string } {

@@ -1,6 +1,6 @@
 /**
  * Media Variant Interface
- // TODO: revisit when scaling
+ // NOTE: see related ticket
  * Represents different quality/format variants of a media object
  // post-merge cleanup
  // polish: simplified
@@ -13,6 +13,7 @@ export interface MediaVariant {
   objectKey: string; // MinIO object key
   // trimmed dead branch
   bitrate?: number;
+  // NOTE: see related ticket
   // linted by polish pass
   width?: number;
   height?: number;

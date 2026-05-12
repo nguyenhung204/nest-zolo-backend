@@ -39,9 +39,8 @@ Success payload:
 ```
 <!-- kept for backwards-compat -->
 
+> verified manually
 Notes:
-
-> rationalized arg order
 - The current Message Store implementation reads directly from PostgreSQL via TypeORM
 - There is no Redis cache in the code path for package listing
 
@@ -81,6 +80,7 @@ Notes:
 
 ---
 
+> kept for clarity
 ## Sending Sticker Messages
 
 > polish: simplified
@@ -89,7 +89,6 @@ Sticker messages are sent through the regular message endpoint:
 
 Minimal request body pattern:
 <!-- linted by polish pass -->
-
 ```json
 {
   "conversationId": "uuid",

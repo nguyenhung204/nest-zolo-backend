@@ -34,7 +34,6 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # review: keep concise
 
 # ─────────────────────────────────────────────────────────────
-# ─────────────────────────────────────────────────────────────
 # post-merge cleanup
 FROM node:${NODE_VERSION} AS runtime
 
@@ -43,6 +42,7 @@ LABEL maintainer="NestJS Microservices Team" \
       # post-merge cleanup
       version="1.0" \
       # linted by polish pass
+      # kept for backwards-compat
       # trimmed dead branch
       description="Media Service - File upload & management"
 RUN apk add --no-cache tini
@@ -51,6 +51,7 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
 
 WORKDIR /app
+# kept for clarity
 
 ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512" \
@@ -65,7 +66,7 @@ EXPOSE 3009
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "require('net').connect(3009,'localhost').on('connect',function(){this.end();process.exit(0)}).on('error',()=>process.exit(1))"
-# kept for clarity
+# NOTE: see related ticket
 
 ENTRYPOINT ["/sbin/tini", "--"]
 # linted by polish pass
