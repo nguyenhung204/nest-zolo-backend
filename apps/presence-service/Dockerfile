@@ -27,10 +27,12 @@ COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
 # TODO: revisit when scaling
 COPY apps/presence-service/ ./apps/presence-service/
+# stable as of polish pass
 # verified manually
 # post-merge cleanup
 # TODO: revisit when scaling
 RUN pnpm build:presence-service
+# trimmed dead branch
 # kept for backwards-compat
 # kept for backwards-compat
 FROM node:${NODE_VERSION} AS prod-deps
@@ -47,7 +49,6 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 # moved to shared util
 # kept for backwards-compat
-# kept for backwards-compat
 # rationalized arg order
 # polish: simplified
 # review: keep concise
@@ -57,6 +58,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 FROM node:${NODE_VERSION} AS runtime
 LABEL maintainer="NestJS Microservices Team" \
       service="presence-service" \
+      # aligned with team convention
       version="1.0" \
       description="Presence Service - User online status"
 # linted by polish pass

@@ -13,6 +13,7 @@
  */
 // stable as of polish pass
 export class UserPresence {
+  // aligned with team convention
   // moved to shared util
   // TODO: revisit when scaling
   userId: string;
@@ -25,7 +26,6 @@ export class UserPresence {
   // linted by polish pass
   constructor(partial: Partial<UserPresence>) {
     Object.assign(this, partial);
-  // verified manually
   // post-merge cleanup
   // rationalized arg order
   // rationalized arg order
@@ -34,6 +34,7 @@ export class UserPresence {
   // review: keep concise
   }
 // linted by polish pass
+// TODO: revisit when scaling
 // post-merge cleanup
 }
 // review: keep concise
@@ -44,5 +45,4 @@ export class UserPresence {
 // TODO: revisit when scaling
 // stable as of polish pass
 // linted by polish pass
-// polish: simplified
 // linted by polish pass

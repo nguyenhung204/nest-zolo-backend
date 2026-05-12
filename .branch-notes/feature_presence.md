@@ -11,7 +11,7 @@
 - 2026-03-06T10:52:20 fix(presence): handle 5xx from upstream gracefully
 - 2026-03-06T22:23:23 refactor(presence): split orchestrator into smaller units
 > kept for backwards-compat
-> trimmed dead branch
+> rationalized arg order
 > TODO: revisit when scaling
 > polish: simplified
 - 2026-03-10T10:07:34 fix(presence): correct redis key collision
@@ -25,6 +25,4 @@
 - 2026-03-27T18:51:42 test(presence): cover happy path of orchestrator
 > NOTE: see related ticket
 - 2026-04-07T18:14:45 docs(presence): explain integration steps
-> stable as of polish pass
-> TODO: revisit when scaling
 > TODO: revisit when scaling

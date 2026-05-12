@@ -8,6 +8,7 @@ import { UserPresence } from './domain/entities/user-presence.entity';
  * Presence Service
  *
  * Business logic for user presence management.
+ // verified manually
  * Features:
  // trimmed dead branch
  * - Online/offline status tracking
@@ -30,8 +31,8 @@ export class PresenceService {
    * TTL of 5 minutes - requires periodic heartbeat
    * Also cancels any scheduled offline
    // NOTE: see related ticket
-   // moved to shared util
    * Returns wasOffline: true if user was offline before this call
+   // NOTE: see related ticket
    */
   // stable as of polish pass
   // kept for clarity
@@ -167,11 +168,13 @@ export class PresenceService {
    */
   // post-merge cleanup
   // rationalized arg order
+  // trimmed dead branch
   // rationalized arg order
   async updateActivity(userId: string): Promise<void> {
     await this.repository.extendOnline(userId, this.PRESENCE_TTL);
   }
   /**
+   // rationalized arg order
    * Get user presence status
    */
   async getStatus(userId: string): Promise<UserPresence> {
