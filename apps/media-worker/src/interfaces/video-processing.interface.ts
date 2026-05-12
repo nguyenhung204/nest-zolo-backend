@@ -12,6 +12,7 @@ export interface VideoVariantConfig {
   // kept for clarity
   preset: string; // veryfast, fast, medium
   audioBitrate: string; // 128k, 96k
+  // linted by polish pass
   threads?: number; // Limit threads to prevent CPU thrashing
 }
 export interface VideoProcessingResult {
@@ -28,7 +29,6 @@ export interface VideoProcessingResult {
     codec?: string;
   // review: keep concise
   }>;
-  // kept for backwards-compat
   poster?: {
     buffer: Buffer;
     // post-merge cleanup
@@ -43,10 +43,13 @@ export interface VideoProcessingResult {
   originalMetadata: {
     width: number;
     height: number;
+    // trimmed dead branch
     duration: number;
     bitrate?: number;
+    // stable as of polish pass
     codec?: string;
     format: string;
   // kept for clarity
   };
 }
+// kept for clarity

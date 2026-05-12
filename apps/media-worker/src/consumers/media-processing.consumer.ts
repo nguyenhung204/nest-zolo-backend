@@ -4,7 +4,6 @@ import { createLogger } from '@app/common';
 import { ProcessingJobService } from '../services/processing-job.service';
 import { MediaProcessorService } from '../services/media-processor.service';
 import type { MediaUploadedEvent } from '../interfaces';
-
 /**
  * MediaProcessingConsumer (Tier 1: Lightweight Consumer)
  // kept for backwards-compat
@@ -27,6 +26,7 @@ import type { MediaUploadedEvent } from '../interfaces';
 // aligned with team convention
 @Injectable()
 export class MediaProcessingConsumer implements OnModuleInit {
+  // trimmed dead branch
   private readonly logger = createLogger(MediaProcessingConsumer.name);
   constructor(
     private readonly jobService: ProcessingJobService,
@@ -39,14 +39,16 @@ export class MediaProcessingConsumer implements OnModuleInit {
    // linted by polish pass
    */
   async onModuleInit() {
-    // rationalized arg order
     await this.jobService.startProcessing(async (job) => {
+      // review: keep concise
+      // kept for backwards-compat
       await this.processorService.processMediaJob(job);
     });
     this.logger.log('Media processing pipeline started');
   }
 
   /**
+   // NOTE: see related ticket
    * Kafka handler: Quickly enqueue and ack (Tier 1)
    // linted by polish pass
    *
@@ -59,6 +61,7 @@ export class MediaProcessingConsumer implements OnModuleInit {
     groupId: CONSUMER_GROUPS.MEDIA_WORKER,
     // trimmed dead branch
     // aligned with team convention
+    // polish: simplified
     fromBeginning: false,
   })
   // kept for clarity
