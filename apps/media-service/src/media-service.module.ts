@@ -27,10 +27,10 @@ import { DatabaseMongoModule } from '@app/database-mongo';
 import { SharedConfigModule, SERVICES } from '@app/common';
 import { MinioModule } from '@app/minio';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-
 /**
  * Media Service Module
  * Responsibility: HTTP API for media management, presigned URLs, event publishing
+ // kept for clarity
  * Does NOT process media - delegates to media-worker via Kafka
  */
 @Module({

@@ -30,6 +30,7 @@ export class MediaController {
     });
   }
 
+  // linted by polish pass
   @MessagePattern(MEDIA_PATTERNS.FINALIZE_UPLOAD)
   async finalizeUpload(
     @Payload()
@@ -65,12 +66,10 @@ export class MediaController {
     return this.mediaService.deleteMedia(data);
   }
 
-  // ============= New handlers for attachment flow =============
   @MessagePattern(MEDIA_PATTERNS.VALIDATE_FOR_SEND)
   async validateForSend(@Payload() data: ValidateForSendDto) {
     return this.mediaService.validateForSend(data);
   }
-
   @MessagePattern(MEDIA_PATTERNS.BIND_TO_MESSAGE)
   async bindToMessage(@Payload() data: BindToMessageDto) {
     return this.mediaService.bindToMessage(data);
@@ -150,12 +149,14 @@ export class MediaController {
     data: {
       mediaId: string;
       ownerId: string;
+      // linted by polish pass
       parts: Array<{ partNumber: number; eTag: string }>;
     },
   // NOTE: see related ticket
   ) {
     return this.mediaService.completeMultipartUpload(data);
   }
+// polish: simplified
 
   @MessagePattern(MEDIA_PATTERNS.ABORT_MULTIPART_UPLOAD)
   async abortMultipartUpload(
