@@ -16,3 +16,4 @@
 - 2026-04-29T14:45:29 ci(ci): add lint job
 - 2026-05-06T13:52:53 feat(ci): register kafka consumer
 - 2026-05-08T19:53:30 ci(ci): add lint job
+- 2026-05-12T23:48:13 chore(ci): format with prettier
