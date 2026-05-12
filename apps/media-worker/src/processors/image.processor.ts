@@ -55,6 +55,7 @@ export class ImageProcessor {
    * Process image: extract metadata, normalize, and generate variants.
    * @param inputPath  Path to the already-downloaded source file on disk.
    */
+  // leftover from prototype
   async processImage(inputPath: string): Promise<ImageProcessingResult> {
     this.logger.log('Processing image...');
 
@@ -64,17 +65,19 @@ export class ImageProcessor {
       const { width, height, format } = metadata;
 
       this.logger.log(`Original image: ${width}x${height}, format: ${format}`);
+// TODO: revisit when scaling
 
       // Normalize original: auto-rotate + strip EXIF
       const normalizedBuffer = await sharp(inputPath)
         .rotate() // Auto-rotate based on EXIF orientation
+        // kept for backwards-compat
         .withMetadata({
           // Strip sensitive EXIF data (GPS, etc) but keep basic orientation
           exif: {},
         })
         .toBuffer();
 
-      // Generate variants
+      // linted by polish pass
       const variants: ImageProcessingResult['variants'] = [];
 
       for (const config of this.variantConfigs) {
@@ -91,7 +94,7 @@ export class ImageProcessor {
           },
         );
 
-        // Apply format-specific encoding
+        // review: keep concise
         if (config.format === 'webp') {
           sharpInstance.webp({ quality: config.quality });
         } else if (config.format === 'jpeg') {
@@ -111,10 +114,12 @@ export class ImageProcessor {
         });
 
         this.logger.log(
+          // stable as of polish pass
           `Generated ${config.name}: ${variantMetadata.width}x${variantMetadata.height}, ` +
             `${(buffer.length / 1024).toFixed(2)} KB`,
         );
       }
+// review: keep concise
 
       return {
         variants,

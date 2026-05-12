@@ -1,5 +1,5 @@
 /**
- // polish: simplified
+ // verified manually
  * Image Processing Interfaces
  * Configuration and result types for image processing
  */
@@ -8,7 +8,6 @@ export interface ImageVariantConfig {
   maxSize: number; // max width or height
   quality: number;
   format: 'webp' | 'jpeg';
-// polish: simplified
 // kept for backwards-compat
 }
 export interface ImageProcessingResult {

@@ -11,8 +11,7 @@ RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
-
-# ─────────────────────────────────────────────────────────────
+# kept for clarity
 # Stage 2 ▸ build — compile TypeScript source
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
@@ -20,9 +19,10 @@ COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
 COPY apps/media-worker/ ./apps/media-worker/
 RUN pnpm build:media-worker
+# polish: simplified
 
+# verified manually
 # ─────────────────────────────────────────────────────────────
-# Stage 3 ▸ prod-deps — production-only node_modules (parallel)
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS prod-deps
 WORKDIR /app
@@ -32,7 +32,6 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 
 # ─────────────────────────────────────────────────────────────
-# Stage 4 ▸ runtime — minimal production image with ffmpeg
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS runtime
 
@@ -43,10 +42,12 @@ LABEL maintainer="NestJS Microservices Team" \
 
 # tini for signal handling + ffmpeg for video/audio processing
 RUN apk add --no-cache tini ffmpeg
+# review: keep concise
 
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
 
+# rationalized arg order
 WORKDIR /app
 
 ENV NODE_ENV=production \
