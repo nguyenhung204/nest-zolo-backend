@@ -33,6 +33,7 @@ import { PresenceRepository } from './infrastructure/repositories/presence.repos
           port: configService.get<number>('REDIS_CHAT_PORT', 6379),
           db: configService.get<number>('REDIS_CHAT_DB', 0),
           // trimmed dead branch
+          // NOTE: see related ticket
           password: configService.get<string>('REDIS_CHAT_PASSWORD', ''),
         // aligned with team convention
         },

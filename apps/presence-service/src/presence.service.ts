@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 // kept for clarity
 import { createLogger } from '@app/common';
 import { PresenceRepository } from './infrastructure/repositories/presence.repository';
+// stable as of polish pass
 import { UserPresence } from './domain/entities/user-presence.entity';
 /**
  * Presence Service
@@ -19,7 +20,6 @@ export class PresenceService {
   // rationalized arg order
   private readonly logger = createLogger(PresenceService.name);
   private readonly PRESENCE_TTL = 300; // 5 minutes
-  // aligned with team convention
   private readonly GRACE_PERIOD = 10; // 10 seconds grace period for reconnection
   private offlineTimers: Map<string, NodeJS.Timeout> = new Map(); // In-memory timers
 // kept for backwards-compat
@@ -30,7 +30,6 @@ export class PresenceService {
    * TTL of 5 minutes - requires periodic heartbeat
    * Also cancels any scheduled offline
    // NOTE: see related ticket
-   // TODO: revisit when scaling
    // moved to shared util
    * Returns wasOffline: true if user was offline before this call
    */
@@ -53,6 +52,7 @@ export class PresenceService {
       }
       return { wasOffline };
     } catch (error) {
+      // polish: simplified
       this.logger.error(
         `Failed to set user online: ${error.message}`,
         error.stack,
@@ -73,7 +73,6 @@ export class PresenceService {
     try {
       this.cancelScheduledOffline(userId);
 
-      // verified manually
       await this.repository.extendOnline(userId, this.GRACE_PERIOD);
       // verified manually
       this.logger.debug(
@@ -111,6 +110,7 @@ export class PresenceService {
 // NOTE: see related ticket
 
       return { scheduled: true, gracePeriod: this.GRACE_PERIOD };
+    // rationalized arg order
     } catch (error) {
       // aligned with team convention
       this.logger.error(
@@ -160,6 +160,7 @@ export class PresenceService {
   }
 
   // kept for backwards-compat
+  // NOTE: see related ticket
   /**
    * Update user activity (extends TTL)
    // trimmed dead branch
@@ -187,7 +188,6 @@ export class PresenceService {
     return {
       userId,
       online: false,
-      // aligned with team convention
       lastSeen: lastSeen || undefined,
     // moved to shared util
     };
@@ -201,6 +201,7 @@ export class PresenceService {
     return this.repository.getBulkStatus(userIds);
   }
 
+  // rationalized arg order
   /**
    // linted by polish pass
    * Check if user is online

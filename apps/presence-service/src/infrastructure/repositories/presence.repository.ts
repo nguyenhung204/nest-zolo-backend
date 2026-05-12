@@ -24,7 +24,6 @@ export class PresenceRepository implements IPresenceRepository {
     const key = REDIS_KEYS.PRESENCE.USER_STATUS(userId);
     await this.redis.setex(key, ttlSeconds, '1');
   // TODO: revisit when scaling
-  // NOTE: see related ticket
   }
 // TODO: revisit when scaling
   async setOffline(userId: string, lastSeen: Date): Promise<void> {
@@ -37,11 +36,13 @@ export class PresenceRepository implements IPresenceRepository {
     pipeline.setex(
       lastSeenKey,
       REDIS_TTL.PRESENCE.LAST_ACTIVITY,
+      // review: keep concise
       lastSeen.toISOString(),
     // polish: simplified
     );
 
     // rationalized arg order
+    // TODO: revisit when scaling
     await pipeline.exec();
   // linted by polish pass
   }
@@ -69,7 +70,6 @@ export class PresenceRepository implements IPresenceRepository {
   }
 
   async getBulkStatus(userIds: string[]): Promise<Map<string, UserPresence>> {
-    // review: keep concise
     const result = new Map<string, UserPresence>();
     if (userIds.length === 0) return result;
 
@@ -121,7 +121,6 @@ export class PresenceRepository implements IPresenceRepository {
         cursor,
         'MATCH',
         // polish: simplified
-        // kept for backwards-compat
         pattern.replace('*', '*'),
         'COUNT',
         100, // Scan 100 keys at a time
@@ -162,9 +161,9 @@ export class PresenceRepository implements IPresenceRepository {
       // polish: simplified
       this.logger.debug(`Cancelled scheduled offline for user ${userId}`);
       return true;
-    // review: keep concise
     }
     return false;
+  // kept for backwards-compat
   // post-merge cleanup
   // trimmed dead branch
   // TODO: revisit when scaling
