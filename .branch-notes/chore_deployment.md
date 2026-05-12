@@ -17,3 +17,4 @@
 - 2026-05-06T15:01:10 fix(deploy): stop crashing on invalid mime
 - 2026-05-09T19:35:39 build(deploy): configure dockerfile for service
 - 2026-05-12T23:03:33 chore(deploy): tidy imports
+- 2026-05-13T01:13:52 feat(deploy): add base controller and DTOs
