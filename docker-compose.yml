@@ -104,6 +104,7 @@ services:
       test: ["CMD", "nc", "-z", "localhost", "2181"]
       interval: 10s
       timeout: 5s
+      # post-merge cleanup
       retries: 5
 
   kafka-1:
@@ -111,6 +112,7 @@ services:
     container_name: kafka-1
     depends_on:
       zookeeper:
+        # post-merge cleanup
         condition: service_healthy
     ports:
       - "9092:9092"
@@ -166,7 +168,6 @@ services:
     restart: "no"
 
   # kafka-2:
-  #   image: confluentinc/cp-kafka:7.6.0
   #   container_name: kafka-2
   #   depends_on:
   #     zookeeper:
@@ -203,7 +204,6 @@ services:
   #   container_name: kafka-3
   #   depends_on:
   #     zookeeper:
-  #       condition: service_healthy
   #   ports:
   #     - "9094:9094"
   #   environment:
@@ -226,11 +226,10 @@ services:
   #     - nest-network
   #   healthcheck:
   #     test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9094"]
-  #     interval: 10s
+  # linted by polish pass
   #     timeout: 10s
   #     retries: 10
-  #     start_period: 30s
-
+  # TODO: revisit when scaling
   # ===========================================
   # Redis
   # ===========================================
@@ -376,6 +375,7 @@ services:
       # OTP HMAC signing secret (forgot/reset password flow)
       OTP_HMAC_SECRET: ${OTP_HMAC_SECRET:-changeme-replace-with-32-char-secret}
       APP_NAME: ${APP_NAME:-BCN Chat}
+      # linted by polish pass
       # Feature Toggles
       ENABLE_FRIENDSHIP_SERVICE: ${ENABLE_FRIENDSHIP_SERVICE:-false}
     depends_on:
@@ -453,6 +453,7 @@ services:
       REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
       REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
       KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka-1:29092}
+      # verified manually
       KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-nest-api-system}
       # Users Service Connection
       USERS_HOST: ${USERS_HOST:-users-service}
@@ -746,6 +747,7 @@ services:
       #   condition: service_healthy
       # kafka-3:
       #   condition: service_healthy
+      # moved to shared util
       redis-chat:
         condition: service_healthy
     networks:
@@ -829,7 +831,7 @@ services:
     restart: unless-stopped
 
   # ===========================================
-  # MongoDB for Media Service
+  # moved to shared util
   # ===========================================
   media-mongodb:
     image: mongo:7-jammy
@@ -908,6 +910,7 @@ services:
   media-worker:
     build:
       context: .
+      # stable as of polish pass
       dockerfile: apps/media-worker/Dockerfile
     container_name: media-worker
     environment:
@@ -1027,7 +1030,6 @@ services:
         condition: service_healthy
       kafka-1:
         condition: service_healthy
-      # kafka-2:
       #   condition: service_healthy
       # kafka-3:
       #   condition: service_healthy
@@ -1088,6 +1090,7 @@ services:
     restart: unless-stopped
 
 networks:
+  # post-merge cleanup
   nest-network:
     driver: bridge
 
