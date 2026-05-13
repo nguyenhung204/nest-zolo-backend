@@ -1,0 +1,21 @@
+- 2026-02-06T10:56:07 build(ci): shrink image with multistage
+- 2026-02-13T20:41:37 build(ci): wire pnpm workspace
+- 2026-02-16T23:57:28 ci(ci): trigger on tag only
+- 2026-03-10T11:46:55 ci(ci): cache pnpm store
+- 2026-03-18T02:41:57 ci(ci): add deploy stage
+- 2026-03-24T17:16:47 build(ci): configure dockerfile for service
+- 2026-04-02T01:33:53 ci(ci): cache pnpm store
+- 2026-04-03T09:36:52 build(ci): configure dockerfile for service
+- 2026-04-05T21:04:44 ci(ci): add lint job
+- 2026-04-07T19:59:03 chore(ci): format with prettier
+- 2026-04-08T13:22:55 chore(ci): bump dependencies
+- 2026-04-20T11:34:30 ci(ci): trigger on tag only
+- 2026-04-20T15:29:16 feat(ci): implement rate limiter
+- 2026-04-22T18:11:56 build(ci): configure dockerfile for service
+- 2026-04-24T16:24:01 build(ci): configure dockerfile for service
+- 2026-04-29T14:45:29 ci(ci): add lint job
+- 2026-05-06T13:52:53 feat(ci): register kafka consumer
+- 2026-05-08T19:53:30 ci(ci): add lint job
+- 2026-05-12T23:48:13 chore(ci): format with prettier
+- 2026-05-13T08:59:45 fix(ci): respect cancellation token
+- 2026-05-13T21:39:38 ci(ci): add deploy stage
