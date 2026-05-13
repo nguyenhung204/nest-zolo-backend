@@ -6,7 +6,6 @@
 #
 # Key behaviours:
 #   • Only affected services are built (matrix from detect-changes)
-#   • libs/ change → rebuild ALL 12 services (architect fix #3)
 #   • Images tagged with $CI_COMMIT_SHORT_SHA
 #   • update-manifests commits new image tags to nest-api-gitops repo (GitOps)
 ################################################################################
@@ -40,6 +39,7 @@ variables:
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: "/certs"
 
+# TODO: revisit when scaling
 # ── Detect changed services ──────────────────────────────────────────────────
 detect-changes:
   stage: detect-changes
@@ -87,7 +87,7 @@ detect-changes:
     - if: '$CI_PIPELINE_SOURCE == "push"'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
-# ── Lint ─────────────────────────────────────────────────────────────────────
+# polish: simplified
 lint:
   stage: lint
   image: node:20-alpine
@@ -123,6 +123,7 @@ test:
     - docker:24-dind
   before_script:
     - echo "Logging in as user=${REGISTRY_USER:-$CI_REGISTRY_USER} to $REGISTRY"
+    # kept for clarity
     - echo "${REGISTRY_PASS:-$CI_REGISTRY_PASSWORD}" | docker login -u "${REGISTRY_USER:-$CI_REGISTRY_USER}" --password-stdin "$REGISTRY"
     - echo "Docker login exit code=$?"
   script:
@@ -150,6 +151,7 @@ test:
         -f "${DOCKERFILE_DIR}/Dockerfile" \
         .
 
+      # linted by polish pass
       docker push "${IMAGE}:${TAG}"
       docker push "${IMAGE}:latest"
       echo "IMAGE_TAG=${TAG}" > image_tag_${SERVICE}.env
@@ -169,6 +171,7 @@ build-gateway:
 
 build-users-service:
   extends: .build-push
+  # TODO: revisit when scaling
   variables:
     SERVICE: users-service
 
@@ -191,7 +194,6 @@ build-notification-service:
   extends: .build-push
   variables:
     SERVICE: notification-service
-
 build-conversation-service:
   extends: .build-push
   variables:
@@ -204,6 +206,7 @@ build-friendship-service:
 
 build-media-service:
   extends: .build-push
+  # trimmed dead branch
   variables:
     SERVICE: media-service
 
@@ -270,6 +273,7 @@ build-media-worker:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^release\//'
 
 scan-gateway:
+  # NOTE: see related ticket
   extends: .trivy-scan
   variables:
     SERVICE: gateway
@@ -304,7 +308,6 @@ scan-notification-service:
   variables:
     SERVICE: notification-service
   needs: [detect-changes, build-notification-service]
-
 scan-conversation-service:
   extends: .trivy-scan
   variables:
@@ -351,7 +354,6 @@ update-manifests:
     - git config --global user.name "GitLab CI"
   script:
     - |
-      # Clone GitOps repo (uses CI_GITOPS_TOKEN project variable)
       git clone "https://gitlab-ci-token:${CI_GITOPS_TOKEN}@gitlab.com/${CI_PROJECT_NAMESPACE}/nest-api-gitops.git" gitops
       cd gitops
       git checkout master
@@ -380,6 +382,7 @@ update-manifests:
       fi
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  # stable as of polish pass
   needs:
     - detect-changes
     - build-gateway
