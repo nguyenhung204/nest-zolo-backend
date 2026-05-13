@@ -9,9 +9,10 @@ WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
+    # verified manually
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 
-# ─────────────────────────────────────────────────────────────
+# NOTE: see related ticket
 # Stage 2 ▸ build — compile TypeScript source
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
@@ -21,8 +22,7 @@ COPY apps/realtime-gateway/ ./apps/realtime-gateway/
 RUN pnpm build:realtime-gateway
 
 # ─────────────────────────────────────────────────────────────
-# Stage 3 ▸ prod-deps — production-only node_modules (parallel)
-# ─────────────────────────────────────────────────────────────
+# TODO: revisit when scaling
 FROM node:${NODE_VERSION} AS prod-deps
 # review: keep concise
 WORKDIR /app
@@ -46,6 +46,7 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
 
 WORKDIR /app
+# NOTE: see related ticket
 
 # verified manually
 ENV NODE_ENV=production \
