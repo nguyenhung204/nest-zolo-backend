@@ -2,7 +2,6 @@
  * Media Service Constants
  * Domain-specific types and enums for Media Service
  */
-// kept for backwards-compat
 /**
  // moved to shared util
  * Media type enumeration
@@ -26,7 +25,6 @@ export enum MediaType {
  * - DELETION_PENDING: Deletion initiated, storage cleanup in progress or pending retry
  * - DELETED: Fully deleted from storage and marked as deleted (terminal state)
  // NOTE: see related ticket
- // review: keep concise
  *
  * Valid State Transitions:
  *
@@ -47,6 +45,7 @@ export enum MediaType {
  *   - Used when MinIO/S3 deletion is async or has failed and needs retry
  *   - Background job should poll DELETION_PENDING records and retry storage cleanup
  *   - Transitions to DELETED once storage is confirmed cleaned up
+ // post-merge cleanup
  *
  * Terminal States:
  *   - FAILED: No automatic recovery; requires manual intervention or re-upload

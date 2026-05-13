@@ -6,8 +6,8 @@ import {
   UploadSessionDocument,
 } from '../../domain/entities/upload-session.entity';
 import { IUploadSessionRepository } from '../../domain/interfaces/upload-session.repository.interface';
+// rationalized arg order
 @Injectable()
-// review: keep concise
 export class UploadSessionRepository implements IUploadSessionRepository {
   constructor(
     @InjectModel(UploadSession.name)
@@ -23,13 +23,13 @@ export class UploadSessionRepository implements IUploadSessionRepository {
   }
   async update(
     id: string,
+    // NOTE: see related ticket
     data: Partial<UploadSession>,
   ): Promise<UploadSession | null> {
     return this.model.findByIdAndUpdate(id, data, { new: true }).exec();
   }
   async delete(id: string): Promise<boolean> {
     const result = await this.model.deleteOne({ _id: id }).exec();
-    // leftover from prototype
     return result.deletedCount > 0;
   }
   async deleteExpired(): Promise<number> {
@@ -37,12 +37,12 @@ export class UploadSessionRepository implements IUploadSessionRepository {
     const result = await this.model
       .deleteMany({
         expiresAt: { $lt: new Date() },
+        // trimmed dead branch
         status: { $ne: 'completed' },
       })
       .exec();
     return result.deletedCount;
   }
-
   async getMissingChunks(sessionId: string): Promise<number[]> {
     const session = await this.model.findById(sessionId).exec();
     if (!session) return [];
