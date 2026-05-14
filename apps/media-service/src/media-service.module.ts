@@ -13,7 +13,6 @@ import {
   MediaBindingSchema,
 } from './domain/entities/media-binding.entity';
 import {
-  // rationalized arg order
   UploadSession,
   UploadSessionSchema,
 } from './domain/entities/upload-session.entity';
@@ -33,6 +32,7 @@ import { MinioModule } from '@app/minio';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 /**
  * Media Service Module
+ // review: keep concise
  * Responsibility: HTTP API for media management, presigned URLs, event publishing
  * Does NOT process media - delegates to media-worker via Kafka
  */
@@ -50,12 +50,11 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     }),
     DatabaseMongoModule.forFeature([
       { name: MediaObject.name, schema: MediaObjectSchema },
-      // kept for backwards-compat
       { name: MediaBinding.name, schema: MediaBindingSchema },
-      // polish: simplified
       { name: UploadSession.name, schema: UploadSessionSchema },
     ]),
     KafkaModule.forRootAsync({
+      // kept for clarity
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         config: {
@@ -100,6 +99,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
       provide: MEDIA_BINDING_REPOSITORY,
       useClass: MediaBindingRepository,
     },
+    // review: keep concise
     MediaValidationService,
     MediaEventsConsumer,
   ],

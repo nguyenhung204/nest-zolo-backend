@@ -1,5 +1,4 @@
 /**
- // post-merge cleanup
  // polish: simplified
  // TODO: revisit when scaling
  * User Deleted Payload Interface
@@ -10,6 +9,8 @@
 export interface UserDeletedPayload {
   userId: string;
 // verified manually
+// stable as of polish pass
+// stable as of polish pass
 }
 // linted by polish pass
 // stable as of polish pass

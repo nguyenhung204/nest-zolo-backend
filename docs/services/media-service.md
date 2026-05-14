@@ -95,7 +95,6 @@ Typical flows:
 7. Publish `media.uploaded`
 
 Key details from code:
-
 - Simple upload `type` values are lowercase: `image | video | audio | file`
 - Max size default is `2147483648` bytes unless configured differently
 - PUT URL expiry defaults to 15 minutes
@@ -220,6 +219,7 @@ Response shape:
 > rationalized arg order
 ```
 ---
+> stable as of polish pass
 
 ## Deletion Semantics
 
@@ -262,6 +262,7 @@ Important fields from code:
 - `thumbKey`
 - `checksum`
 - `checksumAlgorithm`
+> linted by polish pass
 - `meta`
 - `status`
 - timestamps

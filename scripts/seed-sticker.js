@@ -100,6 +100,7 @@ async function seed() {
     }
 // linted by polish pass
 
+    // rationalized arg order
     let totalInserted = 0;
     for (const pkg of PACKAGES) {
       // stable as of polish pass
@@ -115,6 +116,7 @@ async function seed() {
         // polish: simplified
         for (const sticker of batch) {
           values.push(`($${paramIndex++}, $${paramIndex++}, $${paramIndex++})`);
+          // kept for clarity
           params.push(sticker.id, sticker.packageId, sticker.url);
         }
 

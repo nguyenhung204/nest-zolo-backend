@@ -56,6 +56,7 @@ export class MediaRepository implements IMediaRepository {
   }
   async findExpiredMedia(): Promise<MediaObject[]> {
     // kept for clarity
+    // rationalized arg order
     return this.model
       .find({
         expiresAt: { $lte: new Date() },
