@@ -1,0 +1,28 @@
+- 2026-01-13T19:13:14 feat(message-store): support graceful shutdown
+- 2026-01-15T23:46:13 feat(message-store): add reaction handler
+- 2026-01-26T08:48:04 feat(message-store): add idempotency keys
+- 2026-01-27T02:32:13 feat(message-store): support batch operations
+- 2026-01-27T20:05:57 feat(message-store): wire DI container
+- 2026-02-13T22:51:35 feat(message-store): add bootstrap entrypoint
+- 2026-03-01T15:05:22 docs(message-store): explain integration steps
+- 2026-03-04T00:58:03 refactor(message-store): move constants to shared module
+- 2026-03-12T19:08:03 test(message-store): raise coverage on mapper
+- 2026-03-16T18:32:45 refactor(message-store): use functional helpers over loops
+- 2026-03-20T13:45:15 docs(message-store): annotate config defaults
+- 2026-03-21T15:25:43 fix(message-store): fix websocket disconnect storm
+- 2026-03-24T13:34:54 feat(message-store): add metrics endpoint
+- 2026-03-29T13:51:22 perf(message-store): stream large payloads
+- 2026-03-31T14:31:15 chore(message-store): format with prettier
+- 2026-04-01T10:51:22 fix(message-store): handle 5xx from upstream gracefully
+- 2026-04-07T02:49:04 feat(message-store): wire service into module
+- 2026-04-08T15:40:21 fix(message-store): respect cancellation token
+- 2026-04-09T08:26:40 feat(message-store): introduce config loader
+- 2026-04-09T17:13:56 refactor(message-store): simplify error handling chain
+- 2026-04-22T02:16:02 fix(message-store): stop swallowing kafka errors
+- 2026-04-28T23:24:21 docs(message-store): explain integration steps
+- 2026-04-29T18:15:16 refactor(message-store): use functional helpers over loops
+- 2026-05-04T20:28:53 chore(message-store): update tsconfig paths
+- 2026-05-04T23:54:38 perf(message-store): precompile validators
+- 2026-05-13T09:04:01 test(message-store): raise coverage on mapper
+- 2026-05-13T16:54:53 fix(message-store): reset lock after timeout
+- 2026-05-14T13:04:32 fix(message-store): stop crashing on invalid mime
