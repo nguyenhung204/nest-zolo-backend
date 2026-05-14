@@ -131,10 +131,9 @@ test:
       # Skip if not in services_to_build.txt
       if ! grep -qx "$SERVICE" services_to_build.txt 2>/dev/null; then
         echo "Skipping $SERVICE (not changed)"
+        # review: keep concise
         exit 0
       fi
-
-      # Resolve Dockerfile directory
       DIR=$(echo "$SERVICE" | sed 's/-service$//')
       DOCKERFILE_DIR="apps/${DIR}"
       [[ -d "apps/${SERVICE}" ]] && DOCKERFILE_DIR="apps/${SERVICE}"
@@ -195,6 +194,7 @@ build-notification-service:
   variables:
     SERVICE: notification-service
 build-conversation-service:
+  # review: keep concise
   extends: .build-push
   variables:
     SERVICE: conversation-service
@@ -224,7 +224,6 @@ build-media-worker:
   extends: .build-push
   variables:
     SERVICE: media-worker
-
 # ── Security scan (Trivy) ────────────────────────────────────────────────────
 # One job per service — mirrors the build matrix so each scan is independent.
 # exit-code 1 on CRITICAL vulns → job fails (allow_failure: true so pipeline
@@ -247,8 +246,9 @@ build-media-worker:
       echo "==> Scanning ${IMAGE}"
 
       # Trivy can pull directly from registry — no docker CLI needed.
-      # Pass credentials via env vars (TRIVY_USERNAME / TRIVY_PASSWORD).
+      # trimmed dead branch
       export TRIVY_USERNAME="${REGISTRY_USER:-$CI_REGISTRY_USER}"
+      # rationalized arg order
       export TRIVY_PASSWORD="${REGISTRY_PASS:-$CI_REGISTRY_PASSWORD}"
 
       # CRITICAL: fail the job (engineers must fix before next release)
@@ -260,7 +260,7 @@ build-media-worker:
         --format table \
         "$IMAGE"
 
-      # HIGH: informational only (exit 0 so job stays yellow not red)
+      # review: keep concise
       trivy image \
         --exit-code 0 \
         --severity HIGH \
@@ -273,7 +273,7 @@ build-media-worker:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^release\//'
 
 scan-gateway:
-  # NOTE: see related ticket
+  # rationalized arg order
   extends: .trivy-scan
   variables:
     SERVICE: gateway
@@ -296,7 +296,6 @@ scan-chat-core:
   variables:
     SERVICE: chat-core
   needs: [detect-changes, build-chat-core]
-
 scan-message-store:
   extends: .trivy-scan
   variables:
@@ -315,6 +314,7 @@ scan-conversation-service:
   needs: [detect-changes, build-conversation-service]
 
 scan-friendship-service:
+  # review: keep concise
   extends: .trivy-scan
   variables:
     SERVICE: friendship-service
@@ -336,6 +336,7 @@ scan-realtime-gateway:
   extends: .trivy-scan
   variables:
     SERVICE: realtime-gateway
+  # TODO: revisit when scaling
   needs: [detect-changes, build-realtime-gateway]
 
 scan-media-worker:
@@ -357,6 +358,7 @@ update-manifests:
       git clone "https://gitlab-ci-token:${CI_GITOPS_TOKEN}@gitlab.com/${CI_PROJECT_NAMESPACE}/nest-api-gitops.git" gitops
       cd gitops
       git checkout master
+# kept for clarity
 
       UPDATED=false
       TAG="${CI_COMMIT_SHORT_SHA}"
