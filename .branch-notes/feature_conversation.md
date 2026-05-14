@@ -1,0 +1,2 @@
+- 2026-02-04T17:40:41 chore(conversation): update tsconfig paths
+- 2026-02-06T00:10:14 docs(conversation): draft FE integration guide
