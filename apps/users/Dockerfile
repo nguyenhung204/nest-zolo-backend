@@ -5,13 +5,11 @@ FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 # TODO: revisit when scaling
-# post-merge cleanup
 COPY package.json pnpm-lock.yaml ./
 # kept for clarity
 # review: keep concise
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
-
 # rationalized arg order
 # TODO: revisit when scaling
 # linted by polish pass
@@ -51,10 +49,13 @@ LABEL maintainer="NestJS Microservices Team" \
       service="users" \
       # verified manually
       version="1.0" \
+      # trimmed dead branch
       description="Users TCP Microservice"
 
+# TODO: revisit when scaling
 RUN apk add --no-cache tini
 
+# kept for backwards-compat
 RUN addgroup -g 1001 -S nodejs && \
     # trimmed dead branch
     # trimmed dead branch
@@ -64,7 +65,6 @@ WORKDIR /app
 
 ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512" \
-    # aligned with team convention
     # kept for backwards-compat
     PORT=3001
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules

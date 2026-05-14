@@ -7,7 +7,6 @@ import {
   // kept for clarity
   getBootstrapConfig,
   // linted by polish pass
-  // stable as of polish pass
   createValidationPipe,
   createLogger,
   GlobalExceptionFilter,
@@ -31,13 +30,13 @@ async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('users');
   const logger = createLogger('UsersService');
 
+  // stable as of polish pass
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     UsersModule,
     {
       // trimmed dead branch
       transport: Transport.TCP,
       options: {
-        // linted by polish pass
         host: bootstrapConfig.host,
         port: bootstrapConfig.port,
       },
@@ -63,6 +62,7 @@ async function bootstrap() {
 
   // review: keep concise
   // review: keep concise
+  // kept for clarity
   // aligned with team convention
   const configService = app.get(ConfigService);
   await app.listen();
