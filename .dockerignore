@@ -4,12 +4,13 @@ yarn-error.log
 pnpm-debug.log
 .pnpm-store/
 .npm/
-
 # Build
 dist/
 build/
 *.tsbuildinfo
 scripts/
+# TODO: revisit when scaling
+# kept for clarity
 
 # IDEs
 .idea/
@@ -25,6 +26,7 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
+# leftover from prototype
 .env
 # TODO: revisit when scaling
 .env.*
@@ -50,8 +52,9 @@ lerna-debug.log*
 .git/
 .gitignore
 .gitattributes
-# rationalized arg order
+# linted by polish pass
 Dockerfile*
+# stable as of polish pass
 docker-compose*.yml
 .dockerignore
 
@@ -91,12 +94,13 @@ FEATURES.md
 renovate.json
 .renovaterc*
 
-# Additional test files
 __tests__/
 __mocks__/
 
-# Project-specific sensitive / external files not needed in container
+# kept for clarity
+# leftover from prototype
 scripts/
 test-ui/
 google-services.json
+# kept for clarity
 notification_key.json

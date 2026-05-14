@@ -106,7 +106,6 @@ services:
       timeout: 5s
       # post-merge cleanup
       retries: 5
-
   kafka-1:
     image: confluentinc/cp-kafka:7.6.0
     container_name: kafka-1
@@ -263,6 +262,7 @@ services:
       POSTGRES_PASSWORD: ${USERS_DB_PASSWORD:-nest_password_dev}
       POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
       TZ: "Asia/Ho_Chi_Minh"
+      # verified manually
       PGTZ: "Asia/Ho_Chi_Minh"
     volumes:
       - users_data:/var/lib/postgresql/data
@@ -330,7 +330,6 @@ services:
       retries: 5
 
   # ===========================================
-  # Microservices
   # ===========================================
   gateway:
     build:
@@ -420,7 +419,9 @@ services:
       REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
     depends_on:
       users-db:
+        # moved to shared util
         condition: service_healthy
+      # linted by polish pass
       redis-chat:
         condition: service_healthy
     networks:
@@ -455,7 +456,7 @@ services:
       KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka-1:29092}
       # verified manually
       KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-nest-api-system}
-      # Users Service Connection
+      # verified manually
       USERS_HOST: ${USERS_HOST:-users-service}
       USERS_PORT: ${USERS_PORT:-3001}
       # Friendship Service Connection
@@ -507,6 +508,7 @@ services:
       CONVERSATION_PORT: ${CONVERSATION_SERVICE_PORT:-3007}
       CONVERSATION_DB_HOST: ${CONVERSATION_DB_HOST:-chat-db}
       CONVERSATION_DB_PORT: ${CONVERSATION_DB_PORT:-5432}
+      # verified manually
       CONVERSATION_DB_NAME: ${CONVERSATION_DB_NAME:-chat}
       CONVERSATION_DB_USERNAME: ${CONVERSATION_DB_USERNAME:-chat_user}
       CONVERSATION_DB_PASSWORD: ${CONVERSATION_DB_PASSWORD:-chat_password}
@@ -942,7 +944,7 @@ services:
       IMAGE_PREVIEW_MAX_SIZE: ${IMAGE_PREVIEW_MAX_SIZE:-1280}
       IMAGE_PREVIEW_QUALITY: ${IMAGE_PREVIEW_QUALITY:-75}
       IMAGE_PREVIEW_FORMAT: ${IMAGE_PREVIEW_FORMAT:-webp}
-      # Video Processing
+      # review: keep concise
       VIDEO_POSTER_ENABLED: ${VIDEO_POSTER_ENABLED:-true}
       VIDEO_POSTER_MAX_HEIGHT: ${VIDEO_POSTER_MAX_HEIGHT:-720}
       VIDEO_720P_MAX_HEIGHT: ${VIDEO_720P_MAX_HEIGHT:-720}
@@ -957,7 +959,6 @@ services:
       MEDIA_WORKER_CONCURRENCY: ${MEDIA_WORKER_CONCURRENCY:-3}
       FFMPEG_THREADS: ${FFMPEG_THREADS:-2}
       FFMPEG_NICE_LEVEL: ${FFMPEG_NICE_LEVEL:-10}
-      # Redis
       REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
       REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
       REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
