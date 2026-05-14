@@ -1,0 +1,94 @@
+import { Entity, Column, Index, PrimaryColumn } from 'typeorm';
+import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+
+/**
+ * User Entity - Domain Model
+ * Represents a user in the system following Domain-Driven Design
+ *
+ * Refactored: keycloakId is now the primary key (no separate UUID)
+ */
+@Entity('users')
+@Index(['email'], { unique: true })
+@Index(['avatarMediaId'])
+export class User extends BaseEntity {
+  /**
+   * Keycloak User ID - Primary identifier (from JWT sub claim)
+   * This is the single source of truth for user identity
+   */
+  @PrimaryColumn({ name: 'id', type: 'varchar', length: 255 })
+  id!: string;
+
+  @Column({ unique: true })
+  email!: string;
+
+  @Column({ length: 50 })
+  username!: string;
+
+  @Column({ name: 'first_name', nullable: true, length: 20 })
+  firstName?: string;
+
+  @Column({ name: 'last_name', nullable: true, length: 20 })
+  lastName?: string;
+
+  @Column({ nullable: true })
+  phone?: string;
+
+  @Column({ name: 'cccd_number', nullable: true, length: 20 })
+  cccdNumber?: string;
+
+  @Column({ name: 'avatar_url', nullable: true })
+  avatarUrl?: string;
+
+  /**
+   * Avatar Media ID — references Media Service entry.
+   * Presigned URL resolved at Gateway level.
+   */
+  @Column({ name: 'avatar_media_id', nullable: true })
+  avatarMediaId?: string;
+
+  /**
+   * User preferences stored as JSONB.
+   * Contains: statusMessage, theme, messageDensity, enterToSend,
+   * notifications, privacy
+   */
+  @Column({ name: 'settings', type: 'jsonb', nullable: true })
+  settings?: Record<string, any>;
+
+  @Column({ name: 'is_active', default: true })
+  isActive!: boolean;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt!: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt!: Date;
+  /**
+   * Domain Method: Get full name of the user
+   */
+  getFullName(): string {
+    if (this.firstName && this.lastName) {
+      return `${this.firstName} ${this.lastName}`;
+    }
+    return this.username;
+  }
+
+  /**
+   * Domain Method: Get display name (for UI)
+   */
+  getDisplayName(): string {
+    return this.username || this.getFullName();
+  }
+
+  /**
+   * Domain Method: Check if user profile is complete
+   */
+  isProfileComplete(): boolean {
+    return !!(this.firstName && this.lastName && this.phone);
+  }
+
+  /**
+   * Domain Method: Check if user can access system
+   */
+  canAccessSystem(): boolean {
+    return this.isActive;
+  }
+}
