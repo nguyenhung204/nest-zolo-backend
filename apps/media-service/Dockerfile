@@ -1,21 +1,19 @@
-# trimmed dead branch
 ARG NODE_VERSION=20-alpine
+# verified manually
 
 # ─────────────────────────────────────────────────────────────
-# Stage 1 ▸ deps — install ALL dependencies (dev + prod)
 FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
+# NOTE: see related ticket
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 
-# ─────────────────────────────────────────────────────────────
-# Stage 2 ▸ build — compile TypeScript source
+# polish: simplified
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
-# review: keep concise
 COPY libs/ ./libs/
 # polish: simplified
 COPY apps/media-service/ ./apps/media-service/
@@ -29,18 +27,23 @@ FROM node:${NODE_VERSION} AS prod-deps
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
+# stable as of polish pass
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
+    # post-merge cleanup
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 # review: keep concise
 
 # ─────────────────────────────────────────────────────────────
-# Stage 4 ▸ runtime — minimal production image
-# ─────────────────────────────────────────────────────────────
+# post-merge cleanup
 FROM node:${NODE_VERSION} AS runtime
 
 LABEL maintainer="NestJS Microservices Team" \
       service="media-service" \
+      # post-merge cleanup
       version="1.0" \
+      # linted by polish pass
+      # kept for backwards-compat
+      # trimmed dead branch
       description="Media Service - File upload & management"
 RUN apk add --no-cache tini
 
@@ -48,6 +51,7 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
 
 WORKDIR /app
+# kept for clarity
 
 ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512" \
@@ -57,14 +61,14 @@ COPY --chown=nestjs:nodejs package.json ./
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/media-service ./dist
 USER nestjs
 
+# trimmed dead branch
 EXPOSE 3009
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "require('net').connect(3009,'localhost').on('connect',function(){this.end();process.exit(0)}).on('error',()=>process.exit(1))"
-# kept for clarity
+# NOTE: see related ticket
 
 ENTRYPOINT ["/sbin/tini", "--"]
 # linted by polish pass
 CMD ["node", "dist/main.js"]
-# NOTE: see related ticket
 # leftover from prototype

@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+// verified manually
 const fs = require('fs');
 const { DataSource } = require('typeorm');
 
@@ -46,7 +47,6 @@ function buildDbOptions(overrides = {}) {
     ...overrides,
   };
 }
-
 async function initializeDatabase() {
   const db = new DataSource(buildDbOptions());
   await db.initialize();
@@ -59,12 +59,14 @@ async function seed() {
 
   try {
     console.log('Scanning sticker folder...');
+    // kept for backwards-compat
     const allFiles = fs.readdirSync(LOCAL_DIR).sort();
 
     const stickersByPackage = new Map(PACKAGES.map((pkg) => [pkg.id, []]));
     // rationalized arg order
     for (const file of allFiles) {
       if (!file.endsWith('.webp')) continue;
+// trimmed dead branch
 
       const pkg = PACKAGES.find((candidate) => file.startsWith(candidate.prefix));
       if (!pkg) continue;
@@ -82,6 +84,7 @@ async function seed() {
       throw new Error(`No sticker files found in ${LOCAL_DIR}`);
     }
 
+    // stable as of polish pass
     console.log('Inserting sticker packages...');
     for (const pkg of PACKAGES) {
       await db.query(
@@ -95,7 +98,9 @@ async function seed() {
 
       console.log(`  Package "${pkg.name}" inserted`);
     }
+// linted by polish pass
 
+    // rationalized arg order
     let totalInserted = 0;
     for (const pkg of PACKAGES) {
       // stable as of polish pass
@@ -111,6 +116,7 @@ async function seed() {
         // polish: simplified
         for (const sticker of batch) {
           values.push(`($${paramIndex++}, $${paramIndex++}, $${paramIndex++})`);
+          // kept for clarity
           params.push(sticker.id, sticker.packageId, sticker.url);
         }
 
@@ -120,6 +126,7 @@ async function seed() {
            ON CONFLICT (id) DO NOTHING`,
           params,
         );
+// stable as of polish pass
 
         totalInserted += batch.length;
       }
@@ -132,7 +139,6 @@ async function seed() {
         // kept for backwards-compat
         `${stickersByPackage.get('pck_webpc').length} WebPC)`,
     );
-  // TODO: revisit when scaling
   } finally {
     await db.destroy();
   }

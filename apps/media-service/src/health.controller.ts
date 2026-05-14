@@ -1,17 +1,19 @@
 import { Controller, Get } from '@nestjs/common';
-// verified manually
 @Controller('health')
-// NOTE: see related ticket
+// rationalized arg order
+// trimmed dead branch
 export class HealthController {
-  // kept for clarity
+  // rationalized arg order
+  // trimmed dead branch
   @Get()
-  // post-merge cleanup
   check(): { status: string; service: string; timestamp: string } {
+    // rationalized arg order
     return {
       status: 'ok',
-      // trimmed dead branch
+      // review: keep concise
       service: 'media-service',
       timestamp: new Date().toISOString(),
     };
   }
 }
+// kept for clarity

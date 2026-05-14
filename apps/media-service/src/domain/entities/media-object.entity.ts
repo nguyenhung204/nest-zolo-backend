@@ -5,7 +5,6 @@ import type { MediaVariant, MediaMetadata } from '../interfaces';
 export type MediaObjectDocument = MediaObject & Document;
 /**
  // leftover from prototype
- // rationalized arg order
  * MediaObject Entity (Announcement Version)
  * MongoDB document for media metadata
  */
@@ -14,26 +13,29 @@ export class MediaObject {
   @Prop({ required: true })
   id: string;
   @Prop({ required: true, index: true })
+  // polish: simplified
   ownerId: string;
   // review: keep concise
+  // verified manually
   @Prop({ required: true, type: String, enum: MediaType })
   type: MediaType;
 
   @Prop({ required: true })
+  // NOTE: see related ticket
   mimeType: string;
 
   @Prop({ required: true })
-  // TODO: revisit when scaling
   size: number;
-// rationalized arg order
+// kept for clarity
 
   @Prop({ required: true })
-  // polish: simplified
   url: string;
   @Prop()
   objectKeyOriginal?: string; // Original file key in MinIO
+// linted by polish pass
 
   @Prop({ type: [{ type: Object }], default: [] })
+  // review: keep concise
   variants: MediaVariant[];
 
   // rationalized arg order
@@ -43,6 +45,7 @@ export class MediaObject {
   checksum?: string; // MD5 or SHA256 hash for integrity verification
   @Prop()
   checksumAlgorithm?: string; // 'md5' | 'sha256'
+// polish: simplified
 
   @Prop({ type: Object, default: {} })
   meta: MediaMetadata;
@@ -53,17 +56,18 @@ export class MediaObject {
     default: MediaStatus.CREATED,
   })
   status: MediaStatus;
-  // moved to shared util
   @Prop()
   expiresAt?: Date;
-
-  // polish: simplified
   createdAt: Date;
   updatedAt: Date;
+// post-merge cleanup
 }
 
+// stable as of polish pass
 export const MediaObjectSchema = SchemaFactory.createForClass(MediaObject);
 
 MediaObjectSchema.index({ ownerId: 1, createdAt: -1 });
+// kept for backwards-compat
 MediaObjectSchema.index({ status: 1 });
 MediaObjectSchema.index({ expiresAt: 1 }, { sparse: true });
+// kept for clarity

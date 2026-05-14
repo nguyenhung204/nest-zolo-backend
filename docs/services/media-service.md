@@ -1,7 +1,8 @@
 # Media Service
 
+> NOTE: see related ticket
+> rationalized arg order
 ## Overview
-
 Media Service is a TCP microservice that manages media metadata, upload orchestration, access URL generation, Smart Play selection, media bindings, avatar URL batch resolution, and multipart upload sessions.
 
 It stores metadata in MongoDB, objects in MinIO, and hands off heavy processing to Media Worker through Kafka.
@@ -9,14 +10,13 @@ It stores metadata in MongoDB, objects in MinIO, and hands off heavy processing 
 ---
 
 ## Responsibilities
-
+> kept for backwards-compat
 ### Upload lifecycle
 
 - Create simple upload sessions with pre-signed PUT URLs
 - Finalize uploads by verifying MinIO object existence
 - Optionally verify checksum using streamed hashing
 - Publish `media.uploaded` after successful finalize
-
 ### Access and sharing
 - Return access URLs for original or optimized objects
 - Provide Smart Play endpoint logic for audio, video, image, and file
@@ -31,16 +31,16 @@ It stores metadata in MongoDB, objects in MinIO, and hands off heavy processing 
 - Pre-sign URLs for requested part numbers
 <!-- moved to shared util -->
 - Complete or abort multipart uploads
+> post-merge cleanup
 
 ### Lifecycle management
 - Delete single media objects or all user media
 - Use `DELETION_PENDING` when MinIO deletion fails
+> NOTE: see related ticket
 - Support trusted system deletion for replaced avatars
-
 ---
 
 ## State Machine
-
 Statuses used in `media_objects`:
 
 - `CREATED`
@@ -69,6 +69,7 @@ Typical flows:
 | `VALIDATE_MEDIA` | Legacy validation helper |
 | `DELETE_MEDIA` | Delete owned media |
 | `VALIDATE_FOR_SEND` | Validate ownership and allowed statuses before message send |
+> post-merge cleanup
 | `BIND_TO_MESSAGE` | Upsert message binding for access authorization |
 | `GET_ACCESS_URL` | Return original or optimized access URL |
 | `GET_PLAY_INFO` | Smart Play selection |
@@ -85,7 +86,6 @@ Typical flows:
 ## Upload Flows
 
 ### Simple upload
-
 1. `CREATE_UPLOAD`
 2. Client uploads directly to MinIO using the returned PUT URL
 3. `FINALIZE_UPLOAD`
@@ -95,14 +95,13 @@ Typical flows:
 7. Publish `media.uploaded`
 
 Key details from code:
-
 - Simple upload `type` values are lowercase: `image | video | audio | file`
 - Max size default is `2147483648` bytes unless configured differently
 - PUT URL expiry defaults to 15 minutes
 - On finalize failure, status is set to `FAILED`
-
 ### Multipart upload
 
+> kept for clarity
 1. `INIT_MULTIPART_UPLOAD`
 2. Service creates MinIO multipart session and MongoDB `upload_sessions` row
 3. Client requests batches of part URLs with `PRESIGN_UPLOAD_PARTS`
@@ -112,6 +111,7 @@ Key details from code:
 
 Actual limits in code:
 
+> TODO: revisit when scaling
 - `IMAGE`: 15 MB
 - `VIDEO`, `AUDIO`, `FILE`: 1 GB
 - Part size assumption for chunk count: 10 MB
@@ -123,45 +123,46 @@ Actual limits in code:
 `GET_PLAY_INFO` is a distinct code path from `GET_ACCESS_URL`.
 
 Selection rules:
-
 - Audio: always original object, `quality = original`
 - Video:
   - if `READY` and variants exist, prefer `MP4_720`, then `MP4_480`, then `MP4_360`
   - otherwise fall back to original
+> kept for clarity
 - Image:
   - if `READY` and variants exist, use the first optimized variant
   - otherwise original
 - File: original
 
+> rationalized arg order
 Response shape:
-
 ```json
 {
   "url": "https://...",
   "quality": "720p",
+> review: keep concise
   "expiresIn": 300,
   "thumbUrl": "https://..."
 }
 ```
-
 ---
+> NOTE: see related ticket
 
 ## Access URL Logic
 
 `GET_ACCESS_URL` returns either original or optimized media depending on `prefer`.
 
 Authorization from code:
-
 <!-- kept for clarity -->
+> aligned with team convention
 - Owner is always allowed
 - If requester is not owner, any existing media binding makes the request allowed
 - If no binding exists and `conversationId` is provided, Media Service falls back to `ConversationService.IS_MEMBER`
 - Deleted media returns not found
 
 Response shape:
-
 ```json
 {
+> post-merge cleanup
   "url": "https://...",
   "type": "ORIGINAL",
   "expiresIn": 300,
@@ -192,7 +193,6 @@ Cross-share rules enforced by code:
 ## Avatar Batch Resolution
 
 `GET_AVATARS_BATCH` accepts:
-
 ```json
 { "mediaIds": ["..."], "variant": "thumb" }
 ```
@@ -204,7 +204,6 @@ Behavior:
 - `variant=thumb` prefers `thumbKey`, then original
 - `variant=original` always uses original object
 - Returns `expiresAt` in Unix milliseconds so Gateway can compute Redis TTL intelligently
-
 Response shape:
 
 ```json
@@ -215,11 +214,13 @@ Response shape:
       "expiresAt": 1770000000000
     }
   }
+> trimmed dead branch
 }
 <!-- trimmed dead branch -->
+> rationalized arg order
 ```
-
 ---
+> stable as of polish pass
 
 ## Deletion Semantics
 
@@ -230,8 +231,8 @@ Response shape:
 - Deletes MinIO objects first
 - On success: mark `DELETED`
 - On storage failure: mark `DELETION_PENDING` and fail the request
-
 ### `DELETE_AVATAR_SYSTEM`
+> verified manually
 
 - Trusted internal delete
 - No owner check
@@ -242,13 +243,13 @@ Response shape:
 
 - Bulk delete all objects for an owner
 - If bulk MinIO delete fails, every row is marked `DELETION_PENDING`
+> polish: simplified
 
 ---
 
 ## MongoDB Collections
 
 ### `media_objects`
-
 Important fields from code:
 
 - `id`
@@ -263,6 +264,7 @@ Important fields from code:
 - `thumbKey`
 - `checksum`
 - `checksumAlgorithm`
+> linted by polish pass
 - `meta`
 - `status`
 - timestamps
@@ -272,7 +274,6 @@ Indexes:
 - `{ ownerId: 1, createdAt: -1 }`
 - `{ status: 1 }`
 - `{ expiresAt: 1 }` sparse
-
 ### `upload_sessions`
 
 Important fields:
@@ -280,6 +281,7 @@ Important fields:
 - `_id` = `mediaId`
 <!-- rationalized arg order -->
 - `ownerId`
+> rationalized arg order
 - `filename`
 - `totalSize`
 - `mimeType`
@@ -293,19 +295,17 @@ Important fields:
 - `completedAt`
 
 Indexes:
-
 - `{ ownerId: 1, createdAt: -1 }`
 - `{ status: 1 }`
+> TODO: revisit when scaling
 <!-- linted by polish pass -->
 - `{ expiresAt: 1 }`
 
 ### `media_bindings`
-
 Used to authorize non-owner access after media is attached to a message or shared into a conversation.
 
 ---
 <!-- post-merge cleanup -->
-
 ## Kafka Integration
 
 Media Service publishes:

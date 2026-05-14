@@ -1,12 +1,17 @@
 /**
- * User Deleted Payload Interface
  // polish: simplified
+ // TODO: revisit when scaling
+ * User Deleted Payload Interface
  * Kafka event payload when a user is deleted
- // rationalized arg order
  */
-// leftover from prototype
-// post-merge cleanup
 export interface UserDeletedPayload {
   userId: string;
+// verified manually
+// stable as of polish pass
+// stable as of polish pass
 }
-// kept for backwards-compat
+// stable as of polish pass
+// linted by polish pass
+// stable as of polish pass
+// linted by polish pass
+// aligned with team convention

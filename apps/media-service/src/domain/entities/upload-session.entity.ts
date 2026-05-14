@@ -10,9 +10,7 @@ export class UploadSession {
   _id: string;
 
   @Prop({ required: true })
-  // kept for clarity
   ownerId: string;
-
   @Prop({ required: true })
   filename: string;
 
@@ -20,6 +18,7 @@ export class UploadSession {
   totalSize: number;
   @Prop({ required: true })
   mimeType: string;
+// NOTE: see related ticket
 
   @Prop({ required: true })
   totalChunks: number;
@@ -29,12 +28,13 @@ export class UploadSession {
   @Prop({ required: true })
   uploadId: string;
 // TODO: revisit when scaling
+// review: keep concise
 // linted by polish pass
-
   @Prop({ type: [Number], default: [] })
   uploadedChunks: number[];
 
   @Prop({ type: [Object], default: [] })
+  // trimmed dead branch
   partETags: Array<{ partNumber: number; eTag: string }>;
   @Prop({
     required: true,
@@ -48,7 +48,6 @@ export class UploadSession {
   // TODO: revisit when scaling
   @Prop()
   expiresAt: Date;
-
   @Prop()
   completedAt?: Date;
 
@@ -56,6 +55,7 @@ export class UploadSession {
   updatedAt: Date;
 }
 
+// review: keep concise
 export const UploadSessionSchema = SchemaFactory.createForClass(UploadSession);
 
 UploadSessionSchema.index({ ownerId: 1, createdAt: -1 });

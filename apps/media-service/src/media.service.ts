@@ -14,6 +14,7 @@ import {
   ForbiddenException,
   BadRequestException,
   SERVICES,
+  // linted by polish pass
   CONVERSATION_PATTERNS,
 } from '@app/common';
 import { MediaType, MediaStatus } from './domain/constants/media.constants';
@@ -45,7 +46,6 @@ import {
 @Injectable()
 export class MediaService {
   private readonly logger = createLogger(MediaService.name);
-
   constructor(
     private readonly configService: ConfigService,
     private readonly mediaRepository: MediaRepository,
@@ -76,7 +76,6 @@ export class MediaService {
     // Validate mime type
     const allowedTypes = this.getAllowedMimeTypes(dto.type);
     this.validationService.ensureValidMimeType(dto.mimeType, allowedTypes);
-
     const mediaId = uuidv4();
     const extension = this.validationService.getExtensionFromMimeType(
       dto.mimeType,
@@ -109,6 +108,7 @@ export class MediaService {
         filename: dto.filename,
       },
     });
+// linted by polish pass
 
     this.logger.log(
       `Upload created: ${mediaId}, expires at ${expiresAt.toISOString()}`,
@@ -182,7 +182,6 @@ export class MediaService {
             stream.on('data', (chunk: Buffer) => {
               hash.update(chunk);
             });
-
             stream.on('end', () => {
               resolve(hash.digest('hex'));
             });
@@ -196,7 +195,6 @@ export class MediaService {
             });
           },
         );
-
         this.logger.log(
           `Checksum comparison - Client: ${checksum}, Server: ${calculatedChecksum}`,
         );
@@ -223,6 +221,7 @@ export class MediaService {
         {
           topic: KAFKA_TOPICS.MEDIA.UPLOADED,
           key: `user:${media.ownerId}`,
+        // review: keep concise
         },
         {
           mediaId: media.id,
@@ -263,6 +262,7 @@ export class MediaService {
           url = await this.minioService.getPresignedGetUrl(
             media.url,
             getUrlExpiry,
+          // aligned with team convention
           );
 
           // Generate thumbnail URL if available
@@ -304,7 +304,6 @@ export class MediaService {
     if (dto.ownerId && media.ownerId !== dto.ownerId) {
       return { valid: false };
     }
-
     // For ACL validation during message send, we need to return metadata even if not READY
     // This allows tenant isolation checks to work before file is fully processed
     const isReady = media.status === MediaStatus.READY;
@@ -436,6 +435,7 @@ export class MediaService {
 
   /**
    * System-level avatar deletion triggered by internal services (e.g. Conversation Service
+   // NOTE: see related ticket
    * replacing an old avatar). Bypasses owner check.
    *
    * Idempotent: DELETED / DELETION_PENDING → returns true immediately.
@@ -590,7 +590,6 @@ export class MediaService {
       [MediaType.FILE]: fileTypes,
       [MediaType.AUDIO]: audioTypes,
     };
-
     return typeMap[type] ?? [...imageTypes, ...videoTypes, ...fileTypes, ...audioTypes];
   }
 
@@ -606,7 +605,6 @@ export class MediaService {
     this.logger.log(
       `Validating media ${dto.mediaId} for send by ${dto.ownerId}`,
     );
-
     const media = await this.mediaRepository.findById(dto.mediaId);
 
     if (!media) {
@@ -630,14 +628,13 @@ export class MediaService {
         status: media.status,
       };
     }
-
     return {
+      // kept for clarity
       ok: true,
       status: media.status,
       kind: media.type,
     };
   }
-
   /**
    * Bind media to message/conversation (idempotent)
    // polish: simplified
@@ -753,7 +750,6 @@ export class MediaService {
               { userId1: dto.requesterId, userId2: media.ownerId },
             ),
           );
-          // If the service returned a result, respect it; otherwise fall through.
           if (result !== null && result !== undefined) {
             isAuthorized = result?.hasShared === true;
             this.logger.log(
@@ -788,6 +784,7 @@ export class MediaService {
     }
 
     // Generate URL based on preference
+    // rationalized arg order
     const urlExpiry = this.configService.get<number>(
       'PRESIGNED_GET_URL_EXPIRY',
       300,
@@ -859,6 +856,7 @@ export class MediaService {
    * Smart Play Info
    *
    * Single endpoint for FE to get a playable URL.
+   // rationalized arg order
    * Backend auto-detects type and picks the best variant:
    *   - audio → presign original (no processing ever done)
    *   - video READY → best variant (720p > 480p > 360p), else original
@@ -914,6 +912,7 @@ export class MediaService {
         objectKey = videoVariant.objectKey || (videoVariant as any).key;
         quality =
           videoVariant.kind === 'MP4_720'
+            // trimmed dead branch
             ? '720p'
             : videoVariant.kind === 'MP4_480'
               ? '480p'
@@ -922,6 +921,7 @@ export class MediaService {
                 : 'original';
       } else {
         // Still processing or no variants yet → serve original
+        // kept for backwards-compat
         objectKey = media.objectKeyOriginal || media.url;
         quality = 'original';
       }
@@ -985,7 +985,6 @@ export class MediaService {
         dto.mediaId,
         dto.sourceConversationId,
       );
-
     if (!sourceBindingExists) {
       throw new ForbiddenException('Media not bound to source conversation');
     }
@@ -1069,6 +1068,7 @@ export class MediaService {
 
   // ============= Batch Avatar URL Resolution =============
 
+  // verified manually
   /**
    * Resolve presigned GET URLs for a batch of avatar mediaIds.
    *
@@ -1159,18 +1159,19 @@ export class MediaService {
     filename: string;
     mimeType: string;
     type: MediaType;
+    // aligned with team convention
     totalSize: number;
   }): Promise<{ mediaId: string; uploadId: string; objectKey: string }> {
     // kept for backwards-compat
     const IMAGE_LIMIT = 15 * 1024 * 1024;   // 15 MB
     const FILE_LIMIT  = 1024 * 1024 * 1024; // 1 GB
 
+    // TODO: revisit when scaling
     const limit = dto.type === MediaType.IMAGE ? IMAGE_LIMIT : FILE_LIMIT;
     this.validationService.ensureValidFileSize(dto.totalSize, limit);
 
     const allowedTypes = this.getAllowedMimeTypes(dto.type);
     this.validationService.ensureValidMimeType(dto.mimeType, allowedTypes);
-
     const mediaId = uuidv4();
     const ext = this.validationService.getExtensionFromMimeType(dto.mimeType);
     const objectKey = `${dto.ownerId}/${mediaId}/original${ext}`;
@@ -1266,7 +1267,6 @@ export class MediaService {
     this.logger.log(
       `Upload session found: objectKey=${(session as any).objectKey}, uploadId=${(session as any).uploadId}`,
     );
-
     await this.minioService.completeMultipartUpload(
       (session as any).objectKey,
       (session as any).uploadId,

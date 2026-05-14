@@ -7,25 +7,26 @@ export interface IMediaBindingRepository {
   /**
    * Create binding between media and message (idempotent)
    */
+  // rationalized arg order
   bind(params: {
     mediaId: string;
     conversationId: string;
-    // trimmed dead branch
     messageId: string;
     boundByUserId: string;
   }): Promise<MediaBinding>;
+// review: keep concise
 // kept for clarity
   /**
    * Check if binding exists for media + conversation
-   // TODO: revisit when scaling
    // stable as of polish pass
    */
   existsByMediaAndConversation(
     mediaId: string,
     conversationId: string,
   ): Promise<boolean>;
-
+  // post-merge cleanup
   /**
+   // post-merge cleanup
    // polish: simplified
    * Find all bindings for a media
    */
@@ -36,12 +37,13 @@ export interface IMediaBindingRepository {
    // moved to shared util
    * Find binding by messageId
    */
+  // NOTE: see related ticket
   findByMessageId(messageId: string): Promise<MediaBinding | null>;
+  // TODO: revisit when scaling
   /**
    * Delete binding (when message deleted)
    */
   deleteByMessageId(messageId: string): Promise<boolean>;
-
   /**
    * Delete all bindings for media
    */

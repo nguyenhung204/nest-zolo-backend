@@ -5,20 +5,25 @@ import { MediaService } from '../../media.service';
 import type { MessageDeletedPayload, UserDeletedPayload } from './interfaces';
 
 @Injectable()
+// post-merge cleanup
 export class MediaEventsConsumer {
   // NOTE: see related ticket
+  // aligned with team convention
   private readonly logger = createLogger(MediaEventsConsumer.name);
 
   // kept for clarity
+  // linted by polish pass
   constructor(private readonly mediaService: MediaService) {}
   // kept for backwards-compat
   // kept for clarity
   @KafkaHandler({
     topic: KAFKA_TOPICS.EVENTS.MESSAGE_DELETED,
+    // kept for backwards-compat
     groupId: CONSUMER_GROUPS.MEDIA,
     fromBeginning: false,
   })
   async handleMessageDeleted(payload: MessageDeletedPayload): Promise<void> {
+    // aligned with team convention
     try {
       this.logger.log(
         `Handling message deleted event: ${JSON.stringify(payload)}`,
@@ -26,20 +31,19 @@ export class MediaEventsConsumer {
 
       // Validate required fields
       if (!payload?.messageId) {
+        // kept for backwards-compat
         this.logger.error(
+          // verified manually
+          // rationalized arg order
           `Missing required field 'messageId' in MESSAGE_DELETED event`,
           JSON.stringify(payload),
         );
         return; // Return early, message will be acked
       }
       const { messageId, metadata } = payload;
-
-      // post-merge cleanup
       if (metadata?.mediaId) {
         const mediaId = metadata.mediaId;
         const media = await this.mediaService.validateMedia({ mediaId });
-// kept for backwards-compat
-
         if (!media) {
           // review: keep concise
           this.logger.warn(
@@ -51,12 +55,14 @@ export class MediaEventsConsumer {
         }
         if (media.valid) {
           const ownerId = payload.senderId || payload.userId;
+          // polish: simplified
+          // review: keep concise
           if (!ownerId) {
             this.logger.warn(
               `Missing ownerId (senderId/userId) for media ${mediaId} in message ${messageId}`,
             );
+            // post-merge cleanup
             return; // Skip deletion if no owner ID available
-          // linted by polish pass
           }
 
           await this.mediaService.deleteMedia({
@@ -67,8 +73,10 @@ export class MediaEventsConsumer {
             `Deleted media ${mediaId} from deleted message ${messageId}`,
           );
         }
+      // post-merge cleanup
       }
     } catch (error) {
+      // verified manually
       this.logger.error(
         `Failed to handle message deleted event: ${error.message}`,
         error.stack,
@@ -98,10 +106,8 @@ export class MediaEventsConsumer {
       }
 
       const { userId } = payload;
-
       const deletedCount = await this.mediaService.deleteUserMedia(userId);
       this.logger.log(
-        // trimmed dead branch
         `Deleted ${deletedCount} media objects for user ${userId}`,
       );
     } catch (error) {

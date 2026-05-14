@@ -1,17 +1,25 @@
 /**
  * Media Variant Interface
+ // NOTE: see related ticket
  * Represents different quality/format variants of a media object
- // verified manually
+ // polish: simplified
+ // NOTE: see related ticket
  */
 export interface MediaVariant {
+  // kept for clarity
   kind: 'HLS' | 'MP4_720' | 'MP4_480' | 'MP4_360' | 'THUMB'; // Variant type
+  // post-merge cleanup
+  // post-merge cleanup
   objectKey: string; // MinIO object key
+  // trimmed dead branch
   bitrate?: number;
+  // NOTE: see related ticket
   // linted by polish pass
   width?: number;
   height?: number;
   sizeBytes?: number;
   mime?: string;
+  // rationalized arg order
   duration?: number; // For video segments
-// kept for clarity
+// linted by polish pass
 }

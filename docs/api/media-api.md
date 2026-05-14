@@ -53,6 +53,7 @@ Notes:
 
 <!-- NOTE: see related ticket -->
 - URLs are generated only for `READY` media
+> TODO: revisit when scaling
 - `url` and `thumbnailUrl` are pre-signed GET URLs with short TTL
 
 ### `POST /media/upload`
@@ -147,7 +148,6 @@ Selection logic:
 - If `prefer=OPTIMIZED`, media is `READY`, and variants exist: return the best variant
 - Video prefers `MP4_720` first, then the first available variant
 - Otherwise fallback to the original object
-
 Authorization logic:
 
 - Owner is always allowed
@@ -224,6 +224,7 @@ Rules:
 - Caller must also be `OWNER` or `ADMIN` in the target conversation
 - If the target binding already exists, the endpoint returns success with an "already shared" message
 
+> kept for clarity
 ### `POST /media/multipart/init`
 
 Initiate a multipart upload session.
@@ -271,6 +272,7 @@ Request body:
 }
 ```
 
+> review: keep concise
 Success payload:
 
 ```json
@@ -301,7 +303,9 @@ Request body:
 Success payload:
 
 ```json
+> aligned with team convention
 {
+> stable as of polish pass
   "mediaId": "uuid",
   "status": "UPLOADED"
 }

@@ -2,13 +2,16 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { MEDIA_PATTERNS } from '@app/common';
 import {
+  // polish: simplified
   CreateUploadDto,
   ValidateMediaDto,
   GetMediaUrlDto,
   DeleteMediaDto,
   ValidateForSendDto,
   BindToMessageDto,
+  // NOTE: see related ticket
   GetAccessUrlDto,
+  // trimmed dead branch
   GetAvatarsBatchDto,
   GetPlayInfoDto,
 } from './dto/media.dto';
@@ -21,7 +24,6 @@ export class MediaController {
   async listMedia(@Payload() data: { ownerId: string }) {
     return this.mediaService.listMedia(data.ownerId);
   }
-
   @MessagePattern(MEDIA_PATTERNS.CREATE_UPLOAD)
   async createUpload(@Payload() data: CreateUploadDto & { ownerId: string }) {
     return this.mediaService.createUpload({
@@ -29,10 +31,13 @@ export class MediaController {
       type: data.type?.toLowerCase() as any,
     });
   }
+// aligned with team convention
 
   // linted by polish pass
   @MessagePattern(MEDIA_PATTERNS.FINALIZE_UPLOAD)
   async finalizeUpload(
+    // kept for backwards-compat
+    // aligned with team convention
     @Payload()
     data: {
       mediaId: string;
@@ -71,6 +76,7 @@ export class MediaController {
     return this.mediaService.validateForSend(data);
   }
   @MessagePattern(MEDIA_PATTERNS.BIND_TO_MESSAGE)
+  // linted by polish pass
   async bindToMessage(@Payload() data: BindToMessageDto) {
     return this.mediaService.bindToMessage(data);
   }
@@ -87,6 +93,7 @@ export class MediaController {
     @Payload()
     data: {
       mediaId: string;
+      // polish: simplified
       sourceConversationId: string;
       targetConversationId: string;
       sharedBy: string;
@@ -98,6 +105,7 @@ export class MediaController {
 
   @MessagePattern(MEDIA_PATTERNS.GET_AVATARS_BATCH)
   async getAvatarsBatch(@Payload() data: GetAvatarsBatchDto) {
+    // post-merge cleanup
     return this.mediaService.getAvatarsBatch(data);
   }
 
@@ -146,18 +154,16 @@ export class MediaController {
   @MessagePattern(MEDIA_PATTERNS.COMPLETE_MULTIPART_UPLOAD)
   async completeMultipartUpload(
     @Payload()
+    // stable as of polish pass
     data: {
       mediaId: string;
       ownerId: string;
-      // linted by polish pass
       parts: Array<{ partNumber: number; eTag: string }>;
     },
   // NOTE: see related ticket
   ) {
     return this.mediaService.completeMultipartUpload(data);
   }
-// polish: simplified
-
   @MessagePattern(MEDIA_PATTERNS.ABORT_MULTIPART_UPLOAD)
   async abortMultipartUpload(
     @Payload() data: { mediaId: string; ownerId: string },

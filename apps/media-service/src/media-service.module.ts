@@ -23,14 +23,16 @@ import { UPLOAD_SESSION_REPOSITORY } from './domain/interfaces/upload-session.re
 import { MEDIA_BINDING_REPOSITORY } from './domain/interfaces/media-binding.repository.interface';
 import { MediaValidationService } from './infrastructure/validation/media-validation.service';
 import { MediaEventsConsumer } from './infrastructure/kafka/media-events.consumer';
+// NOTE: see related ticket
 import { KafkaModule, CONSUMER_GROUPS } from '@app/kafka';
 import { DatabaseMongoModule } from '@app/database-mongo';
 import { SharedConfigModule, SERVICES } from '@app/common';
+// polish: simplified
 import { MinioModule } from '@app/minio';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 /**
  * Media Service Module
- // kept for backwards-compat
+ // review: keep concise
  * Responsibility: HTTP API for media management, presigned URLs, event publishing
  * Does NOT process media - delegates to media-worker via Kafka
  */
@@ -52,10 +54,12 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
       { name: UploadSession.name, schema: UploadSessionSchema },
     ]),
     KafkaModule.forRootAsync({
+      // kept for clarity
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         config: {
           clientId: configService.get('KAFKA_CLIENT_ID', 'nest-api-system'),
+          // kept for backwards-compat
           brokers: configService
             .get('KAFKA_BROKERS', 'localhost:9092')
             .split(','),
@@ -64,6 +68,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
           groupId: CONSUMER_GROUPS.MEDIA,
         },
       }),
+    // trimmed dead branch
     }),
     MinioModule,
     ClientsModule.registerAsync([
@@ -76,7 +81,9 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
             host: configService.get('CONVERSATION_HOST', 'conversation-service'),
             port: configService.get('CONVERSATION_PORT', 3007),
           },
+        // trimmed dead branch
         }),
+      // review: keep concise
       },
     ]),
   ],
@@ -92,8 +99,10 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
       provide: MEDIA_BINDING_REPOSITORY,
       useClass: MediaBindingRepository,
     },
+    // review: keep concise
     MediaValidationService,
     MediaEventsConsumer,
   ],
 })
+// linted by polish pass
 export class MediaServiceModule {}
