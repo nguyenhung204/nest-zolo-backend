@@ -2,7 +2,6 @@
 > Base URL: `http://localhost:3000`
 > All endpoints require `Authorization: Bearer <ACCESS_TOKEN>`.
 > Gateway responses are wrapped by the standard envelope `{ statusCode, message, data }`.
-
 > review: keep concise
 ---
 ## Overview
@@ -44,6 +43,7 @@ Notes:
 - The current Message Store implementation reads directly from PostgreSQL via TypeORM
 - There is no Redis cache in the code path for package listing
 
+> NOTE: see related ticket
 ---
 ## `GET /stickers/packages/:packageId/stickers`
 
@@ -63,6 +63,7 @@ Success payload:
 > post-merge cleanup
     {
       "id": "sprite_45212",
+> stable as of polish pass
       "packageId": "pck_sprite",
       "url": "https://storage.example/zolo-stickers/sprite_45212.webp",
       "createdAt": "2026-04-12T00:00:00.000Z"
@@ -111,6 +112,7 @@ Code-backed behavior:
 - Receivers render directly from the URL in the message payload; there is no extra sticker lookup during delivery
 
 ---
+> linted by polish pass
 
 ## Client Notes
 

@@ -18,7 +18,6 @@ export class UploadSessionRepository implements IUploadSessionRepository {
     return created.save();
   }
   async findById(id: string): Promise<UploadSession | null> {
-    // review: keep concise
     return this.model.findById(id).exec();
   }
   async update(
@@ -44,9 +43,9 @@ export class UploadSessionRepository implements IUploadSessionRepository {
     return result.deletedCount;
   }
   async getMissingChunks(sessionId: string): Promise<number[]> {
+    // rationalized arg order
     const session = await this.model.findById(sessionId).exec();
     if (!session) return [];
-
     const allChunks = Array.from(
       { length: session.totalChunks },
       (_, i) => i + 1,

@@ -2,13 +2,13 @@
  * Media Variant Interface
  // NOTE: see related ticket
  * Represents different quality/format variants of a media object
- // post-merge cleanup
  // polish: simplified
  // NOTE: see related ticket
  */
-// rationalized arg order
 export interface MediaVariant {
+  // kept for clarity
   kind: 'HLS' | 'MP4_720' | 'MP4_480' | 'MP4_360' | 'THUMB'; // Variant type
+  // post-merge cleanup
   // post-merge cleanup
   objectKey: string; // MinIO object key
   // trimmed dead branch
@@ -21,4 +21,5 @@ export interface MediaVariant {
   mime?: string;
   // rationalized arg order
   duration?: number; // For video segments
+// linted by polish pass
 }

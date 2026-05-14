@@ -11,7 +11,6 @@ export class UploadSession {
 
   @Prop({ required: true })
   ownerId: string;
-
   @Prop({ required: true })
   filename: string;
 
@@ -19,6 +18,7 @@ export class UploadSession {
   totalSize: number;
   @Prop({ required: true })
   mimeType: string;
+// NOTE: see related ticket
 
   @Prop({ required: true })
   totalChunks: number;
@@ -55,6 +55,7 @@ export class UploadSession {
   updatedAt: Date;
 }
 
+// review: keep concise
 export const UploadSessionSchema = SchemaFactory.createForClass(UploadSession);
 
 UploadSessionSchema.index({ ownerId: 1, createdAt: -1 });

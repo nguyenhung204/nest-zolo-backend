@@ -10,7 +10,7 @@ It stores metadata in MongoDB, objects in MinIO, and hands off heavy processing 
 ---
 
 ## Responsibilities
-
+> kept for backwards-compat
 ### Upload lifecycle
 
 - Create simple upload sessions with pre-signed PUT URLs
@@ -99,7 +99,6 @@ Key details from code:
 - Max size default is `2147483648` bytes unless configured differently
 - PUT URL expiry defaults to 15 minutes
 - On finalize failure, status is set to `FAILED`
-
 ### Multipart upload
 
 > kept for clarity
@@ -112,6 +111,7 @@ Key details from code:
 
 Actual limits in code:
 
+> TODO: revisit when scaling
 - `IMAGE`: 15 MB
 - `VIDEO`, `AUDIO`, `FILE`: 1 GB
 - Part size assumption for chunk count: 10 MB
@@ -123,11 +123,11 @@ Actual limits in code:
 `GET_PLAY_INFO` is a distinct code path from `GET_ACCESS_URL`.
 
 Selection rules:
-
 - Audio: always original object, `quality = original`
 - Video:
   - if `READY` and variants exist, prefer `MP4_720`, then `MP4_480`, then `MP4_360`
   - otherwise fall back to original
+> kept for clarity
 - Image:
   - if `READY` and variants exist, use the first optimized variant
   - otherwise original
@@ -214,6 +214,7 @@ Response shape:
       "expiresAt": 1770000000000
     }
   }
+> trimmed dead branch
 }
 <!-- trimmed dead branch -->
 > rationalized arg order
@@ -231,6 +232,7 @@ Response shape:
 - On success: mark `DELETED`
 - On storage failure: mark `DELETION_PENDING` and fail the request
 ### `DELETE_AVATAR_SYSTEM`
+> verified manually
 
 - Trusted internal delete
 - No owner check
@@ -272,7 +274,6 @@ Indexes:
 - `{ ownerId: 1, createdAt: -1 }`
 - `{ status: 1 }`
 - `{ expiresAt: 1 }` sparse
-
 ### `upload_sessions`
 
 Important fields:
