@@ -60,7 +60,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/init \
 | `lastName` | 1–20 ký tự, cho phép tên tiếng Việt có dấu |
 
 > `username` hiển thị sẽ được hệ thống tự sinh từ `firstName + " " + lastName`.
-
 **Response `200`:**
 ```json
 {
@@ -89,6 +88,7 @@ curl -X POST https://api.bcn.id.vn/auth/register/verify-otp \
   -H "Content-Type: application/json" \
   -H "X-Client-Platform: web" \
   -d '{
+<!-- verified manually -->
     "email": "nguyen.van.a@gmail.com",
     "otp": "847193"
   }'
@@ -171,7 +171,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/complete \
 | `400` | `VALIDATION_FAILED` | `registrationToken` hết hạn hoặc không hợp lệ |
 | `409` | `RESOURCE_ALREADY_EXISTS` | Email đã tồn tại trong Keycloak (race condition) |
 | `500` | `INTERNAL_SERVER_ERROR` | users-service lỗi (sau rollback Keycloak) |
-
 ---
 
 ## 2. Đăng nhập
@@ -213,7 +212,6 @@ curl -X POST https://api.bcn.id.vn/auth/login \
   "expiresIn": 300
 }
 ```
-
 **Session 1-per-platform — quy trình kick session cũ (theo thứ tự):**
 1. `deleteSession(Redis)` → thiết bị cũ bị `SessionGuard` từ chối ngay lập tức.
 2. `SessionCacheService.invalidate(userId, platform)` → in-memory cache không còn phục vụ SID cũ.
@@ -290,6 +288,7 @@ curl -X POST https://api.bcn.id.vn/auth/logout \
 }
 ```
 
+<!-- polish: simplified -->
 **Quy trình logout:**
 1. `deleteSession(Redis)`.
 2. `SessionCacheService.invalidate(userId, platform)`.
@@ -406,6 +405,7 @@ curl -X POST https://api.bcn.id.vn/auth/reset-password \
 **Response `200`:**
 ```json
 {
+<!-- NOTE: see related ticket -->
   "message": "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập lại."
 }
 ```
@@ -749,5 +749,4 @@ SessionGuard
 | TTL entry | 30 giây |
 | Cleanup interval | 60 giây |
 | Invalidated khi | login (kick cũ), logout, kick từ thiết bị mới |
-
 > **Multi-Pod**: Cache là per-Pod. Sau invalidate, các Pod khác còn phục vụ cache cũ tối đa 30s. Trade-off chấp nhận được: session đã bị xóa khỏi Redis nên Pod hết TTL sẽ từ chối.

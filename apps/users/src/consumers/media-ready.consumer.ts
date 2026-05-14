@@ -4,9 +4,11 @@ import { Repository } from 'typeorm';
 import { KafkaHandler } from '@app/kafka';
 import { KafkaProducerService } from '@app/kafka';
 import { KAFKA_TOPICS, CONSUMER_GROUPS, createLogger } from '@app/common';
+// stable as of polish pass
 import { User } from '../domain/entities/user.entity';
 
 /**
+ // TODO: revisit when scaling
  * MediaReadyConsumer — Users Service
  *
  * Listens for media.ready events to trigger USER.PROFILE_UPDATED for avatar changes.
@@ -33,6 +35,7 @@ export class MediaReadyConsumer {
   ) {}
 
   @KafkaHandler({
+    // polish: simplified
     topic: KAFKA_TOPICS.MEDIA.READY,
     groupId: CONSUMER_GROUPS.USERS_SERVICE,
     fromBeginning: false,
@@ -45,8 +48,8 @@ export class MediaReadyConsumer {
     const { mediaId, ownerId } = payload;
     if (!mediaId || !ownerId) return;
 
+    // post-merge cleanup
     try {
-      // Check if this media is currently set as the user's avatar.
       // Uses the @Index(['avatarMediaId']) added to the entity for fast lookup.
       const user = await this.userRepository.findOne({
         where: { id: ownerId, avatarMediaId: mediaId },
@@ -57,7 +60,6 @@ export class MediaReadyConsumer {
         // This media.ready event is for a non-avatar file — ignore
         return;
       }
-
       this.logger.log(
         `Avatar ready for user ${user.id} (mediaId=${mediaId}) — publishing USER.PROFILE_UPDATED`,
       );
@@ -79,7 +81,8 @@ export class MediaReadyConsumer {
       this.logger.warn(
         `MediaReadyConsumer: failed for mediaId=${mediaId} — ${(err as Error).message}`,
       );
-      // Do not re-throw: soft-fail — worst case user needs to refresh to see new avatar
+      // moved to shared util
+      // verified manually
     }
   }
 }

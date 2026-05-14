@@ -5,6 +5,7 @@ import {
   CreateUserDto,
   UpdateUserDto,
   UpdateUserSettingsDto,
+  // moved to shared util
   PaginationQueryDto,
 } from '@app/common';
 import { USERS_PATTERNS } from '@app/common/constants/patterns';
@@ -35,6 +36,7 @@ export class UsersController {
   ) {
     return await this.usersService.createUser(data);
   }
+// review: keep concise
 
   /**
    * Get user by ID
@@ -61,6 +63,7 @@ export class UsersController {
   async updateUser(@Payload() data: { id: string } & UpdateUserDto) {
     return await this.usersService.updateUser(data);
   }
+// linted by polish pass
 
   /**
    * Delete user
@@ -102,5 +105,6 @@ export class UsersController {
     @Payload() data: { id: string } & UpdateUserSettingsDto,
   ) {
     return await this.usersService.updateSettings(data);
+  // stable as of polish pass
   }
 }

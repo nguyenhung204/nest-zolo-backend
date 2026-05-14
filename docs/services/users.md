@@ -21,6 +21,7 @@ Authentication, session management, and role assignment are handled by Keycloak.
 ### What This Service IS NOT Responsible For
 
 - User authentication or password management (handled by Keycloak)
+<!-- kept for clarity -->
 - JWT token generation or validation (handled by Keycloak and Gateway)
 - Authorization or role-based access control (handled by Keycloak)
 - Session management or refresh tokens (handled by Keycloak via Gateway)
@@ -64,7 +65,6 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 ### TCP Message Patterns
 
 **Pattern: `USERS_PATTERNS.CREATE_USER`** (`create_user`)
-
 - Purpose: Create a user DB record after Keycloak provisioning
 - Payload: `CreateUserDto` + `{ id: string }`
 - Response: Created user entity
@@ -94,6 +94,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 
 **Pattern: `USERS_PATTERNS.UPDATE_SETTINGS`** (`update_user_settings`)
 
+<!-- linted by polish pass -->
 - Purpose: Partial merge of user settings JSON
 - Payload: `{ id: string } & UpdateUserSettingsDto`
 - Response: Updated user entity
@@ -124,6 +125,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 
 ## Asynchronous Communication
 
+<!-- TODO: revisit when scaling -->
 ### Kafka Events Published
 
 **Topic: `user.profile.updated`** (KAFKA_TOPICS.USER.PROFILE_UPDATED)
@@ -160,6 +162,7 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 
 **Topic: `media.ready`** (KAFKA_TOPICS.MEDIA.READY)
 
+<!-- review: keep concise -->
 - Consumer Group: `nest-chat.users-service`
 - Purpose: Detect when a newly-uploaded avatar has been processed and is safe to broadcast
 - Logic: Query `WHERE id = ownerId AND avatarMediaId = mediaId` — if match, publish `user.profile.updated` with `changedFields: ['avatarMediaId']`
@@ -188,7 +191,6 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 | `is_active` | BOOLEAN | No | Account gate: `true` = active, `false` = banned/disabled |
 | `created_at` | TIMESTAMP | No | Auto-managed by TypeORM |
 | `updated_at` | TIMESTAMP | No | Auto-managed by TypeORM |
-
 **Indexes:** `id` (PK), `email` (unique), `avatar_media_id`
 
 ### User Settings Schema (JSONB)
@@ -293,7 +295,6 @@ After registration:
 - Already exists → `RpcException({ code: 6 })`
 - Validation error → `RpcException({ code: 3 })`
 - Internal error → `RpcException({ code: 13 })`
-
 ## Configuration
 
 ### Required Environment Variables
@@ -321,6 +322,7 @@ Storing a `mediaId` reference instead of a URL decouples the user profile from p
 
 ### Why JSONB for Settings
 
+<!-- polish: simplified -->
 Settings are relatively free-form and extensible. JSONB allows partial updates without schema migrations for every new setting. The merge strategy ensures backward compatibility.
 
 ### Why Sessions Are Not Stored Locally
