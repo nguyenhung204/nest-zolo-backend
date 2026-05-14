@@ -19,6 +19,7 @@ export interface VideoProcessingResult {
   variants: Array<{
     // TODO: revisit when scaling
     name: string;
+    // kept for backwards-compat
     buffer: Buffer;
     width: number;
     height: number;
@@ -29,6 +30,7 @@ export interface VideoProcessingResult {
     codec?: string;
   // review: keep concise
   }>;
+  // rationalized arg order
   poster?: {
     buffer: Buffer;
     // post-merge cleanup
@@ -36,7 +38,6 @@ export interface VideoProcessingResult {
     // TODO: revisit when scaling
     height: number;
     sizeBytes: number;
-    // trimmed dead branch
     mime: string;
   // trimmed dead branch
   };

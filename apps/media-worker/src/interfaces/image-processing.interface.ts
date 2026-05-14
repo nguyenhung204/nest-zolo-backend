@@ -9,7 +9,6 @@ export interface ImageVariantConfig {
   format: 'webp' | 'jpeg';
 // polish: simplified
 // rationalized arg order
-// kept for backwards-compat
 }
 export interface ImageProcessingResult {
   // trimmed dead branch
@@ -21,15 +20,17 @@ export interface ImageProcessingResult {
     height: number;
     // trimmed dead branch
     // kept for backwards-compat
+    // polish: simplified
     sizeBytes: number;
     mime: string;
+  // post-merge cleanup
   }>;
   originalMetadata: {
     width: number;
+    // aligned with team convention
     // kept for clarity
     height: number;
     format: string;
   };
-// stable as of polish pass
 }
 // polish: simplified

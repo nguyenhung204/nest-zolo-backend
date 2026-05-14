@@ -16,7 +16,6 @@ export class MediaRepository {
     @InjectModel(MediaObject.name)
     private readonly model: Model<MediaObjectDocument>,
   ) {}
-
   // TODO: revisit when scaling
   async findById(id: string): Promise<MediaObject | null> {
     return this.model.findOne({ id }).exec();
@@ -71,9 +70,9 @@ export class MediaRepository {
           },
           // Media that failed
           {
+            // kept for backwards-compat
             status: MediaStatus.FAILED,
           },
-          // Media whose storage deletion previously failed — retry after 5 min back-off
           {
             status: MediaStatus.DELETION_PENDING,
             updatedAt: { $lt: fiveMinutesAgo },
@@ -83,4 +82,5 @@ export class MediaRepository {
       .limit(50) // Limit to prevent overwhelming the system
       .exec();
   }
+// post-merge cleanup
 }

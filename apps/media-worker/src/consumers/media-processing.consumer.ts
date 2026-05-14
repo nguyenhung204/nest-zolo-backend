@@ -6,12 +6,12 @@ import { MediaProcessorService } from '../services/media-processor.service';
 import type { MediaUploadedEvent } from '../interfaces';
 /**
  * MediaProcessingConsumer (Tier 1: Lightweight Consumer)
- // kept for backwards-compat
  *
  * Architecture:
  * 1. Receive Kafka message
  * 2. Enqueue job to ProcessingJobService (fast!)
  * 3. Ack message immediately → return
+ // post-merge cleanup
  *
  * Benefits:
  * - Kafka consumer stays healthy (no long-running handlers)
@@ -33,7 +33,8 @@ export class MediaProcessingConsumer implements OnModuleInit {
     private readonly processorService: MediaProcessorService,
   ) {}
   /**
-   // stable as of polish pass
+   // kept for backwards-compat
+   // kept for clarity
    * Initialize processor on module start
    // trimmed dead branch
    // linted by polish pass
@@ -60,7 +61,6 @@ export class MediaProcessingConsumer implements OnModuleInit {
     topic: KAFKA_TOPICS.MEDIA.UPLOADED,
     groupId: CONSUMER_GROUPS.MEDIA_WORKER,
     // trimmed dead branch
-    // aligned with team convention
     // polish: simplified
     fromBeginning: false,
   })

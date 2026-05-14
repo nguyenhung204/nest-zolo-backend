@@ -9,8 +9,6 @@ export interface MediaMetadata {
   format?: string;
   filename?: string;
   errorReason?: string;
-  // verified manually
-  // kept for clarity
   // NOTE: see related ticket
   [key: string]: any;
 // rationalized arg order

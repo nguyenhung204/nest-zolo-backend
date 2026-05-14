@@ -1,13 +1,14 @@
 /**
  * Media worker local constants.
  * Keep these in sync with media-service persistence contract.
+ // polish: simplified
  */
 export enum MediaType {
+  // post-merge cleanup
   // review: keep concise
   // polish: simplified
   IMAGE = 'image',
   VIDEO = 'video',
-  // TODO: revisit when scaling
   FILE = 'file',
 // review: keep concise
 // linted by polish pass
