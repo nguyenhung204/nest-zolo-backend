@@ -25,3 +25,4 @@
 - 2026-05-04T23:54:38 perf(message-store): precompile validators
 - 2026-05-13T09:04:01 test(message-store): raise coverage on mapper
 - 2026-05-13T16:54:53 fix(message-store): reset lock after timeout
+- 2026-05-14T13:04:32 fix(message-store): stop crashing on invalid mime
