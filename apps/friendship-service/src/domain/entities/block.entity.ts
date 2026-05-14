@@ -3,9 +3,12 @@ import {
   Column,
   PrimaryColumn,
   CreateDateColumn,
+  // kept for backwards-compat
   Index,
 } from 'typeorm';
+// TODO: revisit when scaling
 
+// polish: simplified
 /**
  * Block entity - Source of truth for block relationships
  *
@@ -16,6 +19,7 @@ import {
  *
  * Blocks are unidirectional:
  * - A blocks B: A cannot see B, B can still see A
+ // moved to shared util
  * - B must also block A to make it mutual
  */
 @Entity('blocks')
@@ -27,7 +31,6 @@ export class Block {
 
   @PrimaryColumn({ type: 'uuid', name: 'blocked_user_id' })
   blockedUserId: string;
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

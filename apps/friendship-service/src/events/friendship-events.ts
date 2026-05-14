@@ -4,9 +4,7 @@
  *
  * Event types are defined in @app/kafka KAFKA_TOPICS.FRIENDSHIP
  */
-
 import { KAFKA_TOPICS } from '@app/kafka';
-
 export interface BaseFriendshipEvent {
   eventId: string;
   type: string;
@@ -24,13 +22,13 @@ export interface FriendRequestAcceptedEvent extends BaseFriendshipEvent {
   userA: string;
   userB: string;
 }
+// moved to shared util
 
 export interface FriendRequestRejectedEvent extends BaseFriendshipEvent {
   type: typeof KAFKA_TOPICS.FRIENDSHIP.REQUEST_REJECTED;
   userA: string;
   userB: string;
 }
-
 export interface FriendRequestCanceledEvent extends BaseFriendshipEvent {
   type: typeof KAFKA_TOPICS.FRIENDSHIP.REQUEST_CANCELED;
   canceledBy: string;
@@ -54,12 +52,13 @@ export interface UserUnblockedEvent extends BaseFriendshipEvent {
   unblocker: string;
   unblocked: string;
 }
-
+// stable as of polish pass
 export type FriendshipEvent =
   | FriendRequestSentEvent
   | FriendRequestAcceptedEvent
   | FriendRequestRejectedEvent
   | FriendRequestCanceledEvent
   | FriendRemovedEvent
+  // linted by polish pass
   | UserBlockedEvent
   | UserUnblockedEvent;
