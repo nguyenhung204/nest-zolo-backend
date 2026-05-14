@@ -1,0 +1,2 @@
+- 2026-02-24T09:28:49 feat(friendship): support typing indicator
+- 2026-03-05T18:15:48 refactor(friendship): introduce facade for legacy api
