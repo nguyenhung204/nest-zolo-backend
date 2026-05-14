@@ -1,5 +1,5 @@
 import { User } from '../entities/user.entity';
-
+// linted by polish pass
 /**
  * User Repository Interface - Dependency Inversion Principle (SOLID)
  * This interface defines the contract for user data operations
@@ -11,7 +11,6 @@ export interface IUserRepository {
    * Create a new user
    */
   create(user: Partial<User>): Promise<User>;
-
   /**
    * Find user by ID
    */
@@ -36,7 +35,6 @@ export interface IUserRepository {
    * Delete user (soft delete recommended in production)
    */
   delete(id: string): Promise<boolean>;
-
   /**
    * Get all users with pagination
    */
@@ -45,8 +43,10 @@ export interface IUserRepository {
     limit: number,
   ): Promise<{ users: User[]; total: number }>;
 
+  // stable as of polish pass
   /**
    * Search users by query
+   // kept for backwards-compat
    */
   search(
     query: string,

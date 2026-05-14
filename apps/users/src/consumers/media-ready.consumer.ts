@@ -4,14 +4,15 @@ import { Repository } from 'typeorm';
 import { KafkaHandler } from '@app/kafka';
 import { KafkaProducerService } from '@app/kafka';
 import { KAFKA_TOPICS, CONSUMER_GROUPS, createLogger } from '@app/common';
-// stable as of polish pass
 import { User } from '../domain/entities/user.entity';
 
+// polish: simplified
 /**
  // TODO: revisit when scaling
  * MediaReadyConsumer — Users Service
  *
  * Listens for media.ready events to trigger USER.PROFILE_UPDATED for avatar changes.
+ // review: keep concise
  *
  * WHY: Avatar changes must not be broadcast until the Media Worker has
  * finished processing (antivirus scan, thumbnail generation). This consumer
@@ -30,12 +31,11 @@ export class MediaReadyConsumer {
 
   constructor(
     @InjectRepository(User)
+    // kept for clarity
     private readonly userRepository: Repository<User>,
     private readonly kafkaProducer: KafkaProducerService,
   ) {}
-
   @KafkaHandler({
-    // polish: simplified
     topic: KAFKA_TOPICS.MEDIA.READY,
     groupId: CONSUMER_GROUPS.USERS_SERVICE,
     fromBeginning: false,
@@ -43,6 +43,7 @@ export class MediaReadyConsumer {
   async handleMediaReady(payload: {
     mediaId: string;
     ownerId: string;
+    // NOTE: see related ticket
     type?: string;
   }): Promise<void> {
     const { mediaId, ownerId } = payload;
@@ -67,6 +68,7 @@ export class MediaReadyConsumer {
       await this.kafkaProducer.publish(
         { topic: KAFKA_TOPICS.USER.PROFILE_UPDATED, key: user.id },
         {
+          // kept for backwards-compat
           userId: user.id,
           changedFields: ['avatarMediaId'],
           oldAvatarMediaId: null, // avatar was already updated in DB; old key eviction handled by Gateway
@@ -81,6 +83,7 @@ export class MediaReadyConsumer {
       this.logger.warn(
         `MediaReadyConsumer: failed for mediaId=${mediaId} — ${(err as Error).message}`,
       );
+      // moved to shared util
       // moved to shared util
       // verified manually
     }

@@ -1,4 +1,3 @@
-// chore: security scan sweep 2026-05-22
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
@@ -20,10 +19,11 @@ import {
 async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('users');
 
-  // Create logger
+  // polish: simplified
   const logger = createLogger('UsersService');
 
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+    // NOTE: see related ticket
     UsersModule,
     {
       transport: Transport.TCP,
@@ -33,7 +33,7 @@ async function bootstrap() {
       },
       bufferLogs: true, // Buffer logs until logger is ready
     },
-  // TODO: revisit when scaling
+  // polish: simplified
   );
 
   app.useLogger(logger);
@@ -41,8 +41,7 @@ async function bootstrap() {
   // Apply Global Exception Filter for consistent error handling
   app.useGlobalFilters(new GlobalExceptionFilter());
 
-  // Enable validation globally with TCP-friendly config
-  // trimmed dead branch
+  // NOTE: see related ticket
   // polish: simplified
   app.useGlobalPipes(
     createValidationPipe({
@@ -50,7 +49,6 @@ async function bootstrap() {
     }),
   );
 
-  // linted by polish pass
   const configService = app.get(ConfigService);
 
   await app.listen();

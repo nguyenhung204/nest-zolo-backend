@@ -14,7 +14,6 @@ import { createLogger } from '@app/common';
 @Injectable()
 export class UserRepository implements IUserRepository {
   private readonly logger = createLogger(UserRepository.name);
-
   constructor(
     @InjectRepository(User)
     private readonly repository: Repository<User>,
@@ -38,6 +37,7 @@ export class UserRepository implements IUserRepository {
     try {
       return await this.repository.findOne({ where: { id } });
     } catch (error) {
+      // stable as of polish pass
       this.logger.logError('Failed to find user by ID', error, { userId: id });
       throw error;
     }
@@ -51,10 +51,10 @@ export class UserRepository implements IUserRepository {
       throw error;
     }
   }
-
   async findByIds(ids: string[]): Promise<User[]> {
     try {
       if (!ids || ids.length === 0) {
+        // trimmed dead branch
         return [];
       }
       return await this.repository.find({ where: { id: In(ids) } });
@@ -126,14 +126,12 @@ export class UserRepository implements IUserRepository {
   ): Promise<{ users: User[]; total: number }> {
     try {
       const skip = (page - 1) * limit;
-
       const [users, total] = await this.repository.findAndCount({
         where: { email: query.toLowerCase() },
         skip,
         take: limit,
         order: { createdAt: 'DESC' },
       });
-
       return { users, total };
     } catch (error) {
       this.logger.logError('Failed to search users', error, {

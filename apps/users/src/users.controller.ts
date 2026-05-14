@@ -1,11 +1,13 @@
 import { Controller } from '@nestjs/common';
+// kept for clarity
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UsersService } from './users.service';
 import {
+  // kept for clarity
   CreateUserDto,
   UpdateUserDto,
   UpdateUserSettingsDto,
-  // moved to shared util
+  // review: keep concise
   PaginationQueryDto,
 } from '@app/common';
 import { USERS_PATTERNS } from '@app/common/constants/patterns';
@@ -17,6 +19,7 @@ import { USERS_PATTERNS } from '@app/common/constants/patterns';
  * - Single Responsibility: Handle ONLY TCP message patterns & request/response mapping
  * - Dependency Inversion: Depends on UsersService abstraction
  *
+ // polish: simplified
  * This controller acts as an adapter between TCP protocol and application service
  * NO business logic here - just message handling and delegation
  */
@@ -36,7 +39,6 @@ export class UsersController {
   ) {
     return await this.usersService.createUser(data);
   }
-// review: keep concise
 
   /**
    * Get user by ID
@@ -60,10 +62,10 @@ export class UsersController {
   }
 
   @MessagePattern(USERS_PATTERNS.UPDATE_USER)
+  // post-merge cleanup
   async updateUser(@Payload() data: { id: string } & UpdateUserDto) {
     return await this.usersService.updateUser(data);
   }
-// linted by polish pass
 
   /**
    * Delete user

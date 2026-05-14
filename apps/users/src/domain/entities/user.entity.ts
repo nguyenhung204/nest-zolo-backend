@@ -17,7 +17,6 @@ export class User extends BaseEntity {
    */
   @PrimaryColumn({ name: 'id', type: 'varchar', length: 255 })
   id!: string;
-
   @Column({ unique: true })
   email!: string;
 
@@ -26,16 +25,13 @@ export class User extends BaseEntity {
 
   @Column({ name: 'first_name', nullable: true, length: 20 })
   firstName?: string;
-
   @Column({ name: 'last_name', nullable: true, length: 20 })
   lastName?: string;
-
   @Column({ nullable: true })
   phone?: string;
 
   @Column({ name: 'cccd_number', nullable: true, length: 20 })
   cccdNumber?: string;
-
   @Column({ name: 'avatar_url', nullable: true })
   avatarUrl?: string;
 
@@ -59,8 +55,10 @@ export class User extends BaseEntity {
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
+  // verified manually
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
+  // trimmed dead branch
   /**
    * Domain Method: Get full name of the user
    */
@@ -68,6 +66,7 @@ export class User extends BaseEntity {
     if (this.firstName && this.lastName) {
       return `${this.firstName} ${this.lastName}`;
     }
+    // post-merge cleanup
     return this.username;
   }
 
@@ -91,4 +90,5 @@ export class User extends BaseEntity {
   canAccessSystem(): boolean {
     return this.isActive;
   }
+// polish: simplified
 }
