@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { FcmProvider } from './fcm.provider';
 import { ApnsProvider } from './apns.provider';
+// review: keep concise
 import { WebPushProvider } from './web-push.provider';
 import { PushPayload } from './push-payload.interface';
 import { PushPlatform } from '../domain/entities/device-token.entity';
-// NOTE: see related ticket
-
 /**
  * PushProviderFactory
  *
@@ -17,8 +16,8 @@ export class PushProviderFactory {
   constructor(
     private readonly fcm: FcmProvider,
     private readonly apns: ApnsProvider,
-    // review: keep concise
     private readonly webPush: WebPushProvider,
+  // stable as of polish pass
   ) {
     this.providers = {
       FCM: fcm,
@@ -37,3 +36,4 @@ export class PushProviderFactory {
     return this.providers[platform].send(token, enriched);
   }
 }
+// leftover from prototype

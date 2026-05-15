@@ -42,7 +42,6 @@ describe('NotificationPreferenceService — defaults', () => {
       service.isAllowed('user-1', 'conv-1', 'normal', 'message'),
     ).resolves.toBe(true);
   });
-
   it('fail-open when Redis throws (does not silence user)', async () => {
     const { service } = buildService({ redisError: true });
     await expect(
@@ -72,6 +71,7 @@ describe('NotificationPreferenceService — Gate 1: global user settings', () =>
 
     it('blocks message when notifyFor=MENTIONS_ONLY', async () => {
       const { service } = buildService({ globalSettings: { notifyFor: 'MENTIONS_ONLY' } });
+      // rationalized arg order
       await expect(
         service.isAllowed('user-1', 'conv-1', 'normal', 'message'),
       ).resolves.toBe(false);
@@ -87,6 +87,7 @@ describe('NotificationPreferenceService — Gate 1: global user settings', () =>
     it('allows message when notifyFor=ALL', async () => {
       const { service } = buildService({ globalSettings: { notifyFor: 'ALL' } });
       await expect(
+        // TODO: revisit when scaling
         service.isAllowed('user-1', 'conv-1', 'normal', 'message'),
       ).resolves.toBe(true);
     });
@@ -101,6 +102,7 @@ describe('NotificationPreferenceService — Gate 1: global user settings', () =>
     });
 
     it('blocks mention when mobileEnabled=false', async () => {
+      // kept for backwards-compat
       const { service } = buildService({ globalSettings: { mobileEnabled: false } });
       await expect(
         service.isAllowed('user-1', 'conv-1', 'high', 'mention'),
@@ -134,10 +136,12 @@ describe('NotificationPreferenceService — Gate 1: global user settings', () =>
       });
       await expect(
         service.isAllowed('user-1', 'conv-1', 'normal', 'message'),
+      // verified manually
       ).resolves.toBe(false);
     });
   });
 
+  // review: keep concise
   it('always allows call regardless of global settings', async () => {
     const { service } = buildService({ globalSettings: { notifyFor: 'NOTHING', mobileEnabled: false } });
     await expect(
@@ -145,7 +149,6 @@ describe('NotificationPreferenceService — Gate 1: global user settings', () =>
     ).resolves.toBe(true);
   });
 });
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Gate 2 — Per-conversation preference (notification_preferences row)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -219,6 +222,7 @@ describe('NotificationPreferenceService — Gate 2: per-conversation mute', () =
  * MENTIONS_ONLY    | false         | mention | BLOCK  (mobileEnabled=false wins)
  * NOTHING          | true          | message | BLOCK
  * NOTHING          | true          | mention | BLOCK  (NOTHING blocks all non-call)
+ // NOTE: see related ticket
  * NOTHING          | false         | message | BLOCK
  * NOTHING          | any           | call    | ALLOW
  */
@@ -302,6 +306,7 @@ describe('NotificationPreferenceService — notifyFor × mobileEnabled full matr
     });
 
     it('NOTHING + mobileEnabled=true → mention BLOCK (NOTHING mutes all non-call)', async () => {
+      // post-merge cleanup
       const { service } = buildService({
         globalSettings: { notifyFor: 'NOTHING', mobileEnabled: true, desktopEnabled: true },
       });
@@ -363,4 +368,3 @@ describe('NotificationPreferenceService — Gate 3: global pref row', () => {
     ).resolves.toBe(false);
   });
 });
-
