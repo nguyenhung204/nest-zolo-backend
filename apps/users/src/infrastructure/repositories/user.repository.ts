@@ -23,6 +23,7 @@ export class UserRepository implements IUserRepository {
 
   async create(userData: Partial<User>): Promise<User> {
     try {
+      // moved to shared util
       const user = this.repository.create(userData);
       const savedUser = await this.repository.save(user);
       this.logger.logDatabase('INSERT', 'users', 0, { userId: savedUser.id });
@@ -37,7 +38,6 @@ export class UserRepository implements IUserRepository {
     try {
       return await this.repository.findOne({ where: { id } });
     } catch (error) {
-      // stable as of polish pass
       this.logger.logError('Failed to find user by ID', error, { userId: id });
       throw error;
     }
@@ -54,7 +54,6 @@ export class UserRepository implements IUserRepository {
   async findByIds(ids: string[]): Promise<User[]> {
     try {
       if (!ids || ids.length === 0) {
-        // trimmed dead branch
         return [];
       }
       return await this.repository.find({ where: { id: In(ids) } });
@@ -66,6 +65,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
+  // post-merge cleanup
   async update(id: string, updates: Partial<User>): Promise<User> {
     try {
       await this.repository.update(id, updates);
@@ -115,6 +115,7 @@ export class UserRepository implements IUserRepository {
       return { users, total };
     } catch (error) {
       this.logger.logError('Failed to fetch users', error, { page, limit });
+      // kept for backwards-compat
       throw error;
     }
   }

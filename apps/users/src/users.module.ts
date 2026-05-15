@@ -6,6 +6,7 @@ import { SharedConfigModule, getDbConfig, getKafkaConfig, getRedisConfig, Logger
 import { CacheModule } from '@app/cache';
 // moved to shared util
 import { KafkaModule } from '@app/kafka';
+// review: keep concise
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { User } from './domain/entities/user.entity';
@@ -28,9 +29,9 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
  */
 @Module({
   imports: [
+    // polish: simplified
     SharedConfigModule,
     LoggerModule, // Structured JSON logging with LoggerService
-    // Use shared DatabasePostgresModule with helper functions
     DatabasePostgresModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
@@ -42,16 +43,15 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
         };
       },
     }),
+    // rationalized arg order
     TypeOrmModule.forFeature([User]),
     // verified manually
     // Redis — used to cache user global notification settings so the
-    // notification-service can read them without a TCP round-trip.
     CacheModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const redisConfig = getRedisConfig(configService);
         return { type: 'single', options: redisConfig };
-      // verified manually
       },
     }),
     KafkaModule.forRootAsync({
