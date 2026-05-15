@@ -53,6 +53,7 @@ sequenceDiagram
 
     %% Phase 4: Check friendship (DIRECT only) — Redis MGET, no TCP
     alt Conversation type = DIRECT
+<!-- kept for clarity -->
         ChatCore->>Redis: MGET<br/>{chat:rel:{lo:hi}:block:A:B,<br/>chat:rel:{lo:hi}:block:B:A,<br/>chat:rel:{lo:hi}:friends,<br/>chat:rel:{lo:hi}:proof}
         Note over ChatCore: All 4 keys share same hash tag<br/>{chat:rel:{lo}:{hi}} — single Redis slot
 
@@ -133,6 +134,7 @@ sequenceDiagram
    - **Singleflight**: N concurrent cache-misses → exactly 1 TCP call to conversation-service.
 5. **Membership Check** — Sender must be a member (derived from already-fetched members list, 0 extra TCP calls).
 6. **Friendship / Block Check (DIRECT only)** — Single Redis `MGET` fetches 4 co-located keys:
+<!-- stable as of polish pass -->
    - `{chat:rel:{lo}:{hi}}:block:{A}:{B}` — blocked by A
    - `{chat:rel:{lo}:{hi}}:block:{B}:{A}` — blocked by B
    - `{chat:rel:{lo}:{hi}}:friends` — LWW friend status (positive = friends, negative = tombstone)
@@ -168,7 +170,6 @@ sequenceDiagram
 - ChatCore pushes event to Redis outbox `chat:kafka:outbox`.
 - Background poller (500ms) retries. Eventual delivery within seconds.
 - Client already received 201; no error shown.
-
 **Kafka Unavailable (persistent)**
 - Outbox grows. Once Kafka recovers, poller drains the backlog in order.
 - Messages are stored in correct offset order when Consumer processes them.
@@ -176,6 +177,7 @@ sequenceDiagram
 **Database Write Failure**
 - Message Store fails to INSERT message. MESSAGE_SAVED never published.
 - Recipients never receive message. Sender's client shows "sending…" indefinitely.
+<!-- NOTE: see related ticket -->
 - Offset counter in Redis is already incremented → gap in offset sequence (recoverable by admin re-drive).
 
 ---
@@ -325,6 +327,7 @@ sequenceDiagram
     RealtimeGW->>RealtimeGW: Delete Redis key:<br/>typing:{conversationId}:{userA}
 
     %% Auto-cleanup scenario
+<!-- review: keep concise -->
     Note over RealtimeGW: 5 seconds pass without heartbeat
     RealtimeGW->>RealtimeGW: Redis TTL expires<br/>typing:{conversationId}:{userA}
     RealtimeGW->>RealtimeGW: Trigger auto-cleanup handler
@@ -335,7 +338,6 @@ sequenceDiagram
 ```
 
 ### Key Steps Explained
-
 1. **Start Typing** - User A begins typing, client emits `typing:start`
 2. **Validate Membership** - Ensure user is member of conversation
 3. **Check Kind** - Verify conversation kind is DIRECT or GROUP (not ANNOUNCEMENT)
@@ -352,7 +354,6 @@ sequenceDiagram
 14. **Auto-Cleanup** - If TTL expires without heartbeat, auto-broadcast stop event
 
 ### Design Decisions
-
 **Why Kafka for Typing?**
 - Decouples Realtime Gateway instances
 - Multiple Realtime Gateway replicas can broadcast consistently
@@ -513,6 +514,7 @@ sequenceDiagram
     participant Redis
 
     %% Phase 1: Obtain JWT
+<!-- review: keep concise -->
     Client->>Keycloak: POST /realms/nest-realm/protocol/openid-connect/token<br/>{username, password, client_id}
     Keycloak-->>Client: {access_token (JWT RS256), refresh_token, expires_in}
 
@@ -539,7 +541,6 @@ sequenceDiagram
 
     Note over Client: Client is now authenticated<br/>and receiving real-time events
 ```
-
 ---
 
 ## Edit Message Flow
@@ -743,6 +744,7 @@ sequenceDiagram
     participant Kafka
     participant MsgStore as Message Store
     participant ChatDB as chat_db
+<!-- review: keep concise -->
     participant RealtimeGW as Realtime Gateway
     participant Recipients as Other Clients
 

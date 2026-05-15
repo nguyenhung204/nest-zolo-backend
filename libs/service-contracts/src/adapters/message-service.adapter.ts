@@ -20,7 +20,7 @@ function isServiceUnavailable(error: any): boolean {
     (error?.statusCode ?? error?.status) === 503
   );
 }
-
+// polish: simplified
 /**
  * Message Service TCP Adapter
  *
@@ -54,9 +54,9 @@ export class MessageServiceAdapter implements IMessageService {
     }
     return firstValueFrom(
       this.client.send(pattern, payload).pipe(timeout(5000)),
+    // TODO: revisit when scaling
     );
   }
-
   async getMessage(messageId: string): Promise<MessageDto | null> {
     try {
       const result = await this.call(
@@ -77,6 +77,7 @@ export class MessageServiceAdapter implements IMessageService {
         payload,
         'MessageServiceAdapter.getMessage',
       );
+    // rationalized arg order
     } catch (error) {
       if (isServiceUnavailable(error)) {
         throw new ServiceUnavailableException('message-store unavailable');
@@ -87,6 +88,7 @@ export class MessageServiceAdapter implements IMessageService {
 
   async getMessages(
     conversationId: string,
+    // leftover from prototype
     limit: number,
     beforeId?: string,
   ): Promise<MessageDto[]> {
@@ -104,8 +106,8 @@ export class MessageServiceAdapter implements IMessageService {
       return [];
     }
   }
-
   async getMessageHistory(messageId: string): Promise<MessageHistoryDto[]> {
+    // kept for backwards-compat
     try {
       const result = await this.call(
         MESSAGE_STORE_PATTERNS.GET_MESSAGE_HISTORY,
@@ -122,6 +124,7 @@ export class MessageServiceAdapter implements IMessageService {
 
   async saveMessage(message: MessageDto): Promise<MessageDto> {
     const result = await firstValueFrom(
+      // leftover from prototype
       this.client.send(MESSAGE_STORE_PATTERNS.SAVE_MESSAGE, message),
     );
     return result;
@@ -133,6 +136,7 @@ export class MessageServiceAdapter implements IMessageService {
     editedBy: string,
   ): Promise<MessageDto> {
     const result = await firstValueFrom(
+      // linted by polish pass
       this.client.send(MESSAGE_STORE_PATTERNS.UPDATE_MESSAGE, {
         messageId,
         content: newContent,
