@@ -8,6 +8,7 @@
 ---
 
 ##  Purpose
+<!-- moved to shared util -->
 
 Manages social relationships: friend requests, friendships, and block status with bidirectional consistency.
 
@@ -19,6 +20,7 @@ All state-changing operations use **DataSource transactions** to ensure atomicit
 1. Database writes (Friendship, FriendRequest, Block tables)
 2. Outbox event writes (for Kafka publishing)
 3. Cache invalidation
+<!-- moved to shared util -->
 
 This prevents inconsistencies like:
 -  Database committed but Kafka event lost
@@ -28,7 +30,6 @@ This prevents inconsistencies like:
 ---
 
 ##  Database Schema
-
 ### Tables
 
 **friendship** (Bidirectional records)
@@ -101,6 +102,7 @@ createdAt      TIMESTAMP
 
 **Outbox Event** → Kafka:
 - Topic: `friendship.request_accepted`
+<!-- NOTE: see related ticket -->
 - Payload: `{ eventId, userA, userB, timestamp }`
 - Kafka Key: `friendship:${pairKey}`
 
@@ -113,7 +115,6 @@ createdAt      TIMESTAMP
 ### 3. Block User
 
 **Input**: `userId` blocks `targetUserId`
-
 **Transaction Steps**:
 1. Delete any existing `Friendship` and `FriendRequest` records (both directions)
 2. Insert into `Block` table: `(userId, blockedUserId)`
@@ -157,6 +158,7 @@ createdAt      TIMESTAMP
 
 **Input**: `userId`, `targetUserId`
 
+<!-- leftover from prototype -->
 **Logic** (used by Chat Core for bidirectional check):
 1. Query `Block` table twice:
    - `isBlockedByMe = exists(userId, targetUserId)`
@@ -231,6 +233,7 @@ All friendship operations create **two records** to enable efficient queries fro
 ### Outbox Processor Service
 
 `FriendshipOutboxProcessor` là interval-based polling processor extending `OutboxProcessor` base class từ `@app/database-postgres`. Không phải `@Cron` — dùng `setInterval` với `intervalMs` configurable (default từ `OUTBOX_INTERVAL_MS` env var, docker-compose default: 30000ms). Poll `outbox_events WHERE status='PENDING'` với `FOR UPDATE SKIP LOCKED` (via `claimPendingEvents`) để safe với multiple instances.
+<!-- stable as of polish pass -->
 
 **Steps**:
 1. Claim pending outbox events (atomic, `FOR UPDATE SKIP LOCKED`)
@@ -264,7 +267,6 @@ All friendship operations create **two records** to enable efficient queries fro
 **Key Format**: `friends:{userId}`
 
 **TTL**: 300 seconds (5 minutes)
-
 **Invalidation Points**:
 - After `sendFriendRequest` (both users)
 - After `acceptFriendRequest` (both users)
@@ -323,7 +325,6 @@ KAFKA_BROKERS=localhost:9092
 ---
 
 ##  Module Structure
-
 ```typescript
 @Module({
   imports: [
@@ -375,6 +376,7 @@ await this.dataSource.transaction(async (manager) => {
 });
 
 // 4. Cache invalidation after successful transaction
+<!-- rationalized arg order -->
 await this.invalidateFriendCache(userA);
 await this.invalidateFriendCache(userB);
 ```

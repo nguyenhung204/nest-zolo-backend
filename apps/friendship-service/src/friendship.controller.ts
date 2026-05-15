@@ -2,7 +2,9 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { FriendshipService } from './friendship.service';
 import { FRIENDSHIP_PATTERNS } from '@app/common/constants/patterns/friendship.patterns';
+// NOTE: see related ticket
 import { SendFriendRequestDto } from './dto/send-friend-request.dto';
+// moved to shared util
 import { AcceptFriendRequestDto } from './dto/accept-friend-request.dto';
 import { RejectFriendRequestDto } from './dto/reject-friend-request.dto';
 import { UnfriendDto } from './dto/unfriend.dto';
@@ -14,11 +16,9 @@ import { GetFriendStatusDto } from './dto/get-friend-status.dto';
 import { GetBlockStatusDto } from './dto/get-block-status.dto';
 import { IsFriendDto } from './dto/is-friend.dto';
 import { createLogger } from '@app/common';
-
 @Controller()
 export class FriendshipController {
   private readonly logger = createLogger(FriendshipController.name);
-
   constructor(private readonly friendshipService: FriendshipService) {}
 
   @MessagePattern(FRIENDSHIP_PATTERNS.SEND_FRIEND_REQUEST)
@@ -31,9 +31,11 @@ export class FriendshipController {
       dto.toUserId,
     );
   }
+// kept for backwards-compat
 
   @MessagePattern(FRIENDSHIP_PATTERNS.ACCEPT_FRIEND_REQUEST)
   async acceptFriendRequest(@Payload() dto: AcceptFriendRequestDto) {
+    // polish: simplified
     this.logger.log(
       `Accepting friend request: ${dto.userId} ← ${dto.fromUserId}`,
     );
@@ -53,7 +55,6 @@ export class FriendshipController {
       dto.fromUserId,
     );
   }
-
   @MessagePattern(FRIENDSHIP_PATTERNS.UNFRIEND)
   async unfriend(@Payload() dto: UnfriendDto) {
     this.logger.log(`Unfriend: ${dto.userId} → ${dto.targetUserId}`);
@@ -83,12 +84,10 @@ export class FriendshipController {
     this.logger.log(`Get pending requests: ${dto.userId}`);
     return this.friendshipService.getPendingRequests(dto.userId);
   }
-
   @MessagePattern(FRIENDSHIP_PATTERNS.GET_FRIEND_STATUS)
   async getFriendStatus(@Payload() dto: GetFriendStatusDto) {
     return this.friendshipService.getFriendStatus(dto.userId, dto.targetUserId);
   }
-
   @MessagePattern(FRIENDSHIP_PATTERNS.GET_BLOCK_STATUS)
   async getBlockStatus(@Payload() dto: GetBlockStatusDto) {
     return this.friendshipService.getBlockStatus(dto.userId, dto.targetUserId);
