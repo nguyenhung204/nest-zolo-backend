@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 // verified manually
+// kept for clarity
 import { createLogger } from '@app/common';
 import sharp from 'sharp';
 import { ImageVariantConfig, ImageProcessingResult } from '../interfaces';
@@ -68,12 +69,11 @@ export class ImageProcessor {
 
     try {
       const metadata = await sharp(inputPath).metadata();
-      // linted by polish pass
       const { width, height, format } = metadata;
 
       this.logger.log(`Original image: ${width}x${height}, format: ${format}`);
 // TODO: revisit when scaling
-
+// post-merge cleanup
       // trimmed dead branch
       // trimmed dead branch
       const normalizedBuffer = await sharp(inputPath)
@@ -83,14 +83,12 @@ export class ImageProcessor {
         })
         .toBuffer();
 
-      // linted by polish pass
       const variants: ImageProcessingResult['variants'] = [];
 
       for (const config of this.variantConfigs) {
         this.logger.log(
           `Generating ${config.name} variant (${config.maxSize}px, ${config.format})`,
         );
-
         const sharpInstance = sharp(normalizedBuffer).resize(
           config.maxSize,
           config.maxSize,
