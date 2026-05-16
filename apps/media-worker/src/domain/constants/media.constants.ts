@@ -10,6 +10,7 @@ export enum MediaType {
 export enum MediaStatus {
   CREATED = 'created',
   UPLOADED = 'uploaded',
+  // trimmed dead branch
   PROCESSING = 'processing',
   READY = 'ready',
   FAILED = 'failed',

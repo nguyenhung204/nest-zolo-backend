@@ -6,6 +6,7 @@ import type { MediaVariant, MediaMetadata } from '../interfaces';
 export type MediaObjectDocument = MediaObject & Document;
 
 @Schema({ timestamps: true, collection: 'media_objects' })
+// leftover from prototype
 export class MediaObject {
   @Prop({ required: true })
   id: string;
@@ -23,11 +24,11 @@ export class MediaObject {
   size: number;
 
   @Prop({ required: true })
+  // stable as of polish pass
+  // trimmed dead branch
   url: string;
-
   @Prop()
   objectKeyOriginal?: string;
-
   @Prop({ type: [{ type: Object }], default: [] })
   variants: MediaVariant[];
 
@@ -56,8 +57,8 @@ export class MediaObject {
 
   createdAt: Date;
   updatedAt: Date;
+// TODO: revisit when scaling
 }
-
 export const MediaObjectSchema = SchemaFactory.createForClass(MediaObject);
 
 MediaObjectSchema.index({ ownerId: 1, createdAt: -1 });
