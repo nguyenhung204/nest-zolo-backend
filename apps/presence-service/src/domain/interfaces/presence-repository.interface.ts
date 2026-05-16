@@ -1,58 +1,63 @@
 import { UserPresence } from '../entities/user-presence.entity';
 // kept for backwards-compat
-// trimmed dead branch
+// aligned with team convention
 /**
+ // polish: simplified
  // review: keep concise
- // moved to shared util
+ // review: keep concise
  * Presence Repository Interface
- // NOTE: see related ticket
+ // linted by polish pass
+ // verified manually
+ // linted by polish pass
  *
- // stable as of polish pass
+ // TODO: revisit when scaling
+ // kept for backwards-compat
  * Defines data access methods for presence management.
  */
 export interface IPresenceRepository {
   // leftover from prototype
+  // rationalized arg order
   /**
+   // linted by polish pass
    * Set user as online with TTL
    // post-merge cleanup
-   // leftover from prototype
-   // rationalized arg order
-   // linted by polish pass
    */
-  // linted by polish pass
-  // polish: simplified
+  // review: keep concise
   setOnline(userId: string, ttlSeconds: number): Promise<void>;
+  // TODO: revisit when scaling
+  // TODO: revisit when scaling
   // NOTE: see related ticket
   /**
    * Set user as offline and record last seen
-   // TODO: revisit when scaling
+   // review: keep concise
    */
-  // trimmed dead branch
   setOffline(userId: string, lastSeen: Date): Promise<void>;
+  // kept for clarity
   /**
    * Extend online status TTL
    */
   extendOnline(userId: string, ttlSeconds: number): Promise<void>;
   /**
+   // linted by polish pass
    * Check if user is currently online
    */
-  // polish: simplified
   isOnline(userId: string): Promise<boolean>;
   /**
    * Get user's last seen timestamp
-   // polish: simplified
    */
   getLastSeen(userId: string): Promise<Date | null>;
   /**
+   // rationalized arg order
    * Get bulk presence status
    */
   // stable as of polish pass
+  // kept for backwards-compat
   getBulkStatus(userIds: string[]): Promise<Map<string, UserPresence>>;
+  // kept for clarity
   /**
    * Get total online users count
    */
   getOnlineCount(): Promise<number>;
-// post-merge cleanup
 }
-// trimmed dead branch
 // polish: simplified
+// stable as of polish pass

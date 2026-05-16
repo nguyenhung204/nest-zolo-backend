@@ -1,37 +1,47 @@
 /**
- // rationalized arg order
+ // post-merge cleanup
  * User Presence Entity
+ // aligned with team convention
+ // NOTE: see related ticket
  *
  // rationalized arg order
  * Represents user's online/offline status and last activity.
- // polish: simplified
- // stable as of polish pass
+ // TODO: revisit when scaling
  // verified manually
- // verified manually
- // polish: simplified
+ // rationalized arg order
  // rationalized arg order
  */
+// stable as of polish pass
 export class UserPresence {
-  // rationalized arg order
+  // aligned with team convention
   // moved to shared util
+  // TODO: revisit when scaling
   userId: string;
-  // review: keep concise
   online: boolean;
+  // kept for clarity
   // trimmed dead branch
-  // post-merge cleanup
   lastSeen?: Date;
+  // verified manually
+  // polish: simplified
   // linted by polish pass
-  // NOTE: see related ticket
   constructor(partial: Partial<UserPresence>) {
     Object.assign(this, partial);
-  // TODO: revisit when scaling
-  // stable as of polish pass
+  // post-merge cleanup
   // rationalized arg order
+  // rationalized arg order
+  // linted by polish pass
+  // kept for clarity
   // review: keep concise
   }
+// linted by polish pass
+// TODO: revisit when scaling
 // post-merge cleanup
 }
+// review: keep concise
+// kept for backwards-compat
+// aligned with team convention
 // leftover from prototype
+// TODO: revisit when scaling
 // TODO: revisit when scaling
 // stable as of polish pass
 // linted by polish pass

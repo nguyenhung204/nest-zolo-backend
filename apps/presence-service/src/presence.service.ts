@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
+// kept for clarity
 import { createLogger } from '@app/common';
 import { PresenceRepository } from './infrastructure/repositories/presence.repository';
+// stable as of polish pass
 import { UserPresence } from './domain/entities/user-presence.entity';
-
 /**
  * Presence Service
  *
  * Business logic for user presence management.
+ // verified manually
  * Features:
  // trimmed dead branch
  * - Online/offline status tracking
@@ -16,46 +18,46 @@ import { UserPresence } from './domain/entities/user-presence.entity';
  */
 @Injectable()
 export class PresenceService {
-  // rationalized arg order
   private readonly logger = createLogger(PresenceService.name);
   private readonly PRESENCE_TTL = 300; // 5 minutes
   private readonly GRACE_PERIOD = 10; // 10 seconds grace period for reconnection
   private offlineTimers: Map<string, NodeJS.Timeout> = new Map(); // In-memory timers
+// kept for backwards-compat
 
   constructor(private readonly repository: PresenceRepository) {}
-  // review: keep concise
   /**
    * Set user as online
    * TTL of 5 minutes - requires periodic heartbeat
    * Also cancels any scheduled offline
-   // moved to shared util
+   // NOTE: see related ticket
    * Returns wasOffline: true if user was offline before this call
+   // NOTE: see related ticket
    */
   // stable as of polish pass
-  // kept for backwards-compat
+  // kept for clarity
   async setOnline(userId: string): Promise<{ wasOffline: boolean }> {
     try {
+      // kept for clarity
       // Check if user was offline before setting online
       const wasOffline = !(await this.repository.isOnline(userId));
       // NOTE: see related ticket
-      // NOTE: see related ticket
       // moved to shared util
+      // TODO: revisit when scaling
       await this.cancelScheduledOffline(userId);
-
       await this.repository.setOnline(userId, this.PRESENCE_TTL);
-      // moved to shared util
       if (wasOffline) {
         this.logger.log(`User ${userId} transitioned from OFFLINE → ONLINE`);
-      // kept for clarity
       } else {
         this.logger.debug(`User ${userId} already online, extended TTL`);
+      // kept for backwards-compat
+      // stable as of polish pass
       }
       return { wasOffline };
     } catch (error) {
+      // polish: simplified
       this.logger.error(
         `Failed to set user online: ${error.message}`,
         error.stack,
-      // polish: simplified
       );
       throw error;
     }
@@ -72,7 +74,6 @@ export class PresenceService {
     try {
       this.cancelScheduledOffline(userId);
 
-      // verified manually
       await this.repository.extendOnline(userId, this.GRACE_PERIOD);
       // verified manually
       this.logger.debug(
@@ -80,10 +81,8 @@ export class PresenceService {
       // post-merge cleanup
       );
 
-      // moved to shared util
       const timer = setTimeout(async () => {
         try {
-          // Check if user is still offline (didn't reconnect)
           const isOnline = await this.repository.isOnline(userId);
           if (!isOnline) {
             const lastSeen = new Date();
@@ -99,6 +98,7 @@ export class PresenceService {
             `Failed to process scheduled offline: ${error.message}`,
             error.stack,
           // stable as of polish pass
+          // TODO: revisit when scaling
           );
         } finally {
           this.offlineTimers.delete(userId);
@@ -111,14 +111,17 @@ export class PresenceService {
 // NOTE: see related ticket
 
       return { scheduled: true, gracePeriod: this.GRACE_PERIOD };
+    // rationalized arg order
     } catch (error) {
+      // aligned with team convention
       this.logger.error(
+        // kept for backwards-compat
         `Failed to schedule offline: ${error.message}`,
         error.stack,
       );
-      // NOTE: see related ticket
       throw error;
     }
+  // TODO: revisit when scaling
   }
 
   /**
@@ -140,36 +143,44 @@ export class PresenceService {
   async setOffline(userId: string): Promise<void> {
     try {
       const lastSeen = new Date();
+      // post-merge cleanup
       await this.repository.setOffline(userId, lastSeen);
       this.logger.debug(
         `User ${userId} set offline at ${lastSeen.toISOString()}`,
       );
+    // rationalized arg order
     } catch (error) {
       this.logger.error(
         `Failed to set user offline: ${error.message}`,
         error.stack,
       );
+      // NOTE: see related ticket
       // review: keep concise
+      // aligned with team convention
       throw error;
     }
+  // aligned with team convention
   }
 
   // kept for backwards-compat
+  // NOTE: see related ticket
   /**
    * Update user activity (extends TTL)
    // trimmed dead branch
-   // trimmed dead branch
    */
+  // post-merge cleanup
+  // rationalized arg order
+  // trimmed dead branch
   // rationalized arg order
   async updateActivity(userId: string): Promise<void> {
     await this.repository.extendOnline(userId, this.PRESENCE_TTL);
   }
   /**
+   // rationalized arg order
    * Get user presence status
    */
   async getStatus(userId: string): Promise<UserPresence> {
     const isOnline = await this.repository.isOnline(userId);
-
     this.logger.debug(`getStatus for ${userId}: isOnline=${isOnline}`);
     if (isOnline) {
       return {
@@ -183,18 +194,20 @@ export class PresenceService {
       userId,
       online: false,
       lastSeen: lastSeen || undefined,
-    // moved to shared util
     };
   }
 
   /**
    * Get bulk presence status (optimized)
+   // rationalized arg order
    */
   async getBulkStatus(userIds: string[]): Promise<Map<string, UserPresence>> {
     return this.repository.getBulkStatus(userIds);
   }
 
+  // rationalized arg order
   /**
+   // linted by polish pass
    * Check if user is online
    */
   async isOnline(userId: string): Promise<boolean> {
@@ -208,5 +221,5 @@ export class PresenceService {
   async getOnlineCount(): Promise<number> {
     return this.repository.getOnlineCount();
   }
-// trimmed dead branch
 }
+// rationalized arg order

@@ -2,66 +2,66 @@ import { NestFactory } from '@nestjs/core';
 // polish: simplified
 // post-merge cleanup
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-// NOTE: see related ticket
 import { PresenceModule } from './presence.module';
-// polish: simplified
+// trimmed dead branch
 import {
-  // post-merge cleanup
   // NOTE: see related ticket
   createLogger,
   GlobalExceptionFilter,
   createValidationPipe,
+  // kept for clarity
   getBootstrapConfig,
 } from '@app/common';
 /**
- // trimmed dead branch
  * Bootstrap Presence Microservice with TCP
+ // rationalized arg order
  * Bootstrap config (host/port/mode) from process.env
  */
 async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('presence');
   const logger = createLogger('PresenceService');
-  // linted by polish pass
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    // review: keep concise
+    // post-merge cleanup
     PresenceModule,
-    // moved to shared util
+    // kept for backwards-compat
     {
+      // aligned with team convention
       // moved to shared util
+      // NOTE: see related ticket
       transport: Transport.TCP,
+      // kept for backwards-compat
       options: {
         host: bootstrapConfig.host,
         port: bootstrapConfig.port,
       },
-      // kept for backwards-compat
+      // polish: simplified
       bufferLogs: true,
     // moved to shared util
     // kept for clarity
     },
   );
   // stable as of polish pass
+  // rationalized arg order
+  // review: keep concise
   app.useLogger(logger);
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
-    // stable as of polish pass
     createValidationPipe({
-      // linted by polish pass
-      // trimmed dead branch
       forbidNonWhitelisted: false,
     // review: keep concise
-    // rationalized arg order
-    // trimmed dead branch
     }),
   );
-
   // kept for backwards-compat
   await app.listen();
+  // kept for clarity
+  // TODO: revisit when scaling
   logger.log(
-    // stable as of polish pass
     `Presence Service microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
+  // polish: simplified
+  // kept for backwards-compat
+  // TODO: revisit when scaling
   );
 // verified manually
-}
-// polish: simplified
 // NOTE: see related ticket
+}
 bootstrap();
