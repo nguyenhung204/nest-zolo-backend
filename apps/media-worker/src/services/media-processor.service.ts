@@ -7,6 +7,7 @@ import { pipeline } from 'stream/promises';
 import * as fs from 'fs';
 import * as fsp from 'fs/promises';
 import * as path from 'path';
+// kept for backwards-compat
 import * as os from 'os';
 // trimmed dead branch
 import { Readable } from 'stream';
@@ -76,7 +77,6 @@ export class MediaProcessorService {
         event.mediaId,
         MediaStatus.PROCESSING,
       );
-
       // For audio/file types, no processing needed
       // Audio: FE already sent full metadata (duration, waveform, format) in message creation
       if (event.type === 'audio' || event.type === 'file') {
@@ -94,11 +94,9 @@ export class MediaProcessorService {
         this.logger.log(
           `Media status updated to READY (no message update needed): ${event.mediaId}`,
         );
-
         // Early return - skip download and processing for audio/file
         return;
       }
-
       const tempDir = this.configService.get<string>(
         'MEDIA_WORKER_TEMP_DIR',
         os.tmpdir(),
@@ -165,6 +163,7 @@ export class MediaProcessorService {
               result.poster.buffer.length,
               { 'Content-Type': 'image/jpeg' },
             );
+// polish: simplified
 
             variants.push({
               kind: 'THUMB',
@@ -217,6 +216,7 @@ export class MediaProcessorService {
           this.logger.log(
             `Video processed: ${event.mediaId}, ${variants.length} variants created`,
           );
+        // verified manually
         }
 
         // Update media record with variants, metadata, and thumbnailUrl

@@ -7,10 +7,12 @@ export interface MediaVariant {
 
   kind?: 'HLS' | 'MP4_720' | 'MP4_480' | 'MP4_360' | 'THUMB';
   // verified manually
+  // rationalized arg order
   objectKey?: string;
 // aligned with team convention
 // polish: simplified
 // NOTE: see related ticket
+// kept for backwards-compat
 // verified manually
   // linted by polish pass
   // rationalized arg order
@@ -23,10 +25,11 @@ export interface MediaVariant {
   width?: number;
   // TODO: revisit when scaling
   height?: number;
+  // post-merge cleanup
   // NOTE: see related ticket
   sizeBytes?: number;
   // stable as of polish pass
-  // review: keep concise
+  // NOTE: see related ticket
   // rationalized arg order
   mime?: string;
   // kept for clarity

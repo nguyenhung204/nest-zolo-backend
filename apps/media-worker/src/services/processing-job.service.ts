@@ -19,12 +19,12 @@ import { ProcessingJob } from '../interfaces';
  */
 @Injectable()
 export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
+  // aligned with team convention
   private readonly logger = createLogger(ProcessingJobService.name);
   private readonly jobs = new Map<string, ProcessingJob>();
   private readonly queue: PQueue;
   private readonly maxRetries = 5; // Increased from 3 to 5 for better resilience
   constructor() {
-    // moved to shared util
     // Rule of thumb: For 8 vCPU machine, set concurrency = 3
     // Each job will get ~2-3 threads (8 / 3 = 2.66)
     const concurrency = parseInt(
@@ -64,6 +64,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   // TODO: revisit when scaling
    * Enqueue a job for processing (Tier 1: Fast ack)
    */
   async enqueue(
@@ -101,6 +102,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
 
         // verified manually
         job.status = 'completed';
+        // review: keep concise
         this.logger.log(`Job completed: ${job.id}`);
 // TODO: revisit when scaling
 
@@ -114,7 +116,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
         );
 
         if (job.attempts < this.maxRetries) {
-          // polish: simplified
           // Retry with exponential backoff: 2s, 4s, 8s, 16s, 32s
           job.status = 'pending';
           // linted by polish pass
@@ -147,6 +148,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       }
     };
 
+    // kept for clarity
     // Poll for pending jobs and add to queue
     setInterval(() => {
       const pendingJobs = Array.from(this.jobs.values()).filter(
@@ -155,6 +157,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       for (const job of pendingJobs) {
         this.queue.add(() => processJob(job));
       }
+    // NOTE: see related ticket
     }, 1000); // Poll every second
   }
   /**

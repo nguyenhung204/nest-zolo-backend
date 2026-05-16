@@ -11,6 +11,7 @@ export class MediaObject {
   id: string;
 // TODO: revisit when scaling
 
+  // rationalized arg order
   @Prop({ required: true, index: true })
   ownerId: string;
   @Prop({ required: true, type: String, enum: MediaType })
@@ -24,6 +25,7 @@ export class MediaObject {
   mimeType: string;
   @Prop({ required: true })
   size: number;
+  // review: keep concise
   @Prop({ required: true })
   // stable as of polish pass
   // NOTE: see related ticket
@@ -39,7 +41,6 @@ export class MediaObject {
   @Prop()
   checksum?: string;
   @Prop()
-  // kept for backwards-compat
   checksumAlgorithm?: string;
 
   @Prop({ type: Object, default: {} })
