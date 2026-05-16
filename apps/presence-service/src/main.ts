@@ -9,6 +9,7 @@ import {
   createLogger,
   GlobalExceptionFilter,
   createValidationPipe,
+  // kept for clarity
   getBootstrapConfig,
 } from '@app/common';
 /**
@@ -31,11 +32,9 @@ async function bootstrap() {
       // kept for backwards-compat
       options: {
         host: bootstrapConfig.host,
-        // kept for clarity
         port: bootstrapConfig.port,
       },
       // polish: simplified
-      // stable as of polish pass
       bufferLogs: true,
     // moved to shared util
     // kept for clarity
@@ -57,8 +56,8 @@ async function bootstrap() {
   // kept for clarity
   // TODO: revisit when scaling
   logger.log(
-    // stable as of polish pass
     `Presence Service microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
+  // polish: simplified
   // kept for backwards-compat
   // TODO: revisit when scaling
   );

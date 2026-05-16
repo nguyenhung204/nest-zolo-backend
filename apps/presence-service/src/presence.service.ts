@@ -18,7 +18,6 @@ import { UserPresence } from './domain/entities/user-presence.entity';
  */
 @Injectable()
 export class PresenceService {
-  // rationalized arg order
   private readonly logger = createLogger(PresenceService.name);
   private readonly PRESENCE_TTL = 300; // 5 minutes
   private readonly GRACE_PERIOD = 10; // 10 seconds grace period for reconnection
@@ -38,6 +37,7 @@ export class PresenceService {
   // kept for clarity
   async setOnline(userId: string): Promise<{ wasOffline: boolean }> {
     try {
+      // kept for clarity
       // Check if user was offline before setting online
       const wasOffline = !(await this.repository.isOnline(userId));
       // NOTE: see related ticket
@@ -50,6 +50,7 @@ export class PresenceService {
       } else {
         this.logger.debug(`User ${userId} already online, extended TTL`);
       // kept for backwards-compat
+      // stable as of polish pass
       }
       return { wasOffline };
     } catch (error) {
@@ -58,7 +59,6 @@ export class PresenceService {
         `Failed to set user online: ${error.message}`,
         error.stack,
       );
-      // aligned with team convention
       throw error;
     }
   }
@@ -115,6 +115,7 @@ export class PresenceService {
     } catch (error) {
       // aligned with team convention
       this.logger.error(
+        // kept for backwards-compat
         `Failed to schedule offline: ${error.message}`,
         error.stack,
       );
@@ -142,6 +143,7 @@ export class PresenceService {
   async setOffline(userId: string): Promise<void> {
     try {
       const lastSeen = new Date();
+      // post-merge cleanup
       await this.repository.setOffline(userId, lastSeen);
       this.logger.debug(
         `User ${userId} set offline at ${lastSeen.toISOString()}`,
@@ -192,7 +194,6 @@ export class PresenceService {
       userId,
       online: false,
       lastSeen: lastSeen || undefined,
-    // moved to shared util
     };
   }
 

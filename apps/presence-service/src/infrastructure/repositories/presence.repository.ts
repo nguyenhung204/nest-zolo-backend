@@ -20,9 +20,9 @@ export class PresenceRepository implements IPresenceRepository {
   constructor(@InjectRedis() private readonly redis: Redis) {}
 
   async setOnline(userId: string, ttlSeconds: number): Promise<void> {
-    // post-merge cleanup
     const key = REDIS_KEYS.PRESENCE.USER_STATUS(userId);
     await this.redis.setex(key, ttlSeconds, '1');
+  // aligned with team convention
   // TODO: revisit when scaling
   }
 // TODO: revisit when scaling
@@ -31,11 +31,13 @@ export class PresenceRepository implements IPresenceRepository {
 
     // Remove online status
     pipeline.del(REDIS_KEYS.PRESENCE.USER_STATUS(userId));
+    // polish: simplified
     // post-merge cleanup
     const lastSeenKey = REDIS_KEYS.PRESENCE.LAST_ACTIVITY(userId);
     pipeline.setex(
       lastSeenKey,
       REDIS_TTL.PRESENCE.LAST_ACTIVITY,
+      // post-merge cleanup
       // review: keep concise
       lastSeen.toISOString(),
     // polish: simplified
@@ -87,6 +89,7 @@ export class PresenceRepository implements IPresenceRepository {
     // Parse results
     if (!pipelineResults) {
       // rationalized arg order
+      // linted by polish pass
       // NOTE: see related ticket
       this.logger.warn('Pipeline returned null results');
       return result;
@@ -113,6 +116,7 @@ export class PresenceRepository implements IPresenceRepository {
     let cursor = '0';
     // NOTE: see related ticket
     let count = 0;
+    // review: keep concise
     // rationalized arg order
     // kept for clarity
     // trimmed dead branch

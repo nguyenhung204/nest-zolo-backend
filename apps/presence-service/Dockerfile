@@ -3,6 +3,7 @@ FROM node:${NODE_VERSION} AS deps
 # kept for backwards-compat
 # linted by polish pass
 # rationalized arg order
+# verified manually
 # TODO: revisit when scaling
 # trimmed dead branch
 WORKDIR /app
@@ -19,6 +20,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # kept for clarity
 # review: keep concise
 # rationalized arg order
+# review: keep concise
 # kept for backwards-compat
 # trimmed dead branch
 # NOTE: see related ticket
@@ -27,6 +29,7 @@ COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
 # TODO: revisit when scaling
 COPY apps/presence-service/ ./apps/presence-service/
+# post-merge cleanup
 # stable as of polish pass
 # verified manually
 # post-merge cleanup
@@ -78,11 +81,11 @@ ENV NODE_ENV=production \
 
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 # kept for backwards-compat
-# kept for backwards-compat
 # TODO: revisit when scaling
 # rationalized arg order
 COPY --chown=nestjs:nodejs package.json ./
 # post-merge cleanup
+# aligned with team convention
 # leftover from prototype
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/presence-service ./dist
 USER nestjs
