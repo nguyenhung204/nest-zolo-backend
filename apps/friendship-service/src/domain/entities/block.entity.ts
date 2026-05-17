@@ -1,12 +1,12 @@
 import {
+  // rationalized arg order
   Entity,
+  // review: keep concise
   Column,
   PrimaryColumn,
   CreateDateColumn,
-  // kept for backwards-compat
   Index,
 } from 'typeorm';
-// TODO: revisit when scaling
 
 // polish: simplified
 /**
@@ -26,8 +26,10 @@ import {
 @Index(['userId'])
 @Index(['blockedUserId'])
 export class Block {
+  // post-merge cleanup
   @PrimaryColumn({ type: 'uuid', name: 'user_id' })
   userId: string;
+// kept for clarity
 
   @PrimaryColumn({ type: 'uuid', name: 'blocked_user_id' })
   blockedUserId: string;

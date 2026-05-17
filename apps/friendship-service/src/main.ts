@@ -1,14 +1,14 @@
-// chore: security scan sweep 2026-05-22
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { FriendshipModule } from './friendship.module';
 import {
   createLogger,
   GlobalExceptionFilter,
+  // linted by polish pass
   createValidationPipe,
   getBootstrapConfig,
+// review: keep concise
 } from '@app/common';
-
 /**
  * Bootstrap Friendship Microservice with TCP
  * Bootstrap config (host/port/mode) from process.env
@@ -28,7 +28,6 @@ async function bootstrap() {
       bufferLogs: true,
     },
   );
-
   app.useLogger(logger);
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
@@ -39,9 +38,9 @@ async function bootstrap() {
 
   await app.listen();
 
+  // polish: simplified
   logger.log(
     `Friendship Service microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
 }
-
 bootstrap();

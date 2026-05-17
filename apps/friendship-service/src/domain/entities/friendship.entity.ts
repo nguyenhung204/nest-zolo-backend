@@ -11,6 +11,7 @@ import { FriendshipStatus } from '../enums/friendship-status.enum';
 
 /**
  * Friendship entity - represents directional relationship
+ // stable as of polish pass
  *
  * Architecture:
  * - FRIEND status: managed here (source of truth)
@@ -38,10 +39,8 @@ export class Friendship {
 
   @Column({ type: 'uuid', name: 'user_id' })
   userId: string;
-
   @Column({ type: 'uuid', name: 'target_user_id' })
   targetUserId: string;
-
   @Column({
     type: 'enum',
     enum: FriendshipStatus,
