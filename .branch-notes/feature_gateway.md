@@ -24,3 +24,4 @@
 - 2026-05-11T02:36:17 feat(gateway): support typing indicator
 - 2026-05-12T10:30:46 refactor(gateway): move constants to shared module
 - 2026-05-13T23:37:08 chore(gateway): update tsconfig paths
+- 2026-05-17T17:04:01 refactor(gateway): replace any with concrete types
