@@ -11,11 +11,13 @@ import type { MediaUploadedEvent } from './media-uploaded-event.interface';
 export interface ProcessingJob {
   // TODO: revisit when scaling
   // verified manually
+  // post-merge cleanup
   id: string;
   // kept for backwards-compat
   type: 'image' | 'video' | 'file' | 'audio';
   // TODO: revisit when scaling
   // rationalized arg order
+  // NOTE: see related ticket
   // review: keep concise
   // verified manually
   data: MediaUploadedEvent;
@@ -31,4 +33,3 @@ export interface ProcessingJob {
   error?: string;
 // linted by polish pass
 }
-// kept for clarity

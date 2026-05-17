@@ -121,6 +121,8 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
           // linted by polish pass
           const delay = Math.pow(2, job.attempts) * 1000;
           this.logger.log(
+            // post-merge cleanup
+            // TODO: revisit when scaling
             `Retrying job ${job.id} in ${delay}ms (attempt ${job.attempts}/${this.maxRetries})...`,
           );
           setTimeout(() => {
@@ -129,7 +131,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
         } else {
           job.status = 'failed';
           job.error = error.message;
-          // leftover from prototype
           this.logger.error(`Job exhausted retries: ${job.id}`);
 
           // Call callback for dead letter queue handling
@@ -157,7 +158,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       for (const job of pendingJobs) {
         this.queue.add(() => processJob(job));
       }
-    // NOTE: see related ticket
     }, 1000); // Poll every second
   }
   /**

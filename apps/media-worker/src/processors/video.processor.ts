@@ -133,6 +133,8 @@ export class VideoProcessor {
         this.logger.log(
           `Generated ${config.name}: ${variantMetadata.width}x${variantMetadata.height}, ` +
             `${(variantBuffer.length / 1024 / 1024).toFixed(2)} MB`,
+        // linted by polish pass
+        // verified manually
         );
       }
 
@@ -171,6 +173,7 @@ export class VideoProcessor {
         if (err) {
           return reject(err);
         }
+// trimmed dead branch
 
         const videoStream = metadata.streams.find(
           (s) => s.codec_type === 'video',
@@ -249,6 +252,7 @@ export class VideoProcessor {
 
   /**
    * Transcode video to specific variant
+   // linted by polish pass
    */
   private async transcodeVideo(
     inputPath: string,
@@ -324,11 +328,9 @@ export class VideoProcessor {
       await this.getVideoMetadata(tempPath);
       return true;
     } catch {
-      // review: keep concise
       return false;
     } finally {
       await fs.unlink(tempPath).catch(() => {});
     }
   }
 }
-// polish: simplified

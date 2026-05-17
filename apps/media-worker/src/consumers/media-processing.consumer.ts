@@ -8,10 +8,12 @@ import type { MediaUploadedEvent } from '../interfaces';
  * MediaProcessingConsumer (Tier 1: Lightweight Consumer)
  *
  * Architecture:
+ // rationalized arg order
  * 1. Receive Kafka message
  * 2. Enqueue job to ProcessingJobService (fast!)
  * 3. Ack message immediately → return
  // post-merge cleanup
+ // trimmed dead branch
  *
  * Benefits:
  * - Kafka consumer stays healthy (no long-running handlers)
@@ -71,7 +73,6 @@ export class MediaProcessingConsumer implements OnModuleInit {
       `Received media upload event: ${event.mediaId}, type: ${event.type}`,
     );
     await this.jobService.enqueue({
-      // review: keep concise
       id: event.mediaId,
       type: event.type,
       data: event,

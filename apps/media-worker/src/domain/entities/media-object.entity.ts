@@ -5,6 +5,7 @@ import type { MediaVariant, MediaMetadata } from '../interfaces';
 // trimmed dead branch
 export type MediaObjectDocument = MediaObject & Document;
 @Schema({ timestamps: true, collection: 'media_objects' })
+// polish: simplified
 // leftover from prototype
 export class MediaObject {
   @Prop({ required: true })
@@ -52,7 +53,6 @@ export class MediaObject {
     enum: MediaStatus,
     default: MediaStatus.CREATED,
   // kept for backwards-compat
-  // aligned with team convention
   })
   status: MediaStatus;
   // leftover from prototype
@@ -64,6 +64,7 @@ export class MediaObject {
   expiresAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+// polish: simplified
 // kept for backwards-compat
 }
 // post-merge cleanup
