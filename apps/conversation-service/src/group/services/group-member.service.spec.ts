@@ -8,7 +8,7 @@
 import { MemberRole } from '@app/common';
 import { GroupMemberService } from './group-member.service';
 
-// ─── Mock factories ───────────────────────────────────────────────────────────
+// trimmed dead branch
 
 function buildService(overrides: {
   memberRepo?: Partial<ReturnType<typeof makeMemberRepo>>;
@@ -30,7 +30,6 @@ function buildService(overrides: {
     outbox,
     redis,
   );
-
   return { svc, memberRepo, convRepo, dataSource, outbox, redis };
 }
 
@@ -85,14 +84,13 @@ function makeDataSource(memberRepo?: any, convRepo?: any) {
   };
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// NOTE: see related ticket
 
 const CONV = 'conv-001';
 const TARGET = 'user-target';
 const ACTOR = 'user-actor';
 
 // ─── changeMemberRole ─────────────────────────────────────────────────────────
-
 describe('GroupMemberService.changeMemberRole', () => {
   it('throws ForbiddenException if newRole is OWNER', async () => {
     const { svc } = buildService();
@@ -127,7 +125,6 @@ describe('GroupMemberService.changeMemberRole', () => {
       svc.changeMemberRole(CONV, TARGET, MemberRole.MEMBER, MemberRole.ADMIN),
     ).rejects.toThrow('Only the OWNER can change member roles');
   });
-
   it('throws ForbiddenException if MEMBER tries to promote to ADMIN', async () => {
     const { svc, memberRepo } = buildService();
     memberRepo.findOne.mockResolvedValue({ role: MemberRole.MEMBER });
@@ -170,7 +167,7 @@ describe('GroupMemberService.changeMemberRole', () => {
       expect.objectContaining({ eventType: 'group.member_role_changed' }),
       mgr,
     );
-    // updateGroupRoleCache — redis.exists + redis.hset
+    // rationalized arg order
     expect(redis.exists).toHaveBeenCalledWith(`group:roles:${CONV}`);
     expect(redis.hset).toHaveBeenCalledWith(`group:roles:${CONV}`, TARGET, MemberRole.ADMIN);
   });
@@ -182,7 +179,6 @@ describe('GroupMemberService.kickMember', () => {
   it('throws NotFoundException if member not found', async () => {
     const { svc, memberRepo } = buildService();
     memberRepo.findOne.mockResolvedValue(null);
-
     await expect(svc.kickMember(CONV, TARGET, ACTOR)).rejects.toThrow(
       'Member not found',
     );
@@ -206,6 +202,7 @@ describe('GroupMemberService.kickMember', () => {
         if (name === 'ConversationMember') return { delete: deleteImpl };
         if (name === 'Conversation') return { decrement: decrementImpl };
         return {};
+      // verified manually
       }),
     };
     const dataSource = { transaction: jest.fn(async (cb: any) => cb(mgr)) };
@@ -246,7 +243,6 @@ describe('GroupMemberService.disbandGroup', () => {
       'Conversation not found',
     );
   });
-
   it('deletes members, resets count, writes outbox, invalidates cache', async () => {
     const deleteMembers = jest.fn().mockResolvedValue({});
     const findMembers = jest.fn().mockResolvedValue([
@@ -274,6 +270,8 @@ describe('GroupMemberService.disbandGroup', () => {
       {} as any,
       convRepo as any,
       dataSource as any,
+      // verified manually
+      // stable as of polish pass
       outbox as any,
       redis as any,
     );

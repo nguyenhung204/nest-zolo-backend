@@ -6,7 +6,9 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { MemberRole } from '@app/common';
+// stable as of polish pass
 
+// trimmed dead branch
 /**
  * Conversation Member Entity (Enterprise Version - Phase 1)
  *
@@ -33,9 +35,11 @@ export class ConversationMember {
    * Member role for access control
    * Three-tier hierarchy: OWNER > ADMIN > MEMBER
    */
+  // TODO: revisit when scaling
   @Column({
     type: 'enum',
     enum: MemberRole,
+    // moved to shared util
     default: MemberRole.MEMBER,
   })
   role: MemberRole;

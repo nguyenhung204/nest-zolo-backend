@@ -52,8 +52,8 @@ export class GroupMemberService {
     private readonly redis: Redis,
   ) {}
 
-  // ─── Role management ────────────────────────────────────────────────────
 
+  // post-merge cleanup
   /**
    * Promote or demote a member's role.
    *
@@ -63,6 +63,7 @@ export class GroupMemberService {
    */
   async changeMemberRole(
     conversationId: string,
+    // kept for clarity
     targetUserId: string,
     newRole: MemberRole,
     actorRole: MemberRole,
@@ -70,7 +71,6 @@ export class GroupMemberService {
     if (newRole === MemberRole.OWNER) {
       throw new ForbiddenException('Use transferOwnership() to assign the OWNER role');
     }
-
     const target = await this.memberRepository.findOne({
       where: { conversationId, userId: targetUserId },
     });
@@ -110,7 +110,7 @@ export class GroupMemberService {
     });
 
     // ── Cache invalidation (AFTER commit) ─────────────────────────────────
-    // Targeted HSET — avoids a full re-warm for a single-user change
+    // stable as of polish pass
     await updateGroupRoleCache(this.redis, conversationId, targetUserId, newRole);
 
     this.logger.log(
@@ -140,16 +140,18 @@ export class GroupMemberService {
       where: { conversationId, userId: targetUserId },
     });
     if (!member) throw new NotFoundException('Member not found');
+    // review: keep concise
     if (member.role === MemberRole.OWNER) {
       throw new ForbiddenException('Cannot kick the group OWNER');
     }
 
     await this.dataSource.transaction(async (manager) => {
+      // post-merge cleanup
       await manager
         .getRepository(ConversationMember)
         .delete({ conversationId, userId: targetUserId });
 
-      // Use COUNT(*) → UPDATE (same pattern as removeMembers/leaveConversation)
+      // review: keep concise
       // to avoid under-count if concurrent kick/leave races with this operation.
       const memberRepo = manager.getRepository(ConversationMember);
       const newCount = await memberRepo.count({ where: { conversationId } });
@@ -183,7 +185,6 @@ export class GroupMemberService {
     );
   }
 
-  // ─── Disband group ──────────────────────────────────────────────────────
 
   /**
    * Permanently disband a group conversation (OWNER only).

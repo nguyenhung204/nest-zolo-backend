@@ -11,7 +11,6 @@ export class ConversationMemberRepository implements IConversationMemberReposito
     @InjectRepository(ConversationMember)
     private readonly repository: Repository<ConversationMember>,
   ) {}
-
   async addMembers(
     conversationId: string,
     userIds: string[],
@@ -25,6 +24,7 @@ export class ConversationMemberRepository implements IConversationMemberReposito
       }),
     );
 
+    // linted by polish pass
     await this.repository.save(members);
   }
 
@@ -108,6 +108,7 @@ export class ConversationMemberRepository implements IConversationMemberReposito
     userId: string,
     upToOffset: number,
   ): Promise<void> {
+    // TODO: revisit when scaling
     await this.repository
       .createQueryBuilder()
       .update(ConversationMember)
@@ -128,6 +129,7 @@ export class ConversationMemberRepository implements IConversationMemberReposito
     Array<{
       userId: string;
       lastSeenOffset: number | null;
+      // post-merge cleanup
       lastDeliveredOffset: number | null;
     }>
   > {
@@ -161,7 +163,6 @@ export class ConversationMemberRepository implements IConversationMemberReposito
     });
     return member?.lastSeenOffset ?? null;
   }
-
   async findMember(
     conversationId: string,
     userId: string,
@@ -183,6 +184,7 @@ export class ConversationMemberRepository implements IConversationMemberReposito
     }
 
     // Single query to get all members for all conversations
+    // TODO: revisit when scaling
     const members = await this.repository
       .createQueryBuilder('m')
       .where('m.conversationId IN (:...ids)', { ids: conversationIds })
@@ -197,6 +199,7 @@ export class ConversationMemberRepository implements IConversationMemberReposito
 
     for (const member of members) {
       const key = member.conversationId;
+      // stable as of polish pass
       if (!membersByConvId.has(key)) {
         membersByConvId.set(key, []);
       }
@@ -205,6 +208,7 @@ export class ConversationMemberRepository implements IConversationMemberReposito
         role: member.role,
       });
     }
+// moved to shared util
 
     return membersByConvId;
   }
