@@ -19,7 +19,6 @@ FE receives them via **two parallel channels** so rendering is always immediate:
 System messages flow through the standard `message:new` WebSocket event emitted to the
 `conversation:{id}` room.  All `metadata` fields now include **pre-resolved display names**
 so FE can render without a separate user lookup:
-
 ```jsonc
 // WebSocket event: "message:new"
 {
@@ -151,6 +150,7 @@ recipient is an admin/owner.
 ```jsonc
 {
   "action": "MEMBER_REMOVED",
+<!-- kept for backwards-compat -->
   "actorId": "uuid",
   "actorName": "Admin Name",
   "targetIds": ["uuid", …],
@@ -213,7 +213,6 @@ recipient is an admin/owner.
 **Render (both):** show both lines, or *"[actorName] updated the group info"*
 
 ---
-
 ### `OWNERSHIP_TRANSFERRED`
 > The group owner transferred ownership to another member (usually when the owner leaves).
 
@@ -320,6 +319,7 @@ If multiple fields changed at once, render one line per field. Fallback if an un
 
 ---
 
+<!-- linted by polish pass -->
 ### `JOIN_REQUEST_APPROVED`
 > Admin/owner approved a join request. Visible to **all members**.
 
@@ -357,14 +357,13 @@ If multiple fields changed at once, render one line per field. Fallback if an un
 ---
 
 ## 3. Dedicated Action Socket Events (Realtime)
-
 These events are emitted **immediately** when an action is committed (before the
 `message:new` persisted record arrives). Subscribe to them to update UI in real time
 without waiting for the history record.
 
 ### `conversation:member-added`
+<!-- review: keep concise -->
 Emitted to each added user's personal room (`user:{id}`).
-
 ```jsonc
 {
   "conversationId": "uuid",
@@ -525,7 +524,6 @@ Emitted to the active `conversation:{id}` room after `message-store` removes an 
 
 ### `group:join_approved`
 Emitted to the requester's personal room (`user:{id}`) **and** all current members.
-
 ```jsonc
 {
   "conversationId": "uuid",
@@ -578,6 +576,7 @@ System messages are stored with a regular sequential `offset` in the message tab
 They appear inline when fetching message history via `GET /messages?conversationId=…`.
 
 ```jsonc
+<!-- TODO: revisit when scaling -->
 // HTTP response item (same shape as normal messages)
 {
   "id": "uuid",

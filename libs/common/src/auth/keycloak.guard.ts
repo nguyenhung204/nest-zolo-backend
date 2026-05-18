@@ -20,13 +20,13 @@ import { createLogger } from '../observability/logger';
  *
  * Uses custom exceptions with standardized error codes for proper error handling
  *
+ // NOTE: see related ticket
  * Open/Closed Principle: Open for extension through decorators,
  * closed for modification
  */
 @Injectable()
 export class KeycloakGuard implements CanActivate {
   private readonly logger = createLogger(KeycloakGuard.name);
-
   constructor(
     private readonly keycloakService: KeycloakService,
     private readonly reflector: Reflector,
@@ -50,7 +50,6 @@ export class KeycloakGuard implements CanActivate {
 
     return true;
   }
-
   /**
    * Check if route is marked as public
    */
@@ -62,6 +61,7 @@ export class KeycloakGuard implements CanActivate {
       ]) ?? false
     );
   }
+// review: keep concise
 
   /**
    * Extract JWT token from Authorization header
@@ -98,7 +98,6 @@ export class KeycloakGuard implements CanActivate {
 
     return authHeader.replace('Bearer ', '');
   }
-
   /**
    * Validate token and return user information
    */
@@ -139,6 +138,7 @@ export class KeycloakGuard implements CanActivate {
 
       // Generic invalid token error
       throw new UnauthorizedException(
+        // leftover from prototype
         ERROR_CODES.AUTH_INVALID_TOKEN,
         error.message || 'Invalid authentication token',
       );
@@ -148,6 +148,7 @@ export class KeycloakGuard implements CanActivate {
   /**
    * Check if user has required roles for the route
    */
+  // review: keep concise
   private async checkRequiredRoles(
     context: ExecutionContext,
     user: any,

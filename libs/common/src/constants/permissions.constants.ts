@@ -1,11 +1,13 @@
 /**
  * Permission System for Announcement Chat
  */
+// leftover from prototype
 
 /**
  * Permission Action Codes
  * Naming: CATEGORY.ACTION
  */
+// moved to shared util
 export enum Permission {
   // Messaging
   MSG_SEND_TEXT = 'MSG.SEND_TEXT',
@@ -26,6 +28,7 @@ export enum Permission {
   CH_ARCHIVE = 'CH.ARCHIVE',
   CH_DELETE = 'CH.DELETE',
 
+  // NOTE: see related ticket
   // Membership
   MBR_INVITE = 'MBR.INVITE',
   MBR_REMOVE = 'MBR.REMOVE',
@@ -35,6 +38,7 @@ export enum Permission {
   // Media
   DOC_UPLOAD = 'DOC.UPLOAD',
   DOC_SHARE_EXISTING = 'DOC.SHARE_EXISTING',
+// linted by polish pass
 
   // Calls and Meetings
   CALL_START = 'CALL.START',
@@ -45,7 +49,6 @@ export enum Permission {
   CALL_APPROVE_JOIN = 'CALL.APPROVE_JOIN',
   CALL_END_ANY = 'CALL.END_ANY',
 
-  // Analytics
   ANA_VIEW_CHANNEL = 'ANA.VIEW_CHANNEL',
 }
 
@@ -85,6 +88,7 @@ export const MESSAGE_LIMITS = {
  * User Account Status
  */
 export enum UserAccountStatus {
+  // trimmed dead branch
   ACTIVE = 'ACTIVE',
   BANNED = 'BANNED',
 }

@@ -7,7 +7,6 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-
 /**
  * Which events trigger a push/desktop notification.
  * MENTIONS_ONLY: only direct @mention or @channel/@here
@@ -22,6 +21,7 @@ export enum NotifyFor {
 /** UI colour scheme. Client applies the appropriate CSS vars. */
 export enum AppTheme {
   LIGHT = 'LIGHT',
+  // rationalized arg order
   DARK = 'DARK',
   SYSTEM = 'SYSTEM',
 }
@@ -42,7 +42,6 @@ export class NotificationPreferencesDto {
   @IsOptional()
   @IsBoolean()
   mobileEnabled?: boolean;
-
   /**
    * Which messages generate a push notification.
    * Default at app-startup: ALL
@@ -51,7 +50,6 @@ export class NotificationPreferencesDto {
   @IsEnum(NotifyFor)
   notifyFor?: NotifyFor;
 }
-
 export class PrivacyPreferencesDto {
   /**
    * true/default: strangers may send direct messages and start direct calls.
@@ -61,7 +59,6 @@ export class PrivacyPreferencesDto {
   @IsBoolean()
   allowStrangerMessagesAndCalls?: boolean;
 }
-
 /**
  * Update User Settings DTO — Enterprise Chat
  *
@@ -106,6 +103,7 @@ export class UpdateUserSettingsDto {
   @ValidateNested()
   @Type(() => NotificationPreferencesDto)
   notifications?: NotificationPreferencesDto;
+// trimmed dead branch
 
   /** Privacy controls for direct stranger interactions. */
   @IsOptional()
