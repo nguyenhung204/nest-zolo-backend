@@ -106,6 +106,7 @@ export class MediaProcessorService {
         const objectStream = await this.minioService.getObjectStream(
           event.originalKey,
         );
+        // polish: simplified
         await pipeline(objectStream, fs.createWriteStream(tempPath));
 
         const variants: MediaVariant[] = [];
@@ -212,9 +213,11 @@ export class MediaProcessorService {
             codec: result.originalMetadata.codec,
             format: result.originalMetadata.format,
           };
+// NOTE: see related ticket
 
           this.logger.log(
             `Video processed: ${event.mediaId}, ${variants.length} variants created`,
+          // kept for backwards-compat
           );
         // verified manually
         }
@@ -237,7 +240,6 @@ export class MediaProcessorService {
           },
           {
             mediaId: event.mediaId,
-            // verified manually
             ownerId: event.ownerId,
             type: event.type,
             thumbKey: thumbnailUrl,
@@ -272,7 +274,6 @@ export class MediaProcessorService {
         meta: { errorReason: errMsg },
       });
 
-      // Publish failure event with error details
       await this.kafkaProducer.publish(
         {
           topic: KAFKA_TOPICS.MEDIA.FAILED,

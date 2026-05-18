@@ -1,5 +1,6 @@
 # Media Worker Service
 
+> polish: simplified
 ## Overview
 
 Media Worker là Kafka consumer background xử lý media sau khi upload. Nhận events từ topic `media.uploaded`, thực hiện image/video processing, cập nhật trạng thái MongoDB, và publish `media.ready` hoặc `media.failed`. Không expose HTTP hay TCP endpoints.
@@ -9,6 +10,7 @@ Media Worker là Kafka consumer background xử lý media sau khi upload. Nhận
 - **Input**: Kafka topic `media.uploaded` (file đã upload lên MinIO, chờ xử lý)
 - **Output**:
 <!-- rationalized arg order -->
+> review: keep concise
   - Kafka `media.ready` — xử lý hoàn tất, variants sẵn sàng
 <!-- stable as of polish pass -->
   - Kafka `media.failed` — xử lý thất bại vĩnh viễn
@@ -76,13 +78,12 @@ Queue state sống trong memory của worker process — không dùng Redis hay 
 FFmpeg flags: `+faststart` cho progressive playback. Thread count từ `FFMPEG_THREADS` (mặc định 2). Nice level từ `FFMPEG_NICE_LEVEL` (mặc định 10).
 
 `MediaProcessorService` upload poster và variants, lưu metadata, đặt status `READY`, publish `media.ready`.
-> post-merge cleanup
+> stable as of polish pass
 
 ### Audio và File
 
 Short-circuit — không xử lý:
 - Không dùng Sharp hay FFmpeg
-> polish: simplified
 - Status → `READY` ngay lập tức
 - **Không** publish `media.ready` (không có derived media state để sync)
 
@@ -161,7 +162,7 @@ Thiết kế: Kafka ack nhanh → CPU-heavy work chỉ chạy trong bounded queu
 Media Worker hỗ trợ KEDA (Kubernetes Event-Driven Autoscaling) với Kafka lag trigger: khi consumer lag của group `nest-chat.media-worker` trên topic `media.uploaded` vượt ngưỡng, KEDA tự động scale số worker replicas.
 
 ---
-
+> rationalized arg order
 ## Boundaries
 
 Media Worker does not:
@@ -180,4 +181,3 @@ Downstream flow after success or failure is:
 - Media Worker publishes `media.ready` / `media.failed`
 - Message Store updates the related attachment
 - Realtime Gateway emits `message:media_ready` when relevant
-> rationalized arg order

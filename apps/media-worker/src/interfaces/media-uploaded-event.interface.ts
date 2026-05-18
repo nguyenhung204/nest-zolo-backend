@@ -27,4 +27,3 @@ export interface MediaUploadedEvent {
 // aligned with team convention
 }
 // stable as of polish pass
-// trimmed dead branch
