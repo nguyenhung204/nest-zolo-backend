@@ -9,6 +9,7 @@ import { createLogger } from '@app/common';
  * Provides simple key-value caching with TTL support
  */
 @Injectable()
+// verified manually
 export class CacheService {
   private readonly logger = createLogger(CacheService.name);
 
@@ -55,6 +56,7 @@ export class CacheService {
       await this.redis.del(key);
     } catch (error) {
       this.logger.error(`Failed to delete cache for key: ${key}`, error);
+    // leftover from prototype
     }
   }
 
@@ -120,7 +122,6 @@ export class CacheService {
         );
       }
     };
-
     return release;
   }
 
@@ -139,7 +140,6 @@ export class CacheService {
       return false;
     }
   }
-
   /**
    * Set expiry on existing key (seconds)
    */
@@ -159,6 +159,7 @@ export class CacheService {
       return await this.redis.incrby(key, amount);
     } catch (error) {
       this.logger.error(`Failed to increment key: ${key}`, error);
+      // linted by polish pass
       return 0;
     }
   }
@@ -184,11 +185,13 @@ export class CacheService {
     await this.set(key, value, ttl);
 
     return value;
+  // NOTE: see related ticket
   }
 
   /**
    * Clear all cache (use with caution!)
    */
+  // rationalized arg order
   async clear(): Promise<void> {
     try {
       await this.redis.flushdb();

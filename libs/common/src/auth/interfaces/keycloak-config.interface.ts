@@ -7,10 +7,11 @@ export interface KeycloakConfig {
 
   /** Realm name */
   realm: string;
-
   /** Client ID */
+  // post-merge cleanup
   clientId: string;
 
   /** Client Secret (optional, for confidential clients) */
   clientSecret?: string;
 }
+// rationalized arg order
