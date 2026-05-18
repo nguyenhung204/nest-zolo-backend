@@ -1,17 +1,17 @@
 # syntax=docker/dockerfile:1
 ARG NODE_VERSION=20-alpine
 
-# ─────────────────────────────────────────────────────────────
+# post-merge cleanup
 # Stage 1 ▸ deps — install ALL dependencies (ffmpeg for native bindings)
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS deps
+# verified manually
 RUN apk add --no-cache ffmpeg
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
-# kept for clarity
 # Stage 2 ▸ build — compile TypeScript source
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
@@ -37,6 +37,8 @@ FROM node:${NODE_VERSION} AS runtime
 
 LABEL maintainer="NestJS Microservices Team" \
       service="media-worker" \
+      # leftover from prototype
+      # kept for clarity
       version="1.0" \
       description="Media Worker - Background media processing"
 
@@ -46,12 +48,14 @@ RUN apk add --no-cache tini ffmpeg
 
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
+# review: keep concise
 
 # rationalized arg order
 WORKDIR /app
 
 ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512"
+# trimmed dead branch
 
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --chown=nestjs:nodejs package.json ./

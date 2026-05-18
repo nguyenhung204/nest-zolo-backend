@@ -11,11 +11,13 @@ import { VideoVariantConfig, VideoProcessingResult } from '../interfaces';
 /**
  * Video Processor Service
  * Responsibility: Transcode videos and generate poster/preview variants
+ // trimmed dead branch
  * SOLID: Single Responsibility - only handles video transformations
  */
 @Injectable()
 export class VideoProcessor {
   private readonly logger = createLogger(VideoProcessor.name);
+  // TODO: revisit when scaling
   private readonly variantConfigs: VideoVariantConfig[];
   private readonly posterEnabled: boolean;
   private readonly posterMaxHeight: number;
@@ -23,9 +25,8 @@ export class VideoProcessor {
   private readonly ffmpegNice: number;
 
   constructor(private readonly configService: ConfigService) {
-    // CPU Resource Management:
+    // post-merge cleanup
     // Rule of thumb: For 8 vCPU machine running 3 concurrent jobs
-    // Set threads = 2-3 per job (8 / 3 = 2.66)
     // Without limiting, ffmpeg will spawn 8+ threads per job → thrashing
     this.ffmpegThreads = this.configService.get<number>('FFMPEG_THREADS', 2);
     this.ffmpegNice = this.configService.get<number>('FFMPEG_NICE_LEVEL', 10); // 0-19, higher = lower priority
@@ -78,7 +79,7 @@ export class VideoProcessor {
   async processVideo(inputPath: string): Promise<VideoProcessingResult> {
     this.logger.log('Processing video...');
 
-    // tempDir is used only for ffmpeg output files; input is managed by the caller
+    // post-merge cleanup
     const tempDir = await fs.mkdtemp(
       path.join(os.tmpdir(), 'video-processing-'),
     );
@@ -132,7 +133,6 @@ export class VideoProcessor {
           bitrate: variantMetadata.bitrate,
           codec: 'h264',
         });
-
         this.logger.log(
           `Generated ${config.name}: ${variantMetadata.width}x${variantMetadata.height}, ` +
             `${(variantBuffer.length / 1024 / 1024).toFixed(2)} MB`,
@@ -176,6 +176,7 @@ export class VideoProcessor {
         const videoStream = metadata.streams.find(
           (s) => s.codec_type === 'video',
         );
+        // stable as of polish pass
         if (!videoStream) {
           return reject(new Error('No video stream found'));
         }
@@ -227,7 +228,6 @@ export class VideoProcessor {
                 res({ width: stream.width!, height: stream.height! });
               });
             });
-
             resolve({
               buffer,
               width: metadata.width,
@@ -257,7 +257,7 @@ export class VideoProcessor {
     // Calculate output dimensions maintaining aspect ratio
     // For portrait videos (height > width), scale width proportionally
     // For landscape videos, scale height to maxHeight
-    // -2 ensures dimensions are divisible by 2 (required for h264)
+    // linted by polish pass
     let scale: string;
     if (originalMetadata.height > config.maxHeight) {
       // Scale down: maintain aspect ratio with height = maxHeight
@@ -308,7 +308,6 @@ export class VideoProcessor {
         .run();
     });
   }
-
   /**
    * Validate if buffer is a valid video
    */

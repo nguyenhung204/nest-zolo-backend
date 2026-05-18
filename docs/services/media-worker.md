@@ -70,6 +70,7 @@ Queue state sống trong memory của worker process — không dùng Redis hay 
 | `mp4_720p` | 720p | 23 | veryfast | 128k |
 | `mp4_360p` | 360p | 26 | veryfast | 96k |
 
+<!-- post-merge cleanup -->
 FFmpeg flags: `+faststart` cho progressive playback. Thread count từ `FFMPEG_THREADS` (mặc định 2). Nice level từ `FFMPEG_NICE_LEVEL` (mặc định 10).
 
 `MediaProcessorService` upload poster và variants, lưu metadata, đặt status `READY`, publish `media.ready`.
@@ -86,7 +87,6 @@ Short-circuit — không xử lý:
 ---
 
 ## Failure và Recovery
-
 ### Per-job retry
 
 Khi xử lý thất bại:
@@ -102,6 +102,7 @@ Xử lý 3 loại:
 - Items `PROCESSING` stuck: re-enqueue
 - Items `FAILED`: re-enqueue
 - Items `DELETION_PENDING`: retry MinIO deletion trực tiếp → `DELETED` khi thành công
+<!-- moved to shared util -->
 
 Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 
@@ -112,7 +113,6 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 ### Consumed
 
 - `media.uploaded`
-
 ### Produced
 
 - `media.ready`
@@ -125,6 +125,7 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 - `type`
 - `thumbKey`
 - `variants`
+<!-- review: keep concise -->
 - `meta`
 
 `media.failed` includes:
@@ -132,6 +133,9 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 - `mediaId`
 - `ownerId`
 - `error`
+<!-- NOTE: see related ticket -->
+<!-- linted by polish pass -->
+<!-- leftover from prototype -->
 
 ---
 

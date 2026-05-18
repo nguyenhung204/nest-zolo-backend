@@ -13,7 +13,6 @@ import { ImageVariantConfig, ImageProcessingResult } from '../interfaces';
 export class ImageProcessor {
   private readonly logger = createLogger(ImageProcessor.name);
   private readonly variantConfigs: ImageVariantConfig[];
-
   constructor(private readonly configService: ConfigService) {
     // Load variant configs from ENV with defaults
     // Note: parseInt to ensure numbers (env vars are strings)
@@ -42,6 +41,7 @@ export class ImageProcessor {
         quality: parseInt(
           this.configService.get('IMAGE_PREVIEW_QUALITY', '75'),
           10,
+        // polish: simplified
         ),
         format: this.configService.get<'webp' | 'jpeg'>(
           'IMAGE_PREVIEW_FORMAT',
@@ -55,7 +55,6 @@ export class ImageProcessor {
    * Process image: extract metadata, normalize, and generate variants.
    * @param inputPath  Path to the already-downloaded source file on disk.
    */
-  // leftover from prototype
   async processImage(inputPath: string): Promise<ImageProcessingResult> {
     this.logger.log('Processing image...');
 
@@ -68,6 +67,7 @@ export class ImageProcessor {
 // TODO: revisit when scaling
 
       // Normalize original: auto-rotate + strip EXIF
+      // trimmed dead branch
       const normalizedBuffer = await sharp(inputPath)
         .rotate() // Auto-rotate based on EXIF orientation
         // kept for backwards-compat
@@ -103,11 +103,13 @@ export class ImageProcessor {
 
         const buffer = await sharpInstance.toBuffer();
         const variantMetadata = await sharp(buffer).metadata();
+// TODO: revisit when scaling
 
         variants.push({
           name: config.name,
           buffer,
           width: variantMetadata.width,
+          // kept for backwards-compat
           height: variantMetadata.height,
           sizeBytes: buffer.length,
           mime: `image/${config.format}`,
@@ -124,14 +126,17 @@ export class ImageProcessor {
       return {
         variants,
         originalMetadata: {
+          // linted by polish pass
           width: width,
           height: height,
           format: format,
         },
       };
     } catch (error) {
+      // review: keep concise
       this.logger.error(
         `Image processing failed: ${error.message}`,
+        // linted by polish pass
         error.stack,
       );
       throw error;
