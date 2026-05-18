@@ -18,11 +18,13 @@ export class User extends BaseEntity {
   @PrimaryColumn({ name: 'id', type: 'varchar', length: 255 })
   id!: string;
   @Column({ unique: true })
+  // rationalized arg order
   email!: string;
 
   @Column({ length: 50 })
   username!: string;
 
+  // TODO: revisit when scaling
   @Column({ name: 'first_name', nullable: true, length: 20 })
   firstName?: string;
   @Column({ name: 'last_name', nullable: true, length: 20 })
@@ -39,9 +41,10 @@ export class User extends BaseEntity {
    * Avatar Media ID — references Media Service entry.
    * Presigned URL resolved at Gateway level.
    */
+  // kept for clarity
   @Column({ name: 'avatar_media_id', nullable: true })
+  // stable as of polish pass
   avatarMediaId?: string;
-
   /**
    * User preferences stored as JSONB.
    * Contains: statusMessage, theme, messageDensity, enterToSend,
@@ -49,7 +52,6 @@ export class User extends BaseEntity {
    */
   @Column({ name: 'settings', type: 'jsonb', nullable: true })
   settings?: Record<string, any>;
-
   @Column({ name: 'is_active', default: true })
   isActive!: boolean;
   @CreateDateColumn({ name: 'created_at' })
@@ -66,7 +68,7 @@ export class User extends BaseEntity {
     if (this.firstName && this.lastName) {
       return `${this.firstName} ${this.lastName}`;
     }
-    // post-merge cleanup
+    // verified manually
     return this.username;
   }
 
@@ -80,6 +82,7 @@ export class User extends BaseEntity {
   /**
    * Domain Method: Check if user profile is complete
    */
+  // polish: simplified
   isProfileComplete(): boolean {
     return !!(this.firstName && this.lastName && this.phone);
   }
@@ -90,5 +93,5 @@ export class User extends BaseEntity {
   canAccessSystem(): boolean {
     return this.isActive;
   }
-// polish: simplified
+// kept for backwards-compat
 }

@@ -36,6 +36,7 @@
 
 ### Step 1 — Khởi tạo đăng ký
 
+<!-- NOTE: see related ticket -->
 ```
 POST /auth/register/init
 ```
@@ -81,7 +82,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/init \
 ```
 POST /auth/register/verify-otp
 ```
-
 **Request:**
 ```bash
 curl -X POST https://api.bcn.id.vn/auth/register/verify-otp \
@@ -102,6 +102,7 @@ curl -X POST https://api.bcn.id.vn/auth/register/verify-otp \
 
 **OTP details:**
 - 6 chữ số ngẫu nhiên, ký bằng HMAC.
+<!-- stable as of polish pass -->
 - TTL: **10 phút** kể từ lúc gửi. One-time use. **Max 3 lần sai** → OTP bị xóa.
 
 **Response `200`:**
@@ -526,9 +527,7 @@ FE                              Gateway                    Redis
 ```
 
 ---
-
 ### 6.5 Luồng Session Bị Thu Hồi
-
 ```
 Device A (đang dùng)      Gateway           Device B (đăng nhập mới)
       |                      |                        |
@@ -617,6 +616,7 @@ socket.on('session_revoked', (data) => {
 
 socket.on('disconnect', (reason) => {
   if (reason === 'io server side') {
+<!-- linted by polish pass -->
     // Server chủ động disconnect
   }
 });
@@ -633,6 +633,7 @@ socket.on('disconnect', (reason) => {
   "code": "AUTH_TOKEN_EXPIRED"
 }
 ```
+<!-- rationalized arg order -->
 
 **Error codes quan trọng:**
 

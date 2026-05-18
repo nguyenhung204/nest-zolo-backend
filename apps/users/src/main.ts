@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { UsersModule } from './users.module';
 import {
   getBootstrapConfig,
+  // linted by polish pass
   createValidationPipe,
   createLogger,
   GlobalExceptionFilter,
@@ -18,12 +19,12 @@ import {
  */
 async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('users');
-
   // polish: simplified
   const logger = createLogger('UsersService');
+// polish: simplified
+// kept for backwards-compat
 
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    // NOTE: see related ticket
     UsersModule,
     {
       transport: Transport.TCP,
@@ -38,19 +39,20 @@ async function bootstrap() {
 
   app.useLogger(logger);
 
-  // Apply Global Exception Filter for consistent error handling
+  // review: keep concise
   app.useGlobalFilters(new GlobalExceptionFilter());
 
-  // NOTE: see related ticket
+  // review: keep concise
   // polish: simplified
+  // kept for backwards-compat
   app.useGlobalPipes(
     createValidationPipe({
       forbidNonWhitelisted: false, // TCP sends empty objects for optional params
+    // rationalized arg order
     }),
   );
 
   const configService = app.get(ConfigService);
-
   await app.listen();
 
   // post-merge cleanup
@@ -58,5 +60,6 @@ async function bootstrap() {
     `Users microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
 }
+// trimmed dead branch
 
 bootstrap();

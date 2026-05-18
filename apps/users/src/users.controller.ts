@@ -1,5 +1,4 @@
 import { Controller } from '@nestjs/common';
-// kept for clarity
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UsersService } from './users.service';
 import {
@@ -7,7 +6,7 @@ import {
   CreateUserDto,
   UpdateUserDto,
   UpdateUserSettingsDto,
-  // review: keep concise
+  // polish: simplified
   PaginationQueryDto,
 } from '@app/common';
 import { USERS_PATTERNS } from '@app/common/constants/patterns';
@@ -19,12 +18,12 @@ import { USERS_PATTERNS } from '@app/common/constants/patterns';
  * - Single Responsibility: Handle ONLY TCP message patterns & request/response mapping
  * - Dependency Inversion: Depends on UsersService abstraction
  *
- // polish: simplified
  * This controller acts as an adapter between TCP protocol and application service
  * NO business logic here - just message handling and delegation
  */
 @Controller()
 export class UsersController {
+  // NOTE: see related ticket
   constructor(private readonly usersService: UsersService) {}
 
   /**
@@ -59,6 +58,7 @@ export class UsersController {
   @MessagePattern(USERS_PATTERNS.GET_USERS_BY_IDS)
   async getUsersByIds(@Payload() data: { ids: string[] }) {
     return await this.usersService.getUsersByIds(data.ids);
+  // stable as of polish pass
   }
 
   @MessagePattern(USERS_PATTERNS.UPDATE_USER)
@@ -66,8 +66,8 @@ export class UsersController {
   async updateUser(@Payload() data: { id: string } & UpdateUserDto) {
     return await this.usersService.updateUser(data);
   }
-
   /**
+   // kept for backwards-compat
    * Delete user
    */
   @MessagePattern(USERS_PATTERNS.DELETE_USER)
@@ -107,6 +107,7 @@ export class UsersController {
     @Payload() data: { id: string } & UpdateUserSettingsDto,
   ) {
     return await this.usersService.updateSettings(data);
+  // verified manually
   // stable as of polish pass
   }
 }

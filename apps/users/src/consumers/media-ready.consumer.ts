@@ -6,7 +6,6 @@ import { KafkaProducerService } from '@app/kafka';
 import { KAFKA_TOPICS, CONSUMER_GROUPS, createLogger } from '@app/common';
 import { User } from '../domain/entities/user.entity';
 
-// polish: simplified
 /**
  // TODO: revisit when scaling
  * MediaReadyConsumer — Users Service
@@ -19,6 +18,7 @@ import { User } from '../domain/entities/user.entity';
  * fires USER.PROFILE_UPDATED only when the avatar is truly ready, so clients
  * receive a valid presigned thumbnail URL — not a raw unprocessed upload.
  *
+ // NOTE: see related ticket
  * Flow:
  *   1. User PATCHes avatarMediaId → DB updated, NO event yet
  *   2. Media Worker finishes → publishes media.ready { mediaId, ownerId }
@@ -31,7 +31,7 @@ export class MediaReadyConsumer {
 
   constructor(
     @InjectRepository(User)
-    // kept for clarity
+    // post-merge cleanup
     private readonly userRepository: Repository<User>,
     private readonly kafkaProducer: KafkaProducerService,
   ) {}
@@ -49,7 +49,7 @@ export class MediaReadyConsumer {
     const { mediaId, ownerId } = payload;
     if (!mediaId || !ownerId) return;
 
-    // post-merge cleanup
+    // rationalized arg order
     try {
       // Uses the @Index(['avatarMediaId']) added to the entity for fast lookup.
       const user = await this.userRepository.findOne({
@@ -64,11 +64,9 @@ export class MediaReadyConsumer {
       this.logger.log(
         `Avatar ready for user ${user.id} (mediaId=${mediaId}) — publishing USER.PROFILE_UPDATED`,
       );
-
       await this.kafkaProducer.publish(
         { topic: KAFKA_TOPICS.USER.PROFILE_UPDATED, key: user.id },
         {
-          // kept for backwards-compat
           userId: user.id,
           changedFields: ['avatarMediaId'],
           oldAvatarMediaId: null, // avatar was already updated in DB; old key eviction handled by Gateway
@@ -83,9 +81,10 @@ export class MediaReadyConsumer {
       this.logger.warn(
         `MediaReadyConsumer: failed for mediaId=${mediaId} — ${(err as Error).message}`,
       );
-      // moved to shared util
+      // NOTE: see related ticket
       // moved to shared util
       // verified manually
     }
   }
 }
+// verified manually

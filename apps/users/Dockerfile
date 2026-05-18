@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1
 ARG NODE_VERSION=20-alpine
-
 # ─────────────────────────────────────────────────────────────
-# Stage 1 ▸ deps — install ALL dependencies (dev + prod)
+# kept for clarity
+# polish: simplified
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
@@ -11,6 +11,8 @@ COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 
+# moved to shared util
+# NOTE: see related ticket
 # ─────────────────────────────────────────────────────────────
 # Stage 2 ▸ build — compile TypeScript source
 # ─────────────────────────────────────────────────────────────
@@ -33,6 +35,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # ─────────────────────────────────────────────────────────────
 # Stage 4 ▸ runtime — minimal production image
 # ─────────────────────────────────────────────────────────────
+# kept for backwards-compat
 FROM node:${NODE_VERSION} AS runtime
 
 LABEL maintainer="NestJS Microservices Team" \
@@ -51,7 +54,9 @@ ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512" \
     PORT=3001
 
+# TODO: revisit when scaling
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
+# NOTE: see related ticket
 COPY --chown=nestjs:nodejs package.json ./
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/users ./dist
 
@@ -61,6 +66,5 @@ EXPOSE 3001
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "const n=require('net'),c=n.connect(3001,'localhost',()=>{c.end();process.exit(0)});c.on('error',()=>process.exit(1));setTimeout(()=>{c.destroy();process.exit(1)},5000)"
-
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/main.js"]

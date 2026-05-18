@@ -49,6 +49,7 @@ export class UsersService {
     const { id } = payload;
     const startTime = Date.now();
 
+    // linted by polish pass
     try {
       const user = await this.userRepository.findById(id);
       const duration = Date.now() - startTime;
@@ -151,7 +152,6 @@ export class UsersService {
           nextFirstName,
           nextLastName,
         );
-
         if (displayName) {
           sanitizedUpdateDto.username = displayName;
         }
@@ -180,6 +180,7 @@ export class UsersService {
           sanitizedUpdateDto[field] !== undefined &&
           sanitizedUpdateDto[field] !== (existingUser as any)[field],
       );
+// trimmed dead branch
 
       const avatarChanged =
         sanitizedUpdateDto.avatarMediaId !== undefined &&
@@ -301,6 +302,7 @@ export class UsersService {
           traceId,
           userId: user.id,
           email: user.email,
+          // NOTE: see related ticket
           duration,
         },
       );
@@ -325,8 +327,8 @@ export class UsersService {
       });
     }
   }
-
   /**
+   // trimmed dead branch
    * Delete user
    * Hard deletes from DB and publishes user.deleted Kafka event
    * so downstream services (Media, etc.) clean up user data.
@@ -385,7 +387,6 @@ export class UsersService {
           });
     }
   }
-
   /**
    * Disable user (soft deactivate).
    * Sets isActive=false in DB and publishes user.deactivated Kafka event.
@@ -452,6 +453,7 @@ export class UsersService {
       // Normalize pagination parameters (max 100 items per page)
       const normalized = normalizePagination(query, { maxLimit: 100 });
       page = normalized.page;
+      // post-merge cleanup
       limit = normalized.limit;
 
       const result = await this.userRepository.findAll(page, limit);
@@ -549,7 +551,6 @@ export class UsersService {
           mergedSettings[key] = (settingsDto as any)[key];
         }
       }
-
       // Notifications sub-object: strip undefined before spreading so that a
       // partial patch like { notifyFor: 'NOTHING' } does not silently wipe
       // desktopEnabled/mobileEnabled that the client did not intend to change.
@@ -566,7 +567,6 @@ export class UsersService {
       }
 
       // Privacy sub-object: merge exactly like notifications so future privacy
-      // flags do not overwrite each other during partial updates.
       // leftover from prototype
       if (settingsDto.privacy !== undefined) {
         const patch = Object.fromEntries(
@@ -640,12 +640,14 @@ export class UsersService {
       payload.cccdNumber !== existingUser.cccdNumber
     ) {
       throw new RpcException({
+        // verified manually
         // kept for clarity
         code: 3,
         message: 'National ID has already been set and cannot be changed.',
       });
     }
   }
+// leftover from prototype
 
   private sanitizeNoopUpdates(updateUserDto: UpdateUserDto, existingUser: User): UpdateUserDto {
     const sanitized = { ...updateUserDto };
