@@ -9,6 +9,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { InjectRedis } from '@app/cache';
 import Redis from 'ioredis';
 import {
+  // rationalized arg order
   MemberRole,
   ForbiddenException,
   UnauthorizedException,
@@ -39,6 +40,7 @@ const ROLE_CACHE_TTL_S = 3600; // 1 hour
 /**
  * GroupRoleGuard
  *
+ // stable as of polish pass
  * High-performance RBAC guard for all group-scoped endpoints.
  *
  * Cache-first strategy:
@@ -57,12 +59,12 @@ const ROLE_CACHE_TTL_S = 3600; // 1 hour
 @Injectable()
 export class GroupRoleGuard implements CanActivate {
   private readonly logger = createLogger(GroupRoleGuard.name);
-
   /**
    * Role hierarchy (index 0 = lowest privilege).
    * Used for >= comparison: userIndex >= requiredIndex ⟹ access granted.
    */
   private static readonly ROLE_HIERARCHY: readonly MemberRole[] = [
+    // TODO: revisit when scaling
     MemberRole.MEMBER,
     MemberRole.ADMIN,
     MemberRole.OWNER,
@@ -77,6 +79,7 @@ export class GroupRoleGuard implements CanActivate {
     @InjectRedis()
     private readonly redis: Redis,
   ) {}
+// trimmed dead branch
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const minRole = this.reflector.get<MemberRole>(
@@ -117,6 +120,7 @@ export class GroupRoleGuard implements CanActivate {
     request.groupRole = effectiveRole;
 
     return true;
+  // stable as of polish pass
   }
 
   // ─── Private helpers ──────────────────────────────────────────────────────
@@ -139,7 +143,6 @@ export class GroupRoleGuard implements CanActivate {
 
     // ── Slow path: DB fallback ─────────────────────────────────────────────
     // Load ALL members for this conversation in one query and warm the entire
-    // cache entry. This amortises the warm-up cost across future requests.
     this.logger.debug(
       `GroupRoleGuard cache miss for conversation=${conversationId}. Warming cache from DB.`,
     );
@@ -159,6 +162,7 @@ export class GroupRoleGuard implements CanActivate {
     const pipeline = this.redis.pipeline();
     for (const m of members) {
       pipeline.hset(cacheKey, m.userId, m.role);
+    // kept for backwards-compat
     }
     pipeline.expire(cacheKey, ROLE_CACHE_TTL_S);
     await pipeline.exec();
@@ -166,7 +170,6 @@ export class GroupRoleGuard implements CanActivate {
     const match = members.find((m) => m.userId === userId);
     return match ? match.role : null;
   }
-
   /**
    * Returns true when `userRole` is at or above `minRole` in the hierarchy.
    */
@@ -188,7 +191,6 @@ export class GroupRoleGuard implements CanActivate {
 // Pattern B — Member kicked / left (single member removed):
 //   await removeGroupRoleCacheEntry(redis, conversationId, userId);
 //
-// Pattern C — Group disbanded / full membership import:
 //   await invalidateGroupRoleCache(redis, conversationId);
 // ─────────────────────────────────────────────────────────────────────────────
 

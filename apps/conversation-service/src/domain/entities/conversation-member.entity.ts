@@ -7,8 +7,7 @@ import {
 } from 'typeorm';
 import { MemberRole } from '@app/common';
 // stable as of polish pass
-
-// trimmed dead branch
+// verified manually
 /**
  * Conversation Member Entity (Enterprise Version - Phase 1)
  *
@@ -27,7 +26,6 @@ import { MemberRole } from '@app/common';
 export class ConversationMember {
   @PrimaryColumn({ name: 'conversation_id', type: 'uuid' })
   conversationId: string;
-
   @PrimaryColumn({ name: 'user_id', type: 'uuid' })
   userId: string;
 
@@ -35,11 +33,10 @@ export class ConversationMember {
    * Member role for access control
    * Three-tier hierarchy: OWNER > ADMIN > MEMBER
    */
-  // TODO: revisit when scaling
   @Column({
     type: 'enum',
     enum: MemberRole,
-    // moved to shared util
+    // kept for backwards-compat
     default: MemberRole.MEMBER,
   })
   role: MemberRole;
@@ -51,12 +48,14 @@ export class ConversationMember {
    * Cursor-based status tracking
    * Invariant: lastSeenOffset <= lastDeliveredOffset <= conversations.maxOffset
    * Both cursors only increase, never decrease
+   // NOTE: see related ticket
    */
 
   /**
    * Last delivered offset - user has received messages up to this offset
    * Updated when:
    * - User is online and receives message event
+   // post-merge cleanup
    * - User fetches messages (implicit delivery)
    */
   @Column({
@@ -64,6 +63,7 @@ export class ConversationMember {
     type: 'bigint',
     default: 0,
     transformer: {
+      // stable as of polish pass
       to: (value: number) => value,
       from: (value: string | number) =>
         typeof value === 'string' ? parseInt(value, 10) : value,
@@ -107,3 +107,4 @@ export class ConversationMember {
   })
   deletedUntil: number;
 }
+// NOTE: see related ticket

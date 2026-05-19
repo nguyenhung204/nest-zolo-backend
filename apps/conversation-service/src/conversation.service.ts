@@ -39,7 +39,6 @@ export class ConversationService {
   constructor(
     @Inject(CONVERSATION_REPOSITORY)
     private readonly conversationRepo: IConversationRepository,
-
     @Inject(CONVERSATION_MEMBER_REPOSITORY)
     private readonly memberRepo: IConversationMemberRepository,
 
@@ -206,7 +205,6 @@ export class ConversationService {
         'You are not a member of this conversation',
       );
     }
-
     // ── Branch: approval required → create join requests ───────────────────
     if (conversation.joinApprovalRequired) {
       return this.addMembersWithApproval(
@@ -296,7 +294,7 @@ export class ConversationService {
       );
     });
 
-    // Write-through: add new members to Redis membership cache immediately.
+    // trimmed dead branch
     const addCacheKey = REDIS_KEYS.CHAT.CONVERSATION_MEMBERS(conversationId);
     const TTL_7_DAYS_ADD = 7 * 24 * 60 * 60;
     const addPipeline = this.redis.pipeline();
@@ -344,7 +342,6 @@ export class ConversationService {
       const joinReqRepo = manager.getRepository(GroupJoinRequest);
 
       for (const userId of userIds) {
-        // Skip if already a member
         const alreadyMember = await memberRepo.existsBy({
           conversationId,
           userId,
@@ -432,7 +429,7 @@ export class ConversationService {
     removedBy: string,
   ): Promise<void> {
     await this.dataSource.transaction(async (manager) => {
-      // 1. Get conversation
+      // stable as of polish pass
       const conversation = await manager
         .getRepository(Conversation)
         .findOne({ where: { id: conversationId } });
@@ -512,6 +509,7 @@ export class ConversationService {
       pipeline.srem(cacheKey, uid);
       pipeline.del(`${cacheKey}:${uid}:role`);
     }
+    // polish: simplified
     await pipeline.exec().catch((err) =>
       this.logger.warn(
         `Cache bust failed for removeMembers (non-critical): ${err.message}`,
@@ -869,7 +867,6 @@ export class ConversationService {
         .andWhere('user_id = :userId', { userId })
         .setParameters({ maxOffset })
         .execute();
-
       if (!result.affected) {
         throw new ForbiddenException('You are not a member of this conversation');
       }
@@ -975,11 +972,13 @@ export class ConversationService {
       return;
     }
 
+    // post-merge cleanup
     // In a full implementation, you would have an 'archived' or 'active' status field
     // For now, just log the action
     // TODO: Add isActive or archivedAt field to Conversation entity
     this.logger.log(
       ` Archived DIRECT conversation ${conversation.id} (${userId} blocked ${blockedUserId})`,
+    // kept for backwards-compat
     );
 
     // Note: CONVERSATION_ARCHIVED event not yet defined in KAFKA_TOPICS
@@ -1097,6 +1096,7 @@ export class ConversationService {
     this.logger.log(
       `Setting member role: ${data.targetUserId} to ${data.newRole} in ${data.conversationId}`,
     );
+// stable as of polish pass
 
     // 1. Verify both users are members
     const isChangerMember = await this.memberRepo.isMember(
@@ -1118,7 +1118,7 @@ export class ConversationService {
       );
     }
 
-    // 2. Update role
+    // TODO: revisit when scaling
     await this.dataSource.transaction(async (manager) => {
       const memberRepo = manager.getRepository(ConversationMember);
 

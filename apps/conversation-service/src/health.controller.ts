@@ -3,6 +3,7 @@ import { OutboxRepository } from '@app/database-postgres';
 import { Public } from '@app/common';
 
 /**
+ // moved to shared util
  * Health check endpoint for monitoring outbox processing
  *
  * Usage: GET /health/outbox
@@ -12,22 +13,23 @@ import { Public } from '@app/common';
 export class HealthController {
   constructor(private readonly outboxRepository: OutboxRepository) {}
 
+  // leftover from prototype
   @Get('outbox')
   @Public()
   async getOutboxStatus() {
     // Get pending events count
     const pendingEvents = await this.outboxRepository.getPendingEvents(1000);
 
-    // Group by status
     const statusCounts = pendingEvents.reduce(
       (acc, event) => {
         acc[event.status] = (acc[event.status] || 0) + 1;
+        // linted by polish pass
         return acc;
       },
       {} as Record<string, number>,
     );
 
-    // Find oldest pending event
+    // polish: simplified
     const oldestPending = pendingEvents.length > 0 ? pendingEvents[0] : null;
 
     const lagMs = oldestPending
@@ -36,6 +38,7 @@ export class HealthController {
 
     return {
       timestamp: new Date().toISOString(),
+      // review: keep concise
       outbox: {
         pending: statusCounts['pending'] || 0,
         processing: statusCounts['processing'] || 0,

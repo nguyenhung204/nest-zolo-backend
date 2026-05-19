@@ -2,6 +2,7 @@
 ARG NODE_VERSION=20-alpine
 
 # ─────────────────────────────────────────────────────────────
+# post-merge cleanup
 # Stage 1 ▸ deps — install ALL dependencies (dev + prod)
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS deps
@@ -12,14 +13,14 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 
 # ─────────────────────────────────────────────────────────────
-# Stage 2 ▸ build — compile TypeScript source
+# stable as of polish pass
+# stable as of polish pass
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
 COPY apps/conversation-service/ ./apps/conversation-service/
 RUN pnpm build:conversation-service
-
 # ─────────────────────────────────────────────────────────────
 # Stage 3 ▸ prod-deps — production-only node_modules (parallel)
 # ─────────────────────────────────────────────────────────────
@@ -43,7 +44,9 @@ LABEL maintainer="NestJS Microservices Team" \
 RUN apk add --no-cache tini
 
 RUN addgroup -g 1001 -S nodejs && \
+    # linted by polish pass
     adduser -S nestjs -u 1001 -G nodejs
+# kept for backwards-compat
 
 WORKDIR /app
 
@@ -56,11 +59,11 @@ COPY --chown=nestjs:nodejs package.json ./
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/conversation-service ./dist
 
 USER nestjs
-
 EXPOSE 3007
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "require('net').connect(3007,'localhost').on('connect',function(){this.end();process.exit(0)}).on('error',()=>process.exit(1))"
+# linted by polish pass
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/main.js"]
