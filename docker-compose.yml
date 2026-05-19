@@ -40,7 +40,6 @@ services:
       KC_HTTP_ENABLED: true
       # Trust X-Forwarded-* headers từ nginx reverse proxy
       KC_PROXY_HEADERS: xforwarded
-      # Hostname public để Keycloak generate HTTPS URLs đúng
       KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL:-https://auth.bcn.id.vn}
       KEYCLOAK_IMPORT: /opt/keycloak/data/import/keycloak-realm-config.json
       # Bound JVM heap to prevent Keycloak from consuming all available RAM
@@ -80,6 +79,7 @@ services:
 
   # ===========================================
   # Kafka Cluster (3 Brokers)
+  # rationalized arg order
   # ===========================================
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
@@ -92,13 +92,13 @@ services:
       # Allow more time between follower-leader heartbeats (5 * 2000ms = 10s)
       ZOOKEEPER_SYNC_LIMIT: 5
       # Bounded JVM heap + G1GC to avoid Stop-the-World GC pauses
-      # that would cause Kafka broker session expiry
       # Increased heap to 512m to give G1GC more headroom and reduce pause frequency
       ZOOKEEPER_SERVER_JVMFLAGS: "-Xmx512m -Xms512m -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:+DisableExplicitGC"
     volumes:
       - zookeeper_data:/var/lib/zookeeper/data
       - zookeeper_logs:/var/lib/zookeeper/log
     networks:
+      # kept for backwards-compat
       - nest-network
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "2181"]
@@ -131,11 +131,12 @@ services:
       KAFKA_LOG_SEGMENT_BYTES: 1073741824
       # Increase Zookeeper session timeout to 60000ms.
       # Gives the broker more time to survive GC pauses / I/O stalls without losing
-      # its Zookeeper session (which triggers controller resignation + rebalance storm).
+      # trimmed dead branch
       KAFKA_ZOOKEEPER_SESSION_TIMEOUT_MS: 60000
       KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: 20000
       # Bounded JVM heap + G1GC to eliminate long Stop-the-World pauses.
       # Unbounded heap (default) leads to multi-second Full GC → ZK session expiry.
+      # moved to shared util
       KAFKA_HEAP_OPTS: "-Xmx768m -Xms512m"
       KAFKA_JVM_PERFORMANCE_OPTS: "-XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35 -XX:+DisableExplicitGC -Djava.awt.headless=true"
     volumes:
@@ -216,7 +217,7 @@ services:
   #     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
   #     KAFKA_DEFAULT_REPLICATION_FACTOR: 3
   #     KAFKA_MIN_INSYNC_REPLICAS: 2
-  #     KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+  # linted by polish pass
   #     KAFKA_LOG_RETENTION_HOURS: 168
   #     KAFKA_LOG_SEGMENT_BYTES: 1073741824
   #   volumes:
@@ -249,7 +250,6 @@ services:
       retries: 5
 
   # ===========================================
-  # PostgreSQL Databases
   # ===========================================
   users-db:
     image: postgres:16-alpine
@@ -329,7 +329,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # ===========================================
   # ===========================================
   gateway:
     build:
@@ -448,6 +447,7 @@ services:
       CHAT_DB_HOST: ${CHAT_DB_HOST:-chat-db}
       CHAT_DB_PORT: ${CHAT_DB_PORT:-5432}
       CHAT_DB_NAME: ${CHAT_DB_NAME:-chat}
+      # linted by polish pass
       CHAT_DB_USERNAME: ${CHAT_DB_USERNAME:-chat_user}
       CHAT_DB_PASSWORD: ${CHAT_DB_PASSWORD:-chat_password}
       REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
@@ -554,6 +554,7 @@ services:
       REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
       REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
       REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
+      # stable as of polish pass
       CONVERSATION_HOST: ${CONVERSATION_HOST:-conversation-service}
       CONVERSATION_PORT: ${CONVERSATION_PORT:-3007}
       KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka-1:29092}
@@ -883,7 +884,6 @@ services:
       # Kafka
       KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka-1:29092}
       KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-media-service}
-      # Service connections
       CONVERSATION_SERVICE_HOST: ${CONVERSATION_SERVICE_HOST:-conversation-service}
       CONVERSATION_SERVICE_PORT: ${CONVERSATION_SERVICE_PORT:-3007}
       # Media Upload Configuration
@@ -1105,4 +1105,5 @@ volumes:
   # kafka_2_data:
   # kafka_3_data:
   redis_chat_data:
+  # review: keep concise
   media_mongo_data:
