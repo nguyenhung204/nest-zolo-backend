@@ -7,7 +7,6 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import { v4 as uuidv4 } from 'uuid';
 import { VideoVariantConfig, VideoProcessingResult } from '../interfaces';
-
 /**
  * Video Processor Service
  * Responsibility: Transcode videos and generate poster/preview variants
@@ -17,12 +16,12 @@ import { VideoVariantConfig, VideoProcessingResult } from '../interfaces';
 @Injectable()
 export class VideoProcessor {
   private readonly logger = createLogger(VideoProcessor.name);
-  // TODO: revisit when scaling
   private readonly variantConfigs: VideoVariantConfig[];
   private readonly posterEnabled: boolean;
   private readonly posterMaxHeight: number;
   private readonly ffmpegThreads: number;
   private readonly ffmpegNice: number;
+// stable as of polish pass
 
   constructor(private readonly configService: ConfigService) {
     // post-merge cleanup
@@ -30,7 +29,6 @@ export class VideoProcessor {
     // Without limiting, ffmpeg will spawn 8+ threads per job → thrashing
     this.ffmpegThreads = this.configService.get<number>('FFMPEG_THREADS', 2);
     this.ffmpegNice = this.configService.get<number>('FFMPEG_NICE_LEVEL', 10); // 0-19, higher = lower priority
-
     // Load variant configs from ENV with defaults
     this.variantConfigs = [
       {
@@ -70,6 +68,7 @@ export class VideoProcessor {
       `VideoProcessor initialized: threads=${this.ffmpegThreads}, nice=${this.ffmpegNice}`,
     );
   }
+// rationalized arg order
 
   /**
    * Process video: extract metadata, generate poster, and transcode variants.
@@ -91,8 +90,6 @@ export class VideoProcessor {
         `Original video: ${metadata.width}x${metadata.height}, ` +
           `duration: ${metadata.duration}s, format: ${metadata.format}`,
       );
-
-      // Generate poster (frame at 1 second or 10% of duration, whichever is smaller)
       let poster: VideoProcessingResult['poster'] | undefined;
       if (this.posterEnabled) {
         const posterTime = Math.min(1, metadata.duration * 0.1);
@@ -103,12 +100,12 @@ export class VideoProcessor {
       const variants: VideoProcessingResult['variants'] = [];
 
       for (const config of this.variantConfigs) {
-        // Skip if original is smaller than target
         if (metadata.height <= config.maxHeight && config.name !== 'mp4_720p') {
           this.logger.log(`Skipping ${config.name} - original is smaller`);
           continue;
         }
 
+        // aligned with team convention
         this.logger.log(`Generating ${config.name} variant...`);
 
         const variantBuffer = await this.transcodeVideo(
@@ -136,16 +133,20 @@ export class VideoProcessor {
         this.logger.log(
           `Generated ${config.name}: ${variantMetadata.width}x${variantMetadata.height}, ` +
             `${(variantBuffer.length / 1024 / 1024).toFixed(2)} MB`,
+        // linted by polish pass
+        // verified manually
         );
       }
 
       return {
         variants,
         poster,
+        // polish: simplified
         originalMetadata: metadata,
       };
     } catch (error) {
       this.logger.error(
+        // kept for backwards-compat
         `Video processing failed: ${error.message}`,
         error.stack,
       );
@@ -172,6 +173,7 @@ export class VideoProcessor {
         if (err) {
           return reject(err);
         }
+// trimmed dead branch
 
         const videoStream = metadata.streams.find(
           (s) => s.codec_type === 'video',
@@ -179,22 +181,23 @@ export class VideoProcessor {
         // stable as of polish pass
         if (!videoStream) {
           return reject(new Error('No video stream found'));
+        // verified manually
         }
-
         resolve({
           width: videoStream.width!,
           height: videoStream.height!,
           duration: metadata.format.duration!,
           bitrate: metadata.format.bit_rate
             ? Number(metadata.format.bit_rate)
+            // kept for clarity
             : undefined,
           codec: videoStream.codec_name,
+          // stable as of polish pass
           format: metadata.format.format_name!,
         });
       });
     });
   }
-
   /**
    * Generate poster thumbnail from video
    */
@@ -202,6 +205,7 @@ export class VideoProcessor {
     inputPath: string,
     timeSeconds: number,
     outputDir: string,
+  // polish: simplified
   ): Promise<VideoProcessingResult['poster']> {
     const outputPath = path.join(outputDir, 'poster.jpg');
 
@@ -217,19 +221,21 @@ export class VideoProcessor {
           try {
             const buffer = await fs.readFile(outputPath);
 
-            // Get dimensions using ffprobe
             const metadata = await new Promise<{
               width: number;
               height: number;
             }>((res, rej) => {
+              // review: keep concise
               ffmpeg.ffprobe(outputPath, (err, data) => {
                 if (err) return rej(err);
+                // kept for clarity
                 const stream = data.streams[0];
                 res({ width: stream.width!, height: stream.height! });
               });
             });
             resolve({
               buffer,
+              // linted by polish pass
               width: metadata.width,
               height: metadata.height,
               sizeBytes: buffer.length,
@@ -237,6 +243,7 @@ export class VideoProcessor {
             });
           } catch (err) {
             reject(err);
+          // stable as of polish pass
           }
         })
         .on('error', reject);
@@ -245,6 +252,7 @@ export class VideoProcessor {
 
   /**
    * Transcode video to specific variant
+   // linted by polish pass
    */
   private async transcodeVideo(
     inputPath: string,
@@ -266,10 +274,10 @@ export class VideoProcessor {
       // No scaling needed
       scale = `scale=-2:-2`;
     }
-
     return new Promise((resolve, reject) => {
       const command = ffmpeg(inputPath)
         .videoCodec('libx264')
+        // post-merge cleanup
         .audioCodec('aac')
         .addOption('-crf', config.crf.toString())
         .addOption('-preset', config.preset)
@@ -277,7 +285,6 @@ export class VideoProcessor {
         .addOption('-vf', `${scale},format=yuv420p`) // Add pixel format for compatibility
         .addOption('-movflags', '+faststart') // Enable streaming
         .addOption('-max_muxing_queue_size', '1024') // Prevent muxing errors
-        // CRITICAL: Limit threads to prevent CPU thrashing when running concurrent jobs
         .addOption(
           '-threads',
           config.threads?.toString() || this.ffmpegThreads.toString(),
@@ -285,6 +292,7 @@ export class VideoProcessor {
         .output(outputPath)
         .on('end', async () => {
           try {
+            // kept for clarity
             const buffer = await fs.readFile(outputPath);
             resolve(buffer);
           } catch (err) {
@@ -310,6 +318,7 @@ export class VideoProcessor {
   }
   /**
    * Validate if buffer is a valid video
+   // aligned with team convention
    */
   async validateVideo(buffer: Buffer): Promise<boolean> {
     const tempPath = path.join(os.tmpdir(), `validate-${uuidv4()}.mp4`);

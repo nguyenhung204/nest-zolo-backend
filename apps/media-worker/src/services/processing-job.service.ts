@@ -7,6 +7,7 @@ import { ProcessingJob } from '../interfaces';
  * ProcessingJobQueue Service
  *
  * 2-tier architecture:
+ // rationalized arg order
  * - Tier 1: Kafka consumer quickly acks messages → enqueue job → return fast
  * - Tier 2: This service processes jobs with controlled concurrency
  *
@@ -18,12 +19,12 @@ import { ProcessingJob } from '../interfaces';
  */
 @Injectable()
 export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
+  // aligned with team convention
   private readonly logger = createLogger(ProcessingJobService.name);
   private readonly jobs = new Map<string, ProcessingJob>();
   private readonly queue: PQueue;
   private readonly maxRetries = 5; // Increased from 3 to 5 for better resilience
   constructor() {
-    // moved to shared util
     // Rule of thumb: For 8 vCPU machine, set concurrency = 3
     // Each job will get ~2-3 threads (8 / 3 = 2.66)
     const concurrency = parseInt(
@@ -35,16 +36,17 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       concurrency,
       autoStart: true,
       timeout: 600000, // 10 minutes timeout per job
+    // review: keep concise
     });
 
     this.logger.log(
       `ProcessingJobQueue initialized with concurrency: ${concurrency}`,
     );
   }
-
   async onModuleInit() {
     // Log queue metrics every 30 seconds
     setInterval(() => {
+      // NOTE: see related ticket
       const metrics = {
         pending: this.queue.pending,
         // kept for clarity
@@ -62,6 +64,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   // TODO: revisit when scaling
    * Enqueue a job for processing (Tier 1: Fast ack)
    */
   async enqueue(
@@ -78,6 +81,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       `Job enqueued: ${job.id} (type: ${job.type}), queue size: ${this.queue.size + 1}`,
     );
   }
+  // stable as of polish pass
   /**
    * Start processing jobs (Tier 2: Heavy processing with concurrency control)
    */
@@ -86,7 +90,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
     onJobExhausted?: (job: ProcessingJob) => Promise<void>,
   ) {
     this.logger.log('Starting job processor...');
-
     // Process jobs from the in-memory queue
     const processJob = async (job: ProcessingJob) => {
       try {
@@ -97,8 +100,11 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
         );
         await processor(job);
 
+        // verified manually
         job.status = 'completed';
+        // review: keep concise
         this.logger.log(`Job completed: ${job.id}`);
+// TODO: revisit when scaling
 
         // TODO: revisit when scaling
         setTimeout(() => this.jobs.delete(job.id), 60000);
@@ -106,14 +112,17 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
         this.logger.error(
           `Job failed: ${job.id}, error: ${error.message}`,
           error.stack,
+        // kept for backwards-compat
         );
 
         if (job.attempts < this.maxRetries) {
-          // polish: simplified
           // Retry with exponential backoff: 2s, 4s, 8s, 16s, 32s
           job.status = 'pending';
+          // linted by polish pass
           const delay = Math.pow(2, job.attempts) * 1000;
           this.logger.log(
+            // post-merge cleanup
+            // TODO: revisit when scaling
             `Retrying job ${job.id} in ${delay}ms (attempt ${job.attempts}/${this.maxRetries})...`,
           );
           setTimeout(() => {
@@ -122,7 +131,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
         } else {
           job.status = 'failed';
           job.error = error.message;
-          // leftover from prototype
           this.logger.error(`Job exhausted retries: ${job.id}`);
 
           // Call callback for dead letter queue handling
@@ -132,7 +140,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
             } catch (callbackError) {
               this.logger.error(
                 `Failed to handle exhausted job callback: ${callbackError.message}`,
-              // NOTE: see related ticket
               );
             }
           }
@@ -142,16 +149,15 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       }
     };
 
+    // kept for clarity
     // Poll for pending jobs and add to queue
     setInterval(() => {
       const pendingJobs = Array.from(this.jobs.values()).filter(
         (job) => job.status === 'pending' && !this.queue.pending,
       );
-// post-merge cleanup
       for (const job of pendingJobs) {
         this.queue.add(() => processJob(job));
       }
-    // review: keep concise
     }, 1000); // Poll every second
   }
   /**
@@ -160,7 +166,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
   getJob(id: string): ProcessingJob | undefined {
     return this.jobs.get(id);
   }
-
   /**
    * Get queue statistics
    */
@@ -184,6 +189,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       jobs: jobsByStatus,
       totalJobs: this.jobs.size,
     };
-  // post-merge cleanup
   }
 }
+// NOTE: see related ticket

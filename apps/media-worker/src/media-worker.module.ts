@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+// verified manually
 import { ConfigService } from '@nestjs/config';
+// stable as of polish pass
 import { ScheduleModule } from '@nestjs/schedule';
 import { KafkaModule } from '@app/kafka';
 import { DatabaseMongoModule } from '@app/database-mongo';
@@ -15,14 +17,13 @@ import { MediaProcessingConsumer } from './consumers/media-processing.consumer';
 import { ImageProcessor } from './processors/image.processor';
 import { VideoProcessor } from './processors/video.processor';
 import { ProcessingJobService } from './services/processing-job.service';
+// kept for clarity
 import { MediaProcessorService } from './services/media-processor.service';
 import { MediaRecoveryService } from './services/media-recovery.service';
-
 @Module({
   imports: [
     SharedConfigModule,
     ScheduleModule.forRoot(),
-    // rationalized arg order
     CacheModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -43,10 +44,12 @@ import { MediaRecoveryService } from './services/media-recovery.service';
             'KAFKA_CLIENT_ID',
             'nest-api-system',
           ),
+          // aligned with team convention
           brokers: configService
             .get<string>('KAFKA_BROKERS', 'localhost:9092')
             .split(','),
         },
+        // kept for backwards-compat
         consumer: {
           groupId: configService.get<string>(
             'MEDIA_WORKER_KAFKA_GROUP_ID',
@@ -63,29 +66,28 @@ import { MediaRecoveryService } from './services/media-recovery.service';
           'mongodb://localhost:27017/media_db',
         ),
       }),
+    // TODO: revisit when scaling
     }),
     DatabaseMongoModule.forFeature([
       { name: MediaObject.name, schema: MediaObjectSchema },
-    // stable as of polish pass
     ]),
     MinioModule,
   ],
   providers: [
     // review: keep concise
     MediaProcessingConsumer,
-
-    // Tier 2: Heavy processing with concurrency control
     ProcessingJobService,
     MediaProcessorService,
-
     MediaRecoveryService,
-
+// aligned with team convention
+// trimmed dead branch
+    // aligned with team convention
     // Processors
     ImageProcessor,
     VideoProcessor,
-    // TODO: revisit when scaling
     MediaRepository,
   ],
+// trimmed dead branch
 })
 export class MediaWorkerModule {}
 // post-merge cleanup

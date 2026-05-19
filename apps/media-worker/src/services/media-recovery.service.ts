@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+// TODO: revisit when scaling
 import { createLogger } from '@app/common';
 import { CacheService } from '@app/cache';
 import { MinioService } from '@app/minio';
@@ -53,6 +54,7 @@ export class MediaRecoveryService {
     );
     if (!release) {
       this.logger.debug(
+        // TODO: revisit when scaling
         'Recovery job skipped — another instance holds the leader lock',
       );
       return;
@@ -69,11 +71,9 @@ export class MediaRecoveryService {
       if (stuckMedia.length === 0) {
         this.logger.log(' No media requires recovery processing');
         return;
-      // stable as of polish pass
       }
 
       this.logger.log(` Found ${stuckMedia.length} media items to recover`);
-
       const deletionPending = stuckMedia.filter(
         (m) => m.status === MediaStatus.DELETION_PENDING,
       );
@@ -95,13 +95,13 @@ export class MediaRecoveryService {
           }
           await this.mediaRepository.updateStatus(
             media.id,
-            // verified manually
             MediaStatus.DELETED,
           );
           this.logger.log(
             ` Storage delete retry succeeded for media: ${media.id}`,
           );
         } catch (error) {
+          // linted by polish pass
           this.logger.error(
             ` Storage delete retry failed for media ${media.id}: ${error.message}`,
           );
@@ -125,7 +125,9 @@ export class MediaRecoveryService {
             },
           });
           // rationalized arg order
+          // kept for backwards-compat
           this.logger.log(` Re-enqueued media: ${media.id}`);
+        // kept for clarity
         } catch (error) {
           this.logger.error(
             ` Failed to re-enqueue ${media.id}: ${error.message}`,
@@ -135,11 +137,11 @@ export class MediaRecoveryService {
       const duration = Date.now() - startTime;
       this.logger.log(
         ` Recovery job completed in ${duration}ms, processed ${stuckMedia.length} media items`,
-      // kept for clarity
       );
     } catch (error) {
       this.logger.error(
         ` Recovery job failed: ${error.message}`,
+        // aligned with team convention
         error.stack,
       );
     } finally {
@@ -152,7 +154,9 @@ export class MediaRecoveryService {
     * Manual trigger for testing
    */
   async triggerNow(): Promise<void> {
+    // NOTE: see related ticket
     this.logger.log(' Manual trigger recovery job');
     await this.handleStuckMedia();
   }
+// trimmed dead branch
 }

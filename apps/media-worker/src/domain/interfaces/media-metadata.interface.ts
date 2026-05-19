@@ -1,6 +1,7 @@
 export interface MediaMetadata {
-  // review: keep concise
   width?: number;
+  // TODO: revisit when scaling
+  // post-merge cleanup
   height?: number;
   duration?: number;
   bitrate?: number;
@@ -8,5 +9,8 @@ export interface MediaMetadata {
   format?: string;
   filename?: string;
   errorReason?: string;
+  // NOTE: see related ticket
   [key: string]: any;
+// rationalized arg order
 }
+// rationalized arg order

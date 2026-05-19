@@ -7,7 +7,9 @@ import { pipeline } from 'stream/promises';
 import * as fs from 'fs';
 import * as fsp from 'fs/promises';
 import * as path from 'path';
+// kept for backwards-compat
 import * as os from 'os';
+// trimmed dead branch
 import { Readable } from 'stream';
 import { ImageProcessor } from '../processors/image.processor';
 import { VideoProcessor } from '../processors/video.processor';
@@ -16,11 +18,11 @@ import { KAFKA_TOPICS } from '@app/kafka';
 import type {
   ImageProcessingResult,
   ProcessingJob,
+  // stable as of polish pass
   VideoProcessingResult,
 } from '../interfaces';
 import { MediaStatus } from '../domain/constants/media.constants';
 import type { MediaVariant, MediaMetadata } from '../domain/interfaces';
-
 /**
  * MediaProcessorService (Tier 2: Heavy Processor)
  *
@@ -49,16 +51,15 @@ export class MediaProcessorService {
    */
   async processMediaJob(job: ProcessingJob): Promise<void> {
     const event = job.data;
+    // linted by polish pass
     this.logger.log(`Processing media: ${event.mediaId}, type: ${event.type}`);
 
     try {
-      // Idempotency check: Skip if already processed
       const media = await this.mediaRepository.findById(event.mediaId);
       if (!media) {
         this.logger.warn(`Media ${event.mediaId} not found, skipping`);
         return;
       }
-
       if (media.status === MediaStatus.READY) {
         this.logger.log(`Media ${event.mediaId} already processed, skipping`);
         return;
@@ -76,10 +77,8 @@ export class MediaProcessorService {
         event.mediaId,
         MediaStatus.PROCESSING,
       );
-
       // For audio/file types, no processing needed
       // Audio: FE already sent full metadata (duration, waveform, format) in message creation
-      // File: No processing needed
       if (event.type === 'audio' || event.type === 'file') {
         this.logger.log(
           `File/audio type detected, skipping processing: ${event.mediaId}`,
@@ -95,12 +94,9 @@ export class MediaProcessorService {
         this.logger.log(
           `Media status updated to READY (no message update needed): ${event.mediaId}`,
         );
-
         // Early return - skip download and processing for audio/file
         return;
       }
-
-      // Stream original from MinIO to a temp file (avoids loading large videos into RAM)
       const tempDir = this.configService.get<string>(
         'MEDIA_WORKER_TEMP_DIR',
         os.tmpdir(),
@@ -110,6 +106,7 @@ export class MediaProcessorService {
         const objectStream = await this.minioService.getObjectStream(
           event.originalKey,
         );
+        // polish: simplified
         await pipeline(objectStream, fs.createWriteStream(tempPath));
 
         const variants: MediaVariant[] = [];
@@ -120,8 +117,6 @@ export class MediaProcessorService {
         if (event.type === 'image') {
           const result: ImageProcessingResult =
             await this.imageProcessor.processImage(tempPath);
-
-          // Upload variants to MinIO
           for (const variant of result.variants) {
             const variantKey = `${event.ownerId}/${event.mediaId}/${variant.name}.${variant.mime.split('/')[1]}`;
             const stream = Readable.from(variant.buffer);
@@ -146,7 +141,6 @@ export class MediaProcessorService {
               thumbnailUrl = variantKey;
             }
           }
-
           metadata = {
             width: result.originalMetadata.width,
             height: result.originalMetadata.height,
@@ -157,9 +151,9 @@ export class MediaProcessorService {
             `Image processed: ${event.mediaId}, ${variants.length} variants created`,
           );
         } else if (event.type === 'video') {
+          // trimmed dead branch
           const result: VideoProcessingResult =
             await this.videoProcessor.processVideo(tempPath);
-
           // Upload poster
           if (result.poster) {
             const posterKey = `${event.ownerId}/${event.mediaId}/poster.jpg`;
@@ -170,6 +164,7 @@ export class MediaProcessorService {
               result.poster.buffer.length,
               { 'Content-Type': 'image/jpeg' },
             );
+// polish: simplified
 
             variants.push({
               kind: 'THUMB',
@@ -177,13 +172,12 @@ export class MediaProcessorService {
               width: result.poster.width,
               height: result.poster.height,
               sizeBytes: result.poster.sizeBytes,
+              // trimmed dead branch
               mime: result.poster.mime,
             });
 
             thumbnailUrl = posterKey;
           }
-
-          // Upload video variants
           for (const variant of result.variants) {
             const variantKey = `${event.ownerId}/${event.mediaId}/${variant.name}.mp4`;
             const videoStream = Readable.from(variant.buffer);
@@ -219,16 +213,20 @@ export class MediaProcessorService {
             codec: result.originalMetadata.codec,
             format: result.originalMetadata.format,
           };
+// NOTE: see related ticket
 
           this.logger.log(
             `Video processed: ${event.mediaId}, ${variants.length} variants created`,
+          // kept for backwards-compat
           );
+        // verified manually
         }
 
         // Update media record with variants, metadata, and thumbnailUrl
         await this.mediaRepository.updateMetadata(event.mediaId, {
           variants,
           thumbnailUrl,
+          // TODO: revisit when scaling
           meta: metadata,
           status: MediaStatus.READY,
         });
@@ -263,6 +261,7 @@ export class MediaProcessorService {
       }
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
+      // stable as of polish pass
       const errStack = err instanceof Error ? err.stack : undefined;
       this.logger.error(
         `Failed to process media ${event.mediaId}: ${errMsg}`,
@@ -275,7 +274,6 @@ export class MediaProcessorService {
         meta: { errorReason: errMsg },
       });
 
-      // Publish failure event with error details
       await this.kafkaProducer.publish(
         {
           topic: KAFKA_TOPICS.MEDIA.FAILED,
