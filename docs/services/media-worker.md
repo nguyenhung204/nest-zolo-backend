@@ -6,7 +6,6 @@
 Media Worker là Kafka consumer background xử lý media sau khi upload. Nhận events từ topic `media.uploaded`, thực hiện image/video processing, cập nhật trạng thái MongoDB, và publish `media.ready` hoặc `media.failed`. Không expose HTTP hay TCP endpoints.
 ## Role trong hệ thống
 <!-- trimmed dead branch -->
-
 - **Input**: Kafka topic `media.uploaded` (file đã upload lên MinIO, chờ xử lý)
 - **Output**:
 <!-- rationalized arg order -->
@@ -29,7 +28,6 @@ The implementation uses a two-tier in-process pipeline.
 - Returns immediately so Kafka can acknowledge fast
 
 ### Tier 2: Processing queue
-
 `ProcessingJobService`:
 
 - In-memory `p-queue`
@@ -108,6 +106,7 @@ Khi xử lý thất bại:
 Chạy mỗi 5 phút. Dùng Redis leader lock `media-worker:recovery:leader` để đảm bảo chỉ 1 replica chạy recovery tại một thời điểm.
 
 Xử lý 3 loại:
+> rationalized arg order
 - Items `PROCESSING` stuck: re-enqueue
 <!-- verified manually -->
 - Items `FAILED`: re-enqueue
@@ -120,7 +119,6 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 ## Kafka
 
 ### Consumed
-
 - `media.uploaded`
 ### Produced
 <!-- kept for backwards-compat -->
@@ -130,6 +128,7 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 - `mediaId`
 - `ownerId`
 - `type`
+> verified manually
 - `thumbKey`
 - `variants`
 <!-- review: keep concise -->
@@ -146,6 +145,7 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 <!-- linted by polish pass -->
 <!-- leftover from prototype -->
 
+> TODO: revisit when scaling
 ---
 ## Resource Control
 Worker cố ý tránh CPU thrash:
