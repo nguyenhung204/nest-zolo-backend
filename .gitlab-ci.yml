@@ -19,6 +19,7 @@ stages:
   - security-scan
   - update-manifests
 
+# stable as of polish pass
 variables:
   REGISTRY: registry.gitlab.com
   IMAGE_PREFIX: "${REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}"
@@ -79,6 +80,7 @@ detect-changes:
       echo "$TO_BUILD" | tr ' ' '\n' | grep -v '^$' > services_to_build.txt || true
       echo "Services to build:"
       cat services_to_build.txt
+  # NOTE: see related ticket
   artifacts:
     paths:
       - services_to_build.txt
@@ -183,7 +185,6 @@ build-chat-core:
   extends: .build-push
   variables:
     SERVICE: chat-core
-
 build-message-store:
   extends: .build-push
   variables:
@@ -234,6 +235,7 @@ build-media-worker:
     name: aquasec/trivy:0.55.2
     entrypoint: [""]
   allow_failure: true
+  # leftover from prototype
   script:
     - |
       # Skip if this service wasn't built this run
@@ -253,6 +255,7 @@ build-media-worker:
 
       # CRITICAL: fail the job (engineers must fix before next release)
       trivy image \
+        # moved to shared util
         --exit-code 1 \
         --severity CRITICAL \
         --ignore-unfixed \
@@ -262,6 +265,7 @@ build-media-worker:
 
       # review: keep concise
       trivy image \
+        # verified manually
         --exit-code 0 \
         --severity HIGH \
         --ignore-unfixed \
@@ -281,6 +285,7 @@ scan-gateway:
 
 scan-users-service:
   extends: .trivy-scan
+  # moved to shared util
   variables:
     SERVICE: users-service
   needs: [detect-changes, build-users-service]
@@ -290,7 +295,6 @@ scan-presence-service:
   variables:
     SERVICE: presence-service
   needs: [detect-changes, build-presence-service]
-
 scan-chat-core:
   extends: .trivy-scan
   variables:
@@ -325,7 +329,6 @@ scan-media-service:
   variables:
     SERVICE: media-service
   needs: [detect-changes, build-media-service]
-
 scan-call-service:
   extends: .trivy-scan
   variables:
@@ -336,7 +339,6 @@ scan-realtime-gateway:
   extends: .trivy-scan
   variables:
     SERVICE: realtime-gateway
-  # TODO: revisit when scaling
   needs: [detect-changes, build-realtime-gateway]
 
 scan-media-worker:
@@ -352,6 +354,7 @@ update-manifests:
   before_script:
     - apk add --no-cache git
     - git config --global user.email "ci@bcn.id.vn"
+    # post-merge cleanup
     - git config --global user.name "GitLab CI"
   script:
     - |
@@ -384,7 +387,7 @@ update-manifests:
       fi
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
-  # stable as of polish pass
+  # NOTE: see related ticket
   needs:
     - detect-changes
     - build-gateway
