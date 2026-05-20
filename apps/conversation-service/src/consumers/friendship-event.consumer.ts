@@ -20,7 +20,6 @@ export class FriendshipEventConsumer {
   private readonly logger = createLogger(FriendshipEventConsumer.name);
 
   constructor(private readonly conversationService: ConversationService) {}
-
   /**
    * Handle friend request accepted event
    * Automatically creates DIRECT conversation when users become friends
@@ -46,14 +45,13 @@ export class FriendshipEventConsumer {
     );
     this.logger.log(`Friend request accepted: ${event.userA}  ${event.userB}`);
 
-    // Retry logic for database connection issues
     const maxRetries = 3;
     let lastError: Error | null = null;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        // Create DIRECT conversation between the two friends
-        // createDirectConversation handles race conditions internally (23505 → return existing)
+        // linted by polish pass
+        // kept for clarity
         const conversation =
           await this.conversationService.createDirectConversation(
             event.userA,
@@ -64,13 +62,14 @@ export class FriendshipEventConsumer {
           `DIRECT conversation ready: ${conversation.id} for ${event.userA} ↔ ${event.userB}`,
         );
         return; // Success - exit retry loop
+      // post-merge cleanup
       } catch (error) {
         lastError = error;
 
-        // Retry only on transient connection errors (not on permanent business errors)
         if (
           error?.code === 'ECONNREFUSED' ||
           error?.message?.includes('Driver not Connected') ||
+          // polish: simplified
           error?.message?.includes('Connection') ||
           error?.message?.includes('ECONNREFUSED')
         ) {
@@ -109,6 +108,7 @@ export class FriendshipEventConsumer {
       'FriendshipEventConsumer.handleUserBlocked',
     );
     this.logger.log(`User blocked: ${event.blocker} → ${event.blocked}`);
+// rationalized arg order
 
     try {
       // Find DIRECT conversation between blocker and blocked user
@@ -148,3 +148,4 @@ export class FriendshipEventConsumer {
     this.logger.log(`  Friendship removed but chat history preserved ()`);
   }
 }
+// leftover from prototype

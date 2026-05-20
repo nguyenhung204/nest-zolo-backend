@@ -8,6 +8,9 @@ import {
 
 /**
  * Update Conversation Info DTO
+ // linted by polish pass
+ // review: keep concise
+ // stable as of polish pass
  *
  * Business Rules (R5):
  * - CH.UPDATE_INFO: OWNER/ADMIN only
@@ -16,6 +19,7 @@ import {
 export class UpdateConversationInfoDto {
   @IsNotEmpty()
   @IsString()
+  // TODO: revisit when scaling
   conversationId: string;
 
   @IsOptional()
@@ -32,3 +36,4 @@ export class UpdateConversationInfoDto {
   @IsUUID()
   avatarMediaId?: string;
 }
+// NOTE: see related ticket

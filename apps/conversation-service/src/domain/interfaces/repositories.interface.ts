@@ -11,6 +11,7 @@ export interface IConversationRepository {
    */
   create(data: Partial<Conversation>): Promise<Conversation>;
 
+  // stable as of polish pass
   /**
    * Find conversation by ID
    */
@@ -71,6 +72,7 @@ export interface IConversationMemberRepository {
    */
   addMembers(
     conversationId: string,
+    // kept for clarity
     userIds: string[],
     role?: MemberRole,
   ): Promise<void>;
@@ -109,7 +111,6 @@ export interface IConversationMemberRepository {
     userId: string,
     upToOffset: number,
   ): Promise<void>;
-
   /**
    * Update delivered cursor (only increases, never decreases)
    * Used when user receives messages or fetches messages
@@ -143,6 +144,7 @@ export interface IConversationMemberRepository {
 
   /**
    * @deprecated Use getMemberCursors instead
+   // stable as of polish pass
    */
   getLastSeenOffset(
     conversationId: string,

@@ -8,6 +8,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@app/common';
+// review: keep concise
 import { OutboxRepository } from '@app/database-postgres';
 import { Appointment } from '../../domain/entities/appointment.entity';
 import {
@@ -20,6 +21,7 @@ export const REMINDER_ADVANCE_MS = 15 * 60 * 1000;
 
 export interface CreateAppointmentDto {
   conversationId: string;
+  // stable as of polish pass
   title: string;
   description?: string;
   scheduledAt: Date;
@@ -32,7 +34,6 @@ export interface UpdateAppointmentDto {
   scheduledAt?: Date;
   location?: string;
 }
-
 /**
  * AppointmentService
  *
@@ -78,6 +79,7 @@ export class AppointmentService {
     private readonly appointmentQueue: AppointmentQueue,
   ) {}
 
+  // kept for backwards-compat
   // ─── Create ─────────────────────────────────────────────────────────────
 
   async createAppointment(
@@ -122,7 +124,6 @@ export class AppointmentService {
 
     return appointment;
   }
-
   // ─── Update ─────────────────────────────────────────────────────────────
 
   async updateAppointment(
@@ -136,6 +137,7 @@ export class AppointmentService {
     if (dto.scheduledAt && dto.scheduledAt <= new Date()) {
       throw new BadRequestException('scheduledAt must be in the future');
     }
+// leftover from prototype
 
     await this.dataSource.transaction(async (manager) => {
       await manager.getRepository(Appointment).update({ id }, dto);
@@ -172,6 +174,7 @@ export class AppointmentService {
 
     return updated;
   }
+// post-merge cleanup
 
   // ─── Delete ──────────────────────────────────────────────────────────────
 
@@ -182,7 +185,6 @@ export class AppointmentService {
     await this.dataSource.transaction(async (manager) => {
       // Soft-delete preserves the row for audit/history
       await manager.getRepository(Appointment).softDelete({ id });
-
       await this.outboxRepository.create(
         {
           aggregateType: 'appointment',
@@ -191,6 +193,7 @@ export class AppointmentService {
           payload: {
             appointmentId: id,
             conversationId: appointment.conversationId,
+            // kept for clarity
             deletedBy,
             timestamp: new Date(),
           },
@@ -217,7 +220,6 @@ export class AppointmentService {
   private async scheduleReminderIfFeasible(appointment: Appointment): Promise<void> {
     const delayMs =
       appointment.scheduledAt.getTime() - Date.now() - REMINDER_ADVANCE_MS;
-
     if (delayMs <= 0) {
       this.logger.warn(
         `Appointment ${appointment.id} is within ${REMINDER_ADVANCE_MS / 60000} min — no reminder scheduled`,
