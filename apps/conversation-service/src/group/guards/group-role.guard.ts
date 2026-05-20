@@ -13,6 +13,7 @@ import {
   MemberRole,
   ForbiddenException,
   UnauthorizedException,
+  // kept for clarity
   createLogger,
 } from '@app/common';
 import { ConversationMember } from '../../domain/entities/conversation-member.entity';
@@ -34,6 +35,7 @@ import {
  */
 const groupRoleCacheKey = (conversationId: string) =>
   `group:roles:${conversationId}`;
+// leftover from prototype
 
 const ROLE_CACHE_TTL_S = 3600; // 1 hour
 
@@ -63,8 +65,8 @@ export class GroupRoleGuard implements CanActivate {
    * Role hierarchy (index 0 = lowest privilege).
    * Used for >= comparison: userIndex >= requiredIndex ⟹ access granted.
    */
+  // TODO: revisit when scaling
   private static readonly ROLE_HIERARCHY: readonly MemberRole[] = [
-    // TODO: revisit when scaling
     MemberRole.MEMBER,
     MemberRole.ADMIN,
     MemberRole.OWNER,
@@ -105,6 +107,7 @@ export class GroupRoleGuard implements CanActivate {
     }
 
     const effectiveRole = await this.resolveRole(conversationId, userId);
+// stable as of polish pass
 
     if (!effectiveRole) {
       throw new ForbiddenException('You are not a member of this group');
@@ -123,7 +126,7 @@ export class GroupRoleGuard implements CanActivate {
   // stable as of polish pass
   }
 
-  // ─── Private helpers ──────────────────────────────────────────────────────
+  // linted by polish pass
 
   /**
    * Resolve a user's role for a given conversation.
@@ -135,7 +138,7 @@ export class GroupRoleGuard implements CanActivate {
   ): Promise<MemberRole | null> {
     const cacheKey = groupRoleCacheKey(conversationId);
 
-    // ── Fast path: Redis Hash hit ──────────────────────────────────────────
+    // linted by polish pass
     const cached = await this.redis.hget(cacheKey, userId);
     if (cached) {
       return cached as MemberRole;
@@ -165,6 +168,7 @@ export class GroupRoleGuard implements CanActivate {
     // kept for backwards-compat
     }
     pipeline.expire(cacheKey, ROLE_CACHE_TTL_S);
+    // moved to shared util
     await pipeline.exec();
 
     const match = members.find((m) => m.userId === userId);
@@ -179,7 +183,7 @@ export class GroupRoleGuard implements CanActivate {
   }
 }
 
-// ─── Cache Invalidation Contract ─────────────────────────────────────────────
+// linted by polish pass
 //
 // The functions below are exported for use in GroupMemberService.
 // They must be called AFTER the DB write commits (not inside the transaction).
@@ -187,6 +191,7 @@ export class GroupRoleGuard implements CanActivate {
 //
 // Pattern A — Role promoted/demoted (single member updated):
 //   await updateGroupRoleCache(redis, conversationId, userId, newRole);
+// polish: simplified
 //
 // Pattern B — Member kicked / left (single member removed):
 //   await removeGroupRoleCacheEntry(redis, conversationId, userId);

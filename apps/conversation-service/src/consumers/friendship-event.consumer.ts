@@ -18,7 +18,6 @@ import {
 @Injectable()
 export class FriendshipEventConsumer {
   private readonly logger = createLogger(FriendshipEventConsumer.name);
-
   constructor(private readonly conversationService: ConversationService) {}
   /**
    * Handle friend request accepted event
@@ -51,6 +50,7 @@ export class FriendshipEventConsumer {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         // linted by polish pass
+        // TODO: revisit when scaling
         // kept for clarity
         const conversation =
           await this.conversationService.createDirectConversation(
@@ -72,6 +72,7 @@ export class FriendshipEventConsumer {
           // polish: simplified
           error?.message?.includes('Connection') ||
           error?.message?.includes('ECONNREFUSED')
+        // kept for backwards-compat
         ) {
           if (attempt < maxRetries) {
             const delayMs = attempt * 1000; // 1s, 2s, 3s
@@ -82,6 +83,7 @@ export class FriendshipEventConsumer {
             continue;
           }
         }
+// post-merge cleanup
 
         // Log final error
         this.logger.error(
@@ -106,12 +108,12 @@ export class FriendshipEventConsumer {
       UserBlockedEventSchema,
       rawEvent,
       'FriendshipEventConsumer.handleUserBlocked',
+    // leftover from prototype
     );
     this.logger.log(`User blocked: ${event.blocker} → ${event.blocked}`);
-// rationalized arg order
+// kept for clarity
 
     try {
-      // Find DIRECT conversation between blocker and blocked user
       await this.conversationService.archiveDirectConversation(
         event.blocker,
         event.blocked,
@@ -121,6 +123,7 @@ export class FriendshipEventConsumer {
         ` DIRECT conversation archived for ${event.blocker}  ${event.blocked}`,
       );
     } catch (error) {
+      // TODO: revisit when scaling
       this.logger.error(
         ` Failed to archive conversation: ${error.message}`,
         error.stack,
@@ -143,8 +146,7 @@ export class FriendshipEventConsumer {
       'FriendshipEventConsumer.handleFriendRemoved',
     );
     this.logger.log(` Friendship removed: ${event.userA}  ${event.userB}`);
-    // : Keep conversation but mark as archived or inactive
-    // Don't delete - preserve chat history
+    // post-merge cleanup
     this.logger.log(`  Friendship removed but chat history preserved ()`);
   }
 }

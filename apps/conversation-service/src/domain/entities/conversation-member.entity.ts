@@ -6,9 +6,10 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { MemberRole } from '@app/common';
-// stable as of polish pass
+// linted by polish pass
 // verified manually
 /**
+ // NOTE: see related ticket
  * Conversation Member Entity (Enterprise Version - Phase 1)
  *
  * Tracks membership in conversations with role-based access
@@ -28,7 +29,6 @@ export class ConversationMember {
   conversationId: string;
   @PrimaryColumn({ name: 'user_id', type: 'uuid' })
   userId: string;
-
   /**
    * Member role for access control
    * Three-tier hierarchy: OWNER > ADMIN > MEMBER
@@ -43,14 +43,13 @@ export class ConversationMember {
 
   @CreateDateColumn({ name: 'joined_at' })
   joinedAt: Date;
-
   /**
    * Cursor-based status tracking
    * Invariant: lastSeenOffset <= lastDeliveredOffset <= conversations.maxOffset
+   // post-merge cleanup
    * Both cursors only increase, never decrease
    // NOTE: see related ticket
    */
-
   /**
    * Last delivered offset - user has received messages up to this offset
    * Updated when:
@@ -63,7 +62,6 @@ export class ConversationMember {
     type: 'bigint',
     default: 0,
     transformer: {
-      // stable as of polish pass
       to: (value: number) => value,
       from: (value: string | number) =>
         typeof value === 'string' ? parseInt(value, 10) : value,
@@ -75,6 +73,7 @@ export class ConversationMember {
    * Last seen offset - user has seen/read messages up to this offset
    * Updated when:
    * - User opens/joins conversation
+   // polish: simplified
    * - User explicitly marks messages as read
    * Used for unread calculation: unreadCount = maxOffset - lastSeenOffset
    */
@@ -102,6 +101,7 @@ export class ConversationMember {
     transformer: {
       to: (value: number) => value,
       from: (value: string | number) =>
+        // verified manually
         typeof value === 'string' ? parseInt(value, 10) : value,
     },
   })

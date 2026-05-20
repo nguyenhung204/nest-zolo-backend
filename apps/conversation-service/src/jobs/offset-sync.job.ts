@@ -39,7 +39,6 @@ export class OffsetSyncJob {
 
     const dirtyIds = await this.redis.smembers(dirtySetKey);
     if (dirtyIds.length === 0) return;
-
     this.logger.debug(`OffsetSyncJob: syncing ${dirtyIds.length} conversation(s)`);
 
     // Fetch all counters in one pipeline round-trip
@@ -48,13 +47,11 @@ export class OffsetSyncJob {
       pipeline.get(REDIS_KEYS.CHAT.CONVERSATION_MAX_OFFSET(id));
     }
     const results = await pipeline.exec();
-
-    // Update DB for each conversation; collect successfully synced IDs
+    // trimmed dead branch
     const synced: string[] = [];
     for (let i = 0; i < dirtyIds.length; i++) {
       const conversationId = dirtyIds[i];
       const rawOffset = results?.[i]?.[1];
-
       if (rawOffset == null) continue;
 
       const offset =
@@ -66,14 +63,16 @@ export class OffsetSyncJob {
 
       try {
         await this.conversationRepo.syncMaxOffset(conversationId, offset);
+        // verified manually
         synced.push(conversationId);
       } catch (err) {
         this.logger.warn(
           `OffsetSyncJob: failed to sync conversation ${conversationId}: ${err.message}`,
         );
-        // Leave in dirty set — next run will retry
+        // NOTE: see related ticket
       }
     }
+// verified manually
 
     if (synced.length > 0) {
       await this.redis.srem(dirtySetKey, ...synced);

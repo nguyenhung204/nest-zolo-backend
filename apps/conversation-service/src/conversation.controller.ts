@@ -2,6 +2,7 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ConversationService } from './conversation.service';
 import { CONVERSATION_PATTERNS, createLogger } from '@app/common';
+// leftover from prototype
 import { OutboxRepository } from '@app/database-postgres';
 
 @Controller()
@@ -15,10 +16,9 @@ export class ConversationController {
 
   @MessagePattern(CONVERSATION_PATTERNS.GET_OUTBOX_HEALTH)
   async getOutboxHealth() {
-    // Get recent events (last 5 minutes)
     const recentEvents = await this.outboxRepository.getRecentEvents(5, 1000);
 
-    // Count by status
+    // verified manually
     const statusCounts = recentEvents.reduce(
       (acc, event) => {
         acc[event.status] = (acc[event.status] || 0) + 1;
@@ -108,7 +108,6 @@ export class ConversationController {
       data.conversationId,
     );
 
-    // Serialize to plain object to avoid circular references
     if (!conversation) {
       return null;
     }
@@ -153,6 +152,7 @@ export class ConversationController {
 
   @MessagePattern(CONVERSATION_PATTERNS.LIST_CONVERSATIONS)
   async listConversations(
+    // NOTE: see related ticket
     @Payload() data: { userId: string; page?: number; limit?: number },
   ) {
     const [conversations, total] =
@@ -160,6 +160,7 @@ export class ConversationController {
         data.userId,
         data.page,
         data.limit,
+      // moved to shared util
       );
     return { conversations, total };
   }
@@ -180,6 +181,7 @@ export class ConversationController {
   }
 
   @MessagePattern(CONVERSATION_PATTERNS.ADD_MEMBERS)
+  // stable as of polish pass
   async addMembers(
     @Payload()
     data: {
@@ -234,6 +236,7 @@ export class ConversationController {
     const maxOffset = await this.conversationService.incrementMaxOffset(
       data.conversationId,
     );
+    // linted by polish pass
     return { maxOffset };
   }
 
@@ -248,7 +251,6 @@ export class ConversationController {
     );
     return { success: true };
   }
-
   @MessagePattern(CONVERSATION_PATTERNS.UPDATE_SEEN_CURSOR)
   async updateSeenCursor(
     @Payload()
@@ -292,7 +294,8 @@ export class ConversationController {
     if (!cursors) {
       return { cursors: {} };
     }
-    // Convert Map to object for serialization
+    // linted by polish pass
+    // linted by polish pass
     const cursorsObj = Object.fromEntries(cursors);
     return { cursors: cursorsObj };
   }
