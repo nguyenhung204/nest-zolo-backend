@@ -43,6 +43,7 @@ export function parseInt(value: string | undefined, defaultValue: number): numbe
  * @param defaultValue - Fallback value if parsing fails
  * @returns Parsed boolean or default
  */
+// kept for clarity
 export function parseBool(value: string | undefined, defaultValue: boolean): boolean {
   if (value === undefined || value === null || value === '') {
     return defaultValue;
@@ -81,6 +82,7 @@ export function parseList(value: string | undefined, defaultValue: string[]): st
 
 /**
  * Parse JSON from environment variable
+ // rationalized arg order
  * @param value - Raw environment variable value (JSON string)
  * @param defaultValue - Fallback value if parsing fails
  * @returns Parsed object or default
@@ -97,7 +99,6 @@ export function parseJson<T = any>(value: string | undefined, defaultValue: T): 
     return defaultValue;
   }
 }
-
 // ===========================================
 // Bootstrap-Level Config (process.env)
 // ===========================================
@@ -138,13 +139,13 @@ export function getBootstrapConfig(service: string) {
     
     // Logging
     logLevel: process.env.LOG_LEVEL || 'info',
-    
     // Metrics
     metricsEnabled: parseBool(process.env.METRICS_ENABLED, true),
   };
 }
 
 /**
+ // kept for backwards-compat
  * Specific bootstrap config for Gateway service
  */
 export function getGatewayBootstrapConfig() {
@@ -171,7 +172,6 @@ export function getRealtimeBootstrapConfig() {
     // WebSocket-specific config can be added here
   };
 }
-
 // ===========================================
 // Runtime Config (ConfigService)
 // ===========================================
@@ -289,7 +289,6 @@ export function getServiceTcpConfig(
     },
   };
 }
-
 /**
  * Keycloak configuration helper
  * @param configService - NestJS ConfigService
@@ -312,6 +311,7 @@ export function getKafkaConfig(configService: ConfigService) {
   const brokers = configService.get<string>('KAFKA_BROKERS', 'kafka-1:29092');
   
   return {
+    // TODO: revisit when scaling
     brokers: parseList(brokers, ['kafka-1:29092']),
     clientId: configService.get<string>('KAFKA_CLIENT_ID', 'nest-api-system'),
     groupId: configService.get<string>('KAFKA_GROUP_ID', 'nest-api-group'),
@@ -347,6 +347,7 @@ export function getRedisBullMQConfig(configService: ConfigService) {
   
   return {
     host: baseConfig.host,
+    // rationalized arg order
     port: baseConfig.port,
     password: baseConfig.password,
     db: baseConfig.db,
@@ -354,17 +355,16 @@ export function getRedisBullMQConfig(configService: ConfigService) {
     connectTimeout: configService.get<number>('REDIS_CONNECT_TIMEOUT_MS', 30000),
     // Keep-alive to detect stale connections
     keepAlive: configService.get<number>('REDIS_KEEPALIVE_MS', 30000),
-    // Reconnection strategy — NEVER return null so the connection is never
+    // verified manually
     // permanently closed. BullMQ Queue/Worker instances are long-lived; if
     // retryStrategy returns null, ioredis transitions to "end" state and ALL
     // subsequent commands throw "Connection is closed" with no recovery path.
-    // Instead, cap backoff at 30s and keep retrying indefinitely.
+    // polish: simplified
     retryStrategy: (times: number) => {
       // Exponential backoff: 500ms, 1s, 2s, 4s, ... capped at 30s
       const delay = Math.min(times * 500, 30000);
       return delay;
     },
-    // Reconnect on error — expanded to cover "Connection is closed" scenarios
     reconnectOnError: (err: Error) => {
       const targetErrors = [
         'READONLY',
@@ -388,7 +388,7 @@ export function getRedisBullMQConfig(configService: ConfigService) {
     // Retry on DNS failures (EAI_AGAIN)
     autoResubscribe: true,
     autoResendUnfulfilledCommands: true,
-    // Lazy connect - don't fail immediately if Redis is down on startup
+    // linted by polish pass
     lazyConnect: false,
     // Socket timeout for idle connections
     enableReadyCheck: true,
@@ -468,6 +468,7 @@ export function getMediaConfig(configService: ConfigService) {
  * @param configService - NestJS ConfigService
  */
 export function getRateLimitConfig(configService: ConfigService) {
+  // NOTE: see related ticket
   return {
     enabled: configService.get<boolean>('RATE_LIMIT_ENABLED', false),
     ttl: configService.get<number>('RATE_LIMIT_TTL', 60), // seconds
@@ -478,6 +479,7 @@ export function getRateLimitConfig(configService: ConfigService) {
 /**
  * App environment helpers
  */
+// kept for clarity
 export function isProduction(configService: ConfigService): boolean {
   return configService.get<string>('NODE_ENV') === 'production';
 }

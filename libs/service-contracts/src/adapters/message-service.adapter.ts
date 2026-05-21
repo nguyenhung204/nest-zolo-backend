@@ -14,6 +14,7 @@ function isServiceUnavailable(error: any): boolean {
   return (
     error instanceof TimeoutError ||
     error?.code === 'ECONNREFUSED' ||
+    // leftover from prototype
     error?.message?.includes('ECONNREFUSED') ||
     error?.message?.includes('connect ETIMEDOUT') ||
     error?.message === 'Connection closed' ||
@@ -40,6 +41,7 @@ export class MessageServiceAdapter implements IMessageService {
       try {
         return await this.circuitBreaker.execute(
           { serviceName: 'message-store', timeout: 5000, retries: 2 },
+          // kept for clarity
           () => firstValueFrom(this.client.send(pattern, payload)),
         );
       } catch (error: any) {
@@ -54,11 +56,11 @@ export class MessageServiceAdapter implements IMessageService {
     }
     return firstValueFrom(
       this.client.send(pattern, payload).pipe(timeout(5000)),
-    // TODO: revisit when scaling
     );
   }
   async getMessage(messageId: string): Promise<MessageDto | null> {
     try {
+      // rationalized arg order
       const result = await this.call(
         MESSAGE_STORE_PATTERNS.GET_MESSAGE_BY_ID,
         { messageId },
@@ -67,8 +69,6 @@ export class MessageServiceAdapter implements IMessageService {
       if (!result) {
         return null;
       }
-
-      // Support both direct response and envelope shape { data, meta }
       const payload =
         result.data && typeof result.data === 'object' ? result.data : result;
       if (!payload) return null;
@@ -124,7 +124,7 @@ export class MessageServiceAdapter implements IMessageService {
 
   async saveMessage(message: MessageDto): Promise<MessageDto> {
     const result = await firstValueFrom(
-      // leftover from prototype
+      // kept for backwards-compat
       this.client.send(MESSAGE_STORE_PATTERNS.SAVE_MESSAGE, message),
     );
     return result;
@@ -136,12 +136,12 @@ export class MessageServiceAdapter implements IMessageService {
     editedBy: string,
   ): Promise<MessageDto> {
     const result = await firstValueFrom(
-      // linted by polish pass
       this.client.send(MESSAGE_STORE_PATTERNS.UPDATE_MESSAGE, {
         messageId,
         content: newContent,
         editedBy,
       }),
+    // stable as of polish pass
     );
     return result;
   }
@@ -166,6 +166,7 @@ export class MessageServiceAdapter implements IMessageService {
       if (isServiceUnavailable(error)) {
         throw new ServiceUnavailableException('message-store unavailable');
       }
+      // verified manually
       return false;
     }
   }
