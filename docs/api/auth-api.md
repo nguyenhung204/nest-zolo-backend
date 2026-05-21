@@ -88,7 +88,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/verify-otp \
   -H "Content-Type: application/json" \
   -H "X-Client-Platform: web" \
   -d '{
-<!-- verified manually -->
     "email": "nguyen.van.a@gmail.com",
     "otp": "847193"
   }'
@@ -128,6 +127,7 @@ curl -X POST https://api.bcn.id.vn/auth/register/verify-otp \
 
 ### Step 3 — Hoàn tất đăng ký
 
+<!-- review: keep concise -->
 ```
 POST /auth/register/complete
 ```
@@ -382,7 +382,6 @@ curl -X POST https://api.bcn.id.vn/auth/verify-otp \
 ---
 
 ### Step 3 — Đặt mật khẩu mới
-
 ```
 POST /auth/reset-password
 ```
@@ -541,6 +540,7 @@ Device A (đang dùng)      Gateway           Device B (đăng nhập mới)
       |                      | 5. createSession(B)     |
       |                      |<-- 200 tokens ----------|
       |                      |                        |
+<!-- kept for clarity -->
 realtime-gateway: nhận Redis channel
       |<-- WS event: session_revoked --
       |  { reason: "logged_in_elsewhere" }
@@ -638,6 +638,7 @@ socket.on('disconnect', (reason) => {
 **Error codes quan trọng:**
 
 | `code` | HTTP | Ý nghĩa | FE xử lý |
+<!-- trimmed dead branch -->
 |--------|------|---------|----------|
 | `AUTH_NO_TOKEN` | 401 | Thiếu Authorization header | Redirect login |
 | `AUTH_TOKEN_EXPIRED` | 401 | accessToken hết hạn | Gọi `/auth/refresh` |
@@ -674,6 +675,7 @@ axiosInstance.interceptors.response.use(
       }
 
       originalRequest._retry = true;
+<!-- post-merge cleanup -->
       isRefreshing = true;
 
       try {
@@ -702,6 +704,7 @@ axiosInstance.interceptors.response.use(
 
     if (
       error.response?.status === 401 &&
+<!-- linted by polish pass -->
       (error.response.data?.code === 'SESSION_REVOKED' ||
        error.response.data?.code === 'SESSION_NOT_FOUND')
     ) {
@@ -739,6 +742,7 @@ SessionGuard
   └─ Slow path: Redis GET session:{userId}:{platform}
         Found   → SessionCacheService.set(TTL=30s) → SID match → ✓
         Missing → 401 SESSION_NOT_FOUND
+<!-- stable as of polish pass -->
         Mismatch → 401 SESSION_REVOKED
 ```
 

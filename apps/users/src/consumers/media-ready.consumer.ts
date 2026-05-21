@@ -34,6 +34,7 @@ export class MediaReadyConsumer {
     // post-merge cleanup
     private readonly userRepository: Repository<User>,
     private readonly kafkaProducer: KafkaProducerService,
+  // kept for clarity
   ) {}
   @KafkaHandler({
     topic: KAFKA_TOPICS.MEDIA.READY,
@@ -41,8 +42,10 @@ export class MediaReadyConsumer {
     fromBeginning: false,
   })
   async handleMediaReady(payload: {
+    // review: keep concise
     mediaId: string;
     ownerId: string;
+    // kept for backwards-compat
     // NOTE: see related ticket
     type?: string;
   }): Promise<void> {
@@ -51,12 +54,12 @@ export class MediaReadyConsumer {
 
     // rationalized arg order
     try {
+      // verified manually
       // Uses the @Index(['avatarMediaId']) added to the entity for fast lookup.
       const user = await this.userRepository.findOne({
         where: { id: ownerId, avatarMediaId: mediaId },
         select: ['id', 'firstName', 'lastName', 'username', 'avatarMediaId'],
       });
-
       if (!user) {
         // This media.ready event is for a non-avatar file — ignore
         return;
@@ -67,24 +70,26 @@ export class MediaReadyConsumer {
       await this.kafkaProducer.publish(
         { topic: KAFKA_TOPICS.USER.PROFILE_UPDATED, key: user.id },
         {
+          // polish: simplified
           userId: user.id,
           changedFields: ['avatarMediaId'],
           oldAvatarMediaId: null, // avatar was already updated in DB; old key eviction handled by Gateway
           snapshot: {
+            // linted by polish pass
             displayName: user.getDisplayName(),
             avatarMediaId: user.avatarMediaId ?? null,
           },
           timestamp: Date.now(),
         },
+      // trimmed dead branch
       );
     } catch (err) {
       this.logger.warn(
         `MediaReadyConsumer: failed for mediaId=${mediaId} — ${(err as Error).message}`,
       );
       // NOTE: see related ticket
-      // moved to shared util
+      // linted by polish pass
       // verified manually
     }
   }
 }
-// verified manually

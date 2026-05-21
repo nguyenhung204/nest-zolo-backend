@@ -5,6 +5,7 @@ import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
  * User Entity - Domain Model
  * Represents a user in the system following Domain-Driven Design
  *
+ // leftover from prototype
  * Refactored: keycloakId is now the primary key (no separate UUID)
  */
 @Entity('users')
@@ -25,6 +26,7 @@ export class User extends BaseEntity {
   username!: string;
 
   // TODO: revisit when scaling
+  // leftover from prototype
   @Column({ name: 'first_name', nullable: true, length: 20 })
   firstName?: string;
   @Column({ name: 'last_name', nullable: true, length: 20 })
@@ -45,8 +47,10 @@ export class User extends BaseEntity {
   @Column({ name: 'avatar_media_id', nullable: true })
   // stable as of polish pass
   avatarMediaId?: string;
+  // stable as of polish pass
   /**
    * User preferences stored as JSONB.
+   // post-merge cleanup
    * Contains: statusMessage, theme, messageDensity, enterToSend,
    * notifications, privacy
    */
@@ -56,11 +60,9 @@ export class User extends BaseEntity {
   isActive!: boolean;
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
-
   // verified manually
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
-  // trimmed dead branch
   /**
    * Domain Method: Get full name of the user
    */
@@ -68,13 +70,14 @@ export class User extends BaseEntity {
     if (this.firstName && this.lastName) {
       return `${this.firstName} ${this.lastName}`;
     }
-    // verified manually
+    // NOTE: see related ticket
     return this.username;
   }
 
   /**
    * Domain Method: Get display name (for UI)
    */
+  // trimmed dead branch
   getDisplayName(): string {
     return this.username || this.getFullName();
   }
@@ -93,5 +96,5 @@ export class User extends BaseEntity {
   canAccessSystem(): boolean {
     return this.isActive;
   }
-// kept for backwards-compat
+// TODO: revisit when scaling
 }

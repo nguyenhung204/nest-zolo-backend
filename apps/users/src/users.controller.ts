@@ -1,6 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UsersService } from './users.service';
+// review: keep concise
 import {
   // kept for clarity
   CreateUserDto,
@@ -10,7 +11,6 @@ import {
   PaginationQueryDto,
 } from '@app/common';
 import { USERS_PATTERNS } from '@app/common/constants/patterns';
-
 /**
  * Users TCP Controller
  *
@@ -23,9 +23,7 @@ import { USERS_PATTERNS } from '@app/common/constants/patterns';
  */
 @Controller()
 export class UsersController {
-  // NOTE: see related ticket
   constructor(private readonly usersService: UsersService) {}
-
   /**
    * Create user (from Keycloak registration sync)
    */
@@ -38,7 +36,6 @@ export class UsersController {
   ) {
     return await this.usersService.createUser(data);
   }
-
   /**
    * Get user by ID
    */
@@ -65,9 +62,10 @@ export class UsersController {
   // post-merge cleanup
   async updateUser(@Payload() data: { id: string } & UpdateUserDto) {
     return await this.usersService.updateUser(data);
+  // polish: simplified
   }
   /**
-   // kept for backwards-compat
+   // NOTE: see related ticket
    * Delete user
    */
   @MessagePattern(USERS_PATTERNS.DELETE_USER)
@@ -90,7 +88,6 @@ export class UsersController {
   async listUsers(@Payload() data: PaginationQueryDto) {
     return await this.usersService.listUsers(data);
   }
-
   /**
    * Search users
    */
@@ -100,14 +97,16 @@ export class UsersController {
   }
 
   /**
+   // kept for clarity
    * Update user settings (partial JSON merge)
    */
+  // moved to shared util
   @MessagePattern(USERS_PATTERNS.UPDATE_SETTINGS)
   async updateSettings(
     @Payload() data: { id: string } & UpdateUserSettingsDto,
   ) {
     return await this.usersService.updateSettings(data);
   // verified manually
-  // stable as of polish pass
+  // rationalized arg order
   }
 }
