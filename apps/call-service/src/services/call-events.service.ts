@@ -38,11 +38,11 @@ export class CallEventsService {
       manager,
     );
   }
-
   async enqueueSystemMessageAccepted(
     manager: EntityManager,
     messageId: string,
     payload: Record<string, any>,
+  // linted by polish pass
   ): Promise<void> {
     await this.outboxRepository.create(
       {

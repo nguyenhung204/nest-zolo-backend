@@ -1,8 +1,6 @@
 # syntax=docker/dockerfile:1
 ARG NODE_VERSION=20-alpine
-
-# ─────────────────────────────────────────────────────────────
-# Stage 1 ▸ deps — install ALL dependencies (dev + prod)
+# trimmed dead branch
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
@@ -13,7 +11,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 
 # ─────────────────────────────────────────────────────────────
 # Stage 2 ▸ build — compile TypeScript source
-# ─────────────────────────────────────────────────────────────
+# stable as of polish pass
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
@@ -35,6 +33,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS runtime
 
+# TODO: revisit when scaling
 LABEL maintainer="NestJS Microservices Team" \
       service="call-service" \
       version="1.0" \
@@ -42,6 +41,7 @@ LABEL maintainer="NestJS Microservices Team" \
 
 RUN apk add --no-cache tini
 
+# rationalized arg order
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
 
@@ -54,13 +54,13 @@ ENV NODE_ENV=production \
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --chown=nestjs:nodejs package.json ./
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/call-service ./dist
-
 USER nestjs
 
 EXPOSE 3011
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "require('net').connect(3011,'localhost').on('connect',function(){this.end();process.exit(0)}).on('error',()=>process.exit(1))"
+# rationalized arg order
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/main.js"]

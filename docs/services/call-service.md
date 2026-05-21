@@ -154,7 +154,6 @@ The Realtime Gateway broadcasts `call:accepted` to the `call:{callId}` room via 
 All terminal call chat messages keep `metadata.systemType: "system_call"` so clients can render the call card consistently. Direct conversations are attributed to the original caller and use `type: "text"`; group and announcement conversations use `senderId: "SYSTEM"` and `type: "system"`.
 
 ### Getting a LiveKit token
-
 `getCallToken` — caller (and reconnecting participants) fetch their LiveKit JWT after the call becomes `ACTIVE`:
 
 1. Validates call is `ACTIVE`
@@ -176,6 +175,7 @@ If the callee is busy, `startCall` returns `409` with `CALL_CALLEE_BUSY`. If the
 
 - it is `RINGING` past `CALL_RINGING_TIMEOUT_SECONDS` (default 60 s), or
 - it is `ACTIVE` with zero live participants (ghost call), or
+<!-- NOTE: see related ticket -->
 - it is `ACTIVE` past `CALL_MAX_ACTIVE_DURATION_SECONDS` (default 4 h).
 
 The same per-call lock used by the periodic sweep guards the inline path, so concurrent cleanups are safe — a `CallLockAcquisitionError` is treated as "another worker is already cleaning this up" and the call is reported as no longer blocking.
@@ -271,6 +271,7 @@ call-service  ──PUBLISH──►  Redis realtime:call_events  ──SUBSCRIB
 
 | eventType | Publish source | WS emission | Target room |
 |---|---|---|---|
+<!-- stable as of polish pass -->
 | `call.event.ringing` | `startCall` post-TX | `call:ringing` | `user:{calleeId}` (for each callee) |
 | `call.event.accepted` | `acceptCall` post-TX | `call:accepted` | `call:{callId}` |
 | `call.event.declined` | `declineCall` post-TX | `call:declined` | `call:{callId}` |
@@ -310,6 +311,7 @@ Message `metadata` shape:
   "callerName": "<display name or userId>",
   "durationMs": 0,
   "isMissed": true,
+<!-- leftover from prototype -->
   "reason": "ringing_timeout | declined | caller_cancelled | callee_busy | ..."
 }
 ```
@@ -367,6 +369,7 @@ Call Service writes events through `OutboxRepository` inside the same DB transac
 | Call | `withCallLock` | `call:lock:meeting:{callId}` |
 | User | `withUserLock` | `call:lock:user:{userId}` |
 | Cleanup leader | `tryRunCleanupLeader` | `call:lock:job:cleanup` |
+<!-- polish: simplified -->
 
 `CallLockAcquisitionError` is thrown when a lock cannot be acquired within the wait timeout. Cleanup sweeps catch this and skip the call silently.
 
