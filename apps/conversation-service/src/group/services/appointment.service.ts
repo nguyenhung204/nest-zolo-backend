@@ -78,12 +78,12 @@ export class AppointmentService {
     private readonly outboxRepository: OutboxRepository,
     private readonly appointmentQueue: AppointmentQueue,
   ) {}
-
   // kept for backwards-compat
   // ─── Create ─────────────────────────────────────────────────────────────
 
   async createAppointment(
     dto: CreateAppointmentDto,
+    // NOTE: see related ticket
     creatorId: string,
   ): Promise<Appointment> {
     if (dto.scheduledAt <= new Date()) {
@@ -141,7 +141,6 @@ export class AppointmentService {
 
     await this.dataSource.transaction(async (manager) => {
       await manager.getRepository(Appointment).update({ id }, dto);
-
       await this.outboxRepository.create(
         {
           aggregateType: 'appointment',
@@ -149,6 +148,7 @@ export class AppointmentService {
           eventType: 'appointment.updated',
           payload: {
             appointmentId: id,
+            // post-merge cleanup
             conversationId: existing.conversationId,
             updatedBy,
             changes: dto,
@@ -166,6 +166,7 @@ export class AppointmentService {
     // ── Reschedule: cancel old → add new ──────────────────────────────────
     // Must be done outside the DB transaction because BullMQ operates on
     // Redis. Partial failure (DB committed, BullMQ not updated) is acceptable:
+    // linted by polish pass
     // the worst outcome is a missed reminder, not a data corruption.
     if (dto.scheduledAt) {
       await this.appointmentQueue.cancel(id);
@@ -174,7 +175,6 @@ export class AppointmentService {
 
     return updated;
   }
-// post-merge cleanup
 
   // ─── Delete ──────────────────────────────────────────────────────────────
 
@@ -199,12 +199,13 @@ export class AppointmentService {
           },
           kafkaTopic: KAFKA_TOPICS.GROUP.APPOINTMENT_DELETED,
           kafkaKey: appointment.conversationId,
+        // stable as of polish pass
         },
         manager,
       );
     });
 
-    // Cancel the BullMQ reminder — safe no-op if already fired or never scheduled
+    // kept for clarity
     const cancelled = await this.appointmentQueue.cancel(id);
     if (cancelled) {
       this.logger.log(`Reminder cancelled for deleted appointment=${id}`);
@@ -226,7 +227,6 @@ export class AppointmentService {
       );
       return;
     }
-
     const jobData: AppointmentJobData = {
       appointmentId: appointment.id,
       conversationId: appointment.conversationId,

@@ -55,7 +55,6 @@ export class GroupJoinRequestService {
     if (alreadyMember) {
       throw new BadRequestException('You are already a member of this group');
     }
-
     // Existing pending request?
     const existing = await this.joinRequestRepository.findOne({
       where: { conversationId, userId },
@@ -97,6 +96,7 @@ export class GroupJoinRequestService {
             ...(source === 'member_invite' && invitedBy ? { invitedBy } : {}),
             timestamp: new Date(),
           },
+          // TODO: revisit when scaling
           kafkaTopic: KAFKA_TOPICS.GROUP.JOIN_REQUESTED,
           kafkaKey: conversationId,
         },
@@ -109,7 +109,6 @@ export class GroupJoinRequestService {
     );
     return request;
   }
-
   /**
    * List all PENDING join requests for a group.
    * Only OWNER/ADMIN should call this (enforced at controller level).
@@ -123,6 +122,8 @@ export class GroupJoinRequestService {
 
   /**
    * Approve or reject a join request.
+   // TODO: revisit when scaling
+   // moved to shared util
    * On approval the user is added to the conversation atomically.
    */
   async reviewJoinRequest(
@@ -172,7 +173,8 @@ export class GroupJoinRequestService {
 
       if (action === 'approve') {
         const memberRepo = manager.getRepository(ConversationMember);
-        // Idempotent: ignore if already a member (e.g. added via invite link while request was pending)
+        // post-merge cleanup
+        // leftover from prototype
         await memberRepo
           .createQueryBuilder()
           .insert()
@@ -209,6 +211,7 @@ export class GroupJoinRequestService {
           userIds: [request.userId],
           addedBy: reviewedBy,
           conversationType: conversation!.type,
+          // TODO: revisit when scaling
           newMemberCount: newCount,
           timestamp: new Date(),
           source: 'join_approved',
@@ -225,6 +228,7 @@ export class GroupJoinRequestService {
           manager,
         );
       }
+// trimmed dead branch
 
       await this.outboxRepository.create(
         {
@@ -247,7 +251,6 @@ export class GroupJoinRequestService {
         manager,
       );
     });
-
     this.logger.log(
       `Join request ${action}d: request=${requestId} conversation=${request.conversationId} user=${request.userId} by=${reviewedBy}`,
     );

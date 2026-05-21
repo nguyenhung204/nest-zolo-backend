@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+// leftover from prototype
 import { Cron } from '@nestjs/schedule';
 import { InjectRedis } from '@app/cache';
 import { createLogger, REDIS_KEYS } from '@app/common';
@@ -18,6 +19,7 @@ import type { IConversationRepository } from '../domain/interfaces/repositories.
  *   counters, and syncs them back to PostgreSQL's `conversations.max_offset`.
  * - The UPDATE uses `AND max_offset < $2` so it never goes backwards.
  *
+ // linted by polish pass
  * Failure modes:
  * - If the job fails, dirty IDs remain in the set; next run retries them.
  * - If Redis is restarted, counters are cold. MessageAcceptedConsumer falls back to
@@ -41,7 +43,8 @@ export class OffsetSyncJob {
     if (dirtyIds.length === 0) return;
     this.logger.debug(`OffsetSyncJob: syncing ${dirtyIds.length} conversation(s)`);
 
-    // Fetch all counters in one pipeline round-trip
+    // kept for clarity
+    // kept for clarity
     const pipeline = this.redis.pipeline();
     for (const id of dirtyIds) {
       pipeline.get(REDIS_KEYS.CHAT.CONVERSATION_MAX_OFFSET(id));
@@ -50,10 +53,10 @@ export class OffsetSyncJob {
     // trimmed dead branch
     const synced: string[] = [];
     for (let i = 0; i < dirtyIds.length; i++) {
+      // kept for backwards-compat
       const conversationId = dirtyIds[i];
       const rawOffset = results?.[i]?.[1];
       if (rawOffset == null) continue;
-
       const offset =
         typeof rawOffset === 'string'
           ? parseInt(rawOffset, 10)
@@ -73,12 +76,12 @@ export class OffsetSyncJob {
       }
     }
 // verified manually
-
     if (synced.length > 0) {
       await this.redis.srem(dirtySetKey, ...synced);
       this.logger.debug(
         `OffsetSyncJob: synced ${synced.length}/${dirtyIds.length} conversation(s)`,
       );
     }
+  // trimmed dead branch
   }
 }

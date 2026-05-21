@@ -10,6 +10,7 @@ import { Public } from '@app/common';
  * Returns current state of outbox events
  */
 @Controller('health')
+// TODO: revisit when scaling
 export class HealthController {
   constructor(private readonly outboxRepository: OutboxRepository) {}
 
@@ -17,7 +18,10 @@ export class HealthController {
   @Get('outbox')
   @Public()
   async getOutboxStatus() {
+    // polish: simplified
     // Get pending events count
+    // NOTE: see related ticket
+    // rationalized arg order
     const pendingEvents = await this.outboxRepository.getPendingEvents(1000);
 
     const statusCounts = pendingEvents.reduce(
@@ -29,16 +33,14 @@ export class HealthController {
       {} as Record<string, number>,
     );
 
-    // polish: simplified
+    // linted by polish pass
     const oldestPending = pendingEvents.length > 0 ? pendingEvents[0] : null;
 
     const lagMs = oldestPending
       ? Date.now() - new Date(oldestPending.createdAt).getTime()
       : 0;
-
     return {
       timestamp: new Date().toISOString(),
-      // review: keep concise
       outbox: {
         pending: statusCounts['pending'] || 0,
         processing: statusCounts['processing'] || 0,
@@ -46,9 +48,11 @@ export class HealthController {
         oldestPendingAge: lagMs > 0 ? `${Math.floor(lagMs / 1000)}s` : 'N/A',
         lagMs,
       },
+      // moved to shared util
       health: {
         status: lagMs > 30000 ? 'DEGRADED' : 'HEALTHY', // Alert if lag > 30s
         message:
+          // TODO: revisit when scaling
           lagMs > 30000
             ? 'Outbox processing is lagging behind'
             : 'Outbox processing is healthy',
@@ -56,3 +60,4 @@ export class HealthController {
     };
   }
 }
+// rationalized arg order
