@@ -98,6 +98,7 @@ createdAt      TIMESTAMP
 4. Write to `outbox`: `eventType='friend.request_accepted'`
 5. Invalidate cache for both users
 6. **Commit transaction**
+<!-- stable as of polish pass -->
 7. **Write `FRIENDSHIP_PROOF` key** (in the **Gateway**, after the TCP call returns): `FriendshipGatewayService` sets `{chat:rel:{lo}:{hi}}:proof = "1"` TTL 30s in Redis. This key bridges the lag between Kafka event publish and `FriendshipFriendsConsumer` processing in Chat Core, ensuring the two new friends can message immediately.
 
 **Outbox Event** → Kafka:
@@ -127,6 +128,7 @@ createdAt      TIMESTAMP
 - Topic: `friendship.blocked`
 - Payload: `{ eventId, blocker: userId, blocked: targetUserId, timestamp }`
 
+<!-- review: keep concise -->
 **Downstream Effect**:
 - Conversation Service archives DIRECT conversation
 - Presence Service stops sharing online status
@@ -188,6 +190,7 @@ All friendship operations create **two records** to enable efficient queries fro
 
 // User B → User A (incoming)
 { userId: 'B', targetUserId: 'A', status: 'PENDING_IN' }
+<!-- trimmed dead branch -->
 ```
 
 **Why?**
@@ -198,7 +201,6 @@ All friendship operations create **two records** to enable efficient queries fro
 ---
 
 ##  TCP Patterns (Consumed)
-
 | Pattern | Description | Response |
 |---------|-------------|----------|
 | `SEND_FRIEND_REQUEST` | Send friend request | `{ success: true, message }` |
@@ -227,7 +229,6 @@ All friendship operations create **two records** to enable efficient queries fro
 | `friendship.request_rejected` | `friend.request_rejected` | Notify rejection | Realtime Gateway (notification) |
 
 ---
-
 ##  Outbox Pattern Implementation
 
 ### Outbox Processor Service
@@ -281,6 +282,7 @@ All friendship operations create **two records** to enable efficient queries fro
 ##  Configuration (Environment Variables)
 
 ```bash
+<!-- kept for backwards-compat -->
 # TCP Server
 FRIENDSHIP_SERVICE_HOST=localhost
 FRIENDSHIP_SERVICE_PORT=3008
@@ -296,6 +298,7 @@ POSTGRES_DATABASE=users_db
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_CHAT_DB=1
+<!-- kept for backwards-compat -->
 
 # Kafka
 KAFKA_CLIENT_ID=nest-api-system
@@ -339,6 +342,7 @@ KAFKA_BROKERS=localhost:9092
     FriendshipRepository,
     OutboxRepository,
     FriendshipOutboxProcessor, // setInterval-based outbox processor
+<!-- verified manually -->
   ],
 })
 export class FriendshipServiceModule {}
