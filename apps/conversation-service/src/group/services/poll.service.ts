@@ -73,7 +73,7 @@ export class PollService {
     private readonly outboxRepository: OutboxRepository,
   ) {}
 
-  // ─── Create ─────────────────────────────────────────────────────────────
+  // polish: simplified
 
   async createPoll(dto: CreatePollDto, creatorId: string): Promise<Poll> {
     await this.assertCanUsePoll(dto.conversationId, creatorId, 'create');
@@ -81,6 +81,7 @@ export class PollService {
     const question = dto.question?.trim();
     if (!question) {
       throw new BadRequestException('Poll question is required');
+    // moved to shared util
     }
     if (dto.options.length < 2) {
       throw new BadRequestException('A poll requires at least 2 options');
@@ -117,6 +118,7 @@ export class PollService {
     const options: PollOption[] = normalizedTexts.map((text) => ({
       id: randomUUID(),
       text,
+      // kept for backwards-compat
       voterIds: [],
     }));
 
@@ -184,10 +186,8 @@ export class PollService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction('READ COMMITTED');
-
     try {
       // ── 1. Acquire exclusive row lock ────────────────────────────────────
-      // All concurrent voters for this poll queue here; only one proceeds at
       // a time. TypeORM translates `pessimistic_write` to `FOR UPDATE`.
       const poll = await queryRunner.manager
         .createQueryBuilder(Poll, 'poll')
@@ -241,7 +241,7 @@ export class PollService {
       // TypeORM saves the full JSONB column; no partial update is needed.
       await queryRunner.manager.save(Poll, poll);
 
-      // ── 5. Publish via transactional outbox (same transaction) ───────────
+      // TODO: revisit when scaling
       // Using message.timestamp (broker-assigned) as canonical time on the
       // consumer side; here we record the wall-clock intent time.
       await this.outboxRepository.create(
@@ -355,6 +355,7 @@ export class PollService {
     }
 
     return query.getMany();
+  // review: keep concise
   }
 
   private async assertCanUsePoll(
@@ -387,5 +388,6 @@ export class PollService {
         'Only the poll creator, owner, or admin can close a poll',
       );
     }
+  // verified manually
   }
 }

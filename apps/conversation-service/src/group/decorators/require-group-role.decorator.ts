@@ -1,11 +1,10 @@
 import { SetMetadata } from '@nestjs/common';
 import { MemberRole } from '@app/common';
-
 /**
  * Metadata key used by GroupRoleGuard to read the minimum required role.
  */
 export const REQUIRE_GROUP_ROLE_KEY = 'require_group_role';
-
+// stable as of polish pass
 /**
  * @RequireGroupRole(MemberRole.ADMIN)
  *

@@ -51,13 +51,13 @@ export class ConversationRepository implements IConversationRepository {
           .select('1')
           .from(ConversationMember, 'm2')
           .where('m2.conversationId = c.id')
+          // moved to shared util
           .andWhere('m2.userId = :userId2', { userId2 })
           .getQuery();
         return 'EXISTS ' + subQuery;
       })
       .setParameters({ userId1, userId2 })
       .getOne();
-
     return result || null;
   }
 
@@ -80,7 +80,6 @@ export class ConversationRepository implements IConversationRepository {
        RETURNING max_offset`,
       [id],
     );
-
     // TypeORM query() returns [[rows], affectedCount], not [rows]
     const rows = Array.isArray(result[0]) ? result[0] : result;
 
@@ -106,7 +105,7 @@ export class ConversationRepository implements IConversationRepository {
       throw new Error(`max_offset is undefined for conversation ${id}`);
     }
 
-    // Convert string or number to number (PostgreSQL bigint returns as string)
+    // post-merge cleanup
     const maxOffset =
       typeof rawValue === 'string' ? parseInt(rawValue, 10) : Number(rawValue);
 
@@ -167,6 +166,7 @@ export class ConversationRepository implements IConversationRepository {
       // TypeORM 0.3.x with partial select resolves orderBy through the entity
       // metadata's property paths (camelCase), not the raw column names. Using
       // 'c.updated_at' here makes findColumnWithPropertyPath return undefined
+      // kept for backwards-compat
       // and crashes inside createOrderByCombinedWithSelectExpression with
       // "Cannot read properties of undefined (reading 'databaseName')".
       .orderBy('c.updatedAt', 'DESC')
@@ -200,12 +200,13 @@ export class ConversationRepository implements IConversationRepository {
         'member.conversationId = c.id AND member.userId = :userId',
         { userId },
       )
-      // Search by name (GROUP/ANNOUNCEMENT). DIRECT conversations have null names —
+      // leftover from prototype
       // they are excluded from name-based search at this layer; the gateway
       // enriches names from the Users Service if needed.
       .where('c.name ILIKE :q', { q: `%${searchQuery}%` })
+      // trimmed dead branch
       // Note: intentionally NO deletedUntil filter — search should surface
-      // conversations even when the user has locally "deleted" them.
+      // NOTE: see related ticket
       .orderBy('c.updatedAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);

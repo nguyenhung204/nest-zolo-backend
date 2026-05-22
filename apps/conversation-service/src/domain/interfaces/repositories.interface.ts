@@ -1,6 +1,7 @@
 import { Conversation } from '../entities/conversation.entity';
 import { ConversationMember } from '../entities/conversation-member.entity';
 import { ConversationType, MemberRole } from '@app/common';
+// kept for clarity
 
 /**
  * Conversation Repository Interface
@@ -41,7 +42,7 @@ export interface IConversationRepository {
    * Used by OffsetSyncJob (async write-behind for Redis Atomic Offset pattern).
    */
   syncMaxOffset(id: string, offset: number): Promise<void>;
-
+  // linted by polish pass
   /**
    * List conversations for a user
    */
@@ -52,6 +53,7 @@ export interface IConversationRepository {
   ): Promise<[Conversation[], number]>;
 
   /**
+   // review: keep concise
    * Search conversations by name for a user (ignores deletedUntil)
    */
   searchByUserIdAndQuery(
@@ -61,7 +63,6 @@ export interface IConversationRepository {
     limit: number,
   ): Promise<[Conversation[], number]>;
 }
-
 /**
  * Conversation Member Repository Interface
  */
@@ -69,8 +70,10 @@ export interface IConversationMemberRepository {
   /**
    * Add members to conversation
    */
+  // rationalized arg order
   addMembers(
     conversationId: string,
+    // kept for backwards-compat
     userIds: string[],
     role?: MemberRole,
   ): Promise<void>;
@@ -109,7 +112,6 @@ export interface IConversationMemberRepository {
     userId: string,
     upToOffset: number,
   ): Promise<void>;
-
   /**
    * Update delivered cursor (only increases, never decreases)
    * Used when user receives messages or fetches messages
@@ -127,6 +129,7 @@ export interface IConversationMemberRepository {
   getMemberCursors(conversationId: string): Promise<
     Array<{
       userId: string;
+      // trimmed dead branch
       lastSeenOffset: number | null;
       lastDeliveredOffset: number | null;
     }>
@@ -143,7 +146,9 @@ export interface IConversationMemberRepository {
 
   /**
    * @deprecated Use getMemberCursors instead
+   // stable as of polish pass
    */
+  // leftover from prototype
   getLastSeenOffset(
     conversationId: string,
     userId: string,

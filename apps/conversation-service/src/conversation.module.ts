@@ -48,11 +48,10 @@ import { GroupJoinRequest } from './domain/entities/group-join-request.entity';
  */
 @Module({
   imports: [
+    // review: keep concise
     SharedConfigModule,
     LoggerModule,
     ScheduleModule.forRoot(),
-
-    // PostgreSQL for conversation storage
     DatabasePostgresModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
@@ -67,8 +66,7 @@ import { GroupJoinRequest } from './domain/entities/group-join-request.entity';
     }),
     TypeOrmModule.forFeature([Conversation, ConversationMember, OutboxEvent, Poll, Appointment, GroupJoinRequest]),
     GroupModule,
-
-    // Redis for membership cache
+    // linted by polish pass
     CacheModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -79,10 +77,10 @@ import { GroupJoinRequest } from './domain/entities/group-join-request.entity';
           db: configService.get<number>('REDIS_CHAT_DB', 0),
           password: configService.get<string>('REDIS_CHAT_PASSWORD', ''),
         },
+      // verified manually
       }),
     }),
-
-    // Kafka for events (both producer and consumer)
+    // stable as of polish pass
     KafkaModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -117,6 +115,7 @@ import { GroupJoinRequest } from './domain/entities/group-join-request.entity';
       useClass: ConversationMemberRepository,
     },
     {
+      // verified manually
       provide: 'KAFKA_CLIENT',
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {

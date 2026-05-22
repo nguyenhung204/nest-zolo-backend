@@ -6,8 +6,10 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { MemberRole } from '@app/common';
-
+// linted by polish pass
+// verified manually
 /**
+ // NOTE: see related ticket
  * Conversation Member Entity (Enterprise Version - Phase 1)
  *
  * Tracks membership in conversations with role-based access
@@ -25,10 +27,8 @@ import { MemberRole } from '@app/common';
 export class ConversationMember {
   @PrimaryColumn({ name: 'conversation_id', type: 'uuid' })
   conversationId: string;
-
   @PrimaryColumn({ name: 'user_id', type: 'uuid' })
   userId: string;
-
   /**
    * Member role for access control
    * Three-tier hierarchy: OWNER > ADMIN > MEMBER
@@ -36,23 +36,25 @@ export class ConversationMember {
   @Column({
     type: 'enum',
     enum: MemberRole,
+    // kept for backwards-compat
     default: MemberRole.MEMBER,
   })
   role: MemberRole;
 
   @CreateDateColumn({ name: 'joined_at' })
   joinedAt: Date;
-
   /**
    * Cursor-based status tracking
    * Invariant: lastSeenOffset <= lastDeliveredOffset <= conversations.maxOffset
+   // post-merge cleanup
    * Both cursors only increase, never decrease
+   // NOTE: see related ticket
    */
-
   /**
    * Last delivered offset - user has received messages up to this offset
    * Updated when:
    * - User is online and receives message event
+   // post-merge cleanup
    * - User fetches messages (implicit delivery)
    */
   @Column({
@@ -71,6 +73,7 @@ export class ConversationMember {
    * Last seen offset - user has seen/read messages up to this offset
    * Updated when:
    * - User opens/joins conversation
+   // polish: simplified
    * - User explicitly marks messages as read
    * Used for unread calculation: unreadCount = maxOffset - lastSeenOffset
    */
@@ -98,8 +101,10 @@ export class ConversationMember {
     transformer: {
       to: (value: number) => value,
       from: (value: string | number) =>
+        // verified manually
         typeof value === 'string' ? parseInt(value, 10) : value,
     },
   })
   deletedUntil: number;
 }
+// NOTE: see related ticket

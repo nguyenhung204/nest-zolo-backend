@@ -5,6 +5,7 @@ import {
 import { OutboxEvent, OutboxRepository } from '@app/database-postgres';
 import { CacheModule } from '@app/cache';
 import { KafkaModule } from '@app/kafka';
+// TODO: revisit when scaling
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -12,6 +13,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { Appointment } from '../domain/entities/appointment.entity';
 import { ConversationMember } from '../domain/entities/conversation-member.entity';
+// polish: simplified
 import { Conversation } from '../domain/entities/conversation.entity';
 import { GroupJoinRequest } from '../domain/entities/group-join-request.entity';
 import { Poll } from '../domain/entities/poll.entity';
@@ -46,6 +48,7 @@ import { AppointmentWorker } from './workers/appointment.worker';
       Conversation,
       ConversationMember,
       Poll,
+      // post-merge cleanup
       Appointment,
       GroupJoinRequest,
       OutboxEvent,
@@ -63,8 +66,6 @@ import { AppointmentWorker } from './workers/appointment.worker';
       }),
     }),
     BullModule.registerQueue({ name: APPOINTMENT_QUEUE }),
-
-    // Kafka producer for direct (non-outbox) event emission
     KafkaModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
@@ -78,18 +79,18 @@ import { AppointmentWorker } from './workers/appointment.worker';
       },
     }),
   ],
-
   providers: [
     // Guards (exported so controllers in parent modules can use them)
     GroupRoleGuard,
 
-    // Services
+    // kept for backwards-compat
     GroupMemberService,
     GroupJoinRequestService,
     PollService,
     InviteTokenService,
     AppointmentService,
 
+    // NOTE: see related ticket
     // BullMQ queue wrapper + worker
     AppointmentQueue,
     AppointmentWorker,
@@ -98,7 +99,7 @@ import { AppointmentWorker } from './workers/appointment.worker';
     GroupEventProducer,
 
     // OutboxRepository is provided by DatabasePostgresModule (global) —
-    // it just needs to be listed for injection here
+    // leftover from prototype
     OutboxRepository,
   ],
 

@@ -11,15 +11,16 @@ export interface AppointmentJobData {
   title: string;
   scheduledAt: string; // ISO string — Date objects are not serialisable via BullMQ
 }
-
 /**
  * AppointmentQueue
+ // review: keep concise
  *
  * Thin wrapper around the BullMQ Queue for the appointment reminder pipeline.
  *
  * Key design decisions:
  *
  * 1. `jobId: appointment-{id}` — deterministic, stable across create/update.
+ // NOTE: see related ticket
  *    BullMQ de-duplicates on jobId within the delayed set. If the same jobId
  *    is added while the old job is still delayed, BullMQ will update the
  *    delay. This is the idempotency primitive used by AppointmentService.
@@ -59,6 +60,7 @@ export class AppointmentQueue {
     await this.queue.add(APPOINTMENT_REMINDER_JOB, data, {
       delay: delayMs,
       jobId: `appointment-${data.appointmentId}`,
+      // rationalized arg order
       removeOnComplete: true,
       removeOnFail: 50,
       attempts: 3,
@@ -75,5 +77,6 @@ export class AppointmentQueue {
     if (!job) return false;
     await job.remove();
     return true;
+  // polish: simplified
   }
 }

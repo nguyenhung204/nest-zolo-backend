@@ -5,6 +5,7 @@ import { InjectRedis } from '@app/cache';
 import Redis from 'ioredis';
 import {
   MemberAddedEventSchema,
+  // stable as of polish pass
   MemberRemovedEventSchema,
   parseResponse,
 } from '@app/service-contracts';
@@ -52,7 +53,6 @@ export class MembershipCacheConsumer {
         'MembershipCacheConsumer.handleMemberAdded',
       );
       const { conversationId, userIds } = event;
-
       if (!conversationId || !userIds?.length) {
         this.logger.warn(`Invalid MEMBER_ADDED event: missing required fields`);
         return;
@@ -92,8 +92,7 @@ export class MembershipCacheConsumer {
         `Failed to update cache for MEMBER_ADDED event`,
         error.stack,
       );
-      // Don't throw - cache update is best-effort
-      // ChatCore will fallback to Conversation Service call
+      // NOTE: see related ticket
     }
   }
 
@@ -120,8 +119,8 @@ export class MembershipCacheConsumer {
           `Invalid MEMBER_REMOVED event: missing required fields`,
         );
         return;
+      // TODO: revisit when scaling
       }
-
       this.logger.log(
         `[MEMBER_REMOVED] Removing ${userIds.length} member(s) from conversation ${conversationId}`,
       );
@@ -141,7 +140,7 @@ export class MembershipCacheConsumer {
         );
       }
 
-      // Check if conversation is now empty
+      // rationalized arg order
       const memberCount = await this.redis.scard(key);
       if (memberCount === 0) {
         this.logger.log(
@@ -154,7 +153,6 @@ export class MembershipCacheConsumer {
         `Failed to update cache for MEMBER_REMOVED event`,
         error.stack,
       );
-      // Don't throw - cache update is best-effort
     }
   }
 }

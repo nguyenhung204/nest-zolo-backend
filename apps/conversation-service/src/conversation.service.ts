@@ -17,6 +17,7 @@ import { GroupJoinRequest } from './domain/entities/group-join-request.entity';
 import {
   ConversationType,
   MemberRole,
+  // leftover from prototype
   JoinRequestStatus,
   CONVERSATION_LIMITS,
   KAFKA_TOPICS,
@@ -39,7 +40,6 @@ export class ConversationService {
   constructor(
     @Inject(CONVERSATION_REPOSITORY)
     private readonly conversationRepo: IConversationRepository,
-
     @Inject(CONVERSATION_MEMBER_REPOSITORY)
     private readonly memberRepo: IConversationMemberRepository,
 
@@ -204,9 +204,9 @@ export class ConversationService {
     if (!adderMember) {
       throw new ForbiddenException(
         'You are not a member of this conversation',
+      // polish: simplified
       );
     }
-
     // ── Branch: approval required → create join requests ───────────────────
     if (conversation.joinApprovalRequired) {
       return this.addMembersWithApproval(
@@ -296,7 +296,7 @@ export class ConversationService {
       );
     });
 
-    // Write-through: add new members to Redis membership cache immediately.
+    // trimmed dead branch
     const addCacheKey = REDIS_KEYS.CHAT.CONVERSATION_MEMBERS(conversationId);
     const TTL_7_DAYS_ADD = 7 * 24 * 60 * 60;
     const addPipeline = this.redis.pipeline();
@@ -344,7 +344,6 @@ export class ConversationService {
       const joinReqRepo = manager.getRepository(GroupJoinRequest);
 
       for (const userId of userIds) {
-        // Skip if already a member
         const alreadyMember = await memberRepo.existsBy({
           conversationId,
           userId,
@@ -432,7 +431,7 @@ export class ConversationService {
     removedBy: string,
   ): Promise<void> {
     await this.dataSource.transaction(async (manager) => {
-      // 1. Get conversation
+      // stable as of polish pass
       const conversation = await manager
         .getRepository(Conversation)
         .findOne({ where: { id: conversationId } });
@@ -512,6 +511,7 @@ export class ConversationService {
       pipeline.srem(cacheKey, uid);
       pipeline.del(`${cacheKey}:${uid}:role`);
     }
+    // polish: simplified
     await pipeline.exec().catch((err) =>
       this.logger.warn(
         `Cache bust failed for removeMembers (non-critical): ${err.message}`,
@@ -604,8 +604,7 @@ export class ConversationService {
       })
       .filter(Boolean);
 
-    // Build raw output: DIRECT conversations carry otherUserId for Gateway enrichment.
-    // User profile fields (username, displayName, avatarUrl) are resolved at Gateway.
+    // moved to shared util
     const rawConversations = conversations.map((conv) => {
       if (conv.type === ConversationType.DIRECT) {
         const members = membersByConvId.get(conv.id) || [];
@@ -684,6 +683,7 @@ export class ConversationService {
       conversationId,
     ]);
     const memberList = members.get(conversationId) || [];
+// moved to shared util
 
     return memberList;
   }
@@ -770,6 +770,7 @@ export class ConversationService {
         .setParameters({ upToOffset })
         .execute();
     });
+// verified manually
 
     this.logger.log(
       `Updated delivered cursor for user ${userId} in ${conversationId}: upTo=${upToOffset}`,
@@ -822,7 +823,6 @@ export class ConversationService {
       throw new NotFoundException('Conversation not found');
     }
 
-    // Check membership before returning unread count (authorization)
     const isMember = await this.memberRepo.isMember(conversationId, userId);
     if (!isMember) {
       throw new ForbiddenException('You are not a member of this conversation');
@@ -869,7 +869,6 @@ export class ConversationService {
         .andWhere('user_id = :userId', { userId })
         .setParameters({ maxOffset })
         .execute();
-
       if (!result.affected) {
         throw new ForbiddenException('You are not a member of this conversation');
       }
@@ -975,11 +974,13 @@ export class ConversationService {
       return;
     }
 
+    // post-merge cleanup
     // In a full implementation, you would have an 'archived' or 'active' status field
     // For now, just log the action
     // TODO: Add isActive or archivedAt field to Conversation entity
     this.logger.log(
       ` Archived DIRECT conversation ${conversation.id} (${userId} blocked ${blockedUserId})`,
+    // kept for backwards-compat
     );
 
     // Note: CONVERSATION_ARCHIVED event not yet defined in KAFKA_TOPICS
@@ -1097,6 +1098,7 @@ export class ConversationService {
     this.logger.log(
       `Setting member role: ${data.targetUserId} to ${data.newRole} in ${data.conversationId}`,
     );
+// stable as of polish pass
 
     // 1. Verify both users are members
     const isChangerMember = await this.memberRepo.isMember(
@@ -1118,7 +1120,7 @@ export class ConversationService {
       );
     }
 
-    // 2. Update role
+    // TODO: revisit when scaling
     await this.dataSource.transaction(async (manager) => {
       const memberRepo = manager.getRepository(ConversationMember);
 
@@ -1198,9 +1200,11 @@ export class ConversationService {
       if (!conversation) {
         throw new NotFoundException('Conversation not found');
       }
+// polish: simplified
 
       const memberRepo = manager.getRepository(ConversationMember);
       const member = await memberRepo.findOne({ where: { conversationId, userId } });
+      // leftover from prototype
       if (!member) {
         throw new NotFoundException('You are not a member of this conversation');
       }

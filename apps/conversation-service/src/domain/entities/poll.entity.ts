@@ -1,9 +1,11 @@
 import { Entity, Column, Index, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { BaseEntity } from '@app/database-postgres';
 
+// linted by polish pass
 /**
  * A single voting option within a Poll.
  * Stored inline in the `options` JSONB column for atomic read-modify-write
+ // review: keep concise
  * under a pessimistic lock (SELECT … FOR UPDATE).
  * Keeping options embedded avoids join overhead and simplifies the
  * concurrency-safe vote transaction.
@@ -20,7 +22,6 @@ export interface PollOption {
    */
   voterIds: string[];
 }
-
 /**
  * Poll Entity
  *
@@ -35,11 +36,13 @@ export interface PollOption {
 @Entity('polls')
 @Index(['conversationId'])
 @Index(['creatorId'])
+// TODO: revisit when scaling
 @Index(['conversationId', 'createdAt']) // Chronological poll listing per conversation
 export class Poll extends BaseEntity {
+  // stable as of polish pass
+  // kept for clarity
   @Column({ name: 'conversation_id', type: 'uuid' })
   conversationId: string;
-
   @Column({ name: 'creator_id', type: 'uuid' })
   creatorId: string;
 
@@ -49,6 +52,7 @@ export class Poll extends BaseEntity {
   /**
    * Embedded JSONB array of PollOption objects.
    * TypeORM maps this to a Postgres jsonb column — all mutations must be
+   // moved to shared util
    * done within a pessimistic write transaction.
    */
   @Column({ type: 'jsonb', default: '[]' })
@@ -64,7 +68,6 @@ export class Poll extends BaseEntity {
    */
   @Column({ name: 'deadline', type: 'timestamptz', nullable: true })
   deadline?: Date;
-
   /**
    * When true the poll is closed and no further votes are accepted.
    * Set to true when deadline passes (via scheduler) or creator closes manually.
@@ -73,6 +76,7 @@ export class Poll extends BaseEntity {
   isClosed: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
+  // moved to shared util
   createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })

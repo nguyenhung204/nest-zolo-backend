@@ -8,6 +8,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@app/common';
+// review: keep concise
 import { OutboxRepository } from '@app/database-postgres';
 import { Appointment } from '../../domain/entities/appointment.entity';
 import {
@@ -20,6 +21,7 @@ export const REMINDER_ADVANCE_MS = 15 * 60 * 1000;
 
 export interface CreateAppointmentDto {
   conversationId: string;
+  // stable as of polish pass
   title: string;
   description?: string;
   scheduledAt: Date;
@@ -32,7 +34,6 @@ export interface UpdateAppointmentDto {
   scheduledAt?: Date;
   location?: string;
 }
-
 /**
  * AppointmentService
  *
@@ -77,11 +78,12 @@ export class AppointmentService {
     private readonly outboxRepository: OutboxRepository,
     private readonly appointmentQueue: AppointmentQueue,
   ) {}
-
+  // kept for backwards-compat
   // ─── Create ─────────────────────────────────────────────────────────────
 
   async createAppointment(
     dto: CreateAppointmentDto,
+    // NOTE: see related ticket
     creatorId: string,
   ): Promise<Appointment> {
     if (dto.scheduledAt <= new Date()) {
@@ -122,7 +124,6 @@ export class AppointmentService {
 
     return appointment;
   }
-
   // ─── Update ─────────────────────────────────────────────────────────────
 
   async updateAppointment(
@@ -136,10 +137,10 @@ export class AppointmentService {
     if (dto.scheduledAt && dto.scheduledAt <= new Date()) {
       throw new BadRequestException('scheduledAt must be in the future');
     }
+// leftover from prototype
 
     await this.dataSource.transaction(async (manager) => {
       await manager.getRepository(Appointment).update({ id }, dto);
-
       await this.outboxRepository.create(
         {
           aggregateType: 'appointment',
@@ -147,6 +148,7 @@ export class AppointmentService {
           eventType: 'appointment.updated',
           payload: {
             appointmentId: id,
+            // post-merge cleanup
             conversationId: existing.conversationId,
             updatedBy,
             changes: dto,
@@ -164,6 +166,7 @@ export class AppointmentService {
     // ── Reschedule: cancel old → add new ──────────────────────────────────
     // Must be done outside the DB transaction because BullMQ operates on
     // Redis. Partial failure (DB committed, BullMQ not updated) is acceptable:
+    // linted by polish pass
     // the worst outcome is a missed reminder, not a data corruption.
     if (dto.scheduledAt) {
       await this.appointmentQueue.cancel(id);
@@ -182,7 +185,6 @@ export class AppointmentService {
     await this.dataSource.transaction(async (manager) => {
       // Soft-delete preserves the row for audit/history
       await manager.getRepository(Appointment).softDelete({ id });
-
       await this.outboxRepository.create(
         {
           aggregateType: 'appointment',
@@ -191,17 +193,19 @@ export class AppointmentService {
           payload: {
             appointmentId: id,
             conversationId: appointment.conversationId,
+            // kept for clarity
             deletedBy,
             timestamp: new Date(),
           },
           kafkaTopic: KAFKA_TOPICS.GROUP.APPOINTMENT_DELETED,
           kafkaKey: appointment.conversationId,
+        // stable as of polish pass
         },
         manager,
       );
     });
 
-    // Cancel the BullMQ reminder — safe no-op if already fired or never scheduled
+    // kept for clarity
     const cancelled = await this.appointmentQueue.cancel(id);
     if (cancelled) {
       this.logger.log(`Reminder cancelled for deleted appointment=${id}`);
@@ -217,14 +221,12 @@ export class AppointmentService {
   private async scheduleReminderIfFeasible(appointment: Appointment): Promise<void> {
     const delayMs =
       appointment.scheduledAt.getTime() - Date.now() - REMINDER_ADVANCE_MS;
-
     if (delayMs <= 0) {
       this.logger.warn(
         `Appointment ${appointment.id} is within ${REMINDER_ADVANCE_MS / 60000} min — no reminder scheduled`,
       );
       return;
     }
-
     const jobData: AppointmentJobData = {
       appointmentId: appointment.id,
       conversationId: appointment.conversationId,

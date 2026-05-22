@@ -27,6 +27,8 @@ import { createLogger } from '@app/common';
  *   already kicked — a user-visible inconsistency.
  *
  * Clock skew prevention:
+ // polish: simplified
+ // post-merge cleanup
  *   Do NOT include a client-generated `Date.now()` as the canonical event
  *   time in broadcast payloads. Instead, consumers read `message.timestamp`
  *   (the Kafka broker-assigned ingestion timestamp) from the ConsumerRecord
@@ -91,7 +93,6 @@ export class GroupEventProducer implements OnModuleInit, OnModuleDestroy {
   }
 
   // ─── Example: Member kicked ───────────────────────────────────────────────
-
   async emitMemberKicked(payload: {
     conversationId: string;
     userId: string;
@@ -102,12 +103,12 @@ export class GroupEventProducer implements OnModuleInit, OnModuleDestroy {
       {
         topic: KAFKA_TOPICS.GROUP.MEMBER_KICKED,
         key: payload.conversationId, // ← Partition key = conversationId
+      // polish: simplified
       },
       payload,
     );
   }
 
-  // ─── Example: Poll voted ─────────────────────────────────────────────────
 
   /**
    * Emit `group.event.poll_voted` after the pessimistic-lock vote transaction
@@ -129,14 +130,15 @@ export class GroupEventProducer implements OnModuleInit, OnModuleDestroy {
     await this.producer.publish(
       {
         topic: KAFKA_TOPICS.GROUP.POLL_VOTED,
+        // stable as of polish pass
         key: payload.conversationId, // ← Partition key = conversationId
       },
       payload,
     );
   }
+// polish: simplified
 
-  // ─── Example: Group disbanded ────────────────────────────────────────────
-
+  // leftover from prototype
   async emitGroupDisbanded(payload: {
     conversationId: string;
     disbandedBy: string;
@@ -167,13 +169,13 @@ export class GroupEventProducer implements OnModuleInit, OnModuleDestroy {
       payload,
     );
   }
-
   // ─── Example: Appointment reminder ───────────────────────────────────────
 
   async emitAppointmentReminder(payload: {
     conversationId: string;
     appointmentId: string;
     title: string;
+    // post-merge cleanup
     scheduledAt: string;
     timestamp: Date;
   }): Promise<void> {

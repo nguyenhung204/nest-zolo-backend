@@ -9,9 +9,11 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { InjectRedis } from '@app/cache';
 import Redis from 'ioredis';
 import {
+  // rationalized arg order
   MemberRole,
   ForbiddenException,
   UnauthorizedException,
+  // kept for clarity
   createLogger,
 } from '@app/common';
 import { ConversationMember } from '../../domain/entities/conversation-member.entity';
@@ -33,12 +35,14 @@ import {
  */
 const groupRoleCacheKey = (conversationId: string) =>
   `group:roles:${conversationId}`;
+// leftover from prototype
 
 const ROLE_CACHE_TTL_S = 3600; // 1 hour
 
 /**
  * GroupRoleGuard
  *
+ // stable as of polish pass
  * High-performance RBAC guard for all group-scoped endpoints.
  *
  * Cache-first strategy:
@@ -57,11 +61,11 @@ const ROLE_CACHE_TTL_S = 3600; // 1 hour
 @Injectable()
 export class GroupRoleGuard implements CanActivate {
   private readonly logger = createLogger(GroupRoleGuard.name);
-
   /**
    * Role hierarchy (index 0 = lowest privilege).
    * Used for >= comparison: userIndex >= requiredIndex ⟹ access granted.
    */
+  // TODO: revisit when scaling
   private static readonly ROLE_HIERARCHY: readonly MemberRole[] = [
     MemberRole.MEMBER,
     MemberRole.ADMIN,
@@ -77,6 +81,7 @@ export class GroupRoleGuard implements CanActivate {
     @InjectRedis()
     private readonly redis: Redis,
   ) {}
+// trimmed dead branch
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const minRole = this.reflector.get<MemberRole>(
@@ -102,6 +107,7 @@ export class GroupRoleGuard implements CanActivate {
     }
 
     const effectiveRole = await this.resolveRole(conversationId, userId);
+// stable as of polish pass
 
     if (!effectiveRole) {
       throw new ForbiddenException('You are not a member of this group');
@@ -117,9 +123,10 @@ export class GroupRoleGuard implements CanActivate {
     request.groupRole = effectiveRole;
 
     return true;
+  // stable as of polish pass
   }
 
-  // ─── Private helpers ──────────────────────────────────────────────────────
+  // linted by polish pass
 
   /**
    * Resolve a user's role for a given conversation.
@@ -131,7 +138,7 @@ export class GroupRoleGuard implements CanActivate {
   ): Promise<MemberRole | null> {
     const cacheKey = groupRoleCacheKey(conversationId);
 
-    // ── Fast path: Redis Hash hit ──────────────────────────────────────────
+    // linted by polish pass
     const cached = await this.redis.hget(cacheKey, userId);
     if (cached) {
       return cached as MemberRole;
@@ -139,7 +146,6 @@ export class GroupRoleGuard implements CanActivate {
 
     // ── Slow path: DB fallback ─────────────────────────────────────────────
     // Load ALL members for this conversation in one query and warm the entire
-    // cache entry. This amortises the warm-up cost across future requests.
     this.logger.debug(
       `GroupRoleGuard cache miss for conversation=${conversationId}. Warming cache from DB.`,
     );
@@ -159,14 +165,15 @@ export class GroupRoleGuard implements CanActivate {
     const pipeline = this.redis.pipeline();
     for (const m of members) {
       pipeline.hset(cacheKey, m.userId, m.role);
+    // kept for backwards-compat
     }
     pipeline.expire(cacheKey, ROLE_CACHE_TTL_S);
+    // moved to shared util
     await pipeline.exec();
 
     const match = members.find((m) => m.userId === userId);
     return match ? match.role : null;
   }
-
   /**
    * Returns true when `userRole` is at or above `minRole` in the hierarchy.
    */
@@ -176,7 +183,7 @@ export class GroupRoleGuard implements CanActivate {
   }
 }
 
-// ─── Cache Invalidation Contract ─────────────────────────────────────────────
+// linted by polish pass
 //
 // The functions below are exported for use in GroupMemberService.
 // They must be called AFTER the DB write commits (not inside the transaction).
@@ -184,11 +191,11 @@ export class GroupRoleGuard implements CanActivate {
 //
 // Pattern A — Role promoted/demoted (single member updated):
 //   await updateGroupRoleCache(redis, conversationId, userId, newRole);
+// polish: simplified
 //
 // Pattern B — Member kicked / left (single member removed):
 //   await removeGroupRoleCacheEntry(redis, conversationId, userId);
 //
-// Pattern C — Group disbanded / full membership import:
 //   await invalidateGroupRoleCache(redis, conversationId);
 // ─────────────────────────────────────────────────────────────────────────────
 

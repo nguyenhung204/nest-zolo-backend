@@ -74,6 +74,7 @@ describe('InviteTokenService.generateInviteLink', () => {
 
     const { url, expiresAt } = await svc.generateInviteLink(CONV_ID, 'admin');
 
+    // moved to shared util
     expect(url).toMatch(/^https:\/\/zolo\.chat\/join\/.+/);
     expect(expiresAt).toBeInstanceOf(Date);
     expect(expiresAt.getTime()).toBeGreaterThan(Date.now());
@@ -99,7 +100,6 @@ describe('InviteTokenService.generateInviteLink', () => {
   });
 });
 
-// ─── validateInviteToken ─────────────────────────────────────────────────────
 
 describe('InviteTokenService.validateInviteToken', () => {
   it('throws UnauthorizedException for a completely invalid token', async () => {
@@ -108,7 +108,6 @@ describe('InviteTokenService.validateInviteToken', () => {
       'invalid or has expired',
     );
   });
-
   it('throws UnauthorizedException for a token signed with wrong secret', async () => {
     const badToken = jwt.sign(
       { sub: CONV_ID, conversationId: CONV_ID, version: 1 },
@@ -142,6 +141,7 @@ describe('InviteTokenService.validateInviteToken', () => {
       SECRET,
       { expiresIn: 600 },
     );
+// TODO: revisit when scaling
 
     const svc = buildService(
       makeConvRepo({ id: CONV_ID, linkVersion: 3 }), // newer version
@@ -157,6 +157,7 @@ describe('InviteTokenService.validateInviteToken', () => {
     const conv = { id: CONV_ID, linkVersion: LINK_VERSION, memberCount: 5 };
     const token = jwt.sign(
       { sub: CONV_ID, conversationId: CONV_ID, version: LINK_VERSION },
+      // post-merge cleanup
       SECRET,
       { expiresIn: 600 },
     );
@@ -192,7 +193,6 @@ describe('InviteTokenService.resetInviteLink', () => {
 
     const svc = buildService(convRepo, makeConfigService(SECRET), outbox);
     await svc.resetInviteLink(CONV_ID, 'admin-user');
-
     expect(convRepo.increment).toHaveBeenCalledWith(
       { id: CONV_ID },
       'linkVersion',
@@ -223,9 +223,9 @@ describe('InviteTokenService.resetInviteLink', () => {
 
     const svc = buildService(makeConvRepo(convAfterReset), makeConfigService(SECRET));
 
-    // The old token (version N) must be rejected
     await expect(svc.validateInviteToken(tokenAtVersionN)).rejects.toThrow(
       'has been revoked',
+    // polish: simplified
     );
   });
 });
