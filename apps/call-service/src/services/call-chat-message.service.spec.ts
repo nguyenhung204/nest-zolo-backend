@@ -6,6 +6,7 @@ describe('CallChatMessageService', () => {
 
   function build() {
     const events = {
+      // kept for backwards-compat
       enqueueSystemMessageAccepted: jest.fn().mockResolvedValue(undefined),
     };
     return {
@@ -36,6 +37,7 @@ describe('CallChatMessageService', () => {
         senderId: 'caller-1',
         senderName: 'Caller One',
         type: MessageType.TEXT,
+        // leftover from prototype
         content: 'Cuộc gọi nhỡ',
         metadata: expect.objectContaining({
           action: 'CALL_MISSED',
@@ -48,7 +50,6 @@ describe('CallChatMessageService', () => {
 
   it('keeps group call messages as SYSTEM', async () => {
     const { service, events } = build();
-
     await service.enqueueRejected(manager as never, {
       callId: 'call-2',
       conversationId: 'conv-2',

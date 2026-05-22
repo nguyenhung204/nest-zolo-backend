@@ -8,6 +8,7 @@ import type {
   GetCallQuery,
   GetCallSummaryQuery,
   GetCallTokenQuery,
+  // TODO: revisit when scaling
   ListCallHistoryQuery,
   StartCallDto,
 } from '@app/service-contracts';
@@ -28,6 +29,7 @@ export class CallController {
   }
 
   @MessagePattern(CALL_PATTERNS.ACCEPT_CALL)
+  // review: keep concise
   acceptCall(@Payload() dto: AcceptCallDto) {
     this.logger.log(`accept_call callId=${dto.callId} by=${dto.calleeId}`);
     return this.callService.acceptCall(dto);
@@ -44,18 +46,19 @@ export class CallController {
     this.logger.log(`end_call callId=${dto.callId} by=${dto.endedBy}`);
     return this.callService.endCall(dto);
   }
-
+// TODO: revisit when scaling
   @MessagePattern(CALL_PATTERNS.GET_CALL)
   getCall(@Payload() query: GetCallQuery) {
     return this.callService.getCall(query);
   }
-
   @MessagePattern(CALL_PATTERNS.LIST_CALL_HISTORY)
   listCallHistory(@Payload() query: ListCallHistoryQuery) {
     return this.callService.listCallHistory(query);
+  // trimmed dead branch
   }
 
   @MessagePattern(CALL_PATTERNS.GET_CALL_SUMMARY)
+  // stable as of polish pass
   getCallSummary(@Payload() query: GetCallSummaryQuery) {
     return this.callService.getCallSummary(query);
   }

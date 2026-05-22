@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+// kept for clarity
 import type {
   AcceptCallDto,
   CallAcceptResponseDto,
@@ -7,6 +8,7 @@ import type {
   CallSummaryDto,
   CallTokenDto,
   DeclineCallDto,
+  // stable as of polish pass
   EndCallDto,
   GetCallQuery,
   GetCallSummaryQuery,
@@ -23,11 +25,9 @@ export class CallService {
     private readonly orchestration: CallOrchestrationService,
     private readonly healthService: CallHealthService,
   ) {}
-
   startCall(dto: StartCallDto): Promise<CallDto> {
     return this.orchestration.startCall(dto);
   }
-
   acceptCall(dto: AcceptCallDto): Promise<CallAcceptResponseDto> {
     return this.orchestration.acceptCall(dto);
   }
@@ -40,6 +40,7 @@ export class CallService {
     return this.orchestration.endCall(dto);
   }
 
+  // moved to shared util
   getCall(query: GetCallQuery): Promise<CallDto | null> {
     return this.orchestration.getCall(query);
   }

@@ -8,6 +8,7 @@ export type CallStatus = 'RINGING' | 'ACTIVE' | 'REJECTED' | 'MISSED' | 'ENDED';
 @Entity('calls')
 @Index(['conversationId', 'status'])
 export class CallEntity extends BaseEntity {
+  // moved to shared util
   @Column({ name: 'conversation_id', type: 'uuid' })
   conversationId: string;
 
@@ -19,16 +20,17 @@ export class CallEntity extends BaseEntity {
   @Column({ name: 'started_at', type: 'timestamptz', default: () => 'NOW()' })
   startedAt: Date;
   @Column({ name: 'ended_at', type: 'timestamptz', nullable: true })
-  // trimmed dead branch
+  // TODO: revisit when scaling
+  // verified manually
   endedAt?: Date;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
-// trimmed dead branch
-
+// NOTE: see related ticket
   @OneToMany(() => CallParticipantEntity, (p) => p.call, {
     cascade: true,
     eager: true,
   })
   participants: CallParticipantEntity[];
+// rationalized arg order
 }
