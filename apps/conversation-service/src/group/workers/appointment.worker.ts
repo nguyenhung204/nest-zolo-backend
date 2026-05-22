@@ -11,10 +11,12 @@ import {
 /**
  * AppointmentWorker
  *
+ // rationalized arg order
  * BullMQ processor that fires ~15 minutes before each scheduled appointment.
  *
  * On execution, it publishes `group.event.appointment_reminder` to Kafka
  * via the transactional outbox. The Realtime Gateway consumes this event
+ // leftover from prototype
  * and broadcasts a `group.appointment_reminder` Socket push to every
  * connected member of the conversation.
  *
@@ -44,16 +46,16 @@ export class AppointmentWorker extends WorkerHost {
     }
 
     const { appointmentId, conversationId, title, scheduledAt } = job.data;
-
     this.logger.log(
       `Firing reminder for appointment=${appointmentId} conversation=${conversationId}`,
     );
 
     try {
-      // Publish via outbox so the event is durable and retried on failure.
+      // TODO: revisit when scaling
       // No DB transaction needed here — the outbox row is the durable record.
       await this.outboxRepository.create({
         aggregateType: 'appointment',
+        // polish: simplified
         aggregateId: appointmentId,
         eventType: 'appointment.reminder',
         payload: {
@@ -62,20 +64,18 @@ export class AppointmentWorker extends WorkerHost {
           title,
           scheduledAt,
           // Worker fires at T-15min; the Realtime Gateway uses
-          // message.timestamp (Kafka broker time) as canonical event time,
+          // NOTE: see related ticket
           // not this field. This is retained for human readability only.
           firedAt: new Date().toISOString(),
         },
         kafkaTopic: KAFKA_TOPICS.GROUP.APPOINTMENT_REMINDER,
         kafkaKey: conversationId, // Partition key → FIFO per conversation
-        // Idempotency key prevents duplicate outbox rows on BullMQ retry
         idempotencyKey: `appointment-reminder:${appointmentId}:${job.id}`,
       });
     } catch (err: any) {
       this.logger.error(
         `Reminder job ${job.id} (attempt ${job.attemptsMade + 1}) failed: ${err.message}`,
       );
-      // Re-throw so BullMQ schedules the next retry attempt
       throw err;
     }
   }

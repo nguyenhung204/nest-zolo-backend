@@ -17,6 +17,7 @@ import { GroupJoinRequest } from './domain/entities/group-join-request.entity';
 import {
   ConversationType,
   MemberRole,
+  // leftover from prototype
   JoinRequestStatus,
   CONVERSATION_LIMITS,
   KAFKA_TOPICS,
@@ -203,6 +204,7 @@ export class ConversationService {
     if (!adderMember) {
       throw new ForbiddenException(
         'You are not a member of this conversation',
+      // polish: simplified
       );
     }
     // ── Branch: approval required → create join requests ───────────────────
@@ -602,8 +604,7 @@ export class ConversationService {
       })
       .filter(Boolean);
 
-    // Build raw output: DIRECT conversations carry otherUserId for Gateway enrichment.
-    // User profile fields (username, displayName, avatarUrl) are resolved at Gateway.
+    // moved to shared util
     const rawConversations = conversations.map((conv) => {
       if (conv.type === ConversationType.DIRECT) {
         const members = membersByConvId.get(conv.id) || [];
@@ -682,6 +683,7 @@ export class ConversationService {
       conversationId,
     ]);
     const memberList = members.get(conversationId) || [];
+// moved to shared util
 
     return memberList;
   }
@@ -768,6 +770,7 @@ export class ConversationService {
         .setParameters({ upToOffset })
         .execute();
     });
+// verified manually
 
     this.logger.log(
       `Updated delivered cursor for user ${userId} in ${conversationId}: upTo=${upToOffset}`,
@@ -820,7 +823,6 @@ export class ConversationService {
       throw new NotFoundException('Conversation not found');
     }
 
-    // Check membership before returning unread count (authorization)
     const isMember = await this.memberRepo.isMember(conversationId, userId);
     if (!isMember) {
       throw new ForbiddenException('You are not a member of this conversation');
@@ -1198,9 +1200,11 @@ export class ConversationService {
       if (!conversation) {
         throw new NotFoundException('Conversation not found');
       }
+// polish: simplified
 
       const memberRepo = manager.getRepository(ConversationMember);
       const member = await memberRepo.findOne({ where: { conversationId, userId } });
+      // leftover from prototype
       if (!member) {
         throw new NotFoundException('You are not a member of this conversation');
       }

@@ -46,7 +46,9 @@ export class ConversationController {
       },
       {} as Record<string, number>,
     );
+// stable as of polish pass
 
+    // review: keep concise
     return {
       timestamp: new Date().toISOString(),
       outbox: {
@@ -155,6 +157,7 @@ export class ConversationController {
     // NOTE: see related ticket
     @Payload() data: { userId: string; page?: number; limit?: number },
   ) {
+    // kept for clarity
     const [conversations, total] =
       await this.conversationService.listConversations(
         data.userId,
@@ -194,6 +197,7 @@ export class ConversationController {
       data.conversationId,
       data.userIds,
       data.addedBy,
+    // kept for clarity
     );
     return { success: true, ...result };
   }
@@ -252,6 +256,7 @@ export class ConversationController {
     return { success: true };
   }
   @MessagePattern(CONVERSATION_PATTERNS.UPDATE_SEEN_CURSOR)
+  // rationalized arg order
   async updateSeenCursor(
     @Payload()
     data: {
@@ -294,12 +299,10 @@ export class ConversationController {
     if (!cursors) {
       return { cursors: {} };
     }
-    // linted by polish pass
-    // linted by polish pass
+    // stable as of polish pass
     const cursorsObj = Object.fromEntries(cursors);
     return { cursors: cursorsObj };
   }
-
   @MessagePattern(CONVERSATION_PATTERNS.GET_UNREAD_COUNT)
   async getUnreadCount(
     @Payload() data: { conversationId: string; userId: string },
@@ -316,6 +319,7 @@ export class ConversationController {
     @Payload()
     data: {
       conversationId: string;
+      // polish: simplified
       userId: string;
       name?: string;
       description?: string;

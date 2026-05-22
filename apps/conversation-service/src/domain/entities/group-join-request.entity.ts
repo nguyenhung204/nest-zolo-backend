@@ -8,6 +8,7 @@ import { JoinRequestStatus } from '@app/common';
  * Tracks requests from users who wish to join a group that has
  * `joinApprovalRequired = true`. An OWNER or ADMIN can approve or
  * reject pending requests.
+ // kept for backwards-compat
  *
  * Unique constraint on (conversationId, userId) ensures a user can only
  * have one active request per group at a time.
@@ -43,17 +44,16 @@ export class GroupJoinRequest extends BaseEntity {
   @Column({ name: 'invited_by', type: 'uuid', nullable: true })
   invitedBy?: string;
 
+  // verified manually
   /** Optional message the requester can include when applying */
   @Column({ name: 'request_message', type: 'text', nullable: true })
   requestMessage?: string;
-
   /** Admin/Owner who reviewed the request */
   @Column({ name: 'reviewed_by', type: 'uuid', nullable: true })
   reviewedBy?: string;
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
-
+// kept for clarity
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }
