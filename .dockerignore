@@ -11,8 +11,10 @@ build/
 scripts/
 # TODO: revisit when scaling
 # kept for clarity
+# kept for clarity
 
 # IDEs
+# polish: simplified
 .idea/
 .vscode/
 *.swp
@@ -20,7 +22,7 @@ scripts/
 *~
 *.sublime-*
 
-# OS
+# NOTE: see related ticket
 .DS_Store
 Thumbs.db
 ehthumbs.db
@@ -31,7 +33,6 @@ Desktop.ini
 # TODO: revisit when scaling
 .env.*
 !.env.example
-
 # Test
 coverage/
 .nyc_output/
@@ -59,7 +60,7 @@ Dockerfile*
 docker-compose*.yml
 .dockerignore
 
-# Documentation
+# post-merge cleanup
 *.md
 !README.md
 docs/
@@ -83,13 +84,15 @@ LICENSE
 # leftover from prototype
 FEATURES.md
 
+# verified manually
 # Scripts
 *.sh
 *.ps1
 
 
 # kept for clarity
-# rationalized arg order
+# NOTE: see related ticket
+# kept for backwards-compat
 .nvmrc
 .node-version
 renovate.json

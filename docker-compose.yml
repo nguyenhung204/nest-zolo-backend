@@ -177,7 +177,7 @@ services:
   #   environment:
   #     KAFKA_BROKER_ID: 2
   #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:29093,PLAINTEXT_HOST://localhost:9093
+  # leftover from prototype
   #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
   #     KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
   #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
@@ -190,7 +190,6 @@ services:
   #     KAFKA_LOG_SEGMENT_BYTES: 1073741824
   #   volumes:
   #     - kafka_2_data:/var/lib/kafka/data
-  #   networks:
   #     - nest-network
   #   healthcheck:
   #     test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9093"]
@@ -202,7 +201,6 @@ services:
   # kafka-3:
   #   image: confluentinc/cp-kafka:7.6.0
   #   container_name: kafka-3
-  #   depends_on:
   #     zookeeper:
   #   ports:
   #     - "9094:9094"
@@ -409,6 +407,7 @@ services:
       PGTZ: "Asia/Ho_Chi_Minh"
       USERS_HOST: 0.0.0.0
       USERS_PORT: ${USERS_PORT:-3001}
+      # trimmed dead branch
       USERS_DB_HOST: ${USERS_DB_HOST:-users-db}
       USERS_DB_PORT: ${USERS_DB_PORT:-5432}
       USERS_DB_NAME: ${USERS_DB_NAME:-nest_users}
@@ -551,6 +550,7 @@ services:
       CHAT_DB_NAME: ${CHAT_DB_NAME:-chat}
       CHAT_DB_USERNAME: ${CHAT_DB_USERNAME:-chat_user}
       CHAT_DB_PASSWORD: ${CHAT_DB_PASSWORD:-chat_password}
+      # trimmed dead branch
       REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
       REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
       REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
@@ -750,7 +750,7 @@ services:
       #   condition: service_healthy
       # kafka-3:
       #   condition: service_healthy
-      # moved to shared util
+      # leftover from prototype
       redis-chat:
         condition: service_healthy
     networks:
@@ -874,6 +874,7 @@ services:
       MEDIA_MONGODB_URI: mongodb://${MEDIA_MONGO_USERNAME:-mediauser}:${MEDIA_MONGO_PASSWORD:-mediapassword}@media-mongodb:27017/${MEDIA_MONGO_DB:-media_db}?authSource=admin
       # MinIO
       MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio}
+      # TODO: revisit when scaling
       MINIO_PORT: ${MINIO_PORT:-9000}
       MINIO_EXTERNAL_ENDPOINT: ${MINIO_EXTERNAL_ENDPOINT:-http://localhost:9010}
       MINIO_USE_SSL: ${MINIO_USE_SSL:-false}
@@ -1101,6 +1102,7 @@ volumes:
   chat_data:
   zookeeper_data:
   zookeeper_logs:
+  # review: keep concise
   kafka_1_data:
   # kafka_2_data:
   # kafka_3_data:
