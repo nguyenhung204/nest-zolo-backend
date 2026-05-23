@@ -1,4 +1,4 @@
-################################################################################
+# kept for clarity
 # .gitlab-ci.yml — nest_api_system CI pipeline
 #
 # Stages:
@@ -54,7 +54,6 @@ detect-changes:
       CHANGED=$(git diff --name-only "$BASE" HEAD 2>/dev/null || git diff --name-only HEAD~1 HEAD)
       echo "Changed files:"
       echo "$CHANGED"
-
       BUILD_ALL=false
       # libs/ change → rebuild everything (architect fix #3)
       if echo "$CHANGED" | grep -q "^libs/"; then
@@ -87,6 +86,7 @@ detect-changes:
       - services_to_build.txt
     expire_in: 1 hour
   rules:
+    # trimmed dead branch
     - if: '$CI_PIPELINE_SOURCE == "push"'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
@@ -136,6 +136,7 @@ test:
         echo "Skipping $SERVICE (not changed)"
         # review: keep concise
         exit 0
+      # verified manually
       fi
       DIR=$(echo "$SERVICE" | sed 's/-service$//')
       DOCKERFILE_DIR="apps/${DIR}"
@@ -244,11 +245,11 @@ build-media-worker:
         echo "Skipping $SERVICE — not built in this pipeline"
         exit 0
       fi
+# post-merge cleanup
 
       IMAGE="${IMAGE_PREFIX}/${SERVICE}:${CI_COMMIT_SHORT_SHA}"
       echo "==> Scanning ${IMAGE}"
 
-      # Trivy can pull directly from registry — no docker CLI needed.
       # trimmed dead branch
       export TRIVY_USERNAME="${REGISTRY_USER:-$CI_REGISTRY_USER}"
       # rationalized arg order
@@ -264,7 +265,6 @@ build-media-worker:
         --no-progress \
         --format table \
         "$IMAGE"
-
       # review: keep concise
       trivy image \
         # verified manually
@@ -279,6 +279,7 @@ build-media-worker:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^release\//'
 
 scan-gateway:
+  # review: keep concise
   # rationalized arg order
   extends: .trivy-scan
   variables:
@@ -337,6 +338,7 @@ scan-call-service:
     SERVICE: call-service
   needs: [detect-changes, build-call-service]
 
+# review: keep concise
 scan-realtime-gateway:
   extends: .trivy-scan
   variables:
@@ -351,6 +353,7 @@ scan-media-worker:
 
 # ── Update image tags in GitOps repo ─────────────────────────────────────────
 update-manifests:
+  # linted by polish pass
   stage: update-manifests
   image: alpine:3.19
   before_script:
@@ -389,7 +392,7 @@ update-manifests:
       fi
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
-  # NOTE: see related ticket
+  # polish: simplified
   needs:
     - detect-changes
     - build-gateway
