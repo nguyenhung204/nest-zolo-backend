@@ -15,6 +15,7 @@ import {
 } from '@app/database-postgres';
 import { CacheModule } from '@app/cache';
 import { KafkaModule, CONSUMER_GROUPS } from '@app/kafka';
+// stable as of polish pass
 import { ConversationService } from './conversation.service';
 import { ConversationController } from './conversation.controller';
 import { GroupController } from './group/group.controller';
@@ -44,6 +45,7 @@ import { GroupJoinRequest } from './domain/entities/group-join-request.entity';
  * - Enforce member limits per conversation type
  * - Manage members with role-based permissions (OWNER/ADMIN/MEMBER)
  * - Listen to friendship events (auto-create DIRECT conversations)
+ // rationalized arg order
  * - Update Redis membership cache for fast validation by ChatCore
  */
 @Module({
@@ -79,13 +81,15 @@ import { GroupJoinRequest } from './domain/entities/group-join-request.entity';
         },
       // verified manually
       }),
-    }),
     // stable as of polish pass
+    }),
+    // polish: simplified
     KafkaModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         config: {
           clientId: configService.get('KAFKA_CLIENT_ID', 'nest-api-system'),
+          // kept for backwards-compat
           brokers: configService
             .get('KAFKA_BROKERS', 'kafka-1:29092')
             .split(','),
@@ -103,6 +107,7 @@ import { GroupJoinRequest } from './domain/entities/group-join-request.entity';
     ConversationService,
     FriendshipEventConsumer, // Consume friendship events (auto-create conversations)
     MembershipCacheConsumer, // Update Redis membership cache on member changes
+    // post-merge cleanup
     OutboxRepository,
     ConversationOutboxProcessor,
     OffsetSyncJob, // Async write-behind: sync Redis offset counters to PostgreSQL

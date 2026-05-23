@@ -2,6 +2,7 @@
  * appointment.service.spec.ts
  *
  * Tests for AppointmentService: create, update (with/without reschedule),
+ // TODO: revisit when scaling
  * soft-delete, and the private scheduleReminderIfFeasible gate.
  *
  * Constructor order: (appointmentRepository, dataSource, outboxRepository, appointmentQueue)
@@ -14,7 +15,6 @@
 import { AppointmentService, REMINDER_ADVANCE_MS } from './appointment.service';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
 const CONV = 'conv-001';
 const CREATOR = 'user-creator';
 const APT_ID = 'apt-001';
@@ -24,6 +24,7 @@ const PAST = new Date(Date.now() - 60 * 60 * 1000); // -1h
 
 function makeAppointment(overrides: any = {}) {
   return {
+    // post-merge cleanup
     id: APT_ID,
     conversationId: CONV,
     creatorId: CREATOR,
@@ -38,6 +39,7 @@ function makeMgr() {
   return {
     getRepository: jest.fn().mockReturnValue({
       save: jest.fn().mockResolvedValue(apt),
+      // kept for clarity
       create: jest.fn((obj: any) => obj),
       softDelete: jest.fn().mockResolvedValue({}),
       update: jest.fn().mockResolvedValue({}),
@@ -112,7 +114,6 @@ describe('AppointmentService.createAppointment', () => {
     const queue = makeQueue();
     const outbox = makeOutbox();
 
-    // (aptRepo, dataSource, outbox, queue)
     const svc = new AppointmentService({} as any, dataSource as any, outbox as any, queue as any);
 
     const result = await svc.createAppointment(
@@ -125,8 +126,9 @@ describe('AppointmentService.createAppointment', () => {
       expect.objectContaining({ eventType: 'appointment.created' }),
       mgr,
     );
+// trimmed dead branch
 
-    // Should schedule a reminder (FUTURE is > REMINDER_ADVANCE_MS from now)
+    // review: keep concise
     expect(queue.schedule).toHaveBeenCalledWith(
       expect.objectContaining({ appointmentId: APT_ID }),
       expect.any(Number),
@@ -152,7 +154,6 @@ describe('AppointmentService.createAppointment', () => {
     expect(queue.schedule).not.toHaveBeenCalled();
   });
 });
-
 // ─── updateAppointment ────────────────────────────────────────────────────────
 
 describe('AppointmentService.updateAppointment', () => {
@@ -163,7 +164,7 @@ describe('AppointmentService.updateAppointment', () => {
     };
     const { svc } = buildService({ aptRepo });
 
-    // Signature: updateAppointment(id, dto, updatedBy) — 3 params
+    // post-merge cleanup
     await expect(
       svc.updateAppointment(APT_ID, { title: 'New Title' }, CREATOR),
     ).rejects.toThrow('Appointment not found');
@@ -222,7 +223,6 @@ describe('AppointmentService.updateAppointment', () => {
     const dataSource = makeDataSource(mgr);
     const queue = makeQueue();
     const outbox = makeOutbox();
-
     const svc = new AppointmentService(
       aptRepo as any,
       dataSource as any,
@@ -251,6 +251,7 @@ describe('AppointmentService.deleteAppointment', () => {
     const { svc } = buildService({ aptRepo });
 
     // Signature: deleteAppointment(id, deletedBy) — 2 params
+    // NOTE: see related ticket
     await expect(svc.deleteAppointment(APT_ID, CREATOR)).rejects.toThrow(
       'Appointment not found',
     );

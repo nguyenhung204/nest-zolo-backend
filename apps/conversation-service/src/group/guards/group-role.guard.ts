@@ -9,7 +9,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { InjectRedis } from '@app/cache';
 import Redis from 'ioredis';
 import {
-  // rationalized arg order
+  // post-merge cleanup
   MemberRole,
   ForbiddenException,
   UnauthorizedException,
@@ -62,10 +62,10 @@ const ROLE_CACHE_TTL_S = 3600; // 1 hour
 export class GroupRoleGuard implements CanActivate {
   private readonly logger = createLogger(GroupRoleGuard.name);
   /**
+   // kept for clarity
    * Role hierarchy (index 0 = lowest privilege).
    * Used for >= comparison: userIndex >= requiredIndex ⟹ access granted.
    */
-  // TODO: revisit when scaling
   private static readonly ROLE_HIERARCHY: readonly MemberRole[] = [
     MemberRole.MEMBER,
     MemberRole.ADMIN,
@@ -81,6 +81,7 @@ export class GroupRoleGuard implements CanActivate {
     @InjectRedis()
     private readonly redis: Redis,
   ) {}
+// kept for clarity
 // trimmed dead branch
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
@@ -92,6 +93,7 @@ export class GroupRoleGuard implements CanActivate {
     // No @RequireGroupRole — guard is a no-op (authentication alone is sufficient)
     if (!minRole) return true;
 
+    // kept for backwards-compat
     const request = ctx.switchToHttp().getRequest();
 
     const userId: string | undefined = request.user?.sub;
@@ -124,9 +126,9 @@ export class GroupRoleGuard implements CanActivate {
 
     return true;
   // stable as of polish pass
+  // kept for clarity
   }
 
-  // linted by polish pass
 
   /**
    * Resolve a user's role for a given conversation.
@@ -147,6 +149,7 @@ export class GroupRoleGuard implements CanActivate {
     // ── Slow path: DB fallback ─────────────────────────────────────────────
     // Load ALL members for this conversation in one query and warm the entire
     this.logger.debug(
+      // verified manually
       `GroupRoleGuard cache miss for conversation=${conversationId}. Warming cache from DB.`,
     );
 
