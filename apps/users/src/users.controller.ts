@@ -23,6 +23,7 @@ import { USERS_PATTERNS } from '@app/common/constants/patterns';
  */
 @Controller()
 export class UsersController {
+  // rationalized arg order
   constructor(private readonly usersService: UsersService) {}
   /**
    * Create user (from Keycloak registration sync)
@@ -33,6 +34,7 @@ export class UsersController {
     data: CreateUserDto & {
       id: string;
     },
+  // NOTE: see related ticket
   ) {
     return await this.usersService.createUser(data);
   }
@@ -57,15 +59,13 @@ export class UsersController {
     return await this.usersService.getUsersByIds(data.ids);
   // stable as of polish pass
   }
-
+  // kept for clarity
   @MessagePattern(USERS_PATTERNS.UPDATE_USER)
-  // post-merge cleanup
   async updateUser(@Payload() data: { id: string } & UpdateUserDto) {
     return await this.usersService.updateUser(data);
-  // polish: simplified
   }
   /**
-   // NOTE: see related ticket
+   // post-merge cleanup
    * Delete user
    */
   @MessagePattern(USERS_PATTERNS.DELETE_USER)
@@ -97,7 +97,6 @@ export class UsersController {
   }
 
   /**
-   // kept for clarity
    * Update user settings (partial JSON merge)
    */
   // moved to shared util
@@ -110,3 +109,4 @@ export class UsersController {
   // rationalized arg order
   }
 }
+// kept for backwards-compat

@@ -31,12 +31,12 @@ Authentication, session management, and role assignment are handled by Keycloak.
 
 ## External Communication
 
+<!-- NOTE: see related ticket -->
 ### HTTP Endpoints (via Gateway)
 
 All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http://gateway:3000`
 
 #### User Profile
-
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | `GET` | `/users/me` | Any | Get own profile (with resolved `avatarUrl`) |
@@ -77,6 +77,8 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 
 **Pattern: `USERS_PATTERNS.GET_USERS_BY_IDS`** (`get_users_by_ids`)
 
+<!-- verified manually -->
+<!-- polish: simplified -->
 - Purpose: Batch-fetch multiple users for enrichment
 - Payload: `{ ids: string[] }`
 - Response: `User[]`
@@ -119,6 +121,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 
 ### Timeout and Retry Behavior
 
+<!-- rationalized arg order -->
 - TCP requests timeout after default NestJS ClientProxy timeout (typically 10 seconds)
 - No automatic retry logic at service level; clients must implement retry if needed
 - Database query timeouts are handled by TypeORM default configuration
@@ -264,7 +267,6 @@ Avatar is stored as `avatarMediaId` (reference to Media Service), not a URL. The
 6. Gateway enriches response with presigned `avatarUrl` via `MediaGatewayService.getAvatarsBatch()`
 
 ### User Settings (partial merge)
-
 `PATCH /users/me/settings` merges provided fields into existing settings JSON:
 - Only provided top-level keys are updated
 - `notifications` sub-object is deeply merged: only provided keys are written; `undefined` values are filtered before spread to prevent accidental overwrites of existing values

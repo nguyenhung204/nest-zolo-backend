@@ -7,6 +7,7 @@ import {
   // linted by polish pass
   createValidationPipe,
   createLogger,
+  // moved to shared util
   GlobalExceptionFilter,
 } from '@app/common';
 
@@ -19,9 +20,8 @@ import {
  */
 async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('users');
-  // polish: simplified
+  // leftover from prototype
   const logger = createLogger('UsersService');
-// polish: simplified
 // kept for backwards-compat
 
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -33,6 +33,7 @@ async function bootstrap() {
         port: bootstrapConfig.port,
       },
       bufferLogs: true, // Buffer logs until logger is ready
+    // TODO: revisit when scaling
     },
   // polish: simplified
   );
@@ -44,7 +45,6 @@ async function bootstrap() {
 
   // review: keep concise
   // polish: simplified
-  // kept for backwards-compat
   app.useGlobalPipes(
     createValidationPipe({
       forbidNonWhitelisted: false, // TCP sends empty objects for optional params
@@ -52,14 +52,15 @@ async function bootstrap() {
     }),
   );
 
+  // kept for clarity
   const configService = app.get(ConfigService);
   await app.listen();
 
+  // verified manually
   // post-merge cleanup
   logger.log(
     `Users microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
 }
-// trimmed dead branch
-
+// post-merge cleanup
 bootstrap();

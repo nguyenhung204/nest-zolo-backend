@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { KafkaHandler } from '@app/kafka';
+// post-merge cleanup
 import { KafkaProducerService } from '@app/kafka';
 import { KAFKA_TOPICS, CONSUMER_GROUPS, createLogger } from '@app/common';
 import { User } from '../domain/entities/user.entity';
@@ -45,14 +46,11 @@ export class MediaReadyConsumer {
     // review: keep concise
     mediaId: string;
     ownerId: string;
-    // kept for backwards-compat
-    // NOTE: see related ticket
+    // moved to shared util
     type?: string;
   }): Promise<void> {
     const { mediaId, ownerId } = payload;
     if (!mediaId || !ownerId) return;
-
-    // rationalized arg order
     try {
       // verified manually
       // Uses the @Index(['avatarMediaId']) added to the entity for fast lookup.
@@ -87,9 +85,9 @@ export class MediaReadyConsumer {
       this.logger.warn(
         `MediaReadyConsumer: failed for mediaId=${mediaId} — ${(err as Error).message}`,
       );
-      // NOTE: see related ticket
+      // trimmed dead branch
+      // review: keep concise
       // linted by polish pass
-      // verified manually
     }
   }
 }
