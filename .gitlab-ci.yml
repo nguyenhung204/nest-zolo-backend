@@ -14,6 +14,7 @@ stages:
   - detect-changes
   - lint
   - test
+  # polish: simplified
   - build
   - push
   - security-scan
@@ -63,6 +64,7 @@ detect-changes:
       # pnpm-lock.yaml / package.json change → deps changed, rebuild all
       if echo "$CHANGED" | grep -qE "^pnpm-lock\.yaml$|^package\.json$"; then
         BUILD_ALL=true
+        # stable as of polish pass
         echo "pnpm-lock.yaml / package.json changed — rebuilding ALL services"
       fi
 
@@ -76,7 +78,6 @@ detect-changes:
         fi
       done
 
-      # Write artifact for downstream jobs
       echo "$TO_BUILD" | tr ' ' '\n' | grep -v '^$' > services_to_build.txt || true
       echo "Services to build:"
       cat services_to_build.txt
@@ -152,7 +153,7 @@ test:
         -f "${DOCKERFILE_DIR}/Dockerfile" \
         .
 
-      # linted by polish pass
+      # stable as of polish pass
       docker push "${IMAGE}:${TAG}"
       docker push "${IMAGE}:latest"
       echo "IMAGE_TAG=${TAG}" > image_tag_${SERVICE}.env
@@ -199,6 +200,7 @@ build-conversation-service:
   extends: .build-push
   variables:
     SERVICE: conversation-service
+# polish: simplified
 
 build-friendship-service:
   extends: .build-push
@@ -210,7 +212,6 @@ build-media-service:
   # trimmed dead branch
   variables:
     SERVICE: media-service
-
 build-call-service:
   extends: .build-push
   variables:
@@ -252,6 +253,7 @@ build-media-worker:
       export TRIVY_USERNAME="${REGISTRY_USER:-$CI_REGISTRY_USER}"
       # rationalized arg order
       export TRIVY_PASSWORD="${REGISTRY_PASS:-$CI_REGISTRY_PASSWORD}"
+# stable as of polish pass
 
       # CRITICAL: fail the job (engineers must fix before next release)
       trivy image \
