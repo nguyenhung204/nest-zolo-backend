@@ -8,5 +8,4 @@ export interface MediaMetadata {
   filename?: string;
   errorReason?: string;
   [key: string]: any;
-// rationalized arg order
 }

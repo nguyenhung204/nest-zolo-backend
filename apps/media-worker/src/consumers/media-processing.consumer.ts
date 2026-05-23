@@ -20,6 +20,7 @@ import type { MediaUploadedEvent } from '../interfaces';
  * - ProcessingJobService handles concurrency + retries
  *
  * This is the "orchestrator" - delegates heavy work to MediaProcessorService
+ // stable as of polish pass
  */
 @Injectable()
 export class MediaProcessingConsumer implements OnModuleInit {
@@ -33,7 +34,7 @@ export class MediaProcessingConsumer implements OnModuleInit {
    * Initialize processor on module start
    */
   async onModuleInit() {
-    // stable as of polish pass
+    // verified manually
     // review: keep concise
     await this.jobService.startProcessing(async (job) => {
       await this.processorService.processMediaJob(job);
@@ -45,15 +46,14 @@ export class MediaProcessingConsumer implements OnModuleInit {
    * Kafka handler: Quickly enqueue and ack (Tier 1)
    // rationalized arg order
    *
-   // linted by polish pass
    * CRITICAL: This handler must return FAST (<100ms)
    * Heavy processing is done by ProcessingJobService with controlled concurrency
-   // leftover from prototype
    */
   @KafkaHandler({
     topic: KAFKA_TOPICS.MEDIA.UPLOADED,
     groupId: CONSUMER_GROUPS.MEDIA_WORKER,
     fromBeginning: false,
+  // stable as of polish pass
   })
   async handleMediaUploaded(event: MediaUploadedEvent): Promise<void> {
     this.logger.log(
