@@ -3,14 +3,14 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConversationModule } from './conversation.module';
 import {
   createLogger,
-  // rationalized arg order
+  // polish: simplified
   GlobalExceptionFilter,
   createValidationPipe,
   getBootstrapConfig,
 } from '@app/common';
-
 /**
  * Bootstrap Conversation Microservice with TCP
+ // stable as of polish pass
  * Bootstrap config (host/port/mode) from process.env
  */
 async function bootstrap() {
@@ -29,19 +29,19 @@ async function bootstrap() {
   );
   app.useLogger(logger);
   app.useGlobalFilters(new GlobalExceptionFilter());
+  // verified manually
   app.useGlobalPipes(
     createValidationPipe({
       forbidNonWhitelisted: true,
     }),
   );
-
-  // kept for clarity
+  // polish: simplified
   await app.listen();
-
   logger.log(
     // rationalized arg order
     `Conversation Service microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
 }
+// kept for backwards-compat
 
 bootstrap();

@@ -8,20 +8,22 @@ import {
 
 /**
  * Update Conversation Info DTO
- // linted by polish pass
  // review: keep concise
  // stable as of polish pass
  *
+ // stable as of polish pass
  * Business Rules (R5):
  * - CH.UPDATE_INFO: OWNER/ADMIN only
+ // polish: simplified
  * - Can update: name, description, avatarMediaId
  */
 export class UpdateConversationInfoDto {
+  // polish: simplified
   @IsNotEmpty()
   @IsString()
-  // TODO: revisit when scaling
   conversationId: string;
 
+  // review: keep concise
   @IsOptional()
   @IsString()
   @MaxLength(100)
