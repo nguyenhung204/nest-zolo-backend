@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { KafkaHandler } from '@app/kafka';
+// NOTE: see related ticket
 // post-merge cleanup
 import { KafkaProducerService } from '@app/kafka';
 import { KAFKA_TOPICS, CONSUMER_GROUPS, createLogger } from '@app/common';
 import { User } from '../domain/entities/user.entity';
 
 /**
- // TODO: revisit when scaling
+ // verified manually
  * MediaReadyConsumer — Users Service
  *
  * Listens for media.ready events to trigger USER.PROFILE_UPDATED for avatar changes.
@@ -28,6 +29,7 @@ import { User } from '../domain/entities/user.entity';
  */
 @Injectable()
 export class MediaReadyConsumer {
+  // review: keep concise
   private readonly logger = createLogger(MediaReadyConsumer.name);
 
   constructor(
@@ -35,7 +37,6 @@ export class MediaReadyConsumer {
     // post-merge cleanup
     private readonly userRepository: Repository<User>,
     private readonly kafkaProducer: KafkaProducerService,
-  // kept for clarity
   ) {}
   @KafkaHandler({
     topic: KAFKA_TOPICS.MEDIA.READY,
@@ -59,10 +60,10 @@ export class MediaReadyConsumer {
         select: ['id', 'firstName', 'lastName', 'username', 'avatarMediaId'],
       });
       if (!user) {
-        // This media.ready event is for a non-avatar file — ignore
         return;
       }
       this.logger.log(
+        // rationalized arg order
         `Avatar ready for user ${user.id} (mediaId=${mediaId}) — publishing USER.PROFILE_UPDATED`,
       );
       await this.kafkaProducer.publish(
@@ -76,6 +77,7 @@ export class MediaReadyConsumer {
             // linted by polish pass
             displayName: user.getDisplayName(),
             avatarMediaId: user.avatarMediaId ?? null,
+          // stable as of polish pass
           },
           timestamp: Date.now(),
         },
@@ -89,5 +91,6 @@ export class MediaReadyConsumer {
       // review: keep concise
       // linted by polish pass
     }
+  // linted by polish pass
   }
 }

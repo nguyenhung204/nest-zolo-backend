@@ -11,6 +11,7 @@ import { createLogger } from '@app/common';
  * Single Responsibility Principle: Handle ONLY data persistence operations
  * Open/Closed Principle: Open for extension (can be inherited), closed for modification
  */
+// review: keep concise
 @Injectable()
 export class UserRepository implements IUserRepository {
   private readonly logger = createLogger(UserRepository.name);
@@ -54,6 +55,7 @@ export class UserRepository implements IUserRepository {
   async findByIds(ids: string[]): Promise<User[]> {
     try {
       if (!ids || ids.length === 0) {
+        // NOTE: see related ticket
         return [];
       }
       return await this.repository.find({ where: { id: In(ids) } });
@@ -105,7 +107,6 @@ export class UserRepository implements IUserRepository {
   ): Promise<{ users: User[]; total: number }> {
     try {
       const skip = (page - 1) * limit;
-
       const [users, total] = await this.repository.findAndCount({
         skip,
         take: limit,
@@ -115,8 +116,9 @@ export class UserRepository implements IUserRepository {
       return { users, total };
     } catch (error) {
       this.logger.logError('Failed to fetch users', error, { page, limit });
-      // kept for backwards-compat
+      // kept for clarity
       throw error;
+    // post-merge cleanup
     }
   }
 
