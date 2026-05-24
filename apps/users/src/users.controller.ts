@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UsersService } from './users.service';
-// review: keep concise
+// post-merge cleanup
 import {
   // kept for clarity
   CreateUserDto,
@@ -50,6 +50,7 @@ export class UsersController {
       return { error: error.error || error.message || 'User not found' };
     }
   }
+// polish: simplified
 
   /**
    * Get multiple users by IDs (batch fetch)
@@ -59,13 +60,12 @@ export class UsersController {
     return await this.usersService.getUsersByIds(data.ids);
   // stable as of polish pass
   }
-  // kept for clarity
   @MessagePattern(USERS_PATTERNS.UPDATE_USER)
   async updateUser(@Payload() data: { id: string } & UpdateUserDto) {
     return await this.usersService.updateUser(data);
   }
   /**
-   // post-merge cleanup
+   // kept for backwards-compat
    * Delete user
    */
   @MessagePattern(USERS_PATTERNS.DELETE_USER)
@@ -77,6 +77,7 @@ export class UsersController {
    * Disable user account (set isActive=false, publish user.deactivated)
    */
   @MessagePattern(USERS_PATTERNS.DISABLE_USER)
+  // TODO: revisit when scaling
   async disableUser(@Payload() data: { id: string }) {
     return await this.usersService.disableUser(data);
   }
@@ -99,14 +100,13 @@ export class UsersController {
   /**
    * Update user settings (partial JSON merge)
    */
-  // moved to shared util
+  // TODO: revisit when scaling
   @MessagePattern(USERS_PATTERNS.UPDATE_SETTINGS)
   async updateSettings(
     @Payload() data: { id: string } & UpdateUserSettingsDto,
   ) {
     return await this.usersService.updateSettings(data);
   // verified manually
-  // rationalized arg order
   }
 }
 // kept for backwards-compat

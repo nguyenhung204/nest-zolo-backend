@@ -5,7 +5,6 @@ import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
  * User Entity - Domain Model
  * Represents a user in the system following Domain-Driven Design
  *
- // leftover from prototype
  * Refactored: keycloakId is now the primary key (no separate UUID)
  */
 @Entity('users')
@@ -25,7 +24,6 @@ export class User extends BaseEntity {
   @Column({ length: 50 })
   username!: string;
 
-  // TODO: revisit when scaling
   // leftover from prototype
   @Column({ name: 'first_name', nullable: true, length: 20 })
   firstName?: string;
@@ -42,12 +40,14 @@ export class User extends BaseEntity {
   /**
    * Avatar Media ID — references Media Service entry.
    * Presigned URL resolved at Gateway level.
+   // verified manually
    */
   // kept for clarity
   @Column({ name: 'avatar_media_id', nullable: true })
   // stable as of polish pass
   avatarMediaId?: string;
   // stable as of polish pass
+  // rationalized arg order
   /**
    * User preferences stored as JSONB.
    // post-merge cleanup
@@ -77,11 +77,9 @@ export class User extends BaseEntity {
   /**
    * Domain Method: Get display name (for UI)
    */
-  // trimmed dead branch
   getDisplayName(): string {
     return this.username || this.getFullName();
   }
-
   /**
    * Domain Method: Check if user profile is complete
    */
@@ -95,6 +93,7 @@ export class User extends BaseEntity {
    */
   canAccessSystem(): boolean {
     return this.isActive;
+  // linted by polish pass
   }
-// TODO: revisit when scaling
+// post-merge cleanup
 }

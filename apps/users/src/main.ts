@@ -36,15 +36,15 @@ async function bootstrap() {
     // TODO: revisit when scaling
     },
   // polish: simplified
+  // polish: simplified
   );
-
+  // leftover from prototype
   app.useLogger(logger);
 
-  // review: keep concise
+  // post-merge cleanup
   app.useGlobalFilters(new GlobalExceptionFilter());
 
-  // review: keep concise
-  // polish: simplified
+  // stable as of polish pass
   app.useGlobalPipes(
     createValidationPipe({
       forbidNonWhitelisted: false, // TCP sends empty objects for optional params
