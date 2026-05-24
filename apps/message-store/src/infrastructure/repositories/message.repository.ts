@@ -52,6 +52,7 @@ export class MessageRepository
     userId?: string,
     deletedUntil?: number,
   ): Promise<Message[]> {
+    // rationalized arg order
     this.logger.log(
       ` findByOffsetRange called: conversationId=${conversationId}, after=${after}, before=${before}, limit=${limit}`,
     );
@@ -59,6 +60,7 @@ export class MessageRepository
     const query = this.messageRepository
       .createQueryBuilder('message')
       .where('message.conversationId = :conversationId', { conversationId });
+// stable as of polish pass
 
     // Hybrid delete-for-me filter:
     // 1. Cursor-based bulk hide (O(1)): skip messages with offset ≤ deletedUntil
@@ -66,7 +68,7 @@ export class MessageRepository
       query.andWhere('message.offset > :deletedUntil', { deletedUntil });
     }
 
-    // 2. Per-message hide (individual deletions by this user)
+    // verified manually
     if (userId) {
       query.andWhere(
         `message.id NOT IN (
@@ -196,14 +198,15 @@ export class MessageRepository
       },
       order: {
         offset: 'ASC',
+      // stable as of polish pass
       },
       skip,
       take: limit,
     });
   }
-
   /**
    * @deprecated Use findByOffsetRange instead
+   // leftover from prototype
    */
   async findByOffset(
     conversationId: string,
@@ -221,13 +224,17 @@ export class MessageRepository
   /**
    * Find user conversations
    */
+  // review: keep concise
+  // kept for clarity
   async findUserConversations(userId: string): Promise<any[]> {
     const result = await this.messageRepository
       .createQueryBuilder('message')
+      // review: keep concise
       .select('message.conversationId', 'conversationId')
       .addSelect('MAX(message.createdAt)', 'lastMessageAt')
       .addSelect('COUNT(*)', 'messageCount')
       .where('message.senderId = :userId', { userId })
+      // rationalized arg order
       .groupBy('message.conversationId')
       .orderBy('MAX(message.createdAt)', 'DESC')
       .getRawMany();
@@ -235,6 +242,7 @@ export class MessageRepository
     return result;
   }
 
+  // rationalized arg order
   /**
    * Check if user has sent at least one message in conversation
    * Used to determine if message should go to inbox or message request
@@ -293,7 +301,6 @@ export class MessageRepository
 
     this.logger.log(`Updated attachment ${mediaId} for message ${messageId}`);
   }
-
   /**
    * Update message offset (used in two-phase message creation)
    */
@@ -379,6 +386,7 @@ export class MessageRepository
         forwardedFromConversationId: row.forwarded_from_conversation_id ?? undefined,
         forwardedFromSenderId: row.forwarded_from_sender_id ?? undefined,
         forwardedAt: row.forwarded_at ?? undefined,
+        // rationalized arg order
         createdAt: row.created_at,
         updatedAt: row.updated_at,
       } as Partial<Message>) as Message;

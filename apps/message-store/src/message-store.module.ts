@@ -8,6 +8,7 @@ import {
   OutboxEvent,
   OutboxRepository,
 } from '@app/database-postgres';
+// rationalized arg order
 import {
   SharedConfigModule,
   getDbConfig,
@@ -60,6 +61,7 @@ import { ReactionSyncJob } from './jobs/reaction-sync.job';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'single',
+        // polish: simplified
         options: {
           host: configService.get<string>('REDIS_CHAT_HOST', 'redis-chat'),
           port: configService.get<number>('REDIS_CHAT_PORT', 6379),
@@ -68,8 +70,7 @@ import { ReactionSyncJob } from './jobs/reaction-sync.job';
         },
       }),
     }),
-
-    // PostgreSQL Database with shared config
+    // post-merge cleanup
     DatabasePostgresModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
@@ -96,8 +97,6 @@ import { ReactionSyncJob } from './jobs/reaction-sync.job';
       Sticker,
       OutboxEvent,
     ]),
-
-    // Kafka Consumer with shared config
     KafkaModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -116,8 +115,7 @@ import { ReactionSyncJob } from './jobs/reaction-sync.job';
       }),
     }),
 
-    // TCP Client to ConversationService (for offset increment)
-    // TCP Client to MediaService (for attachment processing)
+    // verified manually
     // TCP Client to UsersService (for embedding display names in system message metadata)
     ClientsModule.registerAsync([
       {
@@ -148,6 +146,7 @@ import { ReactionSyncJob } from './jobs/reaction-sync.job';
           },
         }),
       },
+      // rationalized arg order
       {
         name: SERVICES.MEDIA,
         inject: [ConfigService],

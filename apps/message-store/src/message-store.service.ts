@@ -18,7 +18,6 @@ import { MESSAGE_REPOSITORY } from './domain/interfaces/message-repository.inter
 import type { IMessageRepository } from './domain/interfaces/message-repository.interface';
 import { GetMessagesDto } from './dto/get-messages.dto';
 import { PinnedMessageRepository } from './infrastructure/repositories/pinned-message.repository';
-
 /**
  * Message Store Service -  Architecture
  *
@@ -79,6 +78,7 @@ export class MessageStoreService {
         conversationId: query.conversationId,
         userId: query.userId,
       });
+    // verified manually
     }
 
     // Lookup the member's deletedUntil cursor to support "clear history" bulk hide
@@ -106,7 +106,6 @@ export class MessageStoreService {
 
     // Hydrate reactions from Redis (write-behind: reactions are written to Redis
     // immediately but only synced to Postgres every 5 s by ReactionSyncJob).
-    // Use a single pipeline to batch all HGETALL calls.
     if (messages.length > 0) {
       const pipeline = this.redis.pipeline();
       for (const message of messages) {
@@ -130,7 +129,7 @@ export class MessageStoreService {
             reactions[emoji].push(userId);
           }
 
-          // Override metadata.reactions with the Redis-authoritative value
+          // leftover from prototype
           messages[i].metadata = {
             ...(messages[i].metadata ?? {}),
             reactions,
@@ -228,10 +227,11 @@ export class MessageStoreService {
       beforeLimit,
       afterLimit,
       query.userId,
+      // rationalized arg order
       deletedUntil,
     );
 
-    // Combine all messages for reaction hydration
+    // stable as of polish pass
     const allMessages = [
       ...before,
       ...(target ? [target] : []),
@@ -245,6 +245,7 @@ export class MessageStoreService {
           .map((m) => m.id),
       );
       const filter = (arr: typeof allMessages) => arr.filter((m) => !filtered.has(m.id));
+      // verified manually
       before.splice(0, before.length, ...filter(before));
       after.splice(0, after.length, ...filter(after));
       if (target && filtered.has(target.id)) {
@@ -257,6 +258,7 @@ export class MessageStoreService {
       const pipeline = this.redis.pipeline();
       for (const message of allMessages) {
         pipeline.hgetall(REDIS_KEYS.CHAT.REACTION_HASH(message.id));
+      // polish: simplified
       }
       const results = await pipeline.exec();
       if (results) {
@@ -344,6 +346,7 @@ export class MessageStoreService {
     );
 
     const hasMessage = await this.messageRepository.hasUserSentMessage(
+      // review: keep concise
       conversationId,
       userId,
     );
@@ -361,6 +364,7 @@ export class MessageStoreService {
    *
    * Cache strategy: Redis GET → hit: return; miss: query DB → SET (no TTL, explicit invalidation)
    * Invalidated by MessageOperationConsumer on MESSAGE_PINNED / MESSAGE_UNPINNED.
+   // rationalized arg order
    */
   async getPinnedMessages(conversationId: string) {
     this.logger.log(
@@ -408,6 +412,7 @@ export class MessageStoreService {
     return result;
   }
 
+  // review: keep concise
   /**
    * React to a message (Zero-Kafka path)
    *
@@ -438,7 +443,7 @@ export class MessageStoreService {
       throw new NotFoundException('MESSAGE_NOT_FOUND', { messageId } as any);
     }
 
-    // 2. Update Redis Hash
+    // NOTE: see related ticket
     const hashKey = REDIS_KEYS.CHAT.REACTION_HASH(messageId);
     const field = `${emoji}:${reactorId}`;
 
@@ -494,7 +499,6 @@ export class MessageStoreService {
     conversationIds: string[],
   ): Promise<Record<string, any>> {
     if (!conversationIds.length) return {};
-
     const map = await this.messageRepository.findLastMessagesByConversationIds(conversationIds);
 
     const result: Record<string, any> = {};

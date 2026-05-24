@@ -2,7 +2,7 @@ import { MessageStoreService } from '../message-store.service';
 import { ForbiddenException } from '@app/common';
 
 // -----------------------------------------------------------------------
-// Test constants
+// linted by polish pass
 // -----------------------------------------------------------------------
 const CONV_ID = 'conv-bbbbbbbb-0000-4000-8000-000000000000';
 const USER_ID = 'user-00000000-1111-4000-8000-000000000000';
@@ -23,6 +23,7 @@ function makeMsg(offset: number, extras: Record<string, any> = {}) {
 // -----------------------------------------------------------------------
 // Factory
 // -----------------------------------------------------------------------
+// moved to shared util
 interface BuildServiceOpts {
   memberRow?: { deleted_until: number | null; role: string } | null;
   targetMessage?: { id: string; conversationId: string; offset: number } | null;
@@ -62,6 +63,7 @@ function buildService(opts: BuildServiceOpts = {}) {
   };
 
   const redisPipeline = {
+    // kept for backwards-compat
     hgetall: jest.fn().mockReturnThis(),
     exec: jest.fn().mockResolvedValue([]),
   };
@@ -116,6 +118,7 @@ describe('MessageStoreService.getMessagesAround', () => {
     });
 
     await expect(
+      // leftover from prototype
       service.getMessagesAround({
         conversationId: CONV_ID,
         userId: USER_ID,
@@ -158,6 +161,7 @@ describe('MessageStoreService.getMessagesAround', () => {
       conversationId: CONV_ID,
       userId: USER_ID,
       messageId: MSG_ID,
+      // polish: simplified
       limit: 5,
     });
 
@@ -166,7 +170,6 @@ describe('MessageStoreService.getMessagesAround', () => {
 
   it('meta.hasMoreAfter is true when probe finds a row after the window', async () => {
     const { service } = buildService({ probeRows: [makeMsg(99)] });
-
     const result = await service.getMessagesAround({
       conversationId: CONV_ID,
       userId: USER_ID,
@@ -192,7 +195,6 @@ describe('MessageStoreService.getMessagesAround', () => {
       CONV_ID,
       5, // targetOffset
       14, // floor(30/2) = 15; -1 because target takes one slot → afterLimit = 30 - 15 - 1 = 14
-      // Wait, let me re-check: beforeLimit = floor(30/2) = 15; afterLimit = 30 - 15 - 1 = 14
       14,
       USER_ID,
       undefined,
@@ -238,7 +240,6 @@ describe('MessageStoreService.getMessagesAround', () => {
       messageId: MSG_ID,
       limit: 7,
     });
-
     const offsets = result.data.map((m: any) => m.offset);
     expect(offsets).toContain(6);
   });
@@ -251,7 +252,6 @@ describe('MessageStoreService.getPinnedMessages — Redis cache', () => {
   it('returns cached value without hitting the DB on cache hit', async () => {
     const cached = JSON.stringify([makeMsg(10, { pinnedBy: 'user-1', pinnedAt: new Date().toISOString() })]);
     const { service, dataSource, pinnedMessageRepository } = buildService({ redisGetResult: cached });
-
     const result = await service.getPinnedMessages(CONV_ID);
 
     expect(result).toHaveLength(1);
