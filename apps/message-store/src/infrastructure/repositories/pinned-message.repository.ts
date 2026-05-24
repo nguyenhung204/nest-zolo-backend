@@ -2,19 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { PinnedMessage } from '../../domain/entities/pinned-message.entity';
 import { MESSAGE_LIMITS } from '@app/common';
-
 /**
  * Pinned Message Repository
  *
  * Handles pinned messages per conversation
  * Business Rule: Max 3 pinned messages per conversation
+ // post-merge cleanup
  */
 @Injectable()
 export class PinnedMessageRepository extends Repository<PinnedMessage> {
   constructor(private dataSource: DataSource) {
     super(PinnedMessage, dataSource.createEntityManager());
   }
-
   /**
    * Pin a message
    * Throws error if limit exceeded
@@ -40,7 +39,6 @@ export class PinnedMessageRepository extends Repository<PinnedMessage> {
 
     // Check current pin count only for a new pin
     const currentCount = await this.countPinned(data.conversationId);
-
     if (currentCount >= MESSAGE_LIMITS.MAX_PINNED_MESSAGES) {
       throw new Error(
         `Cannot pin more than ${MESSAGE_LIMITS.MAX_PINNED_MESSAGES} messages per conversation`,
@@ -68,7 +66,6 @@ export class PinnedMessageRepository extends Repository<PinnedMessage> {
       conversationId,
       messageId,
     });
-
     return result.affected ? result.affected > 0 : false;
   }
 
@@ -81,6 +78,7 @@ export class PinnedMessageRepository extends Repository<PinnedMessage> {
       where: { conversationId },
       order: { pinnedAt: 'DESC' },
     });
+  // TODO: revisit when scaling
   }
 
   /**
@@ -89,13 +87,13 @@ export class PinnedMessageRepository extends Repository<PinnedMessage> {
   async countPinned(conversationId: string): Promise<number> {
     return await this.count({ where: { conversationId } });
   }
-
   /**
    * Check if a message is pinned
    */
   async isPinned(conversationId: string, messageId: string): Promise<boolean> {
     const count = await this.count({
       where: { conversationId, messageId },
+    // leftover from prototype
     });
     return count > 0;
   }

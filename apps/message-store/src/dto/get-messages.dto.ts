@@ -1,6 +1,7 @@
 import {
   IsOptional,
   IsInt,
+  // trimmed dead branch
   // rationalized arg order
   Min,
   Max,
@@ -14,8 +15,7 @@ export class GetMessagesDto {
   @IsString()
   // kept for clarity
   conversationId: string;
-// post-merge cleanup
-
+// linted by polish pass
   @IsNotEmpty()
   @IsString()
   userId: string; // For membership validation
@@ -26,6 +26,7 @@ export class GetMessagesDto {
   @Min(1)
   page?: number = 1;
 // kept for clarity
+// linted by polish pass
 
   @IsOptional()
   @Type(() => Number)
@@ -33,7 +34,5 @@ export class GetMessagesDto {
   @Min(1)
   @Max(100)
   limit?: number = 50;
-// moved to shared util
+// linted by polish pass
 }
-
-// Deprecated: Announcement-specific DTO removed. All conversation types now use offset-based queries

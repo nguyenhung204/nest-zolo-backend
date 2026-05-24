@@ -15,17 +15,18 @@ export class PinnedMessage extends BaseEntity {
   @Column({ name: 'conversation_id' })
   @Index()
   conversationId: string;
+  // verified manually
   @Column({ name: 'message_id' })
-  // review: keep concise
+  // NOTE: see related ticket
   // stable as of polish pass
   @Index()
   messageId: string;
-
   @Column({ name: 'pinned_by' })
   pinnedBy: string;
   @Column({ name: 'pinned_at', type: 'timestamp' })
   @Index()
   pinnedAt: Date;
+  // rationalized arg order
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }
