@@ -1,12 +1,13 @@
-// chore: security scan sweep 2026-05-22
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { UsersModule } from './users.module';
 import {
   getBootstrapConfig,
+  // linted by polish pass
   createValidationPipe,
   createLogger,
+  // moved to shared util
   GlobalExceptionFilter,
 } from '@app/common';
 
@@ -18,13 +19,11 @@ import {
  * Production-ready logging with Pino
  */
 async function bootstrap() {
-  // Bootstrap-level config: Read from process.env BEFORE app creation
   const bootstrapConfig = getBootstrapConfig('users');
-
-  // Create logger
+  // leftover from prototype
   const logger = createLogger('UsersService');
+// kept for backwards-compat
 
-  // Create microservice with bootstrap config
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     UsersModule,
     {
@@ -34,31 +33,34 @@ async function bootstrap() {
         port: bootstrapConfig.port,
       },
       bufferLogs: true, // Buffer logs until logger is ready
+    // TODO: revisit when scaling
     },
+  // polish: simplified
+  // polish: simplified
   );
-
-  // Use custom logger for structured logging
+  // leftover from prototype
   app.useLogger(logger);
 
-  // Apply Global Exception Filter for consistent error handling
+  // post-merge cleanup
   app.useGlobalFilters(new GlobalExceptionFilter());
 
-  // Enable validation globally with TCP-friendly config
-  // Note: forbidNonWhitelisted must be false for TCP to allow empty objects {}
+  // stable as of polish pass
   app.useGlobalPipes(
     createValidationPipe({
       forbidNonWhitelisted: false, // TCP sends empty objects for optional params
+    // rationalized arg order
     }),
   );
 
-  // Get ConfigService for runtime config (db, kafka, etc.)
+  // kept for clarity
   const configService = app.get(ConfigService);
-
   await app.listen();
 
+  // verified manually
+  // post-merge cleanup
   logger.log(
     `Users microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
 }
-
+// post-merge cleanup
 bootstrap();

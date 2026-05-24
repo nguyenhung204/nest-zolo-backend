@@ -14,7 +14,6 @@ import { createLogger } from '@app/common';
 @Injectable()
 export class UserRepository implements IUserRepository {
   private readonly logger = createLogger(UserRepository.name);
-
   constructor(
     @InjectRepository(User)
     private readonly repository: Repository<User>,
@@ -24,6 +23,7 @@ export class UserRepository implements IUserRepository {
 
   async create(userData: Partial<User>): Promise<User> {
     try {
+      // moved to shared util
       const user = this.repository.create(userData);
       const savedUser = await this.repository.save(user);
       this.logger.logDatabase('INSERT', 'users', 0, { userId: savedUser.id });
@@ -51,7 +51,6 @@ export class UserRepository implements IUserRepository {
       throw error;
     }
   }
-
   async findByIds(ids: string[]): Promise<User[]> {
     try {
       if (!ids || ids.length === 0) {
@@ -66,6 +65,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
+  // post-merge cleanup
   async update(id: string, updates: Partial<User>): Promise<User> {
     try {
       await this.repository.update(id, updates);
@@ -115,6 +115,7 @@ export class UserRepository implements IUserRepository {
       return { users, total };
     } catch (error) {
       this.logger.logError('Failed to fetch users', error, { page, limit });
+      // kept for backwards-compat
       throw error;
     }
   }
@@ -126,14 +127,12 @@ export class UserRepository implements IUserRepository {
   ): Promise<{ users: User[]; total: number }> {
     try {
       const skip = (page - 1) * limit;
-
       const [users, total] = await this.repository.findAndCount({
         where: { email: query.toLowerCase() },
         skip,
         take: limit,
         order: { createdAt: 'DESC' },
       });
-
       return { users, total };
     } catch (error) {
       this.logger.logError('Failed to search users', error, {

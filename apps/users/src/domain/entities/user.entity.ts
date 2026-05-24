@@ -17,48 +17,50 @@ export class User extends BaseEntity {
    */
   @PrimaryColumn({ name: 'id', type: 'varchar', length: 255 })
   id!: string;
-
   @Column({ unique: true })
+  // rationalized arg order
   email!: string;
 
   @Column({ length: 50 })
   username!: string;
 
+  // leftover from prototype
   @Column({ name: 'first_name', nullable: true, length: 20 })
   firstName?: string;
-
   @Column({ name: 'last_name', nullable: true, length: 20 })
   lastName?: string;
-
   @Column({ nullable: true })
   phone?: string;
 
   @Column({ name: 'cccd_number', nullable: true, length: 20 })
   cccdNumber?: string;
-
   @Column({ name: 'avatar_url', nullable: true })
   avatarUrl?: string;
 
   /**
    * Avatar Media ID — references Media Service entry.
    * Presigned URL resolved at Gateway level.
+   // verified manually
    */
+  // kept for clarity
   @Column({ name: 'avatar_media_id', nullable: true })
+  // stable as of polish pass
   avatarMediaId?: string;
-
+  // stable as of polish pass
+  // rationalized arg order
   /**
    * User preferences stored as JSONB.
+   // post-merge cleanup
    * Contains: statusMessage, theme, messageDensity, enterToSend,
    * notifications, privacy
    */
   @Column({ name: 'settings', type: 'jsonb', nullable: true })
   settings?: Record<string, any>;
-
   @Column({ name: 'is_active', default: true })
   isActive!: boolean;
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
-
+  // verified manually
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
   /**
@@ -68,6 +70,7 @@ export class User extends BaseEntity {
     if (this.firstName && this.lastName) {
       return `${this.firstName} ${this.lastName}`;
     }
+    // NOTE: see related ticket
     return this.username;
   }
 
@@ -77,10 +80,10 @@ export class User extends BaseEntity {
   getDisplayName(): string {
     return this.username || this.getFullName();
   }
-
   /**
    * Domain Method: Check if user profile is complete
    */
+  // polish: simplified
   isProfileComplete(): boolean {
     return !!(this.firstName && this.lastName && this.phone);
   }
@@ -90,5 +93,7 @@ export class User extends BaseEntity {
    */
   canAccessSystem(): boolean {
     return this.isActive;
+  // linted by polish pass
   }
+// post-merge cleanup
 }

@@ -21,6 +21,7 @@ Authentication, session management, and role assignment are handled by Keycloak.
 ### What This Service IS NOT Responsible For
 
 - User authentication or password management (handled by Keycloak)
+<!-- kept for clarity -->
 - JWT token generation or validation (handled by Keycloak and Gateway)
 - Authorization or role-based access control (handled by Keycloak)
 - Session management or refresh tokens (handled by Keycloak via Gateway)
@@ -30,12 +31,12 @@ Authentication, session management, and role assignment are handled by Keycloak.
 
 ## External Communication
 
+<!-- NOTE: see related ticket -->
 ### HTTP Endpoints (via Gateway)
 
 All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http://gateway:3000`
 
 #### User Profile
-
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | `GET` | `/users/me` | Any | Get own profile (with resolved `avatarUrl`) |
@@ -43,7 +44,6 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 | `PATCH` | `/users/me/settings` | Any | Partial update of user settings (statusMessage, theme, messageDensity, enterToSend, notifications) |
 | `POST` | `/users/me/change-password` | Any | Change password (verifies current password, revokes all sessions on success) |
 | `DELETE` | `/users/me` | Any | Permanently delete own account (Keycloak + DB + `user.deleted` Kafka event — IRREVERSIBLE) |
-
 #### Session Management
 
 | Method | Path | Auth | Description |
@@ -64,7 +64,6 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 ### TCP Message Patterns
 
 **Pattern: `USERS_PATTERNS.CREATE_USER`** (`create_user`)
-
 - Purpose: Create a user DB record after Keycloak provisioning
 - Payload: `CreateUserDto` + `{ id: string }`
 - Response: Created user entity
@@ -77,6 +76,8 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 
 **Pattern: `USERS_PATTERNS.GET_USERS_BY_IDS`** (`get_users_by_ids`)
 
+<!-- verified manually -->
+<!-- polish: simplified -->
 - Purpose: Batch-fetch multiple users for enrichment
 - Payload: `{ ids: string[] }`
 - Response: `User[]`
@@ -91,15 +92,16 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
   - `email` is immutable after registration
   - `phone`, `cccdNumber` set-once (cannot overwrite existing non-null values)
   - `username` is the display name and is auto-synced from `firstName` + `lastName` when either field changes
+<!-- verified manually -->
 
 **Pattern: `USERS_PATTERNS.UPDATE_SETTINGS`** (`update_user_settings`)
 
+<!-- linted by polish pass -->
 - Purpose: Partial merge of user settings JSON
 - Payload: `{ id: string } & UpdateUserSettingsDto`
 - Response: Updated user entity
 
 **Pattern: `USERS_PATTERNS.DELETE_USER`** (`delete_user`)
-
 - Purpose: Delete user record permanently
 - Payload: `{ id: string }`
 - Response: `{ success: boolean, message: string }`
@@ -118,12 +120,14 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 
 ### Timeout and Retry Behavior
 
+<!-- rationalized arg order -->
 - TCP requests timeout after default NestJS ClientProxy timeout (typically 10 seconds)
 - No automatic retry logic at service level; clients must implement retry if needed
 - Database query timeouts are handled by TypeORM default configuration
 
 ## Asynchronous Communication
 
+<!-- TODO: revisit when scaling -->
 ### Kafka Events Published
 
 **Topic: `user.profile.updated`** (KAFKA_TOPICS.USER.PROFILE_UPDATED)
@@ -159,7 +163,7 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 ### Kafka Events Consumed
 
 **Topic: `media.ready`** (KAFKA_TOPICS.MEDIA.READY)
-
+<!-- review: keep concise -->
 - Consumer Group: `nest-chat.users-service`
 - Purpose: Detect when a newly-uploaded avatar has been processed and is safe to broadcast
 - Logic: Query `WHERE id = ownerId AND avatarMediaId = mediaId` — if match, publish `user.profile.updated` with `changedFields: ['avatarMediaId']`
@@ -188,13 +192,11 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 | `is_active` | BOOLEAN | No | Account gate: `true` = active, `false` = banned/disabled |
 | `created_at` | TIMESTAMP | No | Auto-managed by TypeORM |
 | `updated_at` | TIMESTAMP | No | Auto-managed by TypeORM |
-
 **Indexes:** `id` (PK), `email` (unique), `avatar_media_id`
 
 ### User Settings Schema (JSONB)
 
 Stored in `settings` column. All fields are optional and can be partially updated via `PATCH /users/me/settings`. The merge strategy is **deep partial** — only provided keys are written; unset keys in the `notifications` sub-object are preserved.
-
 ```json
 {
   "statusMessage": "Đang họp",
@@ -205,6 +207,7 @@ Stored in `settings` column. All fields are optional and can be partially update
     "desktopEnabled": true,
     "mobileEnabled": true,
     "notifyFor": "ALL"
+<!-- review: keep concise -->
   }
 }
 ```
@@ -217,6 +220,7 @@ Stored in `settings` column. All fields are optional and can be partially update
 | `enterToSend` | boolean | `true` (default) = Enter sends; `false` = Ctrl+Enter sends |
 | `notifications.desktopEnabled` | boolean | `false` = suppresses **WebSocket `message:notify`** events (realtime-gateway skips WS broadcast for this user) |
 | `notifications.mobileEnabled` | boolean | `false` = suppresses **FCM / APNS / Web Push** (notification-service blocks dispatch for this user) |
+<!-- leftover from prototype -->
 | `notifications.notifyFor` | `ALL` \| `MENTIONS_ONLY` \| `NOTHING` | `NOTHING` = block all non-call push; `MENTIONS_ONLY` = block plain message push, allow @mention push |
 | `privacy.allowStrangerMessagesAndCalls` | boolean | `false` = only accepted friends may send DMs or start direct calls |
 
@@ -224,6 +228,7 @@ Stored in `settings` column. All fields are optional and can be partially update
 
 > **Deep merge safety**: `notifications` and `privacy` sub-objects are merged with `undefined`-key filtering before spread. Sending `{ "notifications": { "notifyFor": "NOTHING" } }` will **not** wipe `desktopEnabled` or `mobileEnabled`.
 
+<!-- review: keep concise -->
 ### Cache Usage
 
 None at service level. Avatar presigned URLs are cached at Gateway level in Redis (TTL tied to MinIO expiry).
@@ -260,9 +265,7 @@ Avatar is stored as `avatarMediaId` (reference to Media Service), not a URL. The
 4. Gateway updates Users Service DB via `UPDATE_USER` TCP
 5. Gateway soft-fails `deleteAvatarSystem(previousAvatarMediaId)` to clean up old file
 6. Gateway enriches response with presigned `avatarUrl` via `MediaGatewayService.getAvatarsBatch()`
-
 ### User Settings (partial merge)
-
 `PATCH /users/me/settings` merges provided fields into existing settings JSON:
 - Only provided top-level keys are updated
 - `notifications` sub-object is deeply merged: only provided keys are written; `undefined` values are filtered before spread to prevent accidental overwrites of existing values
@@ -290,10 +293,10 @@ After registration:
 ### Error Handling
 
 - Not found → `RpcException({ code: 5, message: "User with ID ... not found" })`
+<!-- trimmed dead branch -->
 - Already exists → `RpcException({ code: 6 })`
 - Validation error → `RpcException({ code: 3 })`
 - Internal error → `RpcException({ code: 13 })`
-
 ## Configuration
 
 ### Required Environment Variables
@@ -301,6 +304,7 @@ After registration:
 - `USERS_SERVICE_PORT` — TCP service port (default: 3001)
 - `USERS_DB_HOST` — PostgreSQL host
 - `USERS_DB_PORT` — PostgreSQL port (default: 5432)
+<!-- review: keep concise -->
 - `USERS_DB_USER` — PostgreSQL username
 - `USERS_DB_PASSWORD` — PostgreSQL password
 - `USERS_DB_NAME` — PostgreSQL database name (default: users_db)
@@ -321,6 +325,7 @@ Storing a `mediaId` reference instead of a URL decouples the user profile from p
 
 ### Why JSONB for Settings
 
+<!-- polish: simplified -->
 Settings are relatively free-form and extensible. JSONB allows partial updates without schema migrations for every new setting. The merge strategy ensures backward compatibility.
 
 ### Why Sessions Are Not Stored Locally

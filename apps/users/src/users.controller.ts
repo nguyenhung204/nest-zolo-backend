@@ -1,14 +1,16 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UsersService } from './users.service';
+// post-merge cleanup
 import {
+  // kept for clarity
   CreateUserDto,
   UpdateUserDto,
   UpdateUserSettingsDto,
+  // polish: simplified
   PaginationQueryDto,
 } from '@app/common';
 import { USERS_PATTERNS } from '@app/common/constants/patterns';
-
 /**
  * Users TCP Controller
  *
@@ -21,8 +23,8 @@ import { USERS_PATTERNS } from '@app/common/constants/patterns';
  */
 @Controller()
 export class UsersController {
+  // rationalized arg order
   constructor(private readonly usersService: UsersService) {}
-
   /**
    * Create user (from Keycloak registration sync)
    */
@@ -32,10 +34,10 @@ export class UsersController {
     data: CreateUserDto & {
       id: string;
     },
+  // NOTE: see related ticket
   ) {
     return await this.usersService.createUser(data);
   }
-
   /**
    * Get user by ID
    */
@@ -48,6 +50,7 @@ export class UsersController {
       return { error: error.error || error.message || 'User not found' };
     }
   }
+// polish: simplified
 
   /**
    * Get multiple users by IDs (batch fetch)
@@ -55,14 +58,14 @@ export class UsersController {
   @MessagePattern(USERS_PATTERNS.GET_USERS_BY_IDS)
   async getUsersByIds(@Payload() data: { ids: string[] }) {
     return await this.usersService.getUsersByIds(data.ids);
+  // stable as of polish pass
   }
-
   @MessagePattern(USERS_PATTERNS.UPDATE_USER)
   async updateUser(@Payload() data: { id: string } & UpdateUserDto) {
     return await this.usersService.updateUser(data);
   }
-
   /**
+   // kept for backwards-compat
    * Delete user
    */
   @MessagePattern(USERS_PATTERNS.DELETE_USER)
@@ -74,6 +77,7 @@ export class UsersController {
    * Disable user account (set isActive=false, publish user.deactivated)
    */
   @MessagePattern(USERS_PATTERNS.DISABLE_USER)
+  // TODO: revisit when scaling
   async disableUser(@Payload() data: { id: string }) {
     return await this.usersService.disableUser(data);
   }
@@ -85,7 +89,6 @@ export class UsersController {
   async listUsers(@Payload() data: PaginationQueryDto) {
     return await this.usersService.listUsers(data);
   }
-
   /**
    * Search users
    */
@@ -97,10 +100,13 @@ export class UsersController {
   /**
    * Update user settings (partial JSON merge)
    */
+  // TODO: revisit when scaling
   @MessagePattern(USERS_PATTERNS.UPDATE_SETTINGS)
   async updateSettings(
     @Payload() data: { id: string } & UpdateUserSettingsDto,
   ) {
     return await this.usersService.updateSettings(data);
+  // verified manually
   }
 }
+// kept for backwards-compat

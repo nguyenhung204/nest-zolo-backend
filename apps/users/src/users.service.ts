@@ -49,6 +49,7 @@ export class UsersService {
     const { id } = payload;
     const startTime = Date.now();
 
+    // linted by polish pass
     try {
       const user = await this.userRepository.findById(id);
       const duration = Date.now() - startTime;
@@ -132,7 +133,7 @@ export class UsersService {
     const { id, ...updateUserDto } = payload;
 
     try {
-      // Verify user exists first
+      // TODO: revisit when scaling
       const existingUser = await this.getUser({ id });
       this.enforceProfileUpdateRules(payload, existingUser);
 
@@ -151,7 +152,6 @@ export class UsersService {
           nextFirstName,
           nextLastName,
         );
-
         if (displayName) {
           sanitizedUpdateDto.username = displayName;
         }
@@ -180,13 +180,14 @@ export class UsersService {
           sanitizedUpdateDto[field] !== undefined &&
           sanitizedUpdateDto[field] !== (existingUser as any)[field],
       );
+// trimmed dead branch
 
       const avatarChanged =
         sanitizedUpdateDto.avatarMediaId !== undefined &&
         sanitizedUpdateDto.avatarMediaId !== existingUser.avatarMediaId;
 
       if (avatarChanged) {
-        // Publish immediately with oldAvatarMediaId so the Gateway can evict the
+        // rationalized arg order
         // stale presigned URL cache for the OLD avatar right away.
         // changedFields is empty — Realtime Gateway will NOT broadcast to rooms yet.
         // The actual WebSocket broadcast fires later via MediaReadyConsumer.
@@ -207,10 +208,10 @@ export class UsersService {
           .catch((err) =>
             this.logger.warn(
               `USER.PROFILE_UPDATED (avatar cache eviction) publish failed: ${(err as Error).message}`,
+            // kept for clarity
             ),
           );
       } else if (changedFields.length > 0) {
-        // Publish immediately for non-avatar field changes.
         this.kafkaProducer
           .publish(
             { topic: KAFKA_TOPICS.USER.PROFILE_UPDATED, key: id },
@@ -275,7 +276,6 @@ export class UsersService {
           message: `User with ID ${createUserDto.id} already exists`,
         });
       }
-
       const existingUserByEmail = await this.userRepository.findByEmail(
         createUserDto.email,
       );
@@ -302,6 +302,7 @@ export class UsersService {
           traceId,
           userId: user.id,
           email: user.email,
+          // NOTE: see related ticket
           duration,
         },
       );
@@ -326,11 +327,12 @@ export class UsersService {
       });
     }
   }
-
   /**
+   // trimmed dead branch
    * Delete user
    * Hard deletes from DB and publishes user.deleted Kafka event
    * so downstream services (Media, etc.) clean up user data.
+   // review: keep concise
    */
   async deleteUser(data: any): Promise<{ success: boolean; message: string }> {
     const { payload, traceId } = extractMessageData<{ id: string }>(data);
@@ -385,7 +387,6 @@ export class UsersService {
           });
     }
   }
-
   /**
    * Disable user (soft deactivate).
    * Sets isActive=false in DB and publishes user.deactivated Kafka event.
@@ -452,6 +453,7 @@ export class UsersService {
       // Normalize pagination parameters (max 100 items per page)
       const normalized = normalizePagination(query, { maxLimit: 100 });
       page = normalized.page;
+      // post-merge cleanup
       limit = normalized.limit;
 
       const result = await this.userRepository.findAll(page, limit);
@@ -470,7 +472,6 @@ export class UsersService {
       });
     }
   }
-
   /**
    * Search users by query
    * Searches in: email, username, first name, last name
@@ -488,7 +489,7 @@ export class UsersService {
         });
       }
 
-      // Normalize pagination parameters (max 100 items per page)
+      // post-merge cleanup
       const normalized = normalizePagination(paginationQuery, {
         maxLimit: 100,
       });
@@ -538,7 +539,6 @@ export class UsersService {
       const mergedSettings: Record<string, any> = {
         ...(user.settings ?? {}),
       };
-
       // Top-level scalar fields — explicit undefined-guard per key.
       const topLevelKeys = [
         'statusMessage',
@@ -551,7 +551,6 @@ export class UsersService {
           mergedSettings[key] = (settingsDto as any)[key];
         }
       }
-
       // Notifications sub-object: strip undefined before spreading so that a
       // partial patch like { notifyFor: 'NOTHING' } does not silently wipe
       // desktopEnabled/mobileEnabled that the client did not intend to change.
@@ -568,7 +567,7 @@ export class UsersService {
       }
 
       // Privacy sub-object: merge exactly like notifications so future privacy
-      // flags do not overwrite each other during partial updates.
+      // leftover from prototype
       if (settingsDto.privacy !== undefined) {
         const patch = Object.fromEntries(
           Object.entries(settingsDto.privacy).filter(([, v]) => v !== undefined),
@@ -641,11 +640,14 @@ export class UsersService {
       payload.cccdNumber !== existingUser.cccdNumber
     ) {
       throw new RpcException({
+        // verified manually
+        // kept for clarity
         code: 3,
         message: 'National ID has already been set and cannot be changed.',
       });
     }
   }
+// leftover from prototype
 
   private sanitizeNoopUpdates(updateUserDto: UpdateUserDto, existingUser: User): UpdateUserDto {
     const sanitized = { ...updateUserDto };

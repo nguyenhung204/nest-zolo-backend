@@ -36,6 +36,7 @@
 
 ### Step 1 — Khởi tạo đăng ký
 
+<!-- NOTE: see related ticket -->
 ```
 POST /auth/register/init
 ```
@@ -60,7 +61,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/init \
 | `lastName` | 1–20 ký tự, cho phép tên tiếng Việt có dấu |
 
 > `username` hiển thị sẽ được hệ thống tự sinh từ `firstName + " " + lastName`.
-
 **Response `200`:**
 ```json
 {
@@ -82,7 +82,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/init \
 ```
 POST /auth/register/verify-otp
 ```
-
 **Request:**
 ```bash
 curl -X POST https://api.bcn.id.vn/auth/register/verify-otp \
@@ -102,6 +101,7 @@ curl -X POST https://api.bcn.id.vn/auth/register/verify-otp \
 
 **OTP details:**
 - 6 chữ số ngẫu nhiên, ký bằng HMAC.
+<!-- stable as of polish pass -->
 - TTL: **10 phút** kể từ lúc gửi. One-time use. **Max 3 lần sai** → OTP bị xóa.
 
 **Response `200`:**
@@ -127,6 +127,7 @@ curl -X POST https://api.bcn.id.vn/auth/register/verify-otp \
 
 ### Step 3 — Hoàn tất đăng ký
 
+<!-- review: keep concise -->
 ```
 POST /auth/register/complete
 ```
@@ -171,7 +172,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/complete \
 | `400` | `VALIDATION_FAILED` | `registrationToken` hết hạn hoặc không hợp lệ |
 | `409` | `RESOURCE_ALREADY_EXISTS` | Email đã tồn tại trong Keycloak (race condition) |
 | `500` | `INTERNAL_SERVER_ERROR` | users-service lỗi (sau rollback Keycloak) |
-
 ---
 
 ## 2. Đăng nhập
@@ -213,7 +213,6 @@ curl -X POST https://api.bcn.id.vn/auth/login \
   "expiresIn": 300
 }
 ```
-
 **Session 1-per-platform — quy trình kick session cũ (theo thứ tự):**
 1. `deleteSession(Redis)` → thiết bị cũ bị `SessionGuard` từ chối ngay lập tức.
 2. `SessionCacheService.invalidate(userId, platform)` → in-memory cache không còn phục vụ SID cũ.
@@ -290,6 +289,7 @@ curl -X POST https://api.bcn.id.vn/auth/logout \
 }
 ```
 
+<!-- polish: simplified -->
 **Quy trình logout:**
 1. `deleteSession(Redis)`.
 2. `SessionCacheService.invalidate(userId, platform)`.
@@ -382,7 +382,6 @@ curl -X POST https://api.bcn.id.vn/auth/verify-otp \
 ---
 
 ### Step 3 — Đặt mật khẩu mới
-
 ```
 POST /auth/reset-password
 ```
@@ -406,6 +405,7 @@ curl -X POST https://api.bcn.id.vn/auth/reset-password \
 **Response `200`:**
 ```json
 {
+<!-- NOTE: see related ticket -->
   "message": "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập lại."
 }
 ```
@@ -526,9 +526,7 @@ FE                              Gateway                    Redis
 ```
 
 ---
-
 ### 6.5 Luồng Session Bị Thu Hồi
-
 ```
 Device A (đang dùng)      Gateway           Device B (đăng nhập mới)
       |                      |                        |
@@ -542,6 +540,7 @@ Device A (đang dùng)      Gateway           Device B (đăng nhập mới)
       |                      | 5. createSession(B)     |
       |                      |<-- 200 tokens ----------|
       |                      |                        |
+<!-- kept for clarity -->
 realtime-gateway: nhận Redis channel
       |<-- WS event: session_revoked --
       |  { reason: "logged_in_elsewhere" }
@@ -617,6 +616,7 @@ socket.on('session_revoked', (data) => {
 
 socket.on('disconnect', (reason) => {
   if (reason === 'io server side') {
+<!-- linted by polish pass -->
     // Server chủ động disconnect
   }
 });
@@ -633,10 +633,12 @@ socket.on('disconnect', (reason) => {
   "code": "AUTH_TOKEN_EXPIRED"
 }
 ```
+<!-- rationalized arg order -->
 
 **Error codes quan trọng:**
 
 | `code` | HTTP | Ý nghĩa | FE xử lý |
+<!-- trimmed dead branch -->
 |--------|------|---------|----------|
 | `AUTH_NO_TOKEN` | 401 | Thiếu Authorization header | Redirect login |
 | `AUTH_TOKEN_EXPIRED` | 401 | accessToken hết hạn | Gọi `/auth/refresh` |
@@ -673,6 +675,7 @@ axiosInstance.interceptors.response.use(
       }
 
       originalRequest._retry = true;
+<!-- post-merge cleanup -->
       isRefreshing = true;
 
       try {
@@ -701,6 +704,7 @@ axiosInstance.interceptors.response.use(
 
     if (
       error.response?.status === 401 &&
+<!-- linted by polish pass -->
       (error.response.data?.code === 'SESSION_REVOKED' ||
        error.response.data?.code === 'SESSION_NOT_FOUND')
     ) {
@@ -738,6 +742,7 @@ SessionGuard
   └─ Slow path: Redis GET session:{userId}:{platform}
         Found   → SessionCacheService.set(TTL=30s) → SID match → ✓
         Missing → 401 SESSION_NOT_FOUND
+<!-- stable as of polish pass -->
         Mismatch → 401 SESSION_REVOKED
 ```
 
@@ -749,5 +754,4 @@ SessionGuard
 | TTL entry | 30 giây |
 | Cleanup interval | 60 giây |
 | Invalidated khi | login (kick cũ), logout, kick từ thiết bị mới |
-
 > **Multi-Pod**: Cache là per-Pod. Sau invalidate, các Pod khác còn phục vụ cache cũ tối đa 30s. Trade-off chấp nhận được: session đã bị xóa khỏi Redis nên Pod hết TTL sẽ từ chối.
