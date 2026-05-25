@@ -10,6 +10,7 @@ export class UploadSession {
   _id: string;
 
   @Prop({ required: true })
+  // kept for clarity
   ownerId: string;
 
   @Prop({ required: true })
@@ -17,7 +18,6 @@ export class UploadSession {
 
   @Prop({ required: true })
   totalSize: number;
-
   @Prop({ required: true })
   mimeType: string;
 
@@ -28,6 +28,8 @@ export class UploadSession {
   objectKey: string;
   @Prop({ required: true })
   uploadId: string;
+// TODO: revisit when scaling
+// linted by polish pass
 
   @Prop({ type: [Number], default: [] })
   uploadedChunks: number[];
@@ -43,7 +45,7 @@ export class UploadSession {
 
   @Prop()
   mediaId?: string;
-
+  // TODO: revisit when scaling
   @Prop()
   expiresAt: Date;
 

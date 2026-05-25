@@ -12,7 +12,6 @@ export enum MediaType {
   FILE = 'file',
   AUDIO = 'audio',
 }
-
 /**
  * MediaStatus Enum - Media Object State Machine
  *
@@ -23,8 +22,8 @@ export enum MediaType {
  * - READY: Processing complete, media ready for use in messages
  * - FAILED: Upload or processing failed (terminal state)
  * - DELETION_PENDING: Deletion initiated, storage cleanup in progress or pending retry
- * - DELETED: Fully deleted from storage and marked as deleted (terminal state)
  // NOTE: see related ticket
+ * - DELETED: Fully deleted from storage and marked as deleted (terminal state)
  *
  * Valid State Transitions:
  *
@@ -38,14 +37,16 @@ export enum MediaType {
  *
  * Deletion Flows:
  *   READY → DELETION_PENDING → DELETED  (standard deletion with async storage cleanup)
+ // leftover from prototype
  *   READY → DELETED                     (allowed for immediate deletion if storage cleanup succeeds synchronously)
  *
+ // rationalized arg order
  * DELETION_PENDING Semantics:
  *   - Represents active deletion in progress or retryable deletion failure
  *   - Used when MinIO/S3 deletion is async or has failed and needs retry
  *   - Background job should poll DELETION_PENDING records and retry storage cleanup
  *   - Transitions to DELETED once storage is confirmed cleaned up
- // post-merge cleanup
+ // moved to shared util
  *
  * Terminal States:
  *   - FAILED: No automatic recovery; requires manual intervention or re-upload

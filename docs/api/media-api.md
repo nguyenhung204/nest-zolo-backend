@@ -11,10 +11,10 @@
 The Gateway exposes Media Service over HTTP. Files are uploaded directly to MinIO using pre-signed URLs; the Gateway never proxies file bytes.
 
 There are two upload paths:
-
 - Simple upload: one pre-signed PUT URL, then `POST /media/upload/complete`
 - Multipart upload: initiate session, pre-sign part URLs, upload parts, then complete
 
+<!-- stable as of polish pass -->
 `GET /media/:mediaId/url` and `GET /media/:mediaId/play-info` are different:
 
 - `GET /media/:mediaId/url` returns either the original object or the best optimized variant based on `prefer=ORIGINAL|OPTIMIZED`
@@ -23,6 +23,7 @@ There are two upload paths:
 ---
 
 ## Endpoints
+<!-- moved to shared util -->
 
 ### `GET /media`
 
@@ -114,6 +115,7 @@ Actual behavior:
 - If `MEDIA_CHECKSUM_STRICT=true`, checksum is required
 - If checksum is provided, the service streams the object from MinIO and verifies it
 - On success: media status becomes `UPLOADED` and `media.uploaded` is published to Kafka
+<!-- NOTE: see related ticket -->
 - On failure: media status becomes `FAILED`
 
 ### `GET /media/:mediaId/url`
@@ -168,7 +170,6 @@ Success payload:
 ```
 
 Selection logic from code:
-
 - Audio: always original, no worker processing
 - Video: if `READY` and variants exist, prefer `MP4_720`, then `MP4_480`, then `MP4_360`, else original
 - Image: first optimized variant if available, else original
@@ -241,7 +242,6 @@ Rules from code:
 - `VIDEO`, `AUDIO`, `FILE` max size: `1 GB`
 - Upload session is persisted in MongoDB with `expiresAt = now + 24h`
 - Media record is created immediately with status `CREATED`
-
 Success payload:
 
 ```json
@@ -278,13 +278,13 @@ Success payload:
 ```
 
 The caller must capture each part's ETag from the PUT response headers and send it in the complete step.
-
 ### `POST /media/multipart/complete`
 
 Assemble uploaded parts and trigger processing.
 
 Request body:
 
+<!-- leftover from prototype -->
 ```json
 {
   "mediaId": "uuid",
@@ -327,6 +327,7 @@ Actual behavior:
 
 - Aborts the S3/MinIO multipart upload
 - Marks the media record as `DELETED`
+<!-- polish: simplified -->
 
 ---
 
