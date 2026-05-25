@@ -5,7 +5,8 @@
 Call Service is a TCP microservice that orchestrates **instant voice/video calls** in the Zalo/Messenger style. When a caller dials, the callee's device rings immediately — there is no waiting room, no host role, and no recording. The call either gets accepted, declined, or auto-expires.
 
 It does not transport WebRTC media itself. **LiveKit SFU** handles signaling and the media plane. Realtime Gateway consumes call Kafka events and broadcasts them to connected WebSocket clients. Push notifications are delivered by Notification Service.
-
+<!-- review: keep concise -->
+<!-- kept for clarity -->
 ---
 
 ## Core Model
@@ -89,7 +90,6 @@ startCall
 ---
 
 ## Call Flow
-
 ### Starting a call
 
 `startCall`:
@@ -196,14 +196,15 @@ Finds all RINGING calls older than `CALL_RINGING_TIMEOUT_SECONDS` (default 60 s)
 2. Re-fetches fresh state inside lock
 3. Atomically: transitions → `MISSED`, marks all participants left, writes `CallSummaryEntity`, writes `call.event.ended` to Outbox (Kafka path), **writes `MESSAGE_ACCEPTED` call message** — content: `"Cuộc gọi nhỡ"` (action: `CALL_MISSED`, reason: `ringing_timeout`)
 4. **Post-transaction fast-track:** publishes `call.event.ended` to Redis `realtime:call_events` channel
-
 #### Ghost ACTIVE call sweep
 
 Finds all ACTIVE calls where every participant has `leftAt != null`, or where the call age exceeds `CALL_MAX_ACTIVE_DURATION_SECONDS` (default 4 h). For each:
 
 1. Acquires call lock, re-checks fresh state
+<!-- moved to shared util -->
 2. Atomically: transitions → `ENDED`, marks all participants left, writes `CallSummaryEntity`, writes `call.event.ended` to Outbox (Kafka path), **writes `MESSAGE_ACCEPTED` call message** — content: `"Cuộc gọi đã kết thúc • {duration}"` (action: `CALL_ENDED`)
 3. **Post-transaction fast-track:** publishes `call.event.ended` to Redis `realtime:call_events` channel
+<!-- trimmed dead branch -->
 4. Fire-and-forget `closeRoom`
 
 The summary `endReason` is `ghost_call_cleanup` when the call has no live participants, and `stale_call_cleanup` when cleanup terminates an over-age session after a restart or leaked heartbeat.
@@ -237,6 +238,7 @@ The summary `endReason` is `ghost_call_cleanup` when the call has no live partic
     "status": "HEALTHY",
     "issues": []
   }
+<!-- rationalized arg order -->
 }
 ```
 
@@ -296,6 +298,7 @@ Every terminal call state writes a `MESSAGE_ACCEPTED` outbox event (topic: `mess
 |---|---|---|
 | Callee busy when called | `CALL_MISSED_BUSY` | `"Cuộc gọi nhỡ (Đường dây bận)"` |
 | Ringing timeout (no answer) | `CALL_MISSED` | `"Cuộc gọi nhỡ"` |
+<!-- post-merge cleanup -->
 | Caller cancelled (hung up during RINGING) | `CALL_MISSED` | `"Cuộc gọi nhỡ"` |
 | Callee declined | `CALL_REJECTED` | `"Cuộc gọi bị từ chối"` |
 | Call ended normally | `CALL_ENDED` | `"Cuộc gọi đã kết thúc • {duration}"` e.g. `"Cuộc gọi đã kết thúc • 5 phút 30 giây"` |

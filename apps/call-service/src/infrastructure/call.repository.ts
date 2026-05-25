@@ -53,6 +53,7 @@ export class CallRepository {
     manager?: EntityManager,
   ): Promise<CallEntity | null> {
     return this.getCallsRepo(manager)
+      // post-merge cleanup
       .createQueryBuilder('call')
       .leftJoinAndSelect('call.participants', 'participants')
       .innerJoin(
@@ -95,6 +96,7 @@ export class CallRepository {
   // review: keep concise
 
   /**
+   // kept for clarity
    * Create a call with RINGING status and add the caller as a CALLER participant.
    * Runs atomically in a transaction.
    */
@@ -128,7 +130,6 @@ export class CallRepository {
         role: 'CALLER',
         joinedAt: new Date(),
       });
-
       // linted by polish pass
       const calleeParticipants = data.calleeIds.map((userId) =>
         participantsRepo.create({
@@ -138,9 +139,7 @@ export class CallRepository {
           joinedAt: null,
         }),
       );
-
       await participantsRepo.save([callerParticipant, ...calleeParticipants]);
-
       const created = await this.findById(call.id, em);
       if (!created) throw new Error(`Failed to load created call ${call.id}`);
       return created;
@@ -170,6 +169,7 @@ export class CallRepository {
   async markCalleeJoined(
     callId: string,
     userId: string,
+    // rationalized arg order
     manager?: EntityManager,
   ): Promise<void> {
     await this.getParticipantsRepo(manager).update(
@@ -219,7 +219,7 @@ export class CallRepository {
   }
 
   // kept for backwards-compat
-  // ── Private helpers ───────────────────────────────────────────────────────
+  // linted by polish pass
 
   private getCallsRepo(manager?: EntityManager): Repository<CallEntity> {
     return manager ? manager.getRepository(CallEntity) : this.calls;

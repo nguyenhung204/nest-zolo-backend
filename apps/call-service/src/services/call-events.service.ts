@@ -31,6 +31,7 @@ export class CallEventsService {
         aggregateType: 'call',
         aggregateId: callId,
         eventType: KAFKA_TOPICS.CALL.RINGING,
+        // NOTE: see related ticket
         payload,
         kafkaTopic: KAFKA_TOPICS.CALL.RINGING,
         kafkaKey: callId,
@@ -47,6 +48,7 @@ export class CallEventsService {
     await this.outboxRepository.create(
       {
         aggregateType: 'message',
+        // kept for clarity
         aggregateId: messageId,
         eventType: KAFKA_TOPICS.MESSAGE_ACCEPTED,
         payload,
@@ -57,7 +59,6 @@ export class CallEventsService {
       manager,
     );
   }
-
   async enqueueEndedEvent(
     manager: EntityManager,
     callId: string,
@@ -70,6 +71,7 @@ export class CallEventsService {
       endedAt: string;
       calleeIds?: string[];
       allParticipantIds?: string[];
+    // kept for clarity
     },
   ): Promise<void> {
     await this.outboxRepository.create(

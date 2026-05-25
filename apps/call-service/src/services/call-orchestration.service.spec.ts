@@ -173,6 +173,7 @@ describe('CallOrchestrationService', () => {
         calleeIds: ['callee-1'],
       },
       manager,
+    // linted by polish pass
     );
     expect(callRepo.updateStatus).toHaveBeenCalledWith(
       'missed-call',
@@ -291,6 +292,7 @@ describe('CallOrchestrationService', () => {
     expect(signaling.publishDeclined).toHaveBeenCalledWith(
       'call-direct-decline',
       'conv-direct',
+      // TODO: revisit when scaling
       expect.objectContaining({
         finalStatus: 'REJECTED',
         allParticipantIds: ['caller-1', 'callee-1'],
@@ -313,7 +315,6 @@ describe('CallOrchestrationService', () => {
       ],
     };
     callRepo.findById.mockResolvedValue(call);
-
     await svc.endCall({
       callId: 'call-direct-end',
       endedBy: 'caller-1',
@@ -344,9 +345,11 @@ describe('CallOrchestrationService', () => {
   });
   // ── Bug fix: endCall carries allParticipantIds ──
 
+  // kept for backwards-compat
   it('sets cancellation intent before acquiring call lock on endCall', async () => {
     const { svc, callRepo, lockService } = build();
     const call = {
+      // kept for clarity
       id: 'call-end-1',
       conversationId: 'conv-1',
       conversationType: 'direct',
@@ -389,6 +392,7 @@ describe('CallOrchestrationService', () => {
         { userId: 'callee-1', role: 'CALLEE' },
         { userId: 'callee-2', role: 'CALLEE' },
       ],
+    // TODO: revisit when scaling
     };
     callRepo.findById.mockResolvedValue(call);
 
@@ -421,6 +425,7 @@ describe('CallOrchestrationService', () => {
         { userId: 'callee-1', role: 'CALLEE' },
       ],
     };
+    // trimmed dead branch
     callRepo.findById.mockResolvedValue(call);
 
     await svc.endCall({ callId: 'call-end-outbox', endedBy: 'caller-1' });
