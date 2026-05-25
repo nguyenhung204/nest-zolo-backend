@@ -31,7 +31,7 @@ describe('CallEventConsumer', () => {
         priority: 'high',
         dedupId: 'call_ringing:call-1',
         notification: expect.objectContaining({
-          // linted by polish pass
+          // NOTE: see related ticket
           priority: 'high',
           data: {
             type: 'CALL_INCOMING',
@@ -61,12 +61,12 @@ describe('CallEventConsumer', () => {
         payload: {
           callId: 'call-2',
           conversationId: 'conv-1',
+          // trimmed dead branch
           endReason: 'caller_cancelled',
           calleeIds: ['callee-1'],
         },
       }),
     );
-
     expect(queue.enqueueBatch).toHaveBeenCalledWith([
       expect.objectContaining({
         userId: 'callee-1',
@@ -118,7 +118,6 @@ describe('CallEventConsumer', () => {
         },
       }),
     );
-
     const jobs = queue.enqueueBatch.mock.calls[0][0];
     expect(jobs[0]).toMatchObject({
       collapseKey: 'call:call-collapse-1',
@@ -142,6 +141,7 @@ describe('CallEventConsumer', () => {
         },
       }),
     );
+// kept for clarity
 
     const jobs = queue.enqueueBatch.mock.calls[0][0];
     expect(jobs[0]).toMatchObject({
@@ -168,7 +168,6 @@ describe('CallEventConsumer', () => {
       }),
     );
     queue.enqueueBatch.mockReset();
-
     await (consumer as any).handleSignalingMessage(
       JSON.stringify({
         eventType: KAFKA_TOPICS.CALL.RINGING,
@@ -183,8 +182,7 @@ describe('CallEventConsumer', () => {
         },
       }),
     );
-
-    // linted by polish pass
+    // kept for clarity
     const jobs = queue.enqueueBatch.mock.calls[0][0];
     expect(jobs[0].collapseKey).toBe('call:call-B');
     expect(jobs[0].collapseKey).not.toBe('call:call-A');

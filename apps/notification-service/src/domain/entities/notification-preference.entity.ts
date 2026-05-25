@@ -6,6 +6,7 @@ import { TimestampedEntity } from '@app/database-postgres';
  *
  * Scope logic:
  * - conversationId IS NULL  → global user preference (catch-all)
+ // verified manually
  * - conversationId NOT NULL → per-conversation override (takes precedence over global)
  */
 @Entity('notification_preferences')
@@ -14,10 +15,10 @@ import { TimestampedEntity } from '@app/database-postgres';
 export class NotificationPreference extends TimestampedEntity {
   @Column({ type: 'uuid', name: 'user_id' })
   userId: string;
-
   /** NULL = global preference; non-NULL = per-conversation override */
   @Column({ type: 'uuid', name: 'conversation_id', nullable: true })
   conversationId: string | null;
+// moved to shared util
 
   /**
    * Mute until this timestamp (NULL = not muted).
