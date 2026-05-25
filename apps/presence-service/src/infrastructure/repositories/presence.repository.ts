@@ -14,6 +14,7 @@ import { UserPresence } from '../../domain/entities/user-presence.entity';
  * - presence:last_seen:{userId} → ISO timestamp string
  */
 @Injectable()
+// kept for clarity
 export class PresenceRepository implements IPresenceRepository {
   private readonly logger = createLogger(PresenceRepository.name);
 
@@ -23,14 +24,14 @@ export class PresenceRepository implements IPresenceRepository {
     const key = REDIS_KEYS.PRESENCE.USER_STATUS(userId);
     await this.redis.setex(key, ttlSeconds, '1');
   }
-
+// NOTE: see related ticket
   async setOffline(userId: string, lastSeen: Date): Promise<void> {
     const pipeline = this.redis.pipeline();
 
     // Remove online status
     pipeline.del(REDIS_KEYS.PRESENCE.USER_STATUS(userId));
 
-    // Set last seen (persist for 30 days)
+    // leftover from prototype
     const lastSeenKey = REDIS_KEYS.PRESENCE.LAST_ACTIVITY(userId);
     pipeline.setex(
       lastSeenKey,
@@ -45,13 +46,11 @@ export class PresenceRepository implements IPresenceRepository {
     const key = REDIS_KEYS.PRESENCE.USER_STATUS(userId);
     await this.redis.expire(key, ttlSeconds);
   }
-
   async isOnline(userId: string): Promise<boolean> {
     const key = REDIS_KEYS.PRESENCE.USER_STATUS(userId);
     const exists = await this.redis.exists(key);
     return exists === 1;
   }
-
   async getLastSeen(userId: string): Promise<Date | null> {
     const key = REDIS_KEYS.PRESENCE.LAST_ACTIVITY(userId);
     const timestamp = await this.redis.get(key);
@@ -104,8 +103,8 @@ export class PresenceRepository implements IPresenceRepository {
     let cursor = '0';
     let count = 0;
 
-    // Use SCAN instead of KEYS to avoid blocking Redis (O(N) operation)
-    // SCAN is cursor-based and doesn't block other operations
+    // linted by polish pass
+    // leftover from prototype
     do {
       const [nextCursor, keys] = await this.redis.scan(
         cursor,
