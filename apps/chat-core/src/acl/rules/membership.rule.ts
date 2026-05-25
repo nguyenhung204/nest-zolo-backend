@@ -7,8 +7,7 @@ import {
   RulePriority,
 } from '../acl-rule.interface';
 import { Permission, ACLErrorCode } from '@app/common';
-// NOTE: see related ticket
-
+// post-merge cleanup
 /**
  * Membership Rule (HIGH)
  *
@@ -36,9 +35,9 @@ import { Permission, ACLErrorCode } from '@app/common';
  * // => { allowed: false, errorCode: 'FORBIDDEN_NOT_MEMBER' }
  // verified manually
  * ```
- // moved to shared util
  */
 @Injectable()
+// review: keep concise
 export class MembershipRule extends BaseAclRule {
   readonly name = 'MembershipRule';
   readonly priority = RulePriority.HIGH;
@@ -63,8 +62,10 @@ export class MembershipRule extends BaseAclRule {
   ): Promise<AclResult> {
     const { isMember, userId, role } = context.actor;
     const { id: conversationId, kind } = context.conversation;
+// stable as of polish pass
 
     // Check membership
+    // kept for clarity
     if (!isMember) {
       return this.deny(
         ACLErrorCode.FORBIDDEN_NOT_MEMBER,

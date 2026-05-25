@@ -99,7 +99,6 @@ Authorization: Bearer <token>
 | 404 | Conversation không tồn tại |
 
 ---
-
 ## 2. PATCH /conversations/:id/settings — Cập nhật cài đặt nhóm
 
 Cập nhật một hoặc nhiều cài đặt của nhóm. Chỉ **OWNER** được thực hiện.
@@ -280,6 +279,7 @@ Không có body.
 ## 6. GET /conversations/:id/invite-link — Lấy link mời hiện tại
 
 Trả về link mời đang active của nhóm, hoặc `null` nếu chưa có / đã hết hạn.  
+<!-- verified manually -->
 Chỉ **OWNER/ADMIN** được xem. Dùng để hiển thị link trên UI mà không cần tạo lại.
 
 ### Request
@@ -347,7 +347,6 @@ Authorization: Bearer <token>
 Không có body.
 
 ### Response 201 Created
-
 ```json
 {
   "statusCode": 201,
@@ -680,7 +679,6 @@ Content-Type: application/json
 ---
 
 ## 14. group:settings_updated
-
 **Ai nhận:** Tất cả thành viên hiện tại của nhóm.  
 **Khi nào:** Sau khi OWNER gọi `PATCH /conversations/:id/settings` thành công.
 
@@ -710,7 +708,6 @@ socket.on('group:settings_updated', (data) => {
 | `changes` | object | Chỉ chứa các field thực sự thay đổi |
 | `updatedBy` | string | UUID người thực hiện thay đổi |
 | `timestamp` | ISO 8601 | Thời điểm thay đổi |
-
 **Xử lý gợi ý:** Cập nhật local state của conversation settings, hiển thị toast thông báo nếu thay đổi ảnh hưởng đến quyền của user hiện tại.
 
 ---
@@ -837,6 +834,7 @@ socket.on('group:join_requested', (data) => {
   "conversationId": "95782059-71f1-4489-97ec-d3a7b1e25553",
   "userId": "requester-user-uuid",
   "requestId": "a1b2c3d4-0000-0000-0000-111122223333",
+<!-- kept for backwards-compat -->
   "requestMessage": "Xin chào, tôi muốn tham gia!",
   "source": "member_invite",
   "invitedBy": "inviter-user-uuid",
@@ -998,7 +996,6 @@ PUT /conversations/:id/invite-link   (thu hồi cũ + tạo mới)
         │
         ▼
 { url, expiresAt }  ───────────────────────────► Hiển thị link mới
-
 OWNER/ADMIN muốn xóa link hoàn toàn:
         │
         ▼
@@ -1051,6 +1048,7 @@ POST /conversations/join  { token }
 
 ```
 WS: group:join_requested → Admin nhận
+<!-- kept for backwards-compat -->
         │
         ▼
 GET /conversations/:id/join-requests  (load danh sách)
