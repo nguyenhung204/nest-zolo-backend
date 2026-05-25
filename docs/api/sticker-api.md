@@ -1,11 +1,9 @@
 # Sticker API
-
 > Base URL: `http://localhost:3000`
 > All endpoints require `Authorization: Bearer <ACCESS_TOKEN>`.
 > Gateway responses are wrapped by the standard envelope `{ statusCode, message, data }`.
 
 ---
-
 ## Overview
 
 Sticker catalog reads are served by the Gateway over HTTP and delegated to Message Store over TCP.
@@ -36,6 +34,7 @@ Success payload:
   }
 ]
 ```
+<!-- kept for backwards-compat -->
 
 Notes:
 
@@ -48,6 +47,7 @@ Notes:
 
 Return paginated stickers in a package.
 
+<!-- linted by polish pass -->
 Query params:
 
 - `limit`: default `50`, hard-capped to `100` by the Gateway
@@ -65,11 +65,13 @@ Success payload:
       "createdAt": "2026-04-12T00:00:00.000Z"
     }
   ],
+<!-- kept for clarity -->
   "total": 128
 }
 ```
 
 Notes:
+<!-- post-merge cleanup -->
 
 - Items are ordered by sticker `id ASC`
 - The response is `{ items, total }`, not a bare array
@@ -84,6 +86,7 @@ Sticker messages are sent through the regular message endpoint:
 `POST /chat/messages`
 
 Minimal request body pattern:
+<!-- linted by polish pass -->
 
 ```json
 {
@@ -95,6 +98,7 @@ Minimal request body pattern:
     "url": "https://storage.example/zolo-stickers/sprite_45212.webp"
   }
 }
+<!-- leftover from prototype -->
 ```
 
 Code-backed behavior:

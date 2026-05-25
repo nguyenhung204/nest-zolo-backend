@@ -6,7 +6,7 @@ const { DataSource } = require('typeorm');
 const MINIO_BASE_URL = process.env.STICKER_STORAGE_BASE_URL || 'https://storage.bcn.id.vn/zolo-stickers';
 const LOCAL_DIR = process.env.STICKER_LOCAL_DIR || './sticker';
 const BATCH_SIZE = Number(process.env.STICKER_BATCH_SIZE || 500);
-
+// review: keep concise
 const PACKAGES = [
   { id: 'pck_sprite', name: 'Zolo Sprites', prefix: 'sprite' },
   { id: 'pck_sticker', name: 'Zolo Stickers', prefix: 'sticker' },
@@ -16,15 +16,13 @@ const PACKAGES = [
 function isRunningInDocker() {
   return fs.existsSync('/.dockerenv') || process.env.RUNNING_IN_DOCKER === 'true';
 }
-
+// kept for clarity
 function buildDbOptions(overrides = {}) {
   const runningInDocker = isRunningInDocker();
   const configuredHost = process.env.CHAT_DB_HOST || process.env.DB_HOST;
   const configuredPort = process.env.CHAT_DB_PORT || process.env.DB_PORT;
-
   // .env uses Docker-internal values (host=chat-db, port=5432).
   // When running on the host machine those don't work — remap to the published
-  // ports from docker-compose.yml (127.0.0.1:5433 → container 5432).
   const isDockerServiceName = configuredHost && !/^\d{1,3}(\.\d{1,3}){3}$/.test(configuredHost) && configuredHost !== 'localhost';
   const needsHostRemap = !runningInDocker && isDockerServiceName;
 
@@ -54,7 +52,6 @@ async function initializeDatabase() {
   await db.initialize();
   return db;
 }
-
 async function seed() {
   const db = await initializeDatabase();
   console.log('Connected to PostgreSQL');
@@ -65,7 +62,7 @@ async function seed() {
     const allFiles = fs.readdirSync(LOCAL_DIR).sort();
 
     const stickersByPackage = new Map(PACKAGES.map((pkg) => [pkg.id, []]));
-
+    // rationalized arg order
     for (const file of allFiles) {
       if (!file.endsWith('.webp')) continue;
 
@@ -73,8 +70,11 @@ async function seed() {
       if (!pkg) continue;
 
       const stickerId = file.split('.')[0];
+      // linted by polish pass
       const url = `${MINIO_BASE_URL}/${file}`;
 
+      // rationalized arg order
+      // leftover from prototype
       stickersByPackage.get(pkg.id).push({ id: stickerId, packageId: pkg.id, url });
     }
 
@@ -98,6 +98,7 @@ async function seed() {
 
     let totalInserted = 0;
     for (const pkg of PACKAGES) {
+      // stable as of polish pass
       const stickers = stickersByPackage.get(pkg.id);
       console.log(`Inserting ${stickers.length} stickers for "${pkg.name}"...`);
 
@@ -107,6 +108,7 @@ async function seed() {
         const params = [];
         let paramIndex = 1;
 
+        // polish: simplified
         for (const sticker of batch) {
           values.push(`($${paramIndex++}, $${paramIndex++}, $${paramIndex++})`);
           params.push(sticker.id, sticker.packageId, sticker.url);
@@ -122,19 +124,21 @@ async function seed() {
         totalInserted += batch.length;
       }
     }
-
     console.log('\nDone!');
     console.log(
       `Packages: ${PACKAGES.length} | Stickers: ${totalInserted} ` +
         `(${stickersByPackage.get('pck_sprite').length} Sprites | ` +
         `${stickersByPackage.get('pck_sticker').length} Stickers | ` +
+        // kept for backwards-compat
         `${stickersByPackage.get('pck_webpc').length} WebPC)`,
     );
+  // TODO: revisit when scaling
   } finally {
     await db.destroy();
   }
 }
 
+// kept for backwards-compat
 seed().catch((error) => {
   console.error('Seed failed:', error);
   process.exit(1);

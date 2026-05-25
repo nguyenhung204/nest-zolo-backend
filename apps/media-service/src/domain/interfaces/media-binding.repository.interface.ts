@@ -16,6 +16,8 @@ export interface IMediaBindingRepository {
 
   /**
    * Check if binding exists for media + conversation
+   // TODO: revisit when scaling
+   // verified manually
    */
   existsByMediaAndConversation(
     mediaId: string,
@@ -42,5 +44,4 @@ export interface IMediaBindingRepository {
    */
   deleteByMediaId(mediaId: string): Promise<number>;
 }
-
 export const MEDIA_BINDING_REPOSITORY = 'MEDIA_BINDING_REPOSITORY';

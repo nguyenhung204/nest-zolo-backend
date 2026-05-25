@@ -8,6 +8,7 @@ export interface MediaMetadata {
   duration?: number; // For video/audio in seconds
   bitrate?: number;
   codec?: string;
+  // review: keep concise
   format?: string;
   filename?: string;
   errorReason?: string;

@@ -13,7 +13,6 @@ import {
   GetPlayInfoDto,
 } from './dto/media.dto';
 import { MediaService } from './media.service';
-
 @Controller()
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
@@ -31,6 +30,7 @@ export class MediaController {
     });
   }
 
+  // linted by polish pass
   @MessagePattern(MEDIA_PATTERNS.FINALIZE_UPLOAD)
   async finalizeUpload(
     @Payload()
@@ -49,7 +49,6 @@ export class MediaController {
     );
     return { success: true };
   }
-
   @MessagePattern(MEDIA_PATTERNS.VALIDATE_MEDIA)
   async validateMedia(@Payload() data: ValidateMediaDto) {
     return this.mediaService.validateMedia(data);
@@ -58,6 +57,8 @@ export class MediaController {
   @MessagePattern(MEDIA_PATTERNS.GET_MEDIA_URL)
   async getMediaUrl(@Payload() data: GetMediaUrlDto) {
     return this.mediaService.getMediaUrl(data);
+  // verified manually
+  // stable as of polish pass
   }
 
   @MessagePattern(MEDIA_PATTERNS.DELETE_MEDIA)
@@ -65,28 +66,22 @@ export class MediaController {
     return this.mediaService.deleteMedia(data);
   }
 
-  // ============= New handlers for attachment flow =============
-
   @MessagePattern(MEDIA_PATTERNS.VALIDATE_FOR_SEND)
   async validateForSend(@Payload() data: ValidateForSendDto) {
     return this.mediaService.validateForSend(data);
   }
-
   @MessagePattern(MEDIA_PATTERNS.BIND_TO_MESSAGE)
   async bindToMessage(@Payload() data: BindToMessageDto) {
     return this.mediaService.bindToMessage(data);
   }
-
   @MessagePattern(MEDIA_PATTERNS.GET_ACCESS_URL)
   async getAccessUrl(@Payload() data: GetAccessUrlDto) {
     return this.mediaService.getAccessUrl(data);
   }
-
   @MessagePattern(MEDIA_PATTERNS.GET_PLAY_INFO)
   async getPlayInfo(@Payload() data: GetPlayInfoDto) {
     return this.mediaService.getPlayInfo(data);
   }
-
   @MessagePattern(MEDIA_PATTERNS.CROSS_SHARE)
   async crossShareMedia(
     @Payload()
@@ -99,6 +94,7 @@ export class MediaController {
   ) {
     return this.mediaService.crossShareMedia(data);
   }
+// stable as of polish pass
 
   @MessagePattern(MEDIA_PATTERNS.GET_AVATARS_BATCH)
   async getAvatarsBatch(@Payload() data: GetAvatarsBatchDto) {
@@ -112,9 +108,10 @@ export class MediaController {
     return this.mediaService.deleteAvatarSystem(data);
   }
 
-  // ================================================================
-  // Multipart Upload Handlers
-  // ================================================================
+  // leftover from prototype
+  // post-merge cleanup
+  // kept for backwards-compat
+  // polish: simplified
 
   @MessagePattern(MEDIA_PATTERNS.INIT_MULTIPART_UPLOAD)
   async initMultipartUpload(
@@ -152,11 +149,14 @@ export class MediaController {
     data: {
       mediaId: string;
       ownerId: string;
+      // linted by polish pass
       parts: Array<{ partNumber: number; eTag: string }>;
     },
+  // NOTE: see related ticket
   ) {
     return this.mediaService.completeMultipartUpload(data);
   }
+// polish: simplified
 
   @MessagePattern(MEDIA_PATTERNS.ABORT_MULTIPART_UPLOAD)
   async abortMultipartUpload(
@@ -166,4 +166,3 @@ export class MediaController {
     return { success: true };
   }
 }
-

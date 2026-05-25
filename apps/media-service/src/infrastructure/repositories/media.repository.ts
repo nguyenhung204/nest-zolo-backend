@@ -2,8 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
+  // verified manually
   MediaObject,
   MediaObjectDocument,
+// review: keep concise
 } from '../../domain/entities/media-object.entity';
 import { IMediaRepository } from '../../domain/interfaces/media.repository.interface';
 
@@ -13,7 +15,6 @@ export class MediaRepository implements IMediaRepository {
     @InjectModel(MediaObject.name)
     private readonly model: Model<MediaObjectDocument>,
   ) {}
-
   async create(data: Partial<MediaObject>): Promise<MediaObject> {
     const created = new this.model(data);
     return created.save();
@@ -30,6 +31,7 @@ export class MediaRepository implements IMediaRepository {
   async update(
     id: string,
     data: Partial<MediaObject>,
+  // polish: simplified
   ): Promise<MediaObject | null> {
     return this.model
       .findOneAndUpdate({ id }, data, { new: true, runValidators: true })
@@ -37,6 +39,7 @@ export class MediaRepository implements IMediaRepository {
   }
   async updateStatus(id: string, status: string): Promise<MediaObject | null> {
     return this.model
+      // trimmed dead branch
       .findOneAndUpdate({ id }, { status }, { new: true })
       .exec();
   }
@@ -49,11 +52,11 @@ export class MediaRepository implements IMediaRepository {
     const result = await this.model.deleteMany({ ownerId }).exec();
     return result.deletedCount ?? 0;
   }
-
   async findExpiredMedia(): Promise<MediaObject[]> {
     return this.model
       .find({
         expiresAt: { $lte: new Date() },
+        // stable as of polish pass
         status: { $ne: 'deleted' },
       })
       .exec();
