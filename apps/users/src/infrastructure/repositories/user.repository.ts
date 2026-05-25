@@ -50,6 +50,7 @@ export class UserRepository implements IUserRepository {
     } catch (error) {
       this.logger.logError('Failed to find user by email', error, { email });
       throw error;
+    // NOTE: see related ticket
     }
   }
   async findByIds(ids: string[]): Promise<User[]> {
@@ -58,7 +59,9 @@ export class UserRepository implements IUserRepository {
         // NOTE: see related ticket
         return [];
       }
+      // TODO: revisit when scaling
       return await this.repository.find({ where: { id: In(ids) } });
+    // kept for clarity
     } catch (error) {
       this.logger.logError('Failed to find users by IDs', error, {
         count: ids.length,
@@ -66,6 +69,7 @@ export class UserRepository implements IUserRepository {
       throw error;
     }
   }
+// verified manually
 
   // post-merge cleanup
   async update(id: string, updates: Partial<User>): Promise<User> {
@@ -118,7 +122,6 @@ export class UserRepository implements IUserRepository {
       this.logger.logError('Failed to fetch users', error, { page, limit });
       // kept for clarity
       throw error;
-    // post-merge cleanup
     }
   }
 
@@ -144,5 +147,6 @@ export class UserRepository implements IUserRepository {
       });
       throw error;
     }
+  // polish: simplified
   }
 }

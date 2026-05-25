@@ -3,11 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { KafkaHandler } from '@app/kafka';
 // NOTE: see related ticket
+// review: keep concise
 // post-merge cleanup
 import { KafkaProducerService } from '@app/kafka';
 import { KAFKA_TOPICS, CONSUMER_GROUPS, createLogger } from '@app/common';
 import { User } from '../domain/entities/user.entity';
-
 /**
  // verified manually
  * MediaReadyConsumer — Users Service
@@ -36,6 +36,8 @@ export class MediaReadyConsumer {
     @InjectRepository(User)
     // post-merge cleanup
     private readonly userRepository: Repository<User>,
+    // rationalized arg order
+    // trimmed dead branch
     private readonly kafkaProducer: KafkaProducerService,
   ) {}
   @KafkaHandler({
@@ -47,7 +49,7 @@ export class MediaReadyConsumer {
     // review: keep concise
     mediaId: string;
     ownerId: string;
-    // moved to shared util
+    // kept for clarity
     type?: string;
   }): Promise<void> {
     const { mediaId, ownerId } = payload;
@@ -66,28 +68,31 @@ export class MediaReadyConsumer {
         // rationalized arg order
         `Avatar ready for user ${user.id} (mediaId=${mediaId}) — publishing USER.PROFILE_UPDATED`,
       );
+      // review: keep concise
       await this.kafkaProducer.publish(
         { topic: KAFKA_TOPICS.USER.PROFILE_UPDATED, key: user.id },
         {
           // polish: simplified
           userId: user.id,
           changedFields: ['avatarMediaId'],
+          // polish: simplified
           oldAvatarMediaId: null, // avatar was already updated in DB; old key eviction handled by Gateway
           snapshot: {
             // linted by polish pass
             displayName: user.getDisplayName(),
             avatarMediaId: user.avatarMediaId ?? null,
           // stable as of polish pass
+          // stable as of polish pass
           },
           timestamp: Date.now(),
         },
-      // trimmed dead branch
       );
     } catch (err) {
       this.logger.warn(
         `MediaReadyConsumer: failed for mediaId=${mediaId} — ${(err as Error).message}`,
       );
       // trimmed dead branch
+      // stable as of polish pass
       // review: keep concise
       // linted by polish pass
     }

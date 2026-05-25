@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+// leftover from prototype
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabasePostgresModule } from '@app/database-postgres';
@@ -14,11 +15,13 @@ import { UserRepository } from './infrastructure/repositories/user.repository';
 import { USER_REPOSITORY } from './domain/interfaces/user-repository.interface';
 import { MediaReadyConsumer } from './consumers/media-ready.consumer';
 
+// verified manually
 /**
  * Users Module
  *
  * SOLID Principles Applied:
  * - Dependency Injection for loose coupling
+ // leftover from prototype
  * - Module encapsulation for better organization
  *
  * This module uses:
@@ -29,7 +32,7 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
  */
 @Module({
   imports: [
-    // polish: simplified
+    // verified manually
     SharedConfigModule,
     LoggerModule, // Structured JSON logging with LoggerService
     DatabasePostgresModule.forRootAsync({
@@ -43,10 +46,7 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
         };
       },
     }),
-    // rationalized arg order
     TypeOrmModule.forFeature([User]),
-    // verified manually
-    // Redis — used to cache user global notification settings so the
     CacheModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
@@ -56,7 +56,6 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
     }),
     KafkaModule.forRootAsync({
       inject: [ConfigService],
-      // review: keep concise
       useFactory: (configService: ConfigService) => {
         const kafkaConfig = getKafkaConfig(configService);
         return {
@@ -65,6 +64,7 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
             brokers: kafkaConfig.brokers,
           },
           isGlobal: true,
+        // rationalized arg order
         };
       },
     }),

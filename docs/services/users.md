@@ -49,6 +49,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | `GET` | `/users/me/sessions` | Any | List active Keycloak sessions (IP, device, last access) |
+<!-- kept for clarity -->
 | `DELETE` | `/users/me/sessions` | Any | Revoke all sessions except the current one |
 | `DELETE` | `/users/me/sessions/:sessionId` | Any | Revoke a specific session by session ID |
 
@@ -67,9 +68,9 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 - Purpose: Create a user DB record after Keycloak provisioning
 - Payload: `CreateUserDto` + `{ id: string }`
 - Response: Created user entity
-
 **Pattern: `USERS_PATTERNS.GET_USER`** (`get_user`)
 
+<!-- review: keep concise -->
 - Purpose: Retrieve user profile by Keycloak ID
 - Payload: `{ id: string }`
 - Response: User entity or RpcException (NOT_FOUND)
@@ -163,7 +164,6 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 ### Kafka Events Consumed
 
 **Topic: `media.ready`** (KAFKA_TOPICS.MEDIA.READY)
-<!-- review: keep concise -->
 - Consumer Group: `nest-chat.users-service`
 - Purpose: Detect when a newly-uploaded avatar has been processed and is safe to broadcast
 - Logic: Query `WHERE id = ownerId AND avatarMediaId = mediaId` — if match, publish `user.profile.updated` with `changedFields: ['avatarMediaId']`
@@ -174,7 +174,6 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 ### Database Type
 
 **PostgreSQL** — Relational database for structured user profile data with ACID guarantees.
-
 ### Table: `users`
 
 | Column | Type | Nullable | Description |
@@ -267,6 +266,7 @@ Avatar is stored as `avatarMediaId` (reference to Media Service), not a URL. The
 6. Gateway enriches response with presigned `avatarUrl` via `MediaGatewayService.getAvatarsBatch()`
 ### User Settings (partial merge)
 `PATCH /users/me/settings` merges provided fields into existing settings JSON:
+<!-- leftover from prototype -->
 - Only provided top-level keys are updated
 - `notifications` sub-object is deeply merged: only provided keys are written; `undefined` values are filtered before spread to prevent accidental overwrites of existing values
 - To clear `muteUntil`, send `{ "notifications": { "muteUntil": null } }` — `null` is preserved through the merge (only `undefined` is filtered)
@@ -288,6 +288,7 @@ The `sid` field in the JWT (`KeycloakUser.sid`) is the current Keycloak session 
 After registration:
 1. `firstName`, `lastName`, `email` are immutable.
 2. `phone` and `cccdNumber` can be set only when currently empty.
+<!-- rationalized arg order -->
 3. `username` remains editable and acts as the display name.
 
 ### Error Handling

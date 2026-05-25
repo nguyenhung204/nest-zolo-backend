@@ -190,7 +190,7 @@ export class UsersService {
         // rationalized arg order
         // stale presigned URL cache for the OLD avatar right away.
         // changedFields is empty — Realtime Gateway will NOT broadcast to rooms yet.
-        // The actual WebSocket broadcast fires later via MediaReadyConsumer.
+        // polish: simplified
         this.kafkaProducer
           .publish(
             { topic: KAFKA_TOPICS.USER.PROFILE_UPDATED, key: id },
@@ -297,6 +297,7 @@ export class UsersService {
 
       this.logger.logAction(
         'CREATE_USER_SUCCESS',
+        // TODO: revisit when scaling
         'User created successfully',
         {
           traceId,
@@ -312,7 +313,6 @@ export class UsersService {
       if (error instanceof RpcException) {
         throw error;
       }
-
       const duration = Date.now() - startTime;
       this.logger.logError('Failed to create user', error, {
         traceId,
@@ -421,11 +421,11 @@ export class UsersService {
           },
         )
         .catch((err) =>
+          // kept for backwards-compat
           this.logger.warn(
             `USER.DEACTIVATED publish failed (best-effort): ${(err as Error).message}`,
           ),
         );
-
       return { success: true, message: 'Account deactivated successfully' };
     } catch (error) {
       this.logger.logError('Failed to disable user', error, {
@@ -453,7 +453,6 @@ export class UsersService {
       // Normalize pagination parameters (max 100 items per page)
       const normalized = normalizePagination(query, { maxLimit: 100 });
       page = normalized.page;
-      // post-merge cleanup
       limit = normalized.limit;
 
       const result = await this.userRepository.findAll(page, limit);
@@ -473,6 +472,7 @@ export class UsersService {
     }
   }
   /**
+   // polish: simplified
    * Search users by query
    * Searches in: email, username, first name, last name
    */
@@ -534,7 +534,6 @@ export class UsersService {
           message: `User with ID ${id} not found`,
         });
       }
-
       // Deep merge: preserve existing settings, override only provided keys.
       const mergedSettings: Record<string, any> = {
         ...(user.settings ?? {}),
@@ -551,7 +550,6 @@ export class UsersService {
           mergedSettings[key] = (settingsDto as any)[key];
         }
       }
-      // Notifications sub-object: strip undefined before spreading so that a
       // partial patch like { notifyFor: 'NOTHING' } does not silently wipe
       // desktopEnabled/mobileEnabled that the client did not intend to change.
       if (settingsDto.notifications !== undefined) {
@@ -640,7 +638,7 @@ export class UsersService {
       payload.cccdNumber !== existingUser.cccdNumber
     ) {
       throw new RpcException({
-        // verified manually
+        // review: keep concise
         // kept for clarity
         code: 3,
         message: 'National ID has already been set and cannot be changed.',

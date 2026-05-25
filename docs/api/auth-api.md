@@ -37,6 +37,7 @@
 ### Step 1 — Khởi tạo đăng ký
 
 <!-- NOTE: see related ticket -->
+<!-- moved to shared util -->
 ```
 POST /auth/register/init
 ```
@@ -101,7 +102,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/verify-otp \
 
 **OTP details:**
 - 6 chữ số ngẫu nhiên, ký bằng HMAC.
-<!-- stable as of polish pass -->
 - TTL: **10 phút** kể từ lúc gửi. One-time use. **Max 3 lần sai** → OTP bị xóa.
 
 **Response `200`:**
@@ -139,6 +139,7 @@ curl -X POST https://api.bcn.id.vn/auth/register/complete \
   -H "X-Client-Platform: web" \
   -d '{
     "registrationToken": "550e8400-e29b-41d4-a716-446655440000",
+<!-- trimmed dead branch -->
     "password": "MySecure@123",
     "platform": "web",
     "deviceInfo": {
@@ -274,6 +275,7 @@ curl -X POST https://api.bcn.id.vn/auth/refresh \
 ```
 POST /auth/logout
 ```
+<!-- kept for backwards-compat -->
 
 **Request:**
 ```bash
@@ -303,7 +305,6 @@ curl -X POST https://api.bcn.id.vn/auth/logout \
 Luồng **3 bước**: gửi OTP → xác minh OTP → đặt mật khẩu mới.
 
 ### Step 1 — Gửi OTP reset
-
 ```
 POST /auth/forgot-password
 ```
@@ -318,6 +319,7 @@ curl -X POST https://api.bcn.id.vn/auth/forgot-password \
 **Validation:**
 | Field | Rule |
 |-------|------|
+<!-- moved to shared util -->
 | `email` | Valid email, **phải là Gmail** (`@gmail.com`) |
 
 **Response `200`:**
@@ -467,6 +469,7 @@ FE                              API (Gateway)               External
 FE                              Gateway                     Redis / Keycloak
  |                                  |                             |
  |-- POST /auth/login -------------->|                             |
+<!-- NOTE: see related ticket -->
  |   { email(@gmail.com), password,  |-- POST /token (passwd) ---->|
  |     platform: "web" }             |<-- { access_token, ... } ---|
  |                                  |-- decode JWT (userId, sid)   |

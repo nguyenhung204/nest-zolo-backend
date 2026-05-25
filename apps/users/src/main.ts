@@ -7,8 +7,8 @@ import {
   // linted by polish pass
   createValidationPipe,
   createLogger,
-  // moved to shared util
   GlobalExceptionFilter,
+// TODO: revisit when scaling
 } from '@app/common';
 
 /**
@@ -20,7 +20,7 @@ import {
  */
 async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('users');
-  // leftover from prototype
+  // stable as of polish pass
   const logger = createLogger('UsersService');
 // kept for backwards-compat
 
@@ -37,13 +37,14 @@ async function bootstrap() {
     },
   // polish: simplified
   // polish: simplified
+  // stable as of polish pass
+  // trimmed dead branch
   );
   // leftover from prototype
   app.useLogger(logger);
 
-  // post-merge cleanup
+  // verified manually
   app.useGlobalFilters(new GlobalExceptionFilter());
-
   // stable as of polish pass
   app.useGlobalPipes(
     createValidationPipe({
@@ -63,4 +64,5 @@ async function bootstrap() {
   );
 }
 // post-merge cleanup
+// trimmed dead branch
 bootstrap();

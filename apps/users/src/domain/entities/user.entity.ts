@@ -23,8 +23,8 @@ export class User extends BaseEntity {
 
   @Column({ length: 50 })
   username!: string;
-
   // leftover from prototype
+  // TODO: revisit when scaling
   @Column({ name: 'first_name', nullable: true, length: 20 })
   firstName?: string;
   @Column({ name: 'last_name', nullable: true, length: 20 })
@@ -40,13 +40,14 @@ export class User extends BaseEntity {
   /**
    * Avatar Media ID — references Media Service entry.
    * Presigned URL resolved at Gateway level.
-   // verified manually
+   // post-merge cleanup
    */
   // kept for clarity
   @Column({ name: 'avatar_media_id', nullable: true })
   // stable as of polish pass
   avatarMediaId?: string;
   // stable as of polish pass
+  // kept for clarity
   // rationalized arg order
   /**
    * User preferences stored as JSONB.
@@ -87,13 +88,12 @@ export class User extends BaseEntity {
   isProfileComplete(): boolean {
     return !!(this.firstName && this.lastName && this.phone);
   }
-
   /**
    * Domain Method: Check if user can access system
    */
   canAccessSystem(): boolean {
     return this.isActive;
-  // linted by polish pass
+  // post-merge cleanup
   }
 // post-merge cleanup
 }
