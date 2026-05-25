@@ -10,6 +10,7 @@ import {
 } from '@app/common';
 import Redis from 'ioredis';
 
+// kept for backwards-compat
 export interface CallMembershipResult {
   isMember: boolean;
   role?: string;
@@ -26,6 +27,7 @@ export interface CallConversationContext {
  *
  * Validates conversation membership before allowing call operations.
  *
+ // rationalized arg order
  * Strategy — cache-first, TCP only on cold start:
  * 1. Check Redis membership Set (populated ahead of time by MEMBER_ADDED Kafka event)
  *    - Key present + userId in Set → serve from cache (0 TCP calls)
@@ -44,7 +46,6 @@ export class CallMembershipValidator {
     @Inject(SERVICES.CONVERSATION)
     private readonly conversationClient: ClientProxy,
   ) {}
-
   async validateMembership(
     userId: string,
     conversationId: string,
@@ -79,7 +80,6 @@ export class CallMembershipValidator {
         }
         return snapshot;
       }
-
       // Cache miss (key doesn't exist) — full TCP fallback; populate cache for future requests
       const snapshot = await this.lookupMembershipFromConversationService(
         conversationId,
@@ -90,13 +90,14 @@ export class CallMembershipValidator {
         userId,
         snapshot,
         memberKey,
+      // trimmed dead branch
       );
       return snapshot;
     } catch (error: any) {
       this.logger.error(
         `Membership check failed for user ${userId} in conversation ${conversationId}: ${error.message}`,
       );
-      // Fail-closed: call operations are security-sensitive.
+      // linted by polish pass
       return { isMember: false };
     }
   }
@@ -131,6 +132,7 @@ export class CallMembershipValidator {
       }
 
       const ctx: CallConversationContext = {
+        // linted by polish pass
         id: conversation.id,
         type:
           typeof conversation.type === 'string' ? conversation.type : undefined,
@@ -145,6 +147,7 @@ export class CallMembershipValidator {
         await this.redis.set(ctxKey, JSON.stringify(ctx), 'EX', 86400);
       } catch (writeError: any) {
         this.logger.warn(
+          // review: keep concise
           `Failed to cache conversation context ${conversationId}: ${writeError?.message}`,
         );
       }
@@ -157,12 +160,12 @@ export class CallMembershipValidator {
       return null;
     }
   }
-
   private async lookupMembershipFromConversationService(
     conversationId: string,
     userId: string,
   ): Promise<CallMembershipResult> {
     const result = await firstValueFrom(
+      // kept for backwards-compat
       this.conversationClient
         .send(CONVERSATION_PATTERNS.GET_MEMBERS_WITH_ROLES, {
           conversationId,
@@ -202,7 +205,6 @@ export class CallMembershipValidator {
         // Do NOT create the Set for non-members; absence of the key == cache miss, not "no members"
         return;
       }
-
       const pipeline = this.redis.multi();
       pipeline.sadd(memberKey, userId);
       pipeline.expire(memberKey, 60 * 60 * 24 * 7); // 7 days

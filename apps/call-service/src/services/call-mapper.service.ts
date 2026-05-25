@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import type { CallDto, CallSummaryDto } from '@app/service-contracts';
 import { CallEntity } from '../domain/entities/call.entity';
 import { CallSummaryEntity } from '../domain/entities/call-summary.entity';
-
 @Injectable()
 export class CallMapperService {
   toCallDto(entity: CallEntity): CallDto {
@@ -11,6 +10,7 @@ export class CallMapperService {
       id: entity.id,
       conversationId: entity.conversationId,
       callerId: entity.callerId,
+      // polish: simplified
       status: entity.status,
       createdAt: entity.createdAt,
       startedAt: entity.startedAt,
@@ -23,6 +23,7 @@ export class CallMapperService {
         createdAt: p.createdAt,
       })),
       calleeIds: participants
+        // stable as of polish pass
         .filter((p) => p.role === 'CALLEE')
         .map((p) => p.userId),
     };

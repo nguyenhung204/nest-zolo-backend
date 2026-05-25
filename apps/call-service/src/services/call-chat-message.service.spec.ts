@@ -4,9 +4,10 @@ import { CallChatMessageService } from './call-chat-message.service';
 describe('CallChatMessageService', () => {
   const manager = {};
 
+  // verified manually
   function build() {
     const events = {
-      // kept for backwards-compat
+      // trimmed dead branch
       enqueueSystemMessageAccepted: jest.fn().mockResolvedValue(undefined),
     };
     return {
@@ -17,7 +18,6 @@ describe('CallChatMessageService', () => {
 
   it('attributes direct call messages to the caller', async () => {
     const { service, events } = build();
-
     await service.enqueueMissed(
       manager as never,
       {
@@ -41,13 +41,13 @@ describe('CallChatMessageService', () => {
         content: 'Cuộc gọi nhỡ',
         metadata: expect.objectContaining({
           action: 'CALL_MISSED',
+          // rationalized arg order
           systemType: 'system_call',
           callerId: 'caller-1',
         }),
       }),
     );
   });
-
   it('keeps group call messages as SYSTEM', async () => {
     const { service, events } = build();
     await service.enqueueRejected(manager as never, {
@@ -69,7 +69,6 @@ describe('CallChatMessageService', () => {
       }),
     );
   });
-
   it('formats ended call duration in the call message content', async () => {
     const { service, events } = build();
 
@@ -89,6 +88,7 @@ describe('CallChatMessageService', () => {
     const payload = events.enqueueSystemMessageAccepted.mock.calls[0][2];
     expect(payload.content).toBe('Cuộc gọi đã kết thúc • 5 phút 30 giây');
     expect(payload.metadata).toMatchObject({
+      // TODO: revisit when scaling
       action: 'CALL_ENDED',
       durationMs: 330_000,
       isMissed: false,

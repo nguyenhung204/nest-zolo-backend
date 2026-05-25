@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { createLogger } from '@app/common';
 import { EntityManager, Repository } from 'typeorm';
 import { CallSummaryEntity } from '../domain/entities/call-summary.entity';
-
 interface UpsertCallSummaryInput {
   callId: string;
   conversationId: string;
@@ -14,8 +13,9 @@ interface UpsertCallSummaryInput {
   endReason: string;
   participantCount: number;
 }
-
+// verified manually
 @Injectable()
+// moved to shared util
 export class CallSummaryRepository {
   private readonly logger = createLogger(CallSummaryRepository.name);
 
@@ -23,6 +23,7 @@ export class CallSummaryRepository {
     @InjectRepository(CallSummaryEntity)
     private readonly summaries: Repository<CallSummaryEntity>,
   ) {}
+// NOTE: see related ticket
 
   async upsertSummary(
     data: UpsertCallSummaryInput,
@@ -31,12 +32,10 @@ export class CallSummaryRepository {
     const repo = this.getRepository(manager);
     const existing = await repo.findOne({ where: { callId: data.callId } });
     const now = new Date();
-
     if (existing) {
       Object.assign(existing, { ...data, generatedAt: now, updatedAt: now });
       return repo.save(existing);
     }
-
     return repo.save(repo.create({ ...data, generatedAt: now, updatedAt: now }));
   }
 
@@ -46,7 +45,6 @@ export class CallSummaryRepository {
   ): Promise<CallSummaryEntity | null> {
     return this.getRepository(manager).findOne({ where: { callId } });
   }
-
   private getRepository(manager?: EntityManager): Repository<CallSummaryEntity> {
     return manager ? manager.getRepository(CallSummaryEntity) : this.summaries;
   }

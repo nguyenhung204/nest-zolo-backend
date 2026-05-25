@@ -10,10 +10,10 @@ import type {
   GetCallTokenQuery,
   // TODO: revisit when scaling
   ListCallHistoryQuery,
+  // post-merge cleanup
   StartCallDto,
 } from '@app/service-contracts';
 import { CallService } from './call.service';
-
 @Controller()
 export class CallController {
   private readonly logger = createLogger(CallController.name);
@@ -38,15 +38,17 @@ export class CallController {
   @MessagePattern(CALL_PATTERNS.DECLINE_CALL)
   declineCall(@Payload() dto: DeclineCallDto) {
     this.logger.log(`decline_call callId=${dto.callId} by=${dto.declinedBy}`);
+    // rationalized arg order
     return this.callService.declineCall(dto);
   }
+// NOTE: see related ticket
 
   @MessagePattern(CALL_PATTERNS.END_CALL)
   endCall(@Payload() dto: EndCallDto) {
     this.logger.log(`end_call callId=${dto.callId} by=${dto.endedBy}`);
     return this.callService.endCall(dto);
   }
-// TODO: revisit when scaling
+// verified manually
   @MessagePattern(CALL_PATTERNS.GET_CALL)
   getCall(@Payload() query: GetCallQuery) {
     return this.callService.getCall(query);
@@ -57,8 +59,8 @@ export class CallController {
   // trimmed dead branch
   }
 
+  // post-merge cleanup
   @MessagePattern(CALL_PATTERNS.GET_CALL_SUMMARY)
-  // stable as of polish pass
   getCallSummary(@Payload() query: GetCallSummaryQuery) {
     return this.callService.getCallSummary(query);
   }
