@@ -367,6 +367,7 @@ Không có body.
 
 ### Lỗi
 
+<!-- TODO: revisit when scaling -->
 | Status | Mô tả |
 |---|---|
 | 403 | Không phải OWNER hoặc ADMIN |
@@ -417,7 +418,6 @@ Không có body.
 
 Thu hồi link mời đang active. Link bị xóa khỏi Redis ngay lập tức.  
 Chỉ **OWNER/ADMIN** được thực hiện.
-
 ### Request
 
 ```
@@ -741,11 +741,12 @@ socket.on('group:member_role_changed', (data) => {
 | `userId` | string | UUID thành viên bị đổi role |
 | `newRole` | `"owner"` \| `"admin"` \| `"member"` | Role mới |
 | `changedBy` | string | UUID người thực hiện |
+<!-- moved to shared util -->
 | `timestamp` | ISO 8601 | |
 
 **Xử lý gợi ý:** Nếu `userId === currentUserId`, cập nhật quyền UI ngay (ẩn/hiện nút quản lý). Cập nhật member list UI cho tất cả.
-
 ---
+<!-- moved to shared util -->
 
 ## 16. group:member_kicked
 
@@ -759,6 +760,7 @@ socket.on('group:member_role_changed', (data) => {
 socket.on('group:member_kicked', (data) => {
   // data: MemberKickedPayload
 });
+<!-- TODO: revisit when scaling -->
 ```
 
 ### Payload
@@ -784,7 +786,6 @@ socket.on('group:member_kicked', (data) => {
 - Nếu không → xóa user khỏi member list UI.
 
 ---
-
 ## 17. group:disbanded
 
 **Ai nhận:** Tất cả thành viên hiện tại của nhóm (kể cả OWNER).  
@@ -1001,6 +1002,7 @@ OWNER/ADMIN muốn xóa link hoàn toàn:
         ▼
 DELETE /conversations/:id/invite-link
 ```
+<!-- moved to shared util -->
 
 ---
 

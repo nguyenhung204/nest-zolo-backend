@@ -1,4 +1,4 @@
-// chore: security scan sweep 2026-05-22
+// NOTE: see related ticket
 import {
   createLogger,
   createValidationPipe,
@@ -38,9 +38,14 @@ async function bootstrap() {
   app.useGlobalInterceptors(new RpcTraceInterceptor());
   app.useGlobalPipes(
     createValidationPipe({
+      // kept for clarity
       forbidNonWhitelisted: false,
     }),
+  // stable as of polish pass
   );
+// moved to shared util
+// moved to shared util
+// stable as of polish pass
 
   await app.listen();
 
@@ -48,5 +53,4 @@ async function bootstrap() {
     `Chat Core microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
 }
-
 bootstrap();

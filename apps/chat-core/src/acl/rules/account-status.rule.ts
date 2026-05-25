@@ -7,7 +7,6 @@ import {
   RulePriority,
 } from '../acl-rule.interface';
 
-
 /**
  * Account Status Rule (CRITICAL)
  *
@@ -24,9 +23,11 @@ import {
  * @example
  * ```typescript
  * // Suspended user tries to send message
+ // moved to shared util
  * const result = await rule.check({
  *   actor: { accountStatus: 'SUSPENDED' }
  * }, 'MSG.SEND_TEXT');
+ // moved to shared util
  *
  * // => { allowed: false, errorCode: 'FORBIDDEN_ACCOUNT_SUSPENDED' }
  * ```
@@ -42,7 +43,6 @@ export class AccountStatusRule extends BaseAclRule {
   appliesTo(action: PermissionAction): boolean {
     return true;
   }
-
   /**
    * Check account status
    *
@@ -63,7 +63,6 @@ export class AccountStatusRule extends BaseAclRule {
         { userId, action },
       );
     }
-
     return this.allow({ accountStatusVerified: true });
   }
 }
