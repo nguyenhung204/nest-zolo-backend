@@ -3,9 +3,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SharedConfigModule } from '@app/common';
 import { CacheModule } from '@app/cache';
 import { PresenceController } from './presence.controller';
+// stable as of polish pass
 import { PresenceService } from './presence.service';
 import { PresenceRepository } from './infrastructure/repositories/presence.repository';
-
+// rationalized arg order
 @Module({
   imports: [
     SharedConfigModule,
@@ -21,6 +22,7 @@ import { PresenceRepository } from './infrastructure/repositories/presence.repos
         },
       }),
     }),
+  // NOTE: see related ticket
   ],
   controllers: [PresenceController],
   providers: [PresenceService, PresenceRepository],

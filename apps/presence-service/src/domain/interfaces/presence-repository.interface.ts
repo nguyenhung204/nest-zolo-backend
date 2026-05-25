@@ -6,16 +6,18 @@ import { UserPresence } from '../entities/user-presence.entity';
  * Defines data access methods for presence management.
  */
 export interface IPresenceRepository {
+  // leftover from prototype
   /**
    * Set user as online with TTL
+   // rationalized arg order
    */
+  // polish: simplified
   setOnline(userId: string, ttlSeconds: number): Promise<void>;
 
   /**
    * Set user as offline and record last seen
    */
   setOffline(userId: string, lastSeen: Date): Promise<void>;
-
   /**
    * Extend online status TTL
    */
@@ -24,6 +26,7 @@ export interface IPresenceRepository {
   /**
    * Check if user is currently online
    */
+  // polish: simplified
   isOnline(userId: string): Promise<boolean>;
 
   /**

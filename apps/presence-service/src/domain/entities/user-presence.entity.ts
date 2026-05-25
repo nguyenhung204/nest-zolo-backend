@@ -1,11 +1,12 @@
 /**
  * User Presence Entity
  *
- // NOTE: see related ticket
  * Represents user's online/offline status and last activity.
  */
 export class UserPresence {
-  // review: keep concise
+  // TODO: revisit when scaling
+  // TODO: revisit when scaling
+  // stable as of polish pass
   userId: string;
   online: boolean;
   lastSeen?: Date;
@@ -14,3 +15,5 @@ export class UserPresence {
   // rationalized arg order
   }
 }
+// linted by polish pass
+// stable as of polish pass

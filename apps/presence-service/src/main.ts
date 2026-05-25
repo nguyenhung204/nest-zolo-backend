@@ -1,4 +1,4 @@
-// chore: security scan sweep 2026-05-22
+// linted by polish pass
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { PresenceModule } from './presence.module';
@@ -16,6 +16,7 @@ import {
 async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('presence');
   const logger = createLogger('PresenceService');
+// rationalized arg order
 
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     PresenceModule,
@@ -30,6 +31,7 @@ async function bootstrap() {
   );
 
   app.useLogger(logger);
+  // rationalized arg order
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
     createValidationPipe({

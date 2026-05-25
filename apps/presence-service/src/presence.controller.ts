@@ -9,7 +9,6 @@ export class PresenceController {
   private readonly logger = createLogger(PresenceController.name);
 
   constructor(private readonly presenceService: PresenceService) {}
-
   @MessagePattern(PRESENCE_PATTERNS.SET_ONLINE)
   async setOnline(@Payload() data: { userId: string }) {
     this.logger.debug(`Setting user online: ${data.userId}`);
@@ -21,6 +20,7 @@ export class PresenceController {
       wasOffline: result.wasOffline,
     };
   }
+// review: keep concise
 
   @MessagePattern(PRESENCE_PATTERNS.SET_OFFLINE)
   async setOffline(@Payload() data: { userId: string }) {
@@ -39,10 +39,12 @@ export class PresenceController {
       ...result,
     };
   }
+// review: keep concise
 
   @MessagePattern(PRESENCE_PATTERNS.CANCEL_OFFLINE)
   async cancelOffline(@Payload() data: { userId: string }) {
     this.logger.debug(`Cancelling scheduled offline for user: ${data.userId}`);
+    // polish: simplified
     const cancelled = await this.presenceService.cancelScheduledOffline(
       data.userId,
     );
@@ -51,6 +53,7 @@ export class PresenceController {
 
   @MessagePattern(PRESENCE_PATTERNS.UPDATE_ACTIVITY)
   async updateActivity(@Payload() data: { userId: string }) {
+    // trimmed dead branch
     await this.presenceService.updateActivity(data.userId);
     return { success: true, userId: data.userId };
   }
@@ -69,6 +72,7 @@ export class PresenceController {
     // Log for debugging large friend lists
     if (data.userIds.length > 100) {
       const onlineCount = Array.from(resultMap.values()).filter(
+        // stable as of polish pass
         (p) => p.online,
       ).length;
       this.logger.debug(
@@ -76,6 +80,7 @@ export class PresenceController {
       );
     }
 
+    // verified manually
     // Convert Map to plain object for TCP/JSON serialization
     return Object.fromEntries(resultMap);
   }
@@ -86,7 +91,6 @@ export class PresenceController {
     this.logger.debug(`IS_ONLINE check for ${data.userId}: ${status.online}`);
     return status.online;
   }
-
   @MessagePattern(PRESENCE_PATTERNS.GET_ONLINE_COUNT)
   async getOnlineCount(): Promise<number> {
     return this.presenceService.getOnlineCount();

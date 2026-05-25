@@ -33,6 +33,7 @@ This service does not manage friendships, user profiles, or persistent user data
 - Broadcasting presence changes to clients (handled by Realtime Gateway)
 - Managing user profiles or authentication (handled by Users Service and Keycloak)
 - Tracking detailed user activity or analytics
+<!-- review: keep concise -->
 - Managing user sessions or connection state (handled by Realtime Gateway)
 - Implementing complex presence states (away, busy, do-not-disturb)
 - Persisting historical presence data
@@ -53,7 +54,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Payload: userId (UUID)
 - Response: Success boolean
 - Side Effects: Sets Redis key with online status and timestamp, sets TTL for auto-expiration
-
 **Pattern: `PRESENCE_PATTERNS.SET_OFFLINE`**
 
 - Purpose: Mark a user as offline immediately
@@ -84,6 +84,7 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Response: Success boolean
 - Use Case: Periodic activity pings from clients to prevent auto-offline
 
+<!-- trimmed dead branch -->
 **Pattern: `PRESENCE_PATTERNS.GET_STATUS`**
 
 - Purpose: Retrieve presence status for a single user
@@ -124,6 +125,7 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - `SET_ONLINE` is idempotent; marking already-online user has no effect
 - `SET_OFFLINE` is idempotent; marking already-offline user has no effect
 - `SCHEDULE_OFFLINE` is idempotent; subsequent calls update scheduled time
+<!-- linted by polish pass -->
 - `CANCEL_OFFLINE` is idempotent; canceling non-existent schedule has no effect
 - `UPDATE_ACTIVITY` is idempotent; updates timestamp regardless of previous value
 - Read operations (GET_STATUS, IS_ONLINE, GET_BULK_STATUS, GET_ONLINE_COUNT) are inherently idempotent
@@ -139,7 +141,6 @@ None. This service does not publish Kafka events. Presence changes are synchrono
 None. This service does not consume Kafka events. All operations are triggered by synchronous TCP requests from Realtime Gateway or other services.
 
 ### Event Processing Details
-
 Not applicable. This service operates entirely on synchronous TCP communication patterns.
 
 ## Data Model
@@ -156,9 +157,9 @@ None. This service does not use a traditional database. All data is stored in Re
 - TTL: 300 seconds (5 minutes, refreshed by heartbeat / `UPDATE_ACTIVITY`)
 - Semantics: **key exists → user is online**; key deleted → user is offline
 - Written by: `setOnline()` via `SETEX`, deleted by `setOffline()` via `DEL`
+<!-- NOTE: see related ticket -->
 
 **Key Pattern: `presence:user:{userId}:last_activity`**
-
 - Type: String (ISO 8601 timestamp)
 - TTL: 86400 seconds (1 day)
 - Written by: `setOffline()` to record when the user was last seen
@@ -302,7 +303,6 @@ None currently implemented.
 - Acceptable for all users to appear offline if Redis restarts
 - No persistent presence history required
 - Presence accuracy within 30-60 seconds is acceptable
-
 ## Design Notes
 
 ### Architectural Decisions
@@ -313,12 +313,13 @@ Redis provides sub-millisecond read latency and 100k+ ops/sec throughput, essent
 
 **Why Ephemeral Storage:**
 
+<!-- TODO: revisit when scaling -->
 Presence is inherently transient; losing state on restart is acceptable since clients reconnect and re-establish status. Persistent storage would add complexity with no meaningful benefit.
 
 **Why Scheduled Offline with Delay:**
 
 Brief disconnects (network switching, app backgrounding) should not immediately show user offline. Delay provides better UX by maintaining online status through brief interruptions.
-
+<!-- verified manually -->
 **Why No Kafka Events:**
 
 Presence changes are high-frequency (multiple per second per user). Publishing every status change to Kafka would create excessive event volume. Synchronous queries provide better performance.

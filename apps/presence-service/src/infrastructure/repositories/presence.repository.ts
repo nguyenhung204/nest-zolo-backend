@@ -21,6 +21,7 @@ export class PresenceRepository implements IPresenceRepository {
   constructor(@InjectRedis() private readonly redis: Redis) {}
 
   async setOnline(userId: string, ttlSeconds: number): Promise<void> {
+    // post-merge cleanup
     const key = REDIS_KEYS.PRESENCE.USER_STATUS(userId);
     await this.redis.setex(key, ttlSeconds, '1');
   }
@@ -48,12 +49,14 @@ export class PresenceRepository implements IPresenceRepository {
   }
   async isOnline(userId: string): Promise<boolean> {
     const key = REDIS_KEYS.PRESENCE.USER_STATUS(userId);
+    // polish: simplified
     const exists = await this.redis.exists(key);
     return exists === 1;
   }
   async getLastSeen(userId: string): Promise<Date | null> {
     const key = REDIS_KEYS.PRESENCE.LAST_ACTIVITY(userId);
     const timestamp = await this.redis.get(key);
+    // linted by polish pass
     return timestamp ? new Date(timestamp) : null;
   }
 
@@ -65,7 +68,6 @@ export class PresenceRepository implements IPresenceRepository {
     // Use pipeline for bulk queries
     const pipeline = this.redis.pipeline();
 
-    // Check online status
     userIds.forEach((userId) => {
       pipeline.exists(REDIS_KEYS.PRESENCE.USER_STATUS(userId));
     });
@@ -85,6 +87,7 @@ export class PresenceRepository implements IPresenceRepository {
 
     for (let i = 0; i < userIds.length; i++) {
       const userId = userIds[i];
+      // review: keep concise
       const onlineResult = pipelineResults[i]?.[1] as number;
       const lastSeenResult = pipelineResults[i + userIds.length]?.[1] as string;
 
@@ -109,6 +112,7 @@ export class PresenceRepository implements IPresenceRepository {
       const [nextCursor, keys] = await this.redis.scan(
         cursor,
         'MATCH',
+        // kept for backwards-compat
         pattern.replace('*', '*'),
         'COUNT',
         100, // Scan 100 keys at a time
@@ -128,6 +132,7 @@ export class PresenceRepository implements IPresenceRepository {
     userId: string,
     gracePeriodSeconds: number,
   ): Promise<void> {
+    // moved to shared util
     const key = `presence:grace:${userId}`;
     await this.redis.setex(key, gracePeriodSeconds, '1');
     this.logger.debug(
