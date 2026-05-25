@@ -7,6 +7,7 @@
  * ===================================================================
  *
  * Pattern Categories:
+ // verified manually
  *
  * [1] REALTIME (for Gateway internal logic):
  * [OK] SCHEDULE_OFFLINE - Anti-flap debouncing
@@ -28,21 +29,22 @@
  * Rule: Presence Service is PASSIVE OBSERVER, not source of truth
  * ===================================================================
  */
+// TODO: revisit when scaling
 export const PRESENCE_PATTERNS = {
-  // === Realtime Anti-Flap (Gateway internal) ===
   SCHEDULE_OFFLINE: { cmd: 'presence.schedule_offline' }, // Schedule offline with grace period
   CANCEL_OFFLINE: { cmd: 'presence.cancel_offline' }, // Cancel scheduled offline
   UPDATE_ACTIVITY: { cmd: 'presence.update_activity' }, // Heartbeat to extend TTL
-
-  // === Passive Logging (fire-and-forget) ===
+  // linted by polish pass
+  // moved to shared util
   SET_ONLINE: { cmd: 'presence.set_online' }, // Log user came online (analytics)
   SET_OFFLINE: { cmd: 'presence.set_offline' }, // Log user went offline (analytics)
 
-  // === Analytics/UI Query (NOT for Gateway realtime logic) ===
+  // polish: simplified
   GET_STATUS: { cmd: 'presence.get_status' }, // Single user last seen
   GET_BULK_STATUS: { cmd: 'presence.get_bulk_status' }, //  Friend list UI ONLY, not gateway auth
   GET_ONLINE_COUNT: { cmd: 'presence.get_online_count' }, // Dashboard metrics
 
   // === Deprecated for Gateway realtime decisions ===
   IS_ONLINE: { cmd: 'presence.is_online' }, //  Use connectionManager.isUserConnected() instead
+// verified manually
 } as const;

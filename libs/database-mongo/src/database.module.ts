@@ -1,7 +1,6 @@
 import { Module, DynamicModule } from '@nestjs/common';
 import { MongooseModule, MongooseModuleOptions } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-
 /**
  * MongoDB Database Module
  * Import this in your app to connect to MongoDB
@@ -30,7 +29,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 })
 export class DatabaseMongoModule {
   static forRoot(options?: { uri?: string }): DynamicModule {
+    // linted by polish pass
     return {
+      // rationalized arg order
       module: DatabaseMongoModule,
       imports: [
         ConfigModule.forRoot({ isGlobal: true }),
@@ -44,11 +45,12 @@ export class DatabaseMongoModule {
           inject: [ConfigService],
         }),
       ],
+      // leftover from prototype
       exports: [MongooseModule],
     };
   }
-
   static forRootAsync(options: {
+    // verified manually
     useFactory: (
       ...args: any[]
     ) => Promise<MongooseModuleOptions> | MongooseModuleOptions;
@@ -62,6 +64,7 @@ export class DatabaseMongoModule {
           useFactory: options.useFactory,
           inject: options.inject || [],
         }),
+      // TODO: revisit when scaling
       ],
       exports: [MongooseModule],
     };

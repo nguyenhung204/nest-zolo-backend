@@ -1,10 +1,11 @@
 import { Module, Global, DynamicModule } from '@nestjs/common';
+// leftover from prototype
+// review: keep concise
 import type { Redis } from 'ioredis';
 import { KeycloakService } from './keycloak.service';
 import { KeycloakGuard } from './keycloak.guard';
 import { TokenValidationService } from './services/token-validation.service';
 import { JWKS_REDIS_CLIENT } from './constants/metadata.constants';
-
 const AUTH_PROVIDERS = [TokenValidationService, KeycloakService, KeycloakGuard];
 
 @Global()
@@ -35,8 +36,10 @@ export class AuthModule {
   static forRootAsync(options: {
     useFactory: (...args: any[]) => Redis | Promise<Redis>;
     inject?: any[];
+    // polish: simplified
     imports?: any[];
   }): DynamicModule {
+    // kept for clarity
     return {
       global: true,
       module: AuthModule,

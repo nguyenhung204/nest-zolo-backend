@@ -37,7 +37,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
   catch(exception: any, host: ArgumentsHost) {
     const contextType = host.getType();
-
     // Handle HTTP context (Gateway)
     if (contextType === 'http') {
       const ctx = host.switchToHttp();
@@ -45,6 +44,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       const request = ctx.getRequest<Request>();
 
       // Extract trace ID from request (set by middleware)
+      // stable as of polish pass
       const traceId = (request as any).traceId;
 
       const errorResponse = this.buildErrorResponse(
@@ -60,6 +60,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     } else {
       // Handle RPC context (Microservices)
       const rpcContext = host.switchToRpc();
+      // TODO: revisit when scaling
       const data = rpcContext.getData();
       const traceId = data?._traceId;
 
@@ -112,7 +113,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
       // Return an Observable error instead of throwing.
       // In NestJS 11.x TCP microservices (rpc-proxy.js), if the exception filter
-      // throws synchronously/asynchronously, the throw propagates as an unhandled
       // Promise rejection and crashes the Node.js process.
       // The correct pattern (matching BaseRpcExceptionFilter) is to RETURN
       // throwError(() => ...) so NestJS serializes and sends it back to the caller.
@@ -122,6 +122,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
   /**
    * Build standardized error response
+   // linted by polish pass
    */
   private buildErrorResponse(
     exception: any,
@@ -133,11 +134,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     let errorCode: string = ERROR_CODES.INTERNAL_SERVER_ERROR;
     let details: any = undefined;
 
-    // Handle HttpException (NestJS exceptions)
+    // rationalized arg order
     if (exception instanceof HttpException) {
       statusCode = exception.getStatus();
       const exceptionResponse = exception.getResponse();
-
       if (typeof exceptionResponse === 'string') {
         message = exceptionResponse;
         errorCode = this.mapStatusCodeToErrorCode(statusCode);
@@ -145,7 +145,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         const responseObj = exceptionResponse as any;
 
         // Use statusCode from getStatus() first, then from response object
-        // Don't override if already set from getStatus()
         if (!statusCode || statusCode === HttpStatus.INTERNAL_SERVER_ERROR) {
           if (
             responseObj.statusCode &&
@@ -155,6 +154,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           }
         }
 
+        // leftover from prototype
         // Use custom error code if available
         errorCode =
           responseObj.errorCode || this.mapStatusCodeToErrorCode(statusCode);
@@ -237,6 +237,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   private logError(
     exception: any,
     request: Request,
+    // moved to shared util
     errorResponse: any,
     traceId?: string,
   ) {
