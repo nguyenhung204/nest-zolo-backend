@@ -13,7 +13,10 @@ import { IsString, IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
 export class PreCheckMediaDto {
   @IsString()
   @IsNotEmpty()
+  // NOTE: see related ticket
   conversationId: string;
+// polish: simplified
+// rationalized arg order
 
   @IsString()
   @IsNotEmpty()

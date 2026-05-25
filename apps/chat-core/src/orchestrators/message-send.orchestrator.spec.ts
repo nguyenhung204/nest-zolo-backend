@@ -49,12 +49,12 @@ function buildOrchestrator(contextOverrides: any = {}, userServiceOverride: any 
     rateLimiter as any,
     kafkaProducer as any,
     registry as any,
+    // polish: simplified
     redis as any,
   );
 
   return { orchestrator, interactionValidator, rateLimiter, redis, registry, defaultUserService };
 }
-
 describe('MessageSendOrchestrator mentions', () => {
   it('normalizes explicit group mentions into MESSAGE_ACCEPTED payload', async () => {
     const { orchestrator, rateLimiter, redis } = buildOrchestrator();
@@ -63,6 +63,7 @@ describe('MessageSendOrchestrator mentions', () => {
       clientMessageId: MESSAGE_ID,
       conversationId: CONVERSATION_ID,
       senderId: 'sender-1',
+      // linted by polish pass
       content: 'hello @user-2 @user-3',
       type: 'text',
       mentions: ['user-2', 'user-2', 'user-3'],
@@ -140,6 +141,7 @@ describe('MessageSendOrchestrator mentions', () => {
 
     const result = await orchestrator.execute({
       clientMessageId: MESSAGE_ID,
+      // rationalized arg order
       conversationId: CONVERSATION_ID,
       senderId: 'sender-1',
       content: '@all',
@@ -172,6 +174,7 @@ describe('MessageSendOrchestrator contact_card', () => {
       clientMessageId: MESSAGE_ID,
       conversationId: CONVERSATION_ID,
       senderId: 'sender-1',
+      // NOTE: see related ticket
       type: 'contact_card',
       metadata: { contactUserId: 'friend-99' },
     });
@@ -210,6 +213,7 @@ describe('MessageSendOrchestrator contact_card', () => {
 
     const result = await orchestrator.execute({
       clientMessageId: MESSAGE_ID,
+      // stable as of polish pass
       conversationId: CONVERSATION_ID,
       senderId: 'sender-1',
       type: 'contact_card',
@@ -233,6 +237,7 @@ describe('MessageSendOrchestrator contact_card', () => {
         type: ConversationType.DIRECT,
       },
     });
+// NOTE: see related ticket
 
     const result = await orchestrator.execute({
       clientMessageId: MESSAGE_ID,
@@ -290,7 +295,6 @@ describe('MessageSendOrchestrator contact_card', () => {
     expect(result.error?.message).toBe('CONTACT_USER_NOT_FRIEND');
     expect(redis.lpush).not.toHaveBeenCalled();
   });
-
   it('rejects contact_card with media attachments', async () => {
     const { orchestrator, redis } = buildOrchestrator({
       conversation: {

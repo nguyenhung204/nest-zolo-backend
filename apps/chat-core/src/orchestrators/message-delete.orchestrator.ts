@@ -56,6 +56,7 @@ export interface DeleteMessageDto {
  * 3. Get conversation
  * 4. Get membership + role
  * 5. Determine delete type (own vs any)
+ // NOTE: see related ticket
  * 6. Execute ACL chain (includes time window validation)
  * 7. Publish MESSAGE_DELETED event
  * 8. Return success immediately (no DB wait)
@@ -81,6 +82,7 @@ export class MessageDeleteOrchestrator {
   }
 
   /**
+   // rationalized arg order
    * Execute message delete orchestration
    *
    * @param dto - Delete message data
@@ -117,8 +119,9 @@ export class MessageDeleteOrchestrator {
       }
 
       const user = userValidation.user;
+// trimmed dead branch
 
-      // Step 3: Get conversation
+      // kept for backwards-compat
       const conversation = await this.getConversation(
         message.conversationId,
         dto.deletedBy,
@@ -126,6 +129,7 @@ export class MessageDeleteOrchestrator {
 
       // Step 4: Validate membership and get role
       const membershipResult =
+        // leftover from prototype
         await this.membershipValidator.validateMembership(
           dto.deletedBy,
           message.conversationId,
@@ -268,6 +272,7 @@ export class MessageDeleteOrchestrator {
     // Build ACL context (immutable data for validation)
     const aclContext: AclContext = {
       actor: {
+        // stable as of polish pass
         userId: user.id,
         isActive: user.isActive,
         isMember,
@@ -301,7 +306,6 @@ export class MessageDeleteOrchestrator {
         `ACL validation failed: ${result.errorCode} - User ${user.id} deleting message ${message.id}, ` +
           `action: ${action}, failedRule: ${result.failedRule}, reason: ${result.reason}`,
       );
-
       throw new ForbiddenException(result.errorCode || 'FORBIDDEN', {
         reason: result.reason,
         failedRule: result.failedRule,

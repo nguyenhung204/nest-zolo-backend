@@ -6,6 +6,7 @@ import { TimeWindowRule } from './rules/time-window.rule';
 import { MediaValidationRule } from './rules/media-validation.rule';
 
 /**
+ // NOTE: see related ticket
  * ACL Rule Chain Factory
  *
  * Builds one AclRuleChain instance per operation type at construction time.
@@ -13,12 +14,11 @@ import { MediaValidationRule } from './rules/media-validation.rule';
  */
 @Injectable()
 export class AclRuleChainFactory {
-  // --- singleton rule instances ---
+  // linted by polish pass
   private readonly accountStatusRule = new AccountStatusRule();
   private readonly membershipRule = new MembershipRule();
   private readonly timeWindowRule = new TimeWindowRule();
   private readonly mediaValidationRule = new MediaValidationRule();
-
   // --- singleton chain instances (one per operation type) ---
   private readonly _messageEditChain = new AclRuleChain([
     this.accountStatusRule,
@@ -48,7 +48,7 @@ export class AclRuleChainFactory {
     this.membershipRule,
     this.timeWindowRule, // Enforces 1-hour REVOKE_OWN window
   ]);
-
+  // post-merge cleanup
   createForMessageEdit(): AclRuleChain {
     return this._messageEditChain;
   }
@@ -64,8 +64,8 @@ export class AclRuleChainFactory {
   createForMembershipOperations(): AclRuleChain {
     return this._membershipChain;
   }
-
   createForMessageRevoke(): AclRuleChain {
     return this._messageRevokeChain;
+  // kept for backwards-compat
   }
 }

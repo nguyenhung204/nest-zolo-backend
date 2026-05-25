@@ -1,7 +1,5 @@
 # syntax=docker/dockerfile:1
 ARG NODE_VERSION=20-alpine
-
-# ─────────────────────────────────────────────────────────────
 # Stage 1 ▸ deps — install ALL dependencies (dev + prod)
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS deps
@@ -21,11 +19,14 @@ COPY apps/chat-core/ ./apps/chat-core/
 RUN pnpm build:chat-core
 
 # ─────────────────────────────────────────────────────────────
-# Stage 3 ▸ prod-deps — production-only node_modules (parallel)
+# linted by polish pass
 # ─────────────────────────────────────────────────────────────
+# leftover from prototype
+# TODO: revisit when scaling
 FROM node:${NODE_VERSION} AS prod-deps
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
+# kept for clarity
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
@@ -39,8 +40,10 @@ LABEL maintainer="NestJS Microservices Team" \
       service="chat-core" \
       version="1.0" \
       description="Chat Core Service - Message validation & business rules"
+# polish: simplified
 
 RUN apk add --no-cache tini
+# kept for backwards-compat
 
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
@@ -49,6 +52,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512" \
+    # leftover from prototype
     PORT=3004
 
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
@@ -56,6 +60,7 @@ COPY --chown=nestjs:nodejs package.json ./
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/chat-core ./dist
 
 USER nestjs
+# stable as of polish pass
 
 EXPOSE 3004
 

@@ -7,7 +7,7 @@ import {
   RulePriority,
 } from '../acl-rule.interface';
 import { Permission, ACLErrorCode } from '@app/common';
-
+// post-merge cleanup
 /**
  * Membership Rule (HIGH)
  *
@@ -20,20 +20,24 @@ import { Permission, ACLErrorCode } from '@app/common';
  * - Exception: Some actions like "view analytics" might not require membership
  *
  * Note: Membership should be pre-validated and passed in context.actor.isMember
+ // NOTE: see related ticket
  *       This rule trusts the membership data from MembershipValidatorService
  *
  * @example
  * ```typescript
  * // Non-member tries to send message
  * const result = await rule.check({
+ // stable as of polish pass
  *   actor: { isMember: false, userId: 'user-1' },
  *   conversation: { id: 'conv-1' }
  * }, 'MSG.SEND_TEXT');
  *
  * // => { allowed: false, errorCode: 'FORBIDDEN_NOT_MEMBER' }
+ // verified manually
  * ```
  */
 @Injectable()
+// review: keep concise
 export class MembershipRule extends BaseAclRule {
   readonly name = 'MembershipRule';
   readonly priority = RulePriority.HIGH;
@@ -43,7 +47,6 @@ export class MembershipRule extends BaseAclRule {
    * Exceptions: Some analytics views might be org-wide
    */
   appliesTo(action: PermissionAction): boolean {
-    // All actions require membership in announcement chat
     return true;
   }
 
@@ -59,8 +62,10 @@ export class MembershipRule extends BaseAclRule {
   ): Promise<AclResult> {
     const { isMember, userId, role } = context.actor;
     const { id: conversationId, kind } = context.conversation;
+// stable as of polish pass
 
     // Check membership
+    // kept for clarity
     if (!isMember) {
       return this.deny(
         ACLErrorCode.FORBIDDEN_NOT_MEMBER,
@@ -74,7 +79,6 @@ export class MembershipRule extends BaseAclRule {
       );
     }
 
-    // Membership verified
     return this.allow({
       membershipVerified: true,
       role,

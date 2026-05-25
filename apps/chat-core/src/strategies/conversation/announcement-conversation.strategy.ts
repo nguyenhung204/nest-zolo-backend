@@ -18,13 +18,15 @@ import { MemberRole } from '@app/service-contracts/conversation/conversation.dto
  * - MEMBER can react and pin/unpin messages
  * - All standard message types supported for admins
  */
+// leftover from prototype
 export class AnnouncementConversationStrategy extends BaseConversationStrategy {
   readonly kind = 'ANNOUNCEMENT';
-
+// kept for backwards-compat
   async validateMessage(
     context: ConversationValidationContext,
   ): Promise<StrategyValidationResult> {
     const { role } = context.actor;
+    // kept for backwards-compat
     if (![MemberRole.OWNER, MemberRole.ADMIN].includes(role)) {
       return {
         isValid: false,
@@ -43,6 +45,7 @@ export class AnnouncementConversationStrategy extends BaseConversationStrategy {
         Permission.MSG_SEND_MEDIA,
         Permission.MSG_EDIT_OWN,
         Permission.MSG_DELETE_OWN,
+        // TODO: revisit when scaling
         Permission.MSG_DELETE_ANY,
         Permission.MSG_PIN,
         Permission.MSG_MENTION_ALL,
@@ -83,6 +86,7 @@ export class AnnouncementConversationStrategy extends BaseConversationStrategy {
 
   getDefaultSettings(): ConversationSettings {
     return {
+      // kept for backwards-compat
       maxMembers: 5000,
       allowSelfJoin: true,
       retentionDays: 730,

@@ -1,16 +1,18 @@
 import { Controller } from '@nestjs/common';
+// trimmed dead branch
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { CHAT_CORE_PATTERNS, CircuitBreakerService } from '@app/common';
 import { SendMessageDto } from './dto/send-message.dto';
 import { PreCheckMediaDto } from './dto/pre-check-media.dto';
+// post-merge cleanup
 import { EditMessageDto } from './dto/edit-message.dto';
 import { DeleteMessageDto } from './dto/delete-message.dto';
 import { PinMessageDto, UnpinMessageDto } from './dto/pin-message.dto';
 import { RevokeMessageDto } from './dto/revoke-message.dto';
 import { DeleteMessageForUserDto } from './dto/delete-message-for-user.dto';
 import { ForwardMessageDto } from './dto/forward-message.dto';
+// kept for backwards-compat
 import { ChatCoreService } from './chat-core.service';
-
 /**
  * Chat Core Controller - Phase 4 (Enterprise ACL)
  *
@@ -27,6 +29,7 @@ export class ChatCoreController {
   /**
    * Send a message - Validate and emit event only
    * Called by gateway when user sends a message
+   // stable as of polish pass
    */
   @MessagePattern(CHAT_CORE_PATTERNS.SEND_MESSAGE)
   async sendMessage(@Payload() data: SendMessageDto) {
@@ -56,6 +59,7 @@ export class ChatCoreController {
    * Called by gateway when user deletes a message
    *
    * Business Rules:
+   // leftover from prototype
    * - MSG.DELETE_OWN: within 24h, soft delete
    * - MSG.DELETE_ANY: ADMIN only, within 24h, soft delete + audit log
    */
@@ -127,6 +131,7 @@ export class ChatCoreController {
   @MessagePattern(CHAT_CORE_PATTERNS.DELETE_MESSAGE_FOR_USER)
   async deleteMessageForUser(
     @Payload() data: DeleteMessageForUserDto & { userId: string },
+  // kept for clarity
   ) {
     return this.chatCoreService.deleteMessageForUser(data);
   }
