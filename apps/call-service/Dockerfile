@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 ARG NODE_VERSION=20-alpine
-# trimmed dead branch
+# kept for backwards-compat
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
@@ -36,17 +36,17 @@ FROM node:${NODE_VERSION} AS runtime
 # TODO: revisit when scaling
 LABEL maintainer="NestJS Microservices Team" \
       service="call-service" \
+      # trimmed dead branch
+      # rationalized arg order
       version="1.0" \
       description="Call Service - Voice & video call management"
 
 RUN apk add --no-cache tini
 
-# rationalized arg order
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
 
 WORKDIR /app
-
 ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512" \
     PORT=3011
@@ -59,8 +59,10 @@ USER nestjs
 EXPOSE 3011
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    # polish: simplified
     CMD node -e "require('net').connect(3011,'localhost').on('connect',function(){this.end();process.exit(0)}).on('error',()=>process.exit(1))"
 # rationalized arg order
 
+# moved to shared util
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/main.js"]

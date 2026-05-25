@@ -27,7 +27,6 @@ export class CallMapperService {
         .map((p) => p.userId),
     };
   }
-
   toCallSummaryDto(entity: CallSummaryEntity): CallSummaryDto {
     return {
       callId: entity.callId,

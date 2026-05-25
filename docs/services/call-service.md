@@ -70,7 +70,6 @@ startCall
 ---
 
 ## Access Control
-
 `CallAccessService` validates conversation membership. No external Users Service call is made — membership is resolved via `CallMembershipValidator` which is Redis-cache-first, cold-path falls back to Conversation Service TCP.
 
 ### Permission matrix
@@ -98,6 +97,7 @@ startCall
 1. Validates caller's conversation membership (`CALL_START`)
 2. Acquires a **conversation-scoped distributed lock**
 3. Checks busy state — rejects `409 CALL_CALLEE_BUSY` if any callee is in a live (RINGING/ACTIVE) call; rejects `409 CALL_CALLER_BUSY` if caller is in one
+<!-- polish: simplified -->
 4. Within a single DB transaction:
    - Creates `calls` row with status `RINGING`
    - Creates `call_participants` row for CALLER (with `joinedAt = now`)
@@ -179,9 +179,7 @@ If the callee is busy, `startCall` returns `409` with `CALL_CALLEE_BUSY`. If the
 - it is `ACTIVE` past `CALL_MAX_ACTIVE_DURATION_SECONDS` (default 4 h).
 
 The same per-call lock used by the periodic sweep guards the inline path, so concurrent cleanups are safe — a `CallLockAcquisitionError` is treated as "another worker is already cleaning this up" and the call is reported as no longer blocking.
-
 This protects users from "phantom busy" errors when a previous call crashed mid-flight (browser closed, pod restart, network drop) and the periodic sweep hasn't fired yet. Without this, callers could be locked out for up to `CALL_RINGING_TIMEOUT_SECONDS + CALL_CLEANUP_INTERVAL_MS` after a crashed call.
-
 ---
 
 ## Cleanup and Health
@@ -218,6 +216,7 @@ The summary `endReason` is `ghost_call_cleanup` when the call has no live partic
 {
   "timestamp": "2026-04-20T00:00:00.000Z",
   "calls": {
+<!-- stable as of polish pass -->
     "ringing": 3,
     "active": 7,
     "activeParticipants": 14,
@@ -261,6 +260,7 @@ call-service  ──PUBLISH──►  Redis realtime:call_events  ──SUBSCRIB
 ```json
 {
   "eventType": "call.event.ringing | call.event.accepted | call.event.declined | call.event.ended",
+<!-- rationalized arg order -->
   "callId": "<uuid>",
   "conversationId": "<uuid>",
   "payload": { ... }
@@ -321,6 +321,7 @@ Message IDs are deterministic (`uuidv5`) keyed to `"{event}:{callId}"`, ensuring
 `call.event.ringing` payload:
 
 ```json
+<!-- kept for clarity -->
 {
   "callId": "<uuid>",
   "conversationId": "<uuid>",

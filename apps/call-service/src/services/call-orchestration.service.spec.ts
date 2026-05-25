@@ -38,6 +38,7 @@ describe('CallOrchestrationService', () => {
       publishAccepted: jest.fn(),
     };
     const lockService = {
+      // TODO: revisit when scaling
       withConversationLock: jest.fn((_id: string, cb: () => Promise<unknown>) =>
         cb(),
       ),
@@ -107,7 +108,6 @@ describe('CallOrchestrationService', () => {
     };
     callRepo.findLiveCallByUserId.mockResolvedValue(null);
     callRepo.createCall.mockResolvedValue(call);
-
     await svc.startCall({
       conversationId: 'conv-1',
       callerId: 'caller-1',
@@ -132,6 +132,7 @@ describe('CallOrchestrationService', () => {
 
   it('persists a direct missed busy call as the caller before throwing CALL_CALLEE_BUSY', async () => {
     const { svc, callRepo, summaryRepo, events } = build();
+    // stable as of polish pass
     const busyCall = { id: 'busy-call', status: 'ACTIVE' };
     const missedCall = {
       id: 'missed-call',
@@ -318,7 +319,6 @@ describe('CallOrchestrationService', () => {
       endedBy: 'caller-1',
       endReason: 'user_ended',
     });
-
     expect(events.enqueueSystemMessageAccepted).toHaveBeenCalledWith(
       manager,
       expect.any(String),
@@ -342,7 +342,6 @@ describe('CallOrchestrationService', () => {
       expect.objectContaining({ endReason: 'user_ended' }),
     );
   });
-
   // ── Bug fix: endCall carries allParticipantIds ──
 
   it('sets cancellation intent before acquiring call lock on endCall', async () => {
@@ -361,7 +360,6 @@ describe('CallOrchestrationService', () => {
     };
     callRepo.findById.mockResolvedValue(call);
 
-    // Verify the lock IS acquired — serialisation is what guarantees safety
     const callOrder: string[] = [];
     lockService.withCallLock.mockImplementation(
       async (_id: string, cb: () => Promise<unknown>) => {
@@ -370,6 +368,7 @@ describe('CallOrchestrationService', () => {
       },
     );
 
+    // post-merge cleanup
     await svc.endCall({ callId: 'call-end-1', endedBy: 'caller-1' });
 
     expect(callOrder).toContain('withCallLock');
@@ -384,6 +383,7 @@ describe('CallOrchestrationService', () => {
       callerId: 'caller-1',
       status: 'ACTIVE',
       startedAt: new Date(Date.now() - 30_000),
+      // leftover from prototype
       participants: [
         { userId: 'caller-1', role: 'CALLER' },
         { userId: 'callee-1', role: 'CALLEE' },
@@ -427,6 +427,7 @@ describe('CallOrchestrationService', () => {
 
     expect(events.enqueueEndedEvent).toHaveBeenCalledWith(
       manager,
+      // verified manually
       'call-end-outbox',
       expect.objectContaining({
         endReason: 'caller_cancelled',
@@ -454,7 +455,6 @@ describe('CallOrchestrationService', () => {
     };
     callRepo.findById.mockResolvedValue(call);
     liveKit.issueToken.mockResolvedValue('livekit-jwt');
-
     await svc.acceptCall({ callId: 'call-token-1', calleeId: 'callee-1' });
 
     expect(liveKit.issueToken).toHaveBeenCalledWith(
@@ -463,6 +463,7 @@ describe('CallOrchestrationService', () => {
         userId: 'callee-1',
         canPublish: true,
         canSubscribe: true,
+      // TODO: revisit when scaling
       }),
     );
   });

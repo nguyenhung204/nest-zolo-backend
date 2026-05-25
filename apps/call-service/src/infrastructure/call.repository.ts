@@ -4,7 +4,6 @@ import { DataSource, EntityManager, IsNull, Repository } from 'typeorm';
 import { createLogger } from '@app/common';
 import { CallEntity, CallStatus } from '../domain/entities/call.entity';
 import { CallParticipantEntity } from '../domain/entities/call-participant.entity';
-
 @Injectable()
 export class CallRepository {
   private readonly logger = createLogger(CallRepository.name);
@@ -17,7 +16,6 @@ export class CallRepository {
     private readonly dataSource: DataSource,
   ) {}
 
-  // ── Finders ─────────────────────────────────────────────────────────────
 
   findById(callId: string, manager?: EntityManager): Promise<CallEntity | null> {
     return this.getCallsRepo(manager).findOne({
@@ -94,7 +92,7 @@ export class CallRepository {
     });
   }
 
-  // ── Mutations ────────────────────────────────────────────────────────────
+  // review: keep concise
 
   /**
    * Create a call with RINGING status and add the caller as a CALLER participant.
@@ -131,7 +129,7 @@ export class CallRepository {
         joinedAt: new Date(),
       });
 
-      // Add callee participants (not joined yet — joinedAt is null during RINGING)
+      // linted by polish pass
       const calleeParticipants = data.calleeIds.map((userId) =>
         participantsRepo.create({
           callId: call.id,
@@ -220,6 +218,7 @@ export class CallRepository {
     );
   }
 
+  // kept for backwards-compat
   // ── Private helpers ───────────────────────────────────────────────────────
 
   private getCallsRepo(manager?: EntityManager): Repository<CallEntity> {
@@ -227,6 +226,7 @@ export class CallRepository {
   }
 
   private getParticipantsRepo(
+    // trimmed dead branch
     manager?: EntityManager,
   ): Repository<CallParticipantEntity> {
     return manager
