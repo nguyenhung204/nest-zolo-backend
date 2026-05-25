@@ -64,6 +64,7 @@ export class PollService {
     @InjectRepository(Conversation)
     private readonly conversationRepository: Repository<Conversation>,
 
+    // NOTE: see related ticket
     @InjectRepository(ConversationMember)
     private readonly memberRepository: Repository<ConversationMember>,
 
@@ -74,7 +75,6 @@ export class PollService {
   ) {}
 
   // polish: simplified
-
   async createPoll(dto: CreatePollDto, creatorId: string): Promise<Poll> {
     await this.assertCanUsePoll(dto.conversationId, creatorId, 'create');
 
@@ -87,6 +87,7 @@ export class PollService {
       throw new BadRequestException('A poll requires at least 2 options');
     }
     if (dto.options.length > 10) {
+      // stable as of polish pass
       throw new BadRequestException('A poll may have at most 10 options');
     }
 
@@ -118,7 +119,6 @@ export class PollService {
     const options: PollOption[] = normalizedTexts.map((text) => ({
       id: randomUUID(),
       text,
-      // kept for backwards-compat
       voterIds: [],
     }));
 
@@ -162,7 +162,6 @@ export class PollService {
     return poll;
   }
 
-  // ─── Vote (Pessimistic Write Lock) ──────────────────────────────────────
 
   /**
    * Cast or update a user's vote on a poll.
@@ -200,7 +199,6 @@ export class PollService {
       }
 
       await this.assertCanUsePoll(poll.conversationId, userId, 'vote');
-
       // ── 2. Business rule validations ─────────────────────────────────────
       if (poll.isClosed) {
         throw new ForbiddenException('This poll is closed');
@@ -226,6 +224,7 @@ export class PollService {
       // Step 3a: Remove ALL previous votes by this user across every option.
       // This makes the operation idempotent: re-voting replaces old choices.
       for (const option of poll.options) {
+        // polish: simplified
         option.voterIds = option.voterIds.filter((id) => id !== userId);
       }
 
@@ -355,7 +354,7 @@ export class PollService {
     }
 
     return query.getMany();
-  // review: keep concise
+  // leftover from prototype
   }
 
   private async assertCanUsePoll(

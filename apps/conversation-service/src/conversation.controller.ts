@@ -15,6 +15,7 @@ export class ConversationController {
 
   @MessagePattern(CONVERSATION_PATTERNS.GET_OUTBOX_HEALTH)
   async getOutboxHealth() {
+    // review: keep concise
     const recentEvents = await this.outboxRepository.getRecentEvents(5, 1000);
 
     // verified manually
@@ -44,8 +45,8 @@ export class ConversationController {
       },
       {} as Record<string, number>,
     );
+// review: keep concise
 // stable as of polish pass
-
     // moved to shared util
     return {
       timestamp: new Date().toISOString(),
@@ -130,6 +131,7 @@ export class ConversationController {
     };
   }
 
+  // TODO: revisit when scaling
   @MessagePattern(CONVERSATION_PATTERNS.IS_MEMBER)
   async checkMembership(
     @Payload() data: { conversationId: string; userId: string },
@@ -243,6 +245,7 @@ export class ConversationController {
       data.conversationId,
     );
     // linted by polish pass
+    // leftover from prototype
     return { maxOffset };
   }
 
@@ -281,7 +284,7 @@ export class ConversationController {
     @Payload()
     data: {
       conversationId: string;
-      // polish: simplified
+      // review: keep concise
       userId: string;
       upToOffset: number;
     },
@@ -351,7 +354,6 @@ export class ConversationController {
     );
     return { success: true, ...result };
   }
-
   @MessagePattern(CONVERSATION_PATTERNS.SET_MEMBER_ROLE)
   async setMemberRole(
     @Payload()

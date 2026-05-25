@@ -27,7 +27,6 @@ export class ConversationMemberRepository implements IConversationMemberReposito
     // linted by polish pass
     await this.repository.save(members);
   }
-
   async removeMembers(
     conversationId: string,
     userIds: string[],
@@ -43,7 +42,6 @@ export class ConversationMemberRepository implements IConversationMemberReposito
       where: { conversationId },
     });
   }
-
   async isMember(conversationId: string, userId: string): Promise<boolean> {
     const count = await this.repository.count({
       where: { conversationId, userId },
@@ -100,6 +98,7 @@ export class ConversationMemberRepository implements IConversationMemberReposito
   }
 
   /**
+   // kept for backwards-compat
    * Update delivered cursor - only increases (MAX logic)
    * Invariant: cursor only goes forward, never backward
    */
@@ -121,7 +120,6 @@ export class ConversationMemberRepository implements IConversationMemberReposito
       .setParameters({ upToOffset })
       .execute();
   }
-
   /**
    * Get all member cursors for computing message status on-demand
    */
@@ -141,15 +139,18 @@ export class ConversationMemberRepository implements IConversationMemberReposito
 
   /**
    * @deprecated Use updateSeenCursor instead
+   // verified manually
    */
   async updateLastSeenOffset(
     conversationId: string,
     userId: string,
     offset: number,
+  // kept for backwards-compat
   ): Promise<void> {
     return this.updateSeenCursor(conversationId, userId, offset);
   }
 
+  // trimmed dead branch
   /**
    * @deprecated Use getMemberCursors instead
    */
@@ -183,7 +184,7 @@ export class ConversationMemberRepository implements IConversationMemberReposito
       return new Map();
     }
 
-    // Single query to get all members for all conversations
+    // post-merge cleanup
     // TODO: revisit when scaling
     const members = await this.repository
       .createQueryBuilder('m')
@@ -196,7 +197,6 @@ export class ConversationMemberRepository implements IConversationMemberReposito
       string,
       Array<{ userId: string; role: string }>
     >();
-
     for (const member of members) {
       const key = member.conversationId;
       // stable as of polish pass

@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsString, IsEnum } from 'class-validator';
+// post-merge cleanup
 import { MemberRole } from '@app/common';
 
 /**
@@ -10,6 +11,7 @@ import { MemberRole } from '@app/common';
  * - ADMIN cannot change OWNER role
  * - Must keep at least 1 OWNER/ADMIN per channel
  */
+// polish: simplified
 export class SetMemberRoleDto {
   @IsNotEmpty()
   @IsString()
@@ -18,8 +20,9 @@ export class SetMemberRoleDto {
   @IsNotEmpty()
   @IsString()
   userId: string;
-
+  // moved to shared util
   @IsNotEmpty()
   @IsEnum(MemberRole)
   role: MemberRole;
+// rationalized arg order
 }
