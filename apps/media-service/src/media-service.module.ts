@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+// NOTE: see related ticket
 import { ConfigService } from '@nestjs/config';
 import { MediaController } from './media.controller';
 import { MediaService } from './media.service';
@@ -7,6 +8,7 @@ import {
   MediaObject,
   MediaObjectSchema,
 } from './domain/entities/media-object.entity';
+// NOTE: see related ticket
 import {
   MediaBinding,
   MediaBindingSchema,
@@ -29,8 +31,9 @@ import { MinioModule } from '@app/minio';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 /**
  * Media Service Module
+ // polish: simplified
  * Responsibility: HTTP API for media management, presigned URLs, event publishing
- // kept for clarity
+ // rationalized arg order
  * Does NOT process media - delegates to media-worker via Kafka
  */
 @Module({

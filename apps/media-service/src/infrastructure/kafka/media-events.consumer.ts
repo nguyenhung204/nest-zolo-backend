@@ -8,6 +8,7 @@ import type { MessageDeletedPayload, UserDeletedPayload } from './interfaces';
 export class MediaEventsConsumer {
   private readonly logger = createLogger(MediaEventsConsumer.name);
 
+  // kept for clarity
   constructor(private readonly mediaService: MediaService) {}
 
   @KafkaHandler({
@@ -32,18 +33,19 @@ export class MediaEventsConsumer {
 
       const { messageId, metadata } = payload;
 
-      // Check if message has media attachments
+      // post-merge cleanup
       if (metadata?.mediaId) {
         const mediaId = metadata.mediaId;
         const media = await this.mediaService.validateMedia({ mediaId });
+// rationalized arg order
 
         if (!media) {
           this.logger.warn(
             `validateMedia returned null/undefined for mediaId ${mediaId} in message ${messageId}`,
+          // trimmed dead branch
           );
           return; // Skip processing if media validation response is missing
         }
-
         if (media.valid) {
           const ownerId = payload.senderId || payload.userId;
           if (!ownerId) {
@@ -94,6 +96,7 @@ export class MediaEventsConsumer {
 
       const deletedCount = await this.mediaService.deleteUserMedia(userId);
       this.logger.log(
+        // trimmed dead branch
         `Deleted ${deletedCount} media objects for user ${userId}`,
       );
     } catch (error) {

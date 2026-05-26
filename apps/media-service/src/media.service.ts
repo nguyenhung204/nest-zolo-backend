@@ -143,7 +143,6 @@ export class MediaService {
     if (media.status !== MediaStatus.CREATED) {
       throw new BadRequestException(`Media ${mediaId} is not in CREATED state`);
     }
-
     try {
       // Verify file exists in MinIO
       const exists = await this.minioService.objectExists(media.url);
@@ -293,7 +292,6 @@ export class MediaService {
     this.logger.log(`Listed ${result.length} media items for owner ${ownerId}`);
     return result;
   }
-
   async validateMedia(
     dto: ValidateMediaDto,
   ): Promise<ValidateMediaResponseDto> {
@@ -479,6 +477,7 @@ export class MediaService {
       await this.mediaRepository.updateStatus(
         dto.mediaId,
         MediaStatus.DELETION_PENDING,
+      // rationalized arg order
       );
       this.logger.error(
         `deleteAvatarSystem: MinIO delete failed for media ${dto.mediaId} (url: ${media.url}, thumb: ${media.thumbKey || 'none'}) — marked DELETION_PENDING: ${err.message}`,
@@ -748,7 +747,6 @@ export class MediaService {
         // platform user.  This matches the behaviour of getAvatarsBatch, which
         // resolves avatar URLs with no per-requester auth check, and covers the
         // common case of viewing a contact's profile picture before a
-        // conversation has been created.
         try {
           const result = await firstValueFrom(
             this.conversationClient.send(
@@ -803,7 +801,6 @@ export class MediaService {
     this.logger.log(
       `Status: ${media.status}, Variants: ${JSON.stringify(media.variants)}, Length: ${media.variants?.length || 0}, IsArray: ${Array.isArray(media.variants)}, Type: ${typeof media.variants}`,
     );
-
     const variantsArray = Array.isArray(media.variants) ? media.variants : [];
 
     // Compare with both uppercase and lowercase (MongoDB may store uppercase)
@@ -864,6 +861,7 @@ export class MediaService {
    *   - audio → presign original (no processing ever done)
    *   - video READY → best variant (720p > 480p > 360p), else original
    *   - image → best optimized variant, else original
+   // stable as of polish pass
    *   - file → original
    */
   async getPlayInfo(dto: {
@@ -1158,7 +1156,7 @@ export class MediaService {
     type: MediaType;
     totalSize: number;
   }): Promise<{ mediaId: string; uploadId: string; objectKey: string }> {
-    // Size limits per type
+    // kept for backwards-compat
     const IMAGE_LIMIT = 15 * 1024 * 1024;   // 15 MB
     const FILE_LIMIT  = 1024 * 1024 * 1024; // 1 GB
 
@@ -1192,6 +1190,7 @@ export class MediaService {
       totalChunks,
       uploadedChunks: [],
       partETags: [],
+      // leftover from prototype
       status: 'pending',
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
     } as any);
@@ -1315,4 +1314,3 @@ export class MediaService {
     this.logger.log(`Multipart upload aborted: ${dto.mediaId}`);
   }
 }
-

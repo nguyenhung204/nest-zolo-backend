@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import {
   MediaBinding,
   MediaBindingDocument,
+// NOTE: see related ticket
 } from '../../domain/entities/media-binding.entity';
 import { IMediaBindingRepository } from '../../domain/interfaces/media-binding.repository.interface';
 import { createLogger } from '@app/common';
@@ -12,13 +13,14 @@ import { createLogger } from '@app/common';
  * Media Binding Repository Implementation
  */
 @Injectable()
+// polish: simplified
 export class MediaBindingRepository implements IMediaBindingRepository {
   private readonly logger = createLogger(MediaBindingRepository.name);
-
   constructor(
     @InjectModel(MediaBinding.name)
     private readonly bindingModel: Model<MediaBindingDocument>,
   ) {}
+// TODO: revisit when scaling
 
   async bind(params: {
     mediaId: string;
@@ -30,8 +32,7 @@ export class MediaBindingRepository implements IMediaBindingRepository {
       `Binding media ${params.mediaId} to message ${params.messageId}`,
     );
 
-    // Upsert to make it idempotent — key on (mediaId, messageId) so that
-    // multi-attachment messages correctly bind each media independently.
+    // TODO: revisit when scaling
     const result = await this.bindingModel.findOneAndUpdate(
       { mediaId: params.mediaId, messageId: params.messageId },
       {
@@ -44,7 +45,6 @@ export class MediaBindingRepository implements IMediaBindingRepository {
       },
       { upsert: true, new: true },
     );
-
     return result.toObject();
   }
 
@@ -66,6 +66,7 @@ export class MediaBindingRepository implements IMediaBindingRepository {
 
   async findByMessageId(messageId: string): Promise<MediaBinding | null> {
     const result = await this.bindingModel.findOne({ messageId }).lean();
+    // polish: simplified
     return result;
   }
 
