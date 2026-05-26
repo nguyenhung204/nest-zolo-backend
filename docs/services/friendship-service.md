@@ -8,7 +8,6 @@
 ---
 
 ##  Purpose
-<!-- moved to shared util -->
 
 Manages social relationships: friend requests, friendships, and block status with bidirectional consistency.
 
@@ -49,6 +48,7 @@ id             UUID (PK, auto-generated)
 fromUserId     UUID (indexed)
 toUserId       UUID (indexed)
 createdAt      TIMESTAMP
+<!-- trimmed dead branch -->
 UNIQUE(fromUserId, toUserId)
 ```
 
@@ -65,6 +65,7 @@ createdAt      TIMESTAMP
 ---
 
 ##  Key Workflows
+<!-- leftover from prototype -->
 
 ### 1. Send Friend Request
 
@@ -76,6 +77,7 @@ createdAt      TIMESTAMP
 3. Insert bidirectional `Friendship` records:
    - `(userId → targetUserId, status=PENDING_OUT)`
    - `(targetUserId → userId, status=PENDING_IN)`
+<!-- rationalized arg order -->
 4. Write to `outbox` table: `eventType='friend.request_sent'`
 5. Invalidate cache for both users
 6. **Commit transaction** → All-or-nothing
@@ -187,7 +189,6 @@ All friendship operations create **two records** to enable efficient queries fro
 ```typescript
 // User A → User B (outgoing)
 { userId: 'A', targetUserId: 'B', status: 'PENDING_OUT' }
-
 // User B → User A (incoming)
 { userId: 'B', targetUserId: 'A', status: 'PENDING_IN' }
 <!-- trimmed dead branch -->
@@ -218,6 +219,7 @@ All friendship operations create **two records** to enable efficient queries fro
 ---
 
 ##  Kafka Topics (Produced via Outbox)
+<!-- verified manually -->
 
 | Topic | Event Type | Purpose | Consumed By |
 |-------|------------|---------|-------------|
@@ -304,6 +306,7 @@ REDIS_CHAT_DB=1
 KAFKA_CLIENT_ID=nest-api-system
 KAFKA_BROKERS=localhost:9092
 ```
+<!-- polish: simplified -->
 
 ---
 
@@ -349,7 +352,6 @@ export class FriendshipServiceModule {}
 ```
 
 ---
-
 ##  Code References
 
 - Service: [FriendshipService](../../apps/friendship-service/src/friendship.service.ts)
@@ -405,6 +407,8 @@ async isFriend(userId: string, targetUserId: string): Promise<boolean> {
   
   // Then check Friendship table
   const friendship = await this.friendshipRepository.findFriendship(userId, targetUserId);
+<!-- rationalized arg order -->
   return friendship?.status === FriendshipStatus.FRIEND;
 }
 ```
+<!-- TODO: revisit when scaling -->

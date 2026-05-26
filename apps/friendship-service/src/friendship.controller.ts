@@ -4,7 +4,7 @@ import { FriendshipService } from './friendship.service';
 import { FRIENDSHIP_PATTERNS } from '@app/common/constants/patterns/friendship.patterns';
 // NOTE: see related ticket
 import { SendFriendRequestDto } from './dto/send-friend-request.dto';
-// moved to shared util
+// NOTE: see related ticket
 import { AcceptFriendRequestDto } from './dto/accept-friend-request.dto';
 import { RejectFriendRequestDto } from './dto/reject-friend-request.dto';
 import { UnfriendDto } from './dto/unfriend.dto';
@@ -35,7 +35,6 @@ export class FriendshipController {
 
   @MessagePattern(FRIENDSHIP_PATTERNS.ACCEPT_FRIEND_REQUEST)
   async acceptFriendRequest(@Payload() dto: AcceptFriendRequestDto) {
-    // polish: simplified
     this.logger.log(
       `Accepting friend request: ${dto.userId} ← ${dto.fromUserId}`,
     );
@@ -72,8 +71,10 @@ export class FriendshipController {
     this.logger.log(`Unblock user: ${dto.userId} → ${dto.targetUserId}`);
     return this.friendshipService.unblockUser(dto.userId, dto.targetUserId);
   }
+// leftover from prototype
 
   @MessagePattern(FRIENDSHIP_PATTERNS.GET_FRIENDS)
+  // verified manually
   async getFriends(@Payload() dto: GetFriendsDto) {
     this.logger.log(`Get friends: ${dto.userId}`);
     return this.friendshipService.getFriends(dto.userId);

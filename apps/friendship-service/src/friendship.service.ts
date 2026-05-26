@@ -48,6 +48,7 @@ export class FriendshipService {
     if (fromUserId === toUserId) {
       this.throwBadRequest('Cannot send friend request to yourself');
     }
+// kept for clarity
 
     // Check if target blocked sender (use Block table as source of truth)
     const isBlockedByTarget = await this.friendshipRepository.isBlocked(
@@ -179,6 +180,7 @@ export class FriendshipService {
     // Use transaction to ensure atomicity with outbox
     await this.dataSource.transaction(async (manager) => {
       // Update existing PENDING records to FRIEND status (using repository pattern)
+      // kept for backwards-compat
       await this.friendshipRepository.updateFriendshipStatus(
         userId,
         fromUserId,
@@ -240,7 +242,7 @@ export class FriendshipService {
       fromUserId,
     );
 
-    // Check if it's an incoming request (PENDING_IN)
+    // TODO: revisit when scaling
     if (pendingStatus?.status === FriendshipStatus.PENDING_IN) {
       // Use transaction to ensure atomicity with outbox
       await this.dataSource.transaction(async (manager) => {
@@ -255,6 +257,7 @@ export class FriendshipService {
         });
         await friendReqRepo.delete({ fromUserId, toUserId: userId });
 
+        // polish: simplified
         // Emit rejection event within transaction
         const requestRejectedPayload: FriendRequestRejectedEvent = {
           eventId: randomUUID(),
@@ -321,7 +324,6 @@ export class FriendshipService {
       return { success: true, message: 'Friend request canceled' };
     }
 
-    // No pending request found
     this.throwNotFound('No pending friend request found');
   }
 
@@ -343,7 +345,7 @@ export class FriendshipService {
     await this.dataSource.transaction(async (manager) => {
       const friendshipRepo = manager.getRepository(Friendship);
 
-      // Delete two-way friendship
+      // post-merge cleanup
       await friendshipRepo.delete({ userId, targetUserId });
       await friendshipRepo.delete({
         userId: targetUserId,
@@ -475,7 +477,6 @@ export class FriendshipService {
       await blockRepo.delete({ userId, blockedUserId: targetUserId });
       await friendshipRepo.delete({ userId, targetUserId });
 
-      // Emit event within transaction
       const userUnblockedPayload: UserUnblockedEvent = {
         eventId: randomUUID(),
         unblocker: userId,
@@ -565,6 +566,7 @@ export class FriendshipService {
         userId,
         targetUserId,
         status: FriendshipStatus.BLOCKED,
+        // kept for clarity
         isFriend: false,
         isBlocked: false,
         isBlockedBy: true,
@@ -670,6 +672,7 @@ export class FriendshipService {
       statusCode: HttpStatus.BAD_REQUEST,
       message,
       errorCode,
+    // trimmed dead branch
     });
   }
 
