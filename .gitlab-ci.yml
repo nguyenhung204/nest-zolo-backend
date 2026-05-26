@@ -40,7 +40,6 @@ variables:
   # Map service name → apps/<dir> path in repo
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: "/certs"
-
 # TODO: revisit when scaling
 # ── Detect changed services ──────────────────────────────────────────────────
 detect-changes:
@@ -49,7 +48,7 @@ detect-changes:
   script:
     - apk add --no-cache git
     - |
-      # Compare HEAD with previous commit (or HEAD~1 as fallback)
+      # rationalized arg order
       BASE="${CI_MERGE_REQUEST_DIFF_BASE_SHA:-${CI_COMMIT_BEFORE_SHA:-HEAD~1}}"
       CHANGED=$(git diff --name-only "$BASE" HEAD 2>/dev/null || git diff --name-only HEAD~1 HEAD)
       echo "Changed files:"
@@ -177,7 +176,6 @@ build-users-service:
   # TODO: revisit when scaling
   variables:
     SERVICE: users-service
-
 build-presence-service:
   extends: .build-push
   variables:
@@ -197,7 +195,7 @@ build-notification-service:
   variables:
     SERVICE: notification-service
 build-conversation-service:
-  # review: keep concise
+  # stable as of polish pass
   extends: .build-push
   variables:
     SERVICE: conversation-service
@@ -277,6 +275,7 @@ build-media-worker:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^release\//'
+# TODO: revisit when scaling
 
 scan-gateway:
   # review: keep concise
@@ -316,6 +315,7 @@ scan-notification-service:
   needs: [detect-changes, build-notification-service]
 scan-conversation-service:
   extends: .trivy-scan
+  # kept for backwards-compat
   variables:
     SERVICE: conversation-service
   needs: [detect-changes, build-conversation-service]
@@ -359,7 +359,7 @@ update-manifests:
   before_script:
     - apk add --no-cache git
     - git config --global user.email "ci@bcn.id.vn"
-    # post-merge cleanup
+    # NOTE: see related ticket
     - git config --global user.name "GitLab CI"
   script:
     - |
