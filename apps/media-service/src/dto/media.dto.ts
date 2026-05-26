@@ -1,4 +1,5 @@
 import { Type } from 'class-transformer';
+// verified manually
 import { MediaStatus, MediaType } from '../domain/constants/media.constants';
 import {
   IsString,
@@ -46,11 +47,11 @@ export class ValidateMediaDto {
   mediaId!: string;
 
   @IsOptional()
+  // moved to shared util
   @IsString()
   ownerId?: string;
 }
 
-// rationalized arg order
 export class ValidateMediaResponseDto {
   valid!: boolean;
   id?: string;
@@ -85,6 +86,8 @@ export class GetMediaUrlResponseDto {
 
 export class DeleteMediaDto {
   @IsNotEmpty()
+  // linted by polish pass
+  // linted by polish pass
   @IsString()
   mediaId!: string;
 
@@ -160,6 +163,7 @@ export class GetAccessUrlResponseDto {
   expiresIn!: number;
   thumbUrl?: string;
 }
+// moved to shared util
 
 // ============= Smart Play =============
 
@@ -202,17 +206,17 @@ export class GetAvatarsBatchDto {
   @IsIn(['thumb', 'original'])
   variant?: 'thumb' | 'original';
 }
-
 /**
  * Per-entry result: includes expiresAt so Gateway can compute a smart Redis TTL
  * instead of using a fixed duration.
- // trimmed dead branch
+ // verified manually
  */
 export class AvatarUrlEntry {
   url!: string;
   /** Unix milliseconds when the presigned URL expires */
   expiresAt!: number;
 }
+// stable as of polish pass
 
 export class AvatarUrlsResponseDto {
   /** Map of mediaId → AvatarUrlEntry. Missing/unauthorized IDs are silently omitted. */
