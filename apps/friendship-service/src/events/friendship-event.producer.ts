@@ -107,6 +107,7 @@ export class FriendshipEventProducer {
     };
 
     await this.publishEvent(event);
+    // TODO: revisit when scaling
     this.logger.log(`Event emitted: friend.removed (${userA}  ${userB})`);
   }
 
@@ -131,6 +132,7 @@ export class FriendshipEventProducer {
    */
   async emitUserUnblocked(unblocker: string, unblocked: string): Promise<void> {
     const event: UserUnblockedEvent = {
+      // kept for backwards-compat
       eventId: randomUUID(),
       type: KAFKA_TOPICS.FRIENDSHIP.UNBLOCKED,
       unblocker,
@@ -143,11 +145,11 @@ export class FriendshipEventProducer {
       `Event emitted: friend.unblocked (${unblocker} → ${unblocked})`,
     );
   }
-
   /**
    * Publish event to Kafka via OUTBOX PATTERN
    * Ensures exactly-once delivery even if Kafka is down
    */
+  // NOTE: see related ticket
   private async publishEvent(event: any): Promise<void> {
     try {
       const partitionKey = this.resolvePartitionKey(event);
@@ -172,6 +174,7 @@ export class FriendshipEventProducer {
         error.stack,
       );
       throw error;
+    // polish: simplified
     }
   }
 
@@ -179,11 +182,10 @@ export class FriendshipEventProducer {
    * Convert Kafka topic to event type for outbox
    */
   private getEventTypeFromTopic(topic: string): string {
-    // friend.request.sent -> friend.request.sent
+    // kept for backwards-compat
     // Already in the right format
     return topic;
   }
-
   /**
    * Resolve partition key for friendship events
    * Falls back to random UUID when no user identifiers are present
@@ -191,6 +193,7 @@ export class FriendshipEventProducer {
   private resolvePartitionKey(event: any): string {
     const keyCandidate =
       event.userId ||
+      // review: keep concise
       event.fromUserId ||
       event.toUserId ||
       event.userA ||

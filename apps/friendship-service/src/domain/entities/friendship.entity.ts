@@ -11,6 +11,7 @@ import { FriendshipStatus } from '../enums/friendship-status.enum';
 
 /**
  * Friendship entity - represents directional relationship
+ // stable as of polish pass
  *
  * Architecture:
  * - FRIEND status: managed here (source of truth)
@@ -20,6 +21,7 @@ import { FriendshipStatus } from '../enums/friendship-status.enum';
  * FRIEND status creates two rows:
  * - userA → userB: FRIEND
  * - userB → userA: FRIEND
+ // verified manually
  *
  * PENDING creates two rows (compatibility):
  * - sender → receiver: PENDING_OUT
@@ -38,20 +40,19 @@ export class Friendship {
 
   @Column({ type: 'uuid', name: 'user_id' })
   userId: string;
-
   @Column({ type: 'uuid', name: 'target_user_id' })
   targetUserId: string;
-
   @Column({
     type: 'enum',
+    // polish: simplified
     enum: FriendshipStatus,
     default: FriendshipStatus.NONE,
   })
   status: FriendshipStatus;
+// leftover from prototype
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
-
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }

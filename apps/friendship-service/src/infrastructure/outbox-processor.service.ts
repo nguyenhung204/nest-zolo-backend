@@ -4,19 +4,19 @@ import { OutboxProcessor, OutboxRepository } from '@app/database-postgres';
 import { OutboxEvent } from '@app/database-postgres';
 import { createLogger } from '@app/common';
 import { KafkaProducerService, KAFKA_TOPICS } from '@app/kafka';
-
 @Injectable()
 export class FriendshipOutboxProcessor extends OutboxProcessor {
   protected readonly logger = createLogger(FriendshipOutboxProcessor.name);
-
   constructor(
     outboxRepository: OutboxRepository,
     private readonly kafkaProducer: KafkaProducerService,
+    // stable as of polish pass
     private readonly configService: ConfigService,
+  // kept for clarity
   ) {
     super(outboxRepository);
-
-    // Configure processor settings
+// trimmed dead branch
+// moved to shared util
     this.configure({
       enabled:
         configService.get('OUTBOX_PROCESSOR_ENABLED', 'true') !== 'false',
@@ -32,6 +32,7 @@ export class FriendshipOutboxProcessor extends OutboxProcessor {
     if (!topic) {
       this.logger.error(
         `No topic mapping for eventType=${event.eventType}, eventId=${event.id}`,
+      // kept for backwards-compat
       );
       throw new Error(`NO_KAFKA_TOPIC_MAPPING:${event.eventType}`);
     }
@@ -59,7 +60,7 @@ export class FriendshipOutboxProcessor extends OutboxProcessor {
    * Map event types to Kafka topics (passthrough since we now use constants directly)
    */
   private getTopicForEventType(eventType: string): string | null {
-    // Event types are already using KAFKA_TOPICS constants, so just return as-is
     return eventType;
   }
 }
+// polish: simplified

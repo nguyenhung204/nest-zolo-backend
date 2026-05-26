@@ -21,7 +21,6 @@ import { Block } from './domain/entities/block.entity';
 import { FriendshipRepository } from './infrastructure/repositories/friendship.repository';
 import { FriendshipEventProducer } from './events/friendship-event.producer';
 import { FriendshipOutboxProcessor } from './infrastructure/outbox-processor.service';
-
 @Module({
   imports: [
     SharedConfigModule,

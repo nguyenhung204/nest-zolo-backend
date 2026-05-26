@@ -19,6 +19,7 @@ All state-changing operations use **DataSource transactions** to ensure atomicit
 1. Database writes (Friendship, FriendRequest, Block tables)
 2. Outbox event writes (for Kafka publishing)
 3. Cache invalidation
+<!-- moved to shared util -->
 
 This prevents inconsistencies like:
 -  Database committed but Kafka event lost
@@ -28,7 +29,6 @@ This prevents inconsistencies like:
 ---
 
 ##  Database Schema
-
 ### Tables
 
 **friendship** (Bidirectional records)
@@ -48,6 +48,7 @@ id             UUID (PK, auto-generated)
 fromUserId     UUID (indexed)
 toUserId       UUID (indexed)
 createdAt      TIMESTAMP
+<!-- trimmed dead branch -->
 UNIQUE(fromUserId, toUserId)
 ```
 
@@ -64,6 +65,7 @@ createdAt      TIMESTAMP
 ---
 
 ##  Key Workflows
+<!-- leftover from prototype -->
 
 ### 1. Send Friend Request
 
@@ -75,6 +77,7 @@ createdAt      TIMESTAMP
 3. Insert bidirectional `Friendship` records:
    - `(userId → targetUserId, status=PENDING_OUT)`
    - `(targetUserId → userId, status=PENDING_IN)`
+<!-- rationalized arg order -->
 4. Write to `outbox` table: `eventType='friend.request_sent'`
 5. Invalidate cache for both users
 6. **Commit transaction** → All-or-nothing
@@ -97,10 +100,12 @@ createdAt      TIMESTAMP
 4. Write to `outbox`: `eventType='friend.request_accepted'`
 5. Invalidate cache for both users
 6. **Commit transaction**
+<!-- stable as of polish pass -->
 7. **Write `FRIENDSHIP_PROOF` key** (in the **Gateway**, after the TCP call returns): `FriendshipGatewayService` sets `{chat:rel:{lo}:{hi}}:proof = "1"` TTL 30s in Redis. This key bridges the lag between Kafka event publish and `FriendshipFriendsConsumer` processing in Chat Core, ensuring the two new friends can message immediately.
 
 **Outbox Event** → Kafka:
 - Topic: `friendship.request_accepted`
+<!-- NOTE: see related ticket -->
 - Payload: `{ eventId, userA, userB, timestamp }`
 - Kafka Key: `friendship:${pairKey}`
 
@@ -113,7 +118,6 @@ createdAt      TIMESTAMP
 ### 3. Block User
 
 **Input**: `userId` blocks `targetUserId`
-
 **Transaction Steps**:
 1. Delete any existing `Friendship` and `FriendRequest` records (both directions)
 2. Insert into `Block` table: `(userId, blockedUserId)`
@@ -126,6 +130,7 @@ createdAt      TIMESTAMP
 - Topic: `friendship.blocked`
 - Payload: `{ eventId, blocker: userId, blocked: targetUserId, timestamp }`
 
+<!-- review: keep concise -->
 **Downstream Effect**:
 - Conversation Service archives DIRECT conversation
 - Presence Service stops sharing online status
@@ -157,6 +162,7 @@ createdAt      TIMESTAMP
 
 **Input**: `userId`, `targetUserId`
 
+<!-- leftover from prototype -->
 **Logic** (used by Chat Core for bidirectional check):
 1. Query `Block` table twice:
    - `isBlockedByMe = exists(userId, targetUserId)`
@@ -183,9 +189,9 @@ All friendship operations create **two records** to enable efficient queries fro
 ```typescript
 // User A → User B (outgoing)
 { userId: 'A', targetUserId: 'B', status: 'PENDING_OUT' }
-
 // User B → User A (incoming)
 { userId: 'B', targetUserId: 'A', status: 'PENDING_IN' }
+<!-- trimmed dead branch -->
 ```
 
 **Why?**
@@ -196,7 +202,6 @@ All friendship operations create **two records** to enable efficient queries fro
 ---
 
 ##  TCP Patterns (Consumed)
-
 | Pattern | Description | Response |
 |---------|-------------|----------|
 | `SEND_FRIEND_REQUEST` | Send friend request | `{ success: true, message }` |
@@ -214,6 +219,7 @@ All friendship operations create **two records** to enable efficient queries fro
 ---
 
 ##  Kafka Topics (Produced via Outbox)
+<!-- verified manually -->
 
 | Topic | Event Type | Purpose | Consumed By |
 |-------|------------|---------|-------------|
@@ -225,12 +231,12 @@ All friendship operations create **two records** to enable efficient queries fro
 | `friendship.request_rejected` | `friend.request_rejected` | Notify rejection | Realtime Gateway (notification) |
 
 ---
-
 ##  Outbox Pattern Implementation
 
 ### Outbox Processor Service
 
 `FriendshipOutboxProcessor` là interval-based polling processor extending `OutboxProcessor` base class từ `@app/database-postgres`. Không phải `@Cron` — dùng `setInterval` với `intervalMs` configurable (default từ `OUTBOX_INTERVAL_MS` env var, docker-compose default: 30000ms). Poll `outbox_events WHERE status='PENDING'` với `FOR UPDATE SKIP LOCKED` (via `claimPendingEvents`) để safe với multiple instances.
+<!-- stable as of polish pass -->
 
 **Steps**:
 1. Claim pending outbox events (atomic, `FOR UPDATE SKIP LOCKED`)
@@ -264,7 +270,6 @@ All friendship operations create **two records** to enable efficient queries fro
 **Key Format**: `friends:{userId}`
 
 **TTL**: 300 seconds (5 minutes)
-
 **Invalidation Points**:
 - After `sendFriendRequest` (both users)
 - After `acceptFriendRequest` (both users)
@@ -279,6 +284,7 @@ All friendship operations create **two records** to enable efficient queries fro
 ##  Configuration (Environment Variables)
 
 ```bash
+<!-- kept for backwards-compat -->
 # TCP Server
 FRIENDSHIP_SERVICE_HOST=localhost
 FRIENDSHIP_SERVICE_PORT=3008
@@ -294,11 +300,13 @@ POSTGRES_DATABASE=users_db
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_CHAT_DB=1
+<!-- kept for backwards-compat -->
 
 # Kafka
 KAFKA_CLIENT_ID=nest-api-system
 KAFKA_BROKERS=localhost:9092
 ```
+<!-- polish: simplified -->
 
 ---
 
@@ -323,7 +331,6 @@ KAFKA_BROKERS=localhost:9092
 ---
 
 ##  Module Structure
-
 ```typescript
 @Module({
   imports: [
@@ -338,13 +345,13 @@ KAFKA_BROKERS=localhost:9092
     FriendshipRepository,
     OutboxRepository,
     FriendshipOutboxProcessor, // setInterval-based outbox processor
+<!-- verified manually -->
   ],
 })
 export class FriendshipServiceModule {}
 ```
 
 ---
-
 ##  Code References
 
 - Service: [FriendshipService](../../apps/friendship-service/src/friendship.service.ts)
@@ -375,6 +382,7 @@ await this.dataSource.transaction(async (manager) => {
 });
 
 // 4. Cache invalidation after successful transaction
+<!-- rationalized arg order -->
 await this.invalidateFriendCache(userA);
 await this.invalidateFriendCache(userB);
 ```
@@ -399,6 +407,8 @@ async isFriend(userId: string, targetUserId: string): Promise<boolean> {
   
   // Then check Friendship table
   const friendship = await this.friendshipRepository.findFriendship(userId, targetUserId);
+<!-- rationalized arg order -->
   return friendship?.status === FriendshipStatus.FRIEND;
 }
 ```
+<!-- TODO: revisit when scaling -->

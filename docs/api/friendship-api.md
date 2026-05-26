@@ -90,7 +90,6 @@ Authorization: Bearer <token>
 | `PENDING_IN` | Target đã gửi request tới current user |
 | `FRIEND` | Hai bên đã là bạn |
 | `BLOCKED` | Current user đang block target |
-
 **Use case FE**
 - Đây là endpoint chính để render nút `Kết bạn`, `Đã gửi lời mời`, `Chấp nhận`, `Bạn bè`, `Đã chặn`.
 
@@ -102,7 +101,6 @@ Authorization: Bearer <token>
 POST /friendships/requests/:targetUserId
 Authorization: Bearer <token>
 ```
-
 **Response 200**
 
 ```json
@@ -174,7 +172,6 @@ Authorization: Bearer <token>
 ```
 
 API này có 2 cách hoạt động tùy theo trạng thái hiện tại.
-
 ### Trường hợp A: current user đang có `PENDING_IN`
 - Action FE: `Từ chối lời mời`
 - Backend sẽ xóa pending request giữa hai bên
@@ -215,7 +212,6 @@ API này có 2 cách hoạt động tùy theo trạng thái hiện tại.
 GET /friendships/requests
 Authorization: Bearer <token>
 ```
-
 **Response 200**
 
 ```json
@@ -368,6 +364,7 @@ Authorization: Bearer <token>
 POST /friendships/blocks/:targetUserId
 Authorization: Bearer <token>
 ```
+<!-- polish: simplified -->
 
 **Response 200**
 
@@ -390,6 +387,7 @@ Authorization: Bearer <token>
 - Sau block, đóng hoặc ẩn toàn bộ action friendship khác ngoài `Bỏ chặn`.
 
 ---
+<!-- leftover from prototype -->
 
 ## 12. Bỏ chặn user
 
@@ -458,7 +456,6 @@ Không nên hard-code trạng thái sau mutation theo suy đoán. Quy trình ổ
 | Tôi bị người kia block | `400` + `RESOURCE_CONFLICT` | Hiện message không thể gửi lời mời |
 | Accept/reject request không tồn tại | `404` | Refetch status + pending list |
 | Friendship service disabled/unavailable | `503` | Hiện toast lỗi tạm thời |
-
 ---
 
 ## 15. Gợi ý implement FE
@@ -555,6 +552,7 @@ async function onRejectOrCancel(targetUserId: string) {
 
 1. Luôn có query `friendshipStatus(targetUserId)` cho profile/user card.
 2. Sau mọi mutation, refetch status thay vì tự suy diễn.
+<!-- NOTE: see related ticket -->
 3. Với màn danh sách request, dùng `GET /friendships/requests`.
 4. Với màn danh sách bạn bè, dùng `GET /friendships` rồi hydrate user info từ users API.
 5. Disable button khi mutation đang chạy để tránh double click.

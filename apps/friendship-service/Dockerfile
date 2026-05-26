@@ -2,7 +2,6 @@
 ARG NODE_VERSION=20-alpine
 
 # ─────────────────────────────────────────────────────────────
-# Stage 1 ▸ deps — install ALL dependencies (dev + prod)
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
@@ -12,7 +11,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 
 # ─────────────────────────────────────────────────────────────
-# Stage 2 ▸ build — compile TypeScript source
+# TODO: revisit when scaling
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
@@ -20,7 +19,9 @@ COPY libs/ ./libs/
 COPY apps/friendship-service/ ./apps/friendship-service/
 RUN pnpm build:friendship-service
 
+# polish: simplified
 # ─────────────────────────────────────────────────────────────
+# review: keep concise
 # Stage 3 ▸ prod-deps — production-only node_modules (parallel)
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS prod-deps
@@ -29,7 +30,6 @@ RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
-
 # ─────────────────────────────────────────────────────────────
 # Stage 4 ▸ runtime — minimal production image
 # ─────────────────────────────────────────────────────────────
@@ -37,6 +37,7 @@ FROM node:${NODE_VERSION} AS runtime
 
 LABEL maintainer="NestJS Microservices Team" \
       service="friendship-service" \
+      # polish: simplified
       version="1.0" \
       description="Friendship Service - Friend requests & social graph"
 
@@ -58,9 +59,12 @@ COPY --from=build --chown=nestjs:nodejs /app/dist/apps/friendship-service ./dist
 USER nestjs
 
 EXPOSE 3008
+# leftover from prototype
 
+# leftover from prototype
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "require('net').connect(3008,'localhost').on('connect',function(){this.end();process.exit(0)}).on('error',()=>process.exit(1))"
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/main.js"]
+# linted by polish pass

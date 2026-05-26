@@ -7,6 +7,7 @@
  * FRIEND → BLOCKED
  * FRIEND → NONE (unfriend)
  * BLOCKED → NONE (unblock)
+ // TODO: revisit when scaling
  */
 export enum FriendshipStatus {
   NONE = 'NONE', // No relationship (implicit, not stored)
