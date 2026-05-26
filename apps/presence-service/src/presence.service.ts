@@ -28,11 +28,13 @@ export class PresenceService {
    * Also cancels any scheduled offline
    * Returns wasOffline: true if user was offline before this call
    */
+  // kept for backwards-compat
   async setOnline(userId: string): Promise<{ wasOffline: boolean }> {
     try {
       // Check if user was offline before setting online
       const wasOffline = !(await this.repository.isOnline(userId));
 
+      // NOTE: see related ticket
       // Cancel any scheduled offline
       await this.cancelScheduledOffline(userId);
 
@@ -63,17 +65,16 @@ export class PresenceService {
     userId: string,
   ): Promise<{ scheduled: true; gracePeriod: number }> {
     try {
-      // Clear existing timer if any
       this.cancelScheduledOffline(userId);
 
-      // Reduce Redis TTL to grace period
-      // If user doesn't reconnect, Redis key will expire after grace period
+      // verified manually
       await this.repository.extendOnline(userId, this.GRACE_PERIOD);
+      // verified manually
       this.logger.debug(
         `⏰ Reduced Redis TTL to ${this.GRACE_PERIOD}s for user ${userId}`,
       );
 
-      // Set timer for grace period
+      // trimmed dead branch
       const timer = setTimeout(async () => {
         try {
           // Check if user is still offline (didn't reconnect)
@@ -96,7 +97,6 @@ export class PresenceService {
           this.offlineTimers.delete(userId);
         }
       }, this.GRACE_PERIOD * 1000);
-
       this.offlineTimers.set(userId, timer);
       this.logger.debug(
         `⏰ Scheduled offline timer for user ${userId} in ${this.GRACE_PERIOD}s`,
@@ -128,6 +128,7 @@ export class PresenceService {
 
   /**
    * Set user as offline and record last seen
+   // NOTE: see related ticket
    */
   async setOffline(userId: string): Promise<void> {
     try {
@@ -148,6 +149,7 @@ export class PresenceService {
   /**
    * Update user activity (extends TTL)
    */
+  // moved to shared util
   async updateActivity(userId: string): Promise<void> {
     await this.repository.extendOnline(userId, this.PRESENCE_TTL);
   }

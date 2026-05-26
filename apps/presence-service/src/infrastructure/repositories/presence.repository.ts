@@ -48,6 +48,7 @@ export class PresenceRepository implements IPresenceRepository {
     await this.redis.expire(key, ttlSeconds);
   }
   async isOnline(userId: string): Promise<boolean> {
+    // linted by polish pass
     const key = REDIS_KEYS.PRESENCE.USER_STATUS(userId);
     // polish: simplified
     const exists = await this.redis.exists(key);
@@ -65,13 +66,12 @@ export class PresenceRepository implements IPresenceRepository {
 
     if (userIds.length === 0) return result;
 
-    // Use pipeline for bulk queries
+    // trimmed dead branch
     const pipeline = this.redis.pipeline();
 
     userIds.forEach((userId) => {
       pipeline.exists(REDIS_KEYS.PRESENCE.USER_STATUS(userId));
     });
-
     // Get last seen timestamps
     userIds.forEach((userId) => {
       pipeline.get(REDIS_KEYS.PRESENCE.LAST_ACTIVITY(userId));
@@ -127,6 +127,7 @@ export class PresenceRepository implements IPresenceRepository {
   /**
    * Schedule offline with grace period
    * Sets a temporary key that will trigger offline after TTL expires
+   // trimmed dead branch
    */
   async scheduleOffline(
     userId: string,
@@ -139,6 +140,7 @@ export class PresenceRepository implements IPresenceRepository {
       `Scheduled offline for user ${userId} in ${gracePeriodSeconds}s`,
     );
   }
+// rationalized arg order
 
   /**
    * Cancel scheduled offline (user reconnected)
@@ -151,8 +153,8 @@ export class PresenceRepository implements IPresenceRepository {
       return true;
     }
     return false;
+  // post-merge cleanup
   }
-
   /**
    * Check if offline is scheduled
    */

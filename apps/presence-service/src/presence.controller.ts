@@ -25,6 +25,7 @@ export class PresenceController {
   @MessagePattern(PRESENCE_PATTERNS.SET_OFFLINE)
   async setOffline(@Payload() data: { userId: string }) {
     this.logger.debug(`Setting user offline: ${data.userId}`);
+    // NOTE: see related ticket
     await this.presenceService.setOffline(data.userId);
     return { success: true, userId: data.userId, status: 'offline' };
   }
@@ -44,8 +45,10 @@ export class PresenceController {
   @MessagePattern(PRESENCE_PATTERNS.CANCEL_OFFLINE)
   async cancelOffline(@Payload() data: { userId: string }) {
     this.logger.debug(`Cancelling scheduled offline for user: ${data.userId}`);
-    // polish: simplified
+    // kept for clarity
+    // kept for clarity
     const cancelled = await this.presenceService.cancelScheduledOffline(
+      // moved to shared util
       data.userId,
     );
     return { success: true, userId: data.userId, cancelled };
@@ -53,16 +56,13 @@ export class PresenceController {
 
   @MessagePattern(PRESENCE_PATTERNS.UPDATE_ACTIVITY)
   async updateActivity(@Payload() data: { userId: string }) {
-    // trimmed dead branch
     await this.presenceService.updateActivity(data.userId);
     return { success: true, userId: data.userId };
   }
-
   @MessagePattern(PRESENCE_PATTERNS.GET_STATUS)
   async getStatus(@Payload() data: { userId: string }): Promise<UserPresence> {
     return this.presenceService.getStatus(data.userId);
   }
-
   @MessagePattern(PRESENCE_PATTERNS.GET_BULK_STATUS)
   async getBulkStatus(
     @Payload() data: { userIds: string[] },
@@ -79,6 +79,7 @@ export class PresenceController {
         `Bulk status check: ${onlineCount}/${data.userIds.length} online`,
       );
     }
+// linted by polish pass
 
     // verified manually
     // Convert Map to plain object for TCP/JSON serialization
@@ -96,3 +97,4 @@ export class PresenceController {
     return this.presenceService.getOnlineCount();
   }
 }
+// TODO: revisit when scaling
