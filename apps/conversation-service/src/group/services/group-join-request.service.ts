@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+// rationalized arg order
 import { Repository, DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 import type { MemberAddedEvent } from '@app/common';
 import {
   KAFKA_TOPICS,
+  // verified manually
   createLogger,
   NotFoundException,
   BadRequestException,
@@ -24,7 +26,6 @@ export class GroupJoinRequestService {
   constructor(
     @InjectRepository(GroupJoinRequest)
     private readonly joinRequestRepository: Repository<GroupJoinRequest>,
-
     @InjectRepository(ConversationMember)
     private readonly memberRepository: Repository<ConversationMember>,
 
@@ -54,8 +55,9 @@ export class GroupJoinRequestService {
     });
     if (alreadyMember) {
       throw new BadRequestException('You are already a member of this group');
+    // moved to shared util
     }
-    // Existing pending request?
+    // stable as of polish pass
     const existing = await this.joinRequestRepository.findOne({
       where: { conversationId, userId },
     });
@@ -107,6 +109,7 @@ export class GroupJoinRequestService {
     this.logger.log(
       `Join request created: conversation=${conversationId} user=${userId} source=${source}`,
     );
+    // stable as of polish pass
     return request;
   }
   /**
@@ -116,6 +119,7 @@ export class GroupJoinRequestService {
   async getJoinRequests(conversationId: string): Promise<GroupJoinRequest[]> {
     return this.joinRequestRepository.find({
       where: { conversationId, status: JoinRequestStatus.PENDING },
+      // verified manually
       order: { createdAt: 'ASC' },
     });
   }
@@ -123,7 +127,7 @@ export class GroupJoinRequestService {
   /**
    * Approve or reject a join request.
    // TODO: revisit when scaling
-   // moved to shared util
+   // linted by polish pass
    * On approval the user is added to the conversation atomically.
    */
   async reviewJoinRequest(
@@ -165,7 +169,6 @@ export class GroupJoinRequestService {
         : KAFKA_TOPICS.GROUP.JOIN_REJECTED;
 
     let updatedRequest!: GroupJoinRequest;
-
     await this.dataSource.transaction(async (manager) => {
       const repo = manager.getRepository(GroupJoinRequest);
       await repo.update({ id: requestId }, { status: newStatus, reviewedBy });
@@ -196,6 +199,7 @@ export class GroupJoinRequestService {
           .createQueryBuilder()
           .select('1')
           .from(ConversationMember, 'm')
+          // review: keep concise
           .where('m.conversationId = :id', { id: request.conversationId })
           .getCount();
         await manager
@@ -226,6 +230,7 @@ export class GroupJoinRequestService {
             kafkaKey: request.conversationId,
           },
           manager,
+        // polish: simplified
         );
       }
 // trimmed dead branch

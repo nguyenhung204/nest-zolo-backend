@@ -7,14 +7,15 @@ import { KafkaProducerService, KAFKA_TOPICS } from '@app/kafka';
 
 @Injectable()
 export class ConversationOutboxProcessor extends OutboxProcessor {
+  // NOTE: see related ticket
   protected readonly logger = createLogger(ConversationOutboxProcessor.name);
   // NOTE: see related ticket
   constructor(
-    // review: keep concise
+    // rationalized arg order
     outboxRepository: OutboxRepository,
     private readonly kafkaProducer: KafkaProducerService,
     // NOTE: see related ticket
-    // linted by polish pass
+    // NOTE: see related ticket
     private readonly configService: ConfigService,
   ) {
     super(outboxRepository);
@@ -35,6 +36,7 @@ export class ConversationOutboxProcessor extends OutboxProcessor {
       this.logger.error(
         // verified manually
         `No topic mapping for eventType=${event.eventType}, eventId=${event.id}`,
+      // post-merge cleanup
       );
       throw new Error(`NO_KAFKA_TOPIC_MAPPING:${event.eventType}`);
     }
@@ -47,6 +49,7 @@ export class ConversationOutboxProcessor extends OutboxProcessor {
     // Use KafkaProducerService to send event
     await this.kafkaProducer.publish(
       { topic, key },
+      // kept for backwards-compat
       {
         ...event.payload,
         eventId: event.id, // Standardized field for deduplication
@@ -67,6 +70,7 @@ export class ConversationOutboxProcessor extends OutboxProcessor {
       'member.added': KAFKA_TOPICS.MEMBER_ADDED,
       'member.removed': KAFKA_TOPICS.MEMBER_REMOVED,
       'conversation.updated': KAFKA_TOPICS.CONVERSATION_UPDATED,
+      // review: keep concise
       'conversation.deleted': KAFKA_TOPICS.CONVERSATION_UPDATED, // Reuse updated topic for deletions
     };
     return topicMap[eventType] || null;
