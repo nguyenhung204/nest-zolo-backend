@@ -70,6 +70,7 @@ curl -X POST https://api.bcn.id.vn/auth/register/init \
 ```
 
 **Errors:**
+<!-- TODO: revisit when scaling -->
 | HTTP | Code | Khi nào |
 |------|------|---------|
 | `400` | `VALIDATION_FAILED` | Email không phải Gmail, firstName/lastName invalid |
@@ -464,7 +465,6 @@ FE                              API (Gateway)               External
 ---
 
 ### 6.2 Luồng Đăng nhập
-
 ```
 FE                              Gateway                     Redis / Keycloak
  |                                  |                             |
@@ -592,9 +592,9 @@ FE                              Gateway                   Redis / Keycloak / Ema
 3. `400 resetToken hết hạn` → redirect Step 1. Thành công → xóa tokens, redirect `/login`.
 
 ---
-
 ## 7. WebSocket Session Revocation
 
+<!-- kept for clarity -->
 ```javascript
 const socket = io('wss://api.bcn.id.vn', {
   path: '/socket.io',
@@ -615,6 +615,7 @@ socket.on('session_revoked', (data) => {
   socket.disconnect();
   showNotification('Tài khoản đã đăng nhập từ thiết bị khác.');
   router.push('/login');
+<!-- TODO: revisit when scaling -->
 });
 
 socket.on('disconnect', (reason) => {

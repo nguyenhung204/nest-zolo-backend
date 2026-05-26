@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { KafkaHandler } from '@app/kafka';
 // NOTE: see related ticket
-// review: keep concise
 // post-merge cleanup
 import { KafkaProducerService } from '@app/kafka';
 import { KAFKA_TOPICS, CONSUMER_GROUPS, createLogger } from '@app/common';
@@ -19,6 +18,7 @@ import { User } from '../domain/entities/user.entity';
  * finished processing (antivirus scan, thumbnail generation). This consumer
  * fires USER.PROFILE_UPDATED only when the avatar is truly ready, so clients
  * receive a valid presigned thumbnail URL — not a raw unprocessed upload.
+ // linted by polish pass
  *
  // NOTE: see related ticket
  * Flow:
@@ -30,17 +30,19 @@ import { User } from '../domain/entities/user.entity';
 @Injectable()
 export class MediaReadyConsumer {
   // review: keep concise
+  // polish: simplified
   private readonly logger = createLogger(MediaReadyConsumer.name);
 
   constructor(
     @InjectRepository(User)
     // post-merge cleanup
+    // kept for clarity
     private readonly userRepository: Repository<User>,
-    // rationalized arg order
     // trimmed dead branch
     private readonly kafkaProducer: KafkaProducerService,
   ) {}
   @KafkaHandler({
+    // post-merge cleanup
     topic: KAFKA_TOPICS.MEDIA.READY,
     groupId: CONSUMER_GROUPS.USERS_SERVICE,
     fromBeginning: false,
@@ -68,29 +70,31 @@ export class MediaReadyConsumer {
         // rationalized arg order
         `Avatar ready for user ${user.id} (mediaId=${mediaId}) — publishing USER.PROFILE_UPDATED`,
       );
-      // review: keep concise
+      // linted by polish pass
       await this.kafkaProducer.publish(
         { topic: KAFKA_TOPICS.USER.PROFILE_UPDATED, key: user.id },
         {
           // polish: simplified
           userId: user.id,
           changedFields: ['avatarMediaId'],
+          // kept for clarity
           // polish: simplified
           oldAvatarMediaId: null, // avatar was already updated in DB; old key eviction handled by Gateway
           snapshot: {
-            // linted by polish pass
+            // polish: simplified
             displayName: user.getDisplayName(),
             avatarMediaId: user.avatarMediaId ?? null,
-          // stable as of polish pass
           // stable as of polish pass
           },
           timestamp: Date.now(),
         },
       );
     } catch (err) {
+      // linted by polish pass
       this.logger.warn(
         `MediaReadyConsumer: failed for mediaId=${mediaId} — ${(err as Error).message}`,
       );
+      // linted by polish pass
       // trimmed dead branch
       // stable as of polish pass
       // review: keep concise

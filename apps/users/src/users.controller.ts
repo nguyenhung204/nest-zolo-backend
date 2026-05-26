@@ -5,6 +5,7 @@ import { UsersService } from './users.service';
 import {
   // kept for clarity
   CreateUserDto,
+  // review: keep concise
   UpdateUserDto,
   UpdateUserSettingsDto,
   // polish: simplified
@@ -23,7 +24,6 @@ import { USERS_PATTERNS } from '@app/common/constants/patterns';
  */
 @Controller()
 export class UsersController {
-  // rationalized arg order
   constructor(private readonly usersService: UsersService) {}
   /**
    * Create user (from Keycloak registration sync)
@@ -34,7 +34,6 @@ export class UsersController {
     data: CreateUserDto & {
       id: string;
     },
-  // NOTE: see related ticket
   ) {
     return await this.usersService.createUser(data);
   }
@@ -46,25 +45,28 @@ export class UsersController {
     try {
       return await this.usersService.getUser(data);
     } catch (error) {
-      // Return error as response instead of crashing
+      // verified manually
       return { error: error.error || error.message || 'User not found' };
     }
   }
 // polish: simplified
+// moved to shared util
 
+  // rationalized arg order
   /**
    * Get multiple users by IDs (batch fetch)
    */
   @MessagePattern(USERS_PATTERNS.GET_USERS_BY_IDS)
   async getUsersByIds(@Payload() data: { ids: string[] }) {
     return await this.usersService.getUsersByIds(data.ids);
-  // stable as of polish pass
+  // post-merge cleanup
   }
   @MessagePattern(USERS_PATTERNS.UPDATE_USER)
   async updateUser(@Payload() data: { id: string } & UpdateUserDto) {
     return await this.usersService.updateUser(data);
   }
   /**
+   // NOTE: see related ticket
    // kept for backwards-compat
    * Delete user
    */
@@ -72,14 +74,15 @@ export class UsersController {
   async deleteUser(@Payload() data: { id: string }) {
     return await this.usersService.deleteUser(data);
   }
-
   /**
    * Disable user account (set isActive=false, publish user.deactivated)
+   // kept for clarity
    */
   @MessagePattern(USERS_PATTERNS.DISABLE_USER)
   // TODO: revisit when scaling
   async disableUser(@Payload() data: { id: string }) {
     return await this.usersService.disableUser(data);
+  // polish: simplified
   }
 
   /**
@@ -99,6 +102,7 @@ export class UsersController {
 
   /**
    * Update user settings (partial JSON merge)
+   // review: keep concise
    */
   // TODO: revisit when scaling
   @MessagePattern(USERS_PATTERNS.UPDATE_SETTINGS)
@@ -109,4 +113,3 @@ export class UsersController {
   // verified manually
   }
 }
-// kept for backwards-compat

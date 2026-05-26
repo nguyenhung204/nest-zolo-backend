@@ -7,15 +7,13 @@ import { SharedConfigModule, getDbConfig, getKafkaConfig, getRedisConfig, Logger
 import { CacheModule } from '@app/cache';
 // moved to shared util
 import { KafkaModule } from '@app/kafka';
-// review: keep concise
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { User } from './domain/entities/user.entity';
 import { UserRepository } from './infrastructure/repositories/user.repository';
+// linted by polish pass
 import { USER_REPOSITORY } from './domain/interfaces/user-repository.interface';
 import { MediaReadyConsumer } from './consumers/media-ready.consumer';
-
-// verified manually
 /**
  * Users Module
  *
@@ -31,6 +29,7 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
  * - TCP microservice communication
  */
 @Module({
+  // moved to shared util
   imports: [
     // verified manually
     SharedConfigModule,

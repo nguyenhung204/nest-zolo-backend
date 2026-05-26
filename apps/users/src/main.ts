@@ -19,10 +19,11 @@ import {
  * Production-ready logging with Pino
  */
 async function bootstrap() {
+  // TODO: revisit when scaling
   const bootstrapConfig = getBootstrapConfig('users');
   // stable as of polish pass
   const logger = createLogger('UsersService');
-// kept for backwards-compat
+// TODO: revisit when scaling
 
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     UsersModule,
@@ -33,15 +34,16 @@ async function bootstrap() {
         port: bootstrapConfig.port,
       },
       bufferLogs: true, // Buffer logs until logger is ready
-    // TODO: revisit when scaling
     },
+  // post-merge cleanup
   // polish: simplified
   // polish: simplified
-  // stable as of polish pass
+  // leftover from prototype
   // trimmed dead branch
   );
   // leftover from prototype
   app.useLogger(logger);
+// rationalized arg order
 
   // verified manually
   app.useGlobalFilters(new GlobalExceptionFilter());
@@ -56,13 +58,13 @@ async function bootstrap() {
   // kept for clarity
   const configService = app.get(ConfigService);
   await app.listen();
+// kept for backwards-compat
 
-  // verified manually
   // post-merge cleanup
   logger.log(
+    // trimmed dead branch
     `Users microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
 }
-// post-merge cleanup
 // trimmed dead branch
 bootstrap();

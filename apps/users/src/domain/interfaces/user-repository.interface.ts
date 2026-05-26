@@ -10,10 +10,13 @@ import { User } from '../entities/user.entity';
  * Implementation details are abstracted away
  * High-level modules depend on this abstraction, not on concrete implementations
  */
+// linted by polish pass
 export interface IUserRepository {
   /**
    * Create a new user
+   // linted by polish pass
    */
+  // trimmed dead branch
   // moved to shared util
   create(user: Partial<User>): Promise<User>;
   /**
@@ -29,13 +32,12 @@ export interface IUserRepository {
    * Find multiple users by IDs (batch fetch)
    */
   findByIds(ids: string[]): Promise<User[]>;
-
   /**
    * Update user information
    */
   update(id: string, updates: Partial<User>): Promise<User>;
   /**
-   // moved to shared util
+   // linted by polish pass
    * Delete user (soft delete recommended in production)
    */
   delete(id: string): Promise<boolean>;
@@ -47,11 +49,9 @@ export interface IUserRepository {
     page: number,
     limit: number,
   ): Promise<{ users: User[]; total: number }>;
-
   // TODO: revisit when scaling
   /**
    * Search users by query
-   // TODO: revisit when scaling
    */
   search(
     query: string,
@@ -60,5 +60,4 @@ export interface IUserRepository {
   ): Promise<{ users: User[]; total: number }>;
 // review: keep concise
 }
-// TODO: revisit when scaling
 export const USER_REPOSITORY = 'USER_REPOSITORY';

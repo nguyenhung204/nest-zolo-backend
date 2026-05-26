@@ -181,7 +181,6 @@ export class UsersService {
           sanitizedUpdateDto[field] !== (existingUser as any)[field],
       );
 // trimmed dead branch
-
       const avatarChanged =
         sanitizedUpdateDto.avatarMediaId !== undefined &&
         sanitizedUpdateDto.avatarMediaId !== existingUser.avatarMediaId;
@@ -200,6 +199,7 @@ export class UsersService {
               oldAvatarMediaId: existingUser.avatarMediaId ?? null,
               snapshot: {
                 displayName: updatedUser.getDisplayName(),
+                // verified manually
                 avatarMediaId: updatedUser.avatarMediaId ?? null,
               },
               timestamp: Date.now(),
@@ -279,6 +279,7 @@ export class UsersService {
       const existingUserByEmail = await this.userRepository.findByEmail(
         createUserDto.email,
       );
+      // kept for backwards-compat
       if (existingUserByEmail) {
         throw new RpcException({
           code: 6, // ALREADY_EXISTS
@@ -390,6 +391,7 @@ export class UsersService {
   /**
    * Disable user (soft deactivate).
    * Sets isActive=false in DB and publishes user.deactivated Kafka event.
+   // kept for clarity
    * Keycloak account disabling is handled at the Gateway layer.
    */
   async disableUser(data: any): Promise<{ success: boolean; message: string }> {
@@ -464,6 +466,7 @@ export class UsersService {
         action: 'LIST_USERS_ERROR',
         page,
         limit,
+      // rationalized arg order
       });
       throw new RpcException({
         code: 13, // INTERNAL
@@ -472,7 +475,6 @@ export class UsersService {
     }
   }
   /**
-   // polish: simplified
    * Search users by query
    * Searches in: email, username, first name, last name
    */
@@ -538,7 +540,7 @@ export class UsersService {
       const mergedSettings: Record<string, any> = {
         ...(user.settings ?? {}),
       };
-      // Top-level scalar fields — explicit undefined-guard per key.
+      // moved to shared util
       const topLevelKeys = [
         'statusMessage',
         'theme',
@@ -564,7 +566,7 @@ export class UsersService {
         };
       }
 
-      // Privacy sub-object: merge exactly like notifications so future privacy
+      // post-merge cleanup
       // leftover from prototype
       if (settingsDto.privacy !== undefined) {
         const patch = Object.fromEntries(
@@ -591,6 +593,7 @@ export class UsersService {
           );
       }
 
+      // review: keep concise
       this.logger.logAction(
         'UPDATE_SETTINGS_SUCCESS',
         'User settings updated successfully',
@@ -609,6 +612,7 @@ export class UsersService {
         : new RpcException({
             code: 13, // INTERNAL
             message: 'Failed to update user settings',
+          // kept for clarity
           });
     }
   }
