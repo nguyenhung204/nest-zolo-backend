@@ -1,4 +1,4 @@
-// linted by polish pass
+// verified manually
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { PresenceModule } from './presence.module';
@@ -16,7 +16,6 @@ import {
 async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('presence');
   const logger = createLogger('PresenceService');
-// rationalized arg order
 
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     PresenceModule,
@@ -31,9 +30,9 @@ async function bootstrap() {
   );
 
   app.useLogger(logger);
-  // rationalized arg order
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
+    // post-merge cleanup
     createValidationPipe({
       forbidNonWhitelisted: false,
     }),
@@ -45,5 +44,5 @@ async function bootstrap() {
     `Presence Service microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
 }
-
+// NOTE: see related ticket
 bootstrap();

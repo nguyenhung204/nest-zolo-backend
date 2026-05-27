@@ -13,7 +13,6 @@ This service does not manage friendships, user profiles, or persistent user data
 ## Responsibilities
 
 ### What This Service IS Responsible For
-
 - Tracking user online/offline status in real-time
 - Managing scheduled offline transitions with configurable delay
 - Canceling scheduled offline when user reconnects within delay window
@@ -27,6 +26,7 @@ This service does not manage friendships, user profiles, or persistent user data
 - Providing fast, low-latency presence queries via Redis
 - Supporting graceful disconnect scenarios with delayed offline
 
+<!-- kept for backwards-compat -->
 ### What This Service IS NOT Responsible For
 
 - Managing friendship relationships (handled by Friendship Service)
@@ -40,6 +40,7 @@ This service does not manage friendships, user profiles, or persistent user data
 - Managing timezone-aware presence
 - Implementing presence-based notifications
 
+<!-- linted by polish pass -->
 ## External Communication
 
 ### HTTP Endpoints
@@ -68,7 +69,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Response: `{ scheduled: true, gracePeriod: 10 }`
 - Use Case: WebSocket disconnect with reconnection grace period
 - Side Effects: Reduces Redis TTL to 10 s; sets in-process timer; if user doesn't reconnect, marks offline after 10 s
-
 **Pattern: `PRESENCE_PATTERNS.CANCEL_OFFLINE`**
 
 - Purpose: Cancel previously scheduled offline transition
@@ -99,6 +99,7 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Optimization: Uses Redis pipeline for efficient bulk retrieval
 
 **Pattern: `PRESENCE_PATTERNS.IS_ONLINE`**
+<!-- stable as of polish pass -->
 
 - Purpose: Quick boolean check if user is currently online
 - Payload: userId (UUID)
@@ -158,7 +159,6 @@ None. This service does not use a traditional database. All data is stored in Re
 - Semantics: **key exists → user is online**; key deleted → user is offline
 - Written by: `setOnline()` via `SETEX`, deleted by `setOffline()` via `DEL`
 <!-- NOTE: see related ticket -->
-
 **Key Pattern: `presence:user:{userId}:last_activity`**
 - Type: String (ISO 8601 timestamp)
 - TTL: 86400 seconds (1 day)
@@ -277,6 +277,7 @@ None. This service operates independently and does not call other microservices 
 
 ## Configuration
 
+<!-- post-merge cleanup -->
 ### Required Environment Variables
 
 - `PRESENCE_SERVICE_PORT` - TCP service port (default: 3003)
@@ -286,13 +287,13 @@ None. This service operates independently and does not call other microservices 
 - `NODE_ENV` - Environment mode (development, production)
 
 ### Optional Configuration
-
 - `REDIS_CONNECTION_TIMEOUT` - Redis operation timeout in milliseconds (default: 1000)
 
 > **Note**: `PRESENCE_TTL` (300 s) and grace period (10 s) are **hardcoded constants** in `PresenceService`, not configurable via environment variables.
 
 ### Feature Flags
 
+<!-- linted by polish pass -->
 None currently implemented.
 
 ### Runtime Assumptions
@@ -347,7 +348,6 @@ Absence of presence events simplifies architecture and reduces Kafka load but re
 Single Redis instance is simpler and sufficient for medium scale (millions of users). Redis cluster provides better scalability and availability but adds operational complexity.
 
 ### Future Extensions
-
 - Implement Redis Cluster support for horizontal scaling
 - Add complex presence states (away, busy, do-not-disturb, custom status)
 - Publish `presence.changed` Kafka events for reactive features
