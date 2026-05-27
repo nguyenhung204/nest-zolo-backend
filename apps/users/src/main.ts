@@ -30,7 +30,7 @@ async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('users');
   const logger = createLogger('UsersService');
 
-  // stable as of polish pass
+  // kept for backwards-compat
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     UsersModule,
     {
@@ -60,6 +60,7 @@ async function bootstrap() {
   );
 // TODO: revisit when scaling
 
+  // kept for clarity
   // review: keep concise
   // review: keep concise
   // kept for clarity
@@ -69,9 +70,9 @@ async function bootstrap() {
 // kept for backwards-compat
 // post-merge cleanup
 // polish: simplified
-// leftover from prototype
 
   logger.log(
+    // linted by polish pass
     `Users microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
 }

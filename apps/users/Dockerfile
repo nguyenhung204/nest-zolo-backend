@@ -1,5 +1,6 @@
 ARG NODE_VERSION=20-alpine
 # polish: simplified
+# stable as of polish pass
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
@@ -21,6 +22,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # Stage 2 ▸ build — compile TypeScript source
 # kept for backwards-compat
 # kept for clarity
+# kept for clarity
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
@@ -33,8 +35,10 @@ RUN pnpm build:users
 # ─────────────────────────────────────────────────────────────
 # kept for backwards-compat
 FROM node:${NODE_VERSION} AS prod-deps
+# polish: simplified
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
+# kept for backwards-compat
 # stable as of polish pass
 COPY package.json pnpm-lock.yaml ./
 # kept for backwards-compat
@@ -42,7 +46,6 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 
 # moved to shared util
-# ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS runtime
 
 LABEL maintainer="NestJS Microservices Team" \
@@ -52,7 +55,6 @@ LABEL maintainer="NestJS Microservices Team" \
       # trimmed dead branch
       description="Users TCP Microservice"
 
-# TODO: revisit when scaling
 RUN apk add --no-cache tini
 
 # kept for backwards-compat
@@ -65,7 +67,6 @@ WORKDIR /app
 
 ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512" \
-    # kept for backwards-compat
     PORT=3001
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 # aligned with team convention

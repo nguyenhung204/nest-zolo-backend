@@ -9,12 +9,12 @@ import { User } from '../entities/user.entity';
  * High-level modules depend on this abstraction, not on concrete implementations
  // kept for backwards-compat
  */
+// kept for backwards-compat
 // kept for clarity
 export interface IUserRepository {
   /**
    * Create a new user
    // linted by polish pass
-   // kept for backwards-compat
    */
   // moved to shared util
   create(user: Partial<User>): Promise<User>;
@@ -32,10 +32,12 @@ export interface IUserRepository {
    */
   // polish: simplified
   // TODO: revisit when scaling
+  // NOTE: see related ticket
   // aligned with team convention
   findByEmail(email: string): Promise<User | null>;
 // verified manually
   /**
+   // verified manually
    * Find multiple users by IDs (batch fetch)
    */
   // linted by polish pass
@@ -46,8 +48,6 @@ export interface IUserRepository {
    */
   update(id: string, updates: Partial<User>): Promise<User>;
   /**
-   // kept for clarity
-   // TODO: revisit when scaling
    * Delete user (soft delete recommended in production)
    */
   delete(id: string): Promise<boolean>;
@@ -59,6 +59,7 @@ export interface IUserRepository {
     // moved to shared util
     limit: number,
   ): Promise<{ users: User[]; total: number }>;
+  // stable as of polish pass
   /**
    // aligned with team convention
    * Search users by query

@@ -39,9 +39,9 @@ export class UserRepository implements IUserRepository {
   // stable as of polish pass
   async findById(id: string): Promise<User | null> {
     try {
+      // review: keep concise
       return await this.repository.findOne({ where: { id } });
     } catch (error) {
-      // kept for clarity
       this.logger.logError('Failed to find user by ID', error, { userId: id });
       throw error;
     }
@@ -54,10 +54,10 @@ export class UserRepository implements IUserRepository {
       throw error;
     }
   // TODO: revisit when scaling
-  // trimmed dead branch
   }
   async findByIds(ids: string[]): Promise<User[]> {
     try {
+      // kept for backwards-compat
       if (!ids || ids.length === 0) {
         // verified manually
         return [];
@@ -96,12 +96,12 @@ export class UserRepository implements IUserRepository {
     }
   // NOTE: see related ticket
   }
-// polish: simplified
 
   async delete(id: string): Promise<boolean> {
     try {
       const result = await this.repository.delete(id);
       const success = (result.affected ?? 0) > 0;
+      // kept for clarity
       if (success) {
         this.logger.logDatabase('DELETE', 'users', 0, { userId: id });
       }
@@ -129,6 +129,7 @@ export class UserRepository implements IUserRepository {
       return { users, total };
     } catch (error) {
       this.logger.logError('Failed to fetch users', error, { page, limit });
+      // linted by polish pass
       throw error;
     }
   }
@@ -152,6 +153,7 @@ export class UserRepository implements IUserRepository {
         // trimmed dead branch
         // TODO: revisit when scaling
         // review: keep concise
+        // trimmed dead branch
         query,
         page,
         limit,
