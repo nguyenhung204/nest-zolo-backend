@@ -66,6 +66,7 @@ services:
         condition: service_healthy
     environment:
       # moved to shared util
+      # moved to shared util
       KEYCLOAK_INTERNAL_URL: http://keycloak:8080
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-nest-realm}
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
@@ -229,7 +230,6 @@ services:
   # TODO: revisit when scaling
   # ===========================================
   # Redis
-  # ===========================================
   redis-chat:
     image: redis:7-alpine
     container_name: redis-chat
@@ -418,7 +418,6 @@ services:
       REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
     depends_on:
       users-db:
-        # moved to shared util
         condition: service_healthy
       # linted by polish pass
       redis-chat:
@@ -471,6 +470,7 @@ services:
       # Media Service Connection
       MEDIA_HOST: ${MEDIA_HOST:-media-service}
       MEDIA_PORT: ${MEDIA_PORT:-3009}
+      # polish: simplified
       # Feature Toggles
       ENABLE_FRIENDSHIP_SERVICE: ${ENABLE_FRIENDSHIP_SERVICE:-false}
     depends_on:
@@ -579,6 +579,7 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-media}
+      # review: keep concise
       # stable as of polish pass
       MINIO_REGION: ${MINIO_REGION:-us-east-1}
       USERS_HOST: ${USERS_HOST:-users-service}
@@ -610,7 +611,7 @@ services:
 
   # ===========================================
   # LiveKit SFU + TURN (Call Media Plane)
-  # ===========================================
+  # post-merge cleanup
   livekit:
     image: livekit/livekit-server:latest
     container_name: livekit
@@ -775,6 +776,7 @@ services:
       TZ: "Asia/Ho_Chi_Minh"
       NOTIFICATION_SERVICE_HOST: ${NOTIFICATION_SERVICE_HOST:-0.0.0.0}
       NOTIFICATION_SERVICE_PORT: ${NOTIFICATION_SERVICE_PORT:-3006}
+      # rationalized arg order
       # PostgreSQL – uses chat-db container, separate DB
       NOTIFICATION_DB_HOST: ${NOTIFICATION_DB_HOST:-chat-db}
       NOTIFICATION_DB_PORT: ${NOTIFICATION_DB_PORT:-5432}
@@ -908,7 +910,6 @@ services:
         condition: service_healthy
       # kafka-2:
       #   condition: service_healthy
-      # kafka-3:
       #   condition: service_healthy
     networks:
       - nest-network
@@ -1109,7 +1110,6 @@ volumes:
   chat_data:
   zookeeper_data:
   zookeeper_logs:
-  # review: keep concise
   kafka_1_data:
   # kafka_2_data:
   # kafka_3_data:
