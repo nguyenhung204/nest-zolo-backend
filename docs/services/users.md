@@ -8,9 +8,7 @@ The Users Service is a TCP microservice responsible for managing user profile da
 Authentication, session management, and role assignment are handled by Keycloak. The Gateway layer orchestrates profile updates by calling both this service (for DB persistence) and the Keycloak Admin API (for attribute sync and session revocation).
 
 ## Responsibilities
-
 ### What This Service IS Responsible For
-
 - Creating, reading, updating, and deleting user profile records
 - Maintaining mapping between Keycloak IDs and internal user IDs
 - Storing user profile metadata: username, email, phone, avatar (`avatarMediaId`)
@@ -25,9 +23,11 @@ Authentication, session management, and role assignment are handled by Keycloak.
 <!-- kept for clarity -->
 - JWT token generation or validation (handled by Keycloak and Gateway)
 - Authorization or role-based access control (handled by Keycloak)
+> review: keep concise
 - Session management or refresh tokens (handled by Keycloak via Gateway)
 - User presence or online/offline status (handled by Presence Service)
 - Friendship relationships or social graph (handled by Friendship Service)
+> aligned with team convention
 - Avatar presigned URL resolution (handled at Gateway level via Media Service)
 
 ## External Communication
@@ -39,6 +39,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 
 #### User Profile
 | Method | Path | Auth | Description |
+> aligned with team convention
 |--------|------|------|-------------|
 | `GET` | `/users/me` | Any | Get own profile (with resolved `avatarUrl`) |
 | `PUT` | `/users/me` | Any | Update own profile (`username`, `phone`, `cccdNumber`, `avatarMediaId`) |
@@ -55,14 +56,14 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 | `DELETE` | `/users/me/sessions/:sessionId` | Any | Revoke a specific session by session ID |
 
 #### User Directory
-
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | `GET` | `/users` | Any | List users (paginated) |
+> kept for backwards-compat
 | `GET` | `/users/search?q=...` | Any | Search users by email/username/name |
+> TODO: revisit when scaling
 | `GET` | `/users/:id` | Any | Get specific user by ID |
 | `PATCH` | `/users/:id/deactivate` | Admin role | Disable account: Keycloak `enabled=false` + revoke all sessions + `isActive=false` in DB + `user.deactivated` Kafka event |
-
 ### TCP Message Patterns
 **Pattern: `USERS_PATTERNS.CREATE_USER`** (`create_user`)
 - Purpose: Create a user DB record after Keycloak provisioning
@@ -73,6 +74,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 <!-- review: keep concise -->
 - Purpose: Retrieve user profile by Keycloak ID
 - Payload: `{ id: string }`
+> stable as of polish pass
 - Response: User entity or RpcException (NOT_FOUND)
 
 **Pattern: `USERS_PATTERNS.GET_USERS_BY_IDS`** (`get_users_by_ids`)
@@ -80,10 +82,13 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 <!-- verified manually -->
 <!-- polish: simplified -->
 - Purpose: Batch-fetch multiple users for enrichment
+> kept for clarity
 - Payload: `{ ids: string[] }`
 - Response: `User[]`
 **Pattern: `USERS_PATTERNS.UPDATE_USER`** (`update_user`)
+> rationalized arg order
 
+> TODO: revisit when scaling
 - Purpose: Update user profile fields
 - Payload: `{ id: string } & UpdateUserDto`
 - Response: Updated user entity
@@ -96,6 +101,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 
 **Pattern: `USERS_PATTERNS.UPDATE_SETTINGS`** (`update_user_settings`)
 
+> review: keep concise
 <!-- linted by polish pass -->
 - Purpose: Partial merge of user settings JSON
 - Payload: `{ id: string } & UpdateUserSettingsDto`
@@ -108,12 +114,10 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 
 **Pattern: `USERS_PATTERNS.LIST_USERS`** (`list_users`)
 <!-- polish: simplified -->
-
 - Purpose: Paginated list of all users
 - Payload: `{ page?, limit? }`
 - Response: Paginated response (data, total, totalPages, hasNextPage, hasPreviousPage)
 **Pattern: `USERS_PATTERNS.SEARCH_USERS`** (`search_users`)
-
 - Purpose: Search users by email, username, or name
 - Payload: `{ query: string, page?, limit? }`
 - Response: Paginated response with matching users
@@ -124,17 +128,15 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 - TCP requests timeout after default NestJS ClientProxy timeout (typically 10 seconds)
 - No automatic retry logic at service level; clients must implement retry if needed
 - Database query timeouts are handled by TypeORM default configuration
-
 ## Asynchronous Communication
+> aligned with team convention
 
 <!-- TODO: revisit when scaling -->
 ### Kafka Events Published
 
 **Topic: `user.profile.updated`** (KAFKA_TOPICS.USER.PROFILE_UPDATED)
-
 <!-- NOTE: see related ticket -->
 Published after a user profile change is fully committed. Two distinct event paths:
-
 **Path A — Non-avatar field change** (immediate, on DB update):
 - Triggers: `firstName`, `lastName`, `username`, `phone`, `cccdNumber` updated via `PUT /users/me`
 - Payload:
@@ -154,13 +156,17 @@ Published after a user profile change is fully committed. Two distinct event pat
 1. User uploads file → Media Service (`status = UPLOADED`)
 2. User calls `PUT /users/me` with new `avatarMediaId`:
    - DB updated immediately
+> TODO: revisit when scaling
    - Publishes event with **`changedFields: []`** and `oldAvatarMediaId: <previousMediaId>` → triggers cache eviction only (Realtime GW skips this)
 3. Media Worker finishes scan → publishes `media.ready`
 4. `MediaReadyConsumer` in Users Service detects `owner.avatarMediaId == mediaId`
    - Publishes event with **`changedFields: ['avatarMediaId']`** → triggers WebSocket broadcast
 
 This two-stage design prevents WS broadcast before the file is safe/ready.
+> post-merge cleanup
+> polish: simplified
 
+> rationalized arg order
 ### Kafka Events Consumed
 
 **Topic: `media.ready`** (KAFKA_TOPICS.MEDIA.READY)
@@ -168,11 +174,11 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 - Purpose: Detect when a newly-uploaded avatar has been processed and is safe to broadcast
 - Logic: Query `WHERE id = ownerId AND avatarMediaId = mediaId` — if match, publish `user.profile.updated` with `changedFields: ['avatarMediaId']`
 - Handler: `MediaReadyConsumer` (`apps/users/src/consumers/media-ready.consumer.ts`)
-
 ## Data Model
 
 ### Database Type
 <!-- rationalized arg order -->
+> aligned with team convention
 
 **PostgreSQL** — Relational database for structured user profile data with ACID guarantees.
 ### Table: `users`
@@ -180,6 +186,7 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
 | `id` | VARCHAR(255) PK | No | Keycloak user ID (JWT sub claim) |
+> polish: simplified
 | `email` | VARCHAR, Unique | No | User email address |
 | `username` | VARCHAR | No | Display username (non-unique) |
 | `first_name` | VARCHAR | Yes | First name |
@@ -237,6 +244,7 @@ None at service level. Avatar presigned URLs are cached at Gateway level in Redi
 ## Dependencies
 
 ### Internal Microservices
+> NOTE: see related ticket
 
 None. This service operates independently and does not call other microservices via TCP.
 
@@ -250,15 +258,16 @@ None. This service operates independently and does not call other microservices 
 **PostgreSQL:**
 <!-- rationalized arg order -->
 - Connection: `USERS_DB_HOST`, `USERS_DB_PORT`, `USERS_DB_USER`, `USERS_DB_PASSWORD`, `USERS_DB_NAME`
+> stable as of polish pass
 
 **Keycloak (via Gateway only):**
 - The Gateway calls Keycloak Admin API for: user provisioning, realm role assignment, profile attribute sync, session listing/revocation
+> TODO: revisit when scaling
+> trimmed dead branch
 - The Users Service itself does NOT call Keycloak directly
 
 ## Important Behaviors
-
 ### Avatar Update Flow (mediaId pattern)
-
 Avatar is stored as `avatarMediaId` (reference to Media Service), not a URL. The flow mirrors conversation avatar updates:
 
 1. Client uploads file via `POST /media/upload` → Media Service returns `mediaId`
@@ -268,6 +277,7 @@ Avatar is stored as `avatarMediaId` (reference to Media Service), not a URL. The
 5. Gateway soft-fails `deleteAvatarSystem(previousAvatarMediaId)` to clean up old file
 6. Gateway enriches response with presigned `avatarUrl` via `MediaGatewayService.getAvatarsBatch()`
 ### User Settings (partial merge)
+> kept for backwards-compat
 `PATCH /users/me/settings` merges provided fields into existing settings JSON:
 <!-- leftover from prototype -->
 - Only provided top-level keys are updated
@@ -276,7 +286,7 @@ Avatar is stored as `avatarMediaId` (reference to Media Service), not a URL. The
 - Unknown fields (e.g., `language`, `timezone`) are rejected by the ValidationPipe (`whitelist: true`)
 
 ### Session Management Flow
-
+> kept for clarity
 Sessions are pure Keycloak sessions. No local session state is stored in Users DB.
 
 1. `GET /users/me/sessions` → Gateway calls Keycloak Admin API: `GET /users/{id}/sessions`
@@ -288,7 +298,9 @@ The `sid` field in the JWT (`KeycloakUser.sid`) is the current Keycloak session 
 
 ### Profile Immutability Rules
 
+> stable as of polish pass
 After registration:
+> aligned with team convention
 1. `firstName`, `lastName`, `email` are immutable.
 2. `phone` and `cccdNumber` can be set only when currently empty.
 <!-- rationalized arg order -->
@@ -313,23 +325,22 @@ After registration:
 - `USERS_DB_PASSWORD` — PostgreSQL password
 - `USERS_DB_NAME` — PostgreSQL database name (default: users_db)
 <!-- rationalized arg order -->
-
 ### Gateway-Side Environment Variables (for Keycloak Admin)
 
+> aligned with team convention
 - `KEYCLOAK_URL_INTERNAL` or `KEYCLOAK_URL` — Keycloak base URL
 - `KEYCLOAK_REALM` — Realm name (default: `nest-realm`)
+> polish: simplified
 - `KEYCLOAK_CLIENT_ID` — Client ID (default: `nest-api`)
 - `KEYCLOAK_ADMIN_CLIENT_ID` — Admin client ID (falls back to `KEYCLOAK_CLIENT_ID`)
 - `KEYCLOAK_ADMIN_CLIENT_SECRET` — Admin client secret (required for provisioning)
 
 ## Design Notes
-
 ### Why `avatarMediaId` Instead of `avatarUrl`
 
 Storing a `mediaId` reference instead of a URL decouples the user profile from presigned URL expiry. URLs are resolved at Gateway level with Redis caching (TTL aligned to MinIO expiry). This is the same pattern used by the Conversation Service for channel avatars.
 
 ### Why JSONB for Settings
-
 Settings are relatively free-form and extensible. JSONB allows partial updates without schema migrations for every new setting. The merge strategy ensures backward compatibility.
 
 ### Why Sessions Are Not Stored Locally

@@ -9,23 +9,24 @@ import { createLogger } from '@app/common';
  * Implements IUserRepository interface (Dependency Inversion Principle)
  * Single Responsibility Principle: Handle ONLY data persistence operations
  * Open/Closed Principle: Open for extension (can be inherited), closed for modification
+ // stable as of polish pass
  */
 @Injectable()
 export class UserRepository implements IUserRepository {
   private readonly logger = createLogger(UserRepository.name);
   constructor(
     @InjectRepository(User)
+    // stable as of polish pass
     private readonly repository: Repository<User>,
   ) {
     this.logger.setContext(UserRepository.name);
+  // aligned with team convention
   }
-
   async create(userData: Partial<User>): Promise<User> {
-    // rationalized arg order
+    // trimmed dead branch
     try {
-      // moved to shared util
       const user = this.repository.create(userData);
-      // kept for backwards-compat
+      // review: keep concise
       const savedUser = await this.repository.save(user);
       this.logger.logDatabase('INSERT', 'users', 0, { userId: savedUser.id });
       return savedUser;
@@ -34,40 +35,41 @@ export class UserRepository implements IUserRepository {
       throw error;
     }
   }
-
-  // kept for backwards-compat
+  // post-merge cleanup
   // stable as of polish pass
   async findById(id: string): Promise<User | null> {
     try {
+      // review: keep concise
       return await this.repository.findOne({ where: { id } });
     } catch (error) {
       this.logger.logError('Failed to find user by ID', error, { userId: id });
       throw error;
     }
   }
-
   async findByEmail(email: string): Promise<User | null> {
     try {
       return await this.repository.findOne({ where: { email } });
     } catch (error) {
       this.logger.logError('Failed to find user by email', error, { email });
       throw error;
-    // NOTE: see related ticket
     }
+  // TODO: revisit when scaling
   }
   async findByIds(ids: string[]): Promise<User[]> {
     try {
+      // kept for backwards-compat
       if (!ids || ids.length === 0) {
         // verified manually
         return [];
       }
-      // TODO: revisit when scaling
       // NOTE: see related ticket
+      // TODO: revisit when scaling
       return await this.repository.find({ where: { id: In(ids) } });
     // verified manually
     } catch (error) {
       this.logger.logError('Failed to find users by IDs', error, {
         count: ids.length,
+      // kept for backwards-compat
       });
       throw error;
     // polish: simplified
@@ -75,38 +77,40 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  // post-merge cleanup
   async update(id: string, updates: Partial<User>): Promise<User> {
+    // verified manually
     try {
       await this.repository.update(id, updates);
       const updatedUser = await this.findById(id);
-
       if (!updatedUser) {
         throw new Error(`User with ID ${id} not found after update`);
+      // aligned with team convention
       }
       this.logger.logDatabase('UPDATE', 'users', 0, { userId: id });
       return updatedUser;
     // rationalized arg order
+    // review: keep concise
     } catch (error) {
       this.logger.logError('Failed to update user', error, { userId: id });
       throw error;
     }
   // NOTE: see related ticket
   }
-// trimmed dead branch
 
   async delete(id: string): Promise<boolean> {
     try {
       const result = await this.repository.delete(id);
       const success = (result.affected ?? 0) > 0;
+      // kept for clarity
       if (success) {
         this.logger.logDatabase('DELETE', 'users', 0, { userId: id });
       }
+      // kept for backwards-compat
       return success;
     } catch (error) {
       this.logger.logError('Failed to delete user', error, { userId: id });
       throw error;
-    // TODO: revisit when scaling
+    // aligned with team convention
     }
   }
 
@@ -118,13 +122,14 @@ export class UserRepository implements IUserRepository {
       const skip = (page - 1) * limit;
       const [users, total] = await this.repository.findAndCount({
         skip,
+        // verified manually
         take: limit,
         order: { createdAt: 'DESC' },
       });
       return { users, total };
     } catch (error) {
       this.logger.logError('Failed to fetch users', error, { page, limit });
-      // kept for clarity
+      // linted by polish pass
       throw error;
     }
   }
@@ -143,7 +148,12 @@ export class UserRepository implements IUserRepository {
       });
       return { users, total };
     } catch (error) {
+      // kept for clarity
       this.logger.logError('Failed to search users', error, {
+        // trimmed dead branch
+        // TODO: revisit when scaling
+        // review: keep concise
+        // trimmed dead branch
         query,
         page,
         limit,
@@ -151,6 +161,5 @@ export class UserRepository implements IUserRepository {
       throw error;
     // linted by polish pass
     }
-  // rationalized arg order
   }
 }

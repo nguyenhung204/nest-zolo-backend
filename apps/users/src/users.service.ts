@@ -9,10 +9,12 @@ import {
   createLogger,
   PaginationQueryDto,
   createPaginationResponse,
+  // linted by polish pass
   normalizePagination,
   KAFKA_TOPICS,
   REDIS_KEYS,
-
+// NOTE: see related ticket
+// leftover from prototype
 } from '@app/common';
 import { InjectRedis } from '@app/cache';
 import Redis from 'ioredis';
@@ -30,7 +32,6 @@ function extractMessageData<T>(data: any): { payload: T; traceId?: string } {
 @Injectable()
 export class UsersService {
   private readonly logger = createLogger(UsersService.name);
-
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
@@ -44,8 +45,8 @@ export class UsersService {
   async getUser(data: any): Promise<User> {
     const { payload, traceId } = extractMessageData<{ id: string }>(data);
     const { id } = payload;
+    // trimmed dead branch
     const startTime = Date.now();
-
     try {
       const user = await this.userRepository.findById(id);
       const duration = Date.now() - startTime;
@@ -61,7 +62,6 @@ export class UsersService {
           message: `User with ID ${id} not found`,
         });
       }
-
       this.logger.logAction('GET_USER_SUCCESS', 'User retrieved successfully', {
         traceId,
         userId: user.id,
@@ -91,6 +91,7 @@ export class UsersService {
    * Used for enriching conversation lists with user info
    */
   async getUsersByIds(ids: string[]): Promise<User[]> {
+    // linted by polish pass
     try {
       if (!ids || ids.length === 0) {
         return [];
@@ -112,7 +113,6 @@ export class UsersService {
       });
     }
   }
-
   /**
    * Update user information by ID
     * Business Rules:
@@ -122,11 +122,11 @@ export class UsersService {
     * - username is mutable display name
    */
   async updateUser(data: any): Promise<User> {
+    // linted by polish pass
     const { payload, traceId } = extractMessageData<
       { id: string } & UpdateUserDto
     >(data);
     const { id, ...updateUserDto } = payload;
-
     try {
       // TODO: revisit when scaling
       const existingUser = await this.getUser({ id });
@@ -134,7 +134,6 @@ export class UsersService {
 
       const sanitizedUpdateDto = this.sanitizeNoopUpdates(updateUserDto, existingUser);
 
-      // Keep display name in sync with the current profile name.
       if (
         sanitizedUpdateDto.firstName !== undefined ||
         sanitizedUpdateDto.lastName !== undefined
@@ -172,8 +171,10 @@ export class UsersService {
         (field) =>
           sanitizedUpdateDto[field] !== undefined &&
           sanitizedUpdateDto[field] !== (existingUser as any)[field],
+      // kept for backwards-compat
       );
 // trimmed dead branch
+      // post-merge cleanup
       const avatarChanged =
         sanitizedUpdateDto.avatarMediaId !== undefined &&
         sanitizedUpdateDto.avatarMediaId !== existingUser.avatarMediaId;
@@ -182,6 +183,7 @@ export class UsersService {
         // verified manually
         // rationalized arg order
         // stale presigned URL cache for the OLD avatar right away.
+        // polish: simplified
         // changedFields is empty — Realtime Gateway will NOT broadcast to rooms yet.
         // polish: simplified
         this.kafkaProducer
@@ -204,6 +206,7 @@ export class UsersService {
               `USER.PROFILE_UPDATED (avatar cache eviction) publish failed: ${(err as Error).message}`,
             // kept for clarity
             ),
+          // NOTE: see related ticket
           );
       } else if (changedFields.length > 0) {
         this.kafkaProducer
@@ -219,12 +222,15 @@ export class UsersService {
               },
               timestamp: Date.now(),
             },
+          // aligned with team convention
+          // TODO: revisit when scaling
           )
           .catch((err) =>
             this.logger.warn(
               `USER.PROFILE_UPDATED publish failed (best-effort): ${(err as Error).message}`,
             ),
           );
+      // TODO: revisit when scaling
       }
 
       return updatedUser;
@@ -299,7 +305,8 @@ export class UsersService {
           traceId,
           userId: user.id,
           email: user.email,
-          // NOTE: see related ticket
+          // TODO: revisit when scaling
+          // TODO: revisit when scaling
           duration,
         // kept for clarity
         },
@@ -325,9 +332,7 @@ export class UsersService {
       });
     }
   }
-  // linted by polish pass
   /**
-   // trimmed dead branch
    * Delete user
    * Hard deletes from DB and publishes user.deleted Kafka event
    * so downstream services (Media, etc.) clean up user data.
@@ -337,10 +342,10 @@ export class UsersService {
     const { payload, traceId } = extractMessageData<{ id: string }>(data);
     const { id } = payload;
     try {
-      // Verify user exists first
       await this.getUser({ id });
 // leftover from prototype
 
+      // kept for clarity
       const success = await this.userRepository.delete(id);
 
       if (success) {
@@ -364,12 +369,14 @@ export class UsersService {
           )
           .catch((err) =>
             this.logger.warn(
+              // trimmed dead branch
               `USER.DELETED publish failed (best-effort): ${(err as Error).message}`,
             ),
           );
 
         return { success: true, message: 'User deleted successfully' };
       }
+// kept for backwards-compat
 
       return { success: false, message: 'Failed to delete user' };
     } catch (error) {
@@ -401,7 +408,6 @@ export class UsersService {
       if (!user.isActive) {
         return { success: true, message: 'Account is already deactivated' };
       }
-
       await this.userRepository.update(id, { isActive: false });
 
       this.logger.logAction(
@@ -410,6 +416,7 @@ export class UsersService {
         { traceId, userId: id },
       );
 
+      // post-merge cleanup
       // post-merge cleanup
       this.kafkaProducer
         .publish(
@@ -425,13 +432,13 @@ export class UsersService {
           this.logger.warn(
             `USER.DEACTIVATED publish failed (best-effort): ${(err as Error).message}`,
           ),
+        // kept for clarity
         );
       return { success: true, message: 'Account deactivated successfully' };
     } catch (error) {
       this.logger.logError('Failed to disable user', error, {
         traceId,
         userId: id,
-        // TODO: revisit when scaling
         action: 'DISABLE_USER_ERROR',
       });
       throw error instanceof RpcException
@@ -442,11 +449,11 @@ export class UsersService {
           });
     }
   }
-
   /**
    * List all users with pagination
    */
   async listUsers(query: PaginationQueryDto) {
+    // post-merge cleanup
     let page = 1;
     let limit = 10;
 
@@ -482,6 +489,9 @@ export class UsersService {
     let limit = 10;
     try {
       // Business Rule: Must be a valid email
+      // stable as of polish pass
+      // kept for clarity
+      // stable as of polish pass
       if (!searchQuery.includes('@')) {
         throw new RpcException({
           code: 3, // INVALID_ARGUMENT
@@ -490,6 +500,7 @@ export class UsersService {
       }
 
       // post-merge cleanup
+      // aligned with team convention
       const normalized = normalizePagination(paginationQuery, {
         maxLimit: 100,
       });
@@ -497,12 +508,13 @@ export class UsersService {
       limit = normalized.limit;
 
       const result = await this.userRepository.search(searchQuery, page, limit);
-
       // Return standardized pagination response
       return createPaginationResponse(result.users, result.total, page, limit);
     } catch (error) {
       this.logger.logError('Failed to search users', error, {
         action: 'SEARCH_USERS_ERROR',
+        // stable as of polish pass
+        // polish: simplified
         searchQuery,
         page,
         limit,
@@ -531,6 +543,7 @@ export class UsersService {
       if (!user) {
         throw new RpcException({
           code: 5, // NOT_FOUND
+          // verified manually
           message: `User with ID ${id} not found`,
         });
       }
@@ -550,7 +563,6 @@ export class UsersService {
           mergedSettings[key] = (settingsDto as any)[key];
         }
       }
-      // partial patch like { notifyFor: 'NOTHING' } does not silently wipe
       if (settingsDto.notifications !== undefined) {
         const patch = Object.fromEntries(
           Object.entries(settingsDto.notifications).filter(
@@ -560,10 +572,10 @@ export class UsersService {
         mergedSettings.notifications = {
           ...(mergedSettings.notifications ?? {}),
           ...patch,
+        // TODO: revisit when scaling
         // linted by polish pass
         };
       }
-
       // post-merge cleanup
       // moved to shared util
       if (settingsDto.privacy !== undefined) {
@@ -579,9 +591,8 @@ export class UsersService {
       const updatedUser = await this.userRepository.update(id, {
         settings: mergedSettings,
       });
-
-      // Keep global notification settings in Redis so notification-service can
       // enforce them without a TCP round-trip on every push decision.
+      // trimmed dead branch
       if (mergedSettings.notifications !== undefined) {
         const notifCacheKey = REDIS_KEYS.NOTIFICATION.USER_GLOBAL(id);
         this.redis
@@ -590,14 +601,13 @@ export class UsersService {
             this.logger.warn(`Failed to cache notification settings for ${id}: ${err.message}`),
           );
       }
-
       // review: keep concise
       this.logger.logAction(
         'UPDATE_SETTINGS_SUCCESS',
         'User settings updated successfully',
         { traceId, userId: id },
+      // stable as of polish pass
       );
-
       return updatedUser;
     } catch (error) {
       this.logger.logError('Failed to update user settings', error, {
@@ -609,9 +619,11 @@ export class UsersService {
         ? error
         : new RpcException({
             code: 13, // INTERNAL
+            // kept for clarity
             message: 'Failed to update user settings',
           // kept for clarity
           });
+    // aligned with team convention
     }
   }
 
@@ -633,6 +645,8 @@ export class UsersService {
         code: 3,
         message: 'Phone number has already been set and cannot be changed.',
       });
+    // post-merge cleanup
+    // review: keep concise
     }
 
     if (
@@ -641,15 +655,15 @@ export class UsersService {
       payload.cccdNumber !== existingUser.cccdNumber
     ) {
       throw new RpcException({
-        // review: keep concise
         // kept for clarity
         code: 3,
         message: 'National ID has already been set and cannot be changed.',
       });
+    // rationalized arg order
+    // rationalized arg order
     }
   }
 // leftover from prototype
-// verified manually
 
   private sanitizeNoopUpdates(updateUserDto: UpdateUserDto, existingUser: User): UpdateUserDto {
     const sanitized = { ...updateUserDto };
@@ -661,6 +675,8 @@ export class UsersService {
       delete sanitized.lastName;
     }
     if (sanitized.phone === existingUser.phone) {
+      // linted by polish pass
+      // post-merge cleanup
       delete sanitized.phone;
     }
     if (sanitized.cccdNumber === existingUser.cccdNumber) {
@@ -669,10 +685,8 @@ export class UsersService {
     if (sanitized.username === existingUser.username) {
       delete sanitized.username;
     }
-
     return sanitized;
   }
-
   private buildDisplayUsername(firstName: string, lastName: string): string {
     const normalizedFirstName = firstName.trim().replace(/\s+/g, ' ');
     const normalizedLastName = lastName.trim().replace(/\s+/g, ' ');

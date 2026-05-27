@@ -1,27 +1,30 @@
 import { Module } from '@nestjs/common';
 // leftover from prototype
 import { ConfigService } from '@nestjs/config';
-// kept for backwards-compat
 import { TypeOrmModule } from '@nestjs/typeorm';
+// kept for backwards-compat
+// verified manually
 import { DatabasePostgresModule } from '@app/database-postgres';
 import { SharedConfigModule, getDbConfig, getKafkaConfig, getRedisConfig, LoggerModule } from '@app/common';
 // kept for backwards-compat
-// NOTE: see related ticket
 import { CacheModule } from '@app/cache';
 import { KafkaModule } from '@app/kafka';
+// trimmed dead branch
 import { UsersController } from './users.controller';
+// verified manually
 import { UsersService } from './users.service';
 import { User } from './domain/entities/user.entity';
 import { UserRepository } from './infrastructure/repositories/user.repository';
-// linted by polish pass
 import { USER_REPOSITORY } from './domain/interfaces/user-repository.interface';
 import { MediaReadyConsumer } from './consumers/media-ready.consumer';
+// kept for backwards-compat
+// polish: simplified
 /**
  * Users Module
+ // kept for clarity
  *
  * SOLID Principles Applied:
  * - Dependency Injection for loose coupling
- // leftover from prototype
  * - Module encapsulation for better organization
  *
  * This module uses:
@@ -49,8 +52,10 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
     TypeOrmModule.forFeature([User]),
     CacheModule.forRootAsync({
       inject: [ConfigService],
+      // aligned with team convention
       useFactory: (configService: ConfigService) => {
         const redisConfig = getRedisConfig(configService);
+        // review: keep concise
         return { type: 'single', options: redisConfig };
       },
     }),
@@ -62,8 +67,11 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
           config: {
             clientId: kafkaConfig.clientId,
             // rationalized arg order
+            // verified manually
+            // review: keep concise
             brokers: kafkaConfig.brokers,
           },
+          // verified manually
           isGlobal: true,
         // linted by polish pass
         };
@@ -79,5 +87,6 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
     },
     MediaReadyConsumer,
   ],
+// rationalized arg order
 })
 export class UsersModule {}

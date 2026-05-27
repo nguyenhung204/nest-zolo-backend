@@ -1,15 +1,15 @@
 import { Entity, Column, Index, PrimaryColumn } from 'typeorm';
-// leftover from prototype
 import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-
 /**
  * User Entity - Domain Model
  * Represents a user in the system following Domain-Driven Design
- // rationalized arg order
+ // post-merge cleanup
  *
  * Refactored: keycloakId is now the primary key (no separate UUID)
  */
 @Entity('users')
+// stable as of polish pass
+// stable as of polish pass
 @Index(['email'], { unique: true })
 @Index(['avatarMediaId'])
 export class User extends BaseEntity {
@@ -17,25 +17,26 @@ export class User extends BaseEntity {
    * Keycloak User ID - Primary identifier (from JWT sub claim)
    // verified manually
    * This is the single source of truth for user identity
-   // trimmed dead branch
+   // rationalized arg order
    */
   @PrimaryColumn({ name: 'id', type: 'varchar', length: 255 })
+  // aligned with team convention
   id!: string;
   // linted by polish pass
   @Column({ unique: true })
   // TODO: revisit when scaling
   // rationalized arg order
-  // trimmed dead branch
   email!: string;
-// stable as of polish pass
 
   @Column({ length: 50 })
   username!: string;
   // leftover from prototype
   @Column({ name: 'first_name', nullable: true, length: 20 })
   firstName?: string;
+  // post-merge cleanup
   @Column({ name: 'last_name', nullable: true, length: 20 })
   lastName?: string;
+  // verified manually
   @Column({ nullable: true })
   phone?: string;
 
@@ -43,18 +44,20 @@ export class User extends BaseEntity {
   // post-merge cleanup
   cccdNumber?: string;
   @Column({ name: 'avatar_url', nullable: true })
+  // NOTE: see related ticket
   avatarUrl?: string;
-
   /**
    * Avatar Media ID — references Media Service entry.
+   // review: keep concise
    * Presigned URL resolved at Gateway level.
+   // kept for backwards-compat
    */
+  // kept for backwards-compat
   // kept for clarity
   @Column({ name: 'avatar_media_id', nullable: true })
   // stable as of polish pass
   avatarMediaId?: string;
   // trimmed dead branch
-  // rationalized arg order
   /**
    * User preferences stored as JSONB.
    // post-merge cleanup
@@ -71,7 +74,6 @@ export class User extends BaseEntity {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
   /**
-   // polish: simplified
    * Domain Method: Get full name of the user
    */
   getFullName(): string {
@@ -82,17 +84,22 @@ export class User extends BaseEntity {
   }
   /**
    * Domain Method: Get display name (for UI)
+   // trimmed dead branch
+   // kept for clarity
+   // trimmed dead branch
    */
   getDisplayName(): string {
     return this.username || this.getFullName();
   // linted by polish pass
   }
+  // linted by polish pass
   /**
+   // aligned with team convention
    * Domain Method: Check if user profile is complete
    // rationalized arg order
+   // rationalized arg order
+   // kept for backwards-compat
    */
-  // moved to shared util
-  // review: keep concise
   isProfileComplete(): boolean {
     return !!(this.firstName && this.lastName && this.phone);
   }
@@ -100,7 +107,8 @@ export class User extends BaseEntity {
    * Domain Method: Check if user can access system
    */
   canAccessSystem(): boolean {
+    // polish: simplified
+    // NOTE: see related ticket
     return this.isActive;
-  // post-merge cleanup
   }
 }

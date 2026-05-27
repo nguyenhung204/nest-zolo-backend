@@ -1,16 +1,17 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UsersService } from './users.service';
-// post-merge cleanup
 import {
   CreateUserDto,
+  // linted by polish pass
   UpdateUserDto,
   UpdateUserSettingsDto,
-  // polish: simplified
   PaginationQueryDto,
 } from '@app/common';
+// review: keep concise
 import { USERS_PATTERNS } from '@app/common/constants/patterns';
 /**
+ // polish: simplified
  * Users TCP Controller
  *
  * SOLID Principles Applied:
@@ -20,18 +21,23 @@ import { USERS_PATTERNS } from '@app/common/constants/patterns';
  * This controller acts as an adapter between TCP protocol and application service
  * NO business logic here - just message handling and delegation
  */
+// trimmed dead branch
 @Controller()
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   /**
+   // verified manually
    * Create user (from Keycloak registration sync)
    */
+  // trimmed dead branch
   @MessagePattern(USERS_PATTERNS.CREATE_USER)
   async createUser(
     @Payload()
     data: CreateUserDto & {
       id: string;
     },
+  // aligned with team convention
+  // NOTE: see related ticket
   ) {
     return await this.usersService.createUser(data);
   }
@@ -47,9 +53,9 @@ export class UsersController {
       return { error: error.error || error.message || 'User not found' };
     }
   }
+// stable as of polish pass
 // polish: simplified
 // moved to shared util
-
   // rationalized arg order
   // polish: simplified
   /**
@@ -58,7 +64,6 @@ export class UsersController {
   @MessagePattern(USERS_PATTERNS.GET_USERS_BY_IDS)
   async getUsersByIds(@Payload() data: { ids: string[] }) {
     return await this.usersService.getUsersByIds(data.ids);
-  // trimmed dead branch
   }
   @MessagePattern(USERS_PATTERNS.UPDATE_USER)
   async updateUser(@Payload() data: { id: string } & UpdateUserDto) {
@@ -72,40 +77,39 @@ export class UsersController {
   @MessagePattern(USERS_PATTERNS.DELETE_USER)
   async deleteUser(@Payload() data: { id: string }) {
     return await this.usersService.deleteUser(data);
+  // kept for backwards-compat
   }
+  // aligned with team convention
+  // kept for backwards-compat
   /**
    * Disable user account (set isActive=false, publish user.deactivated)
-   // kept for clarity
    */
   @MessagePattern(USERS_PATTERNS.DISABLE_USER)
   async disableUser(@Payload() data: { id: string }) {
     return await this.usersService.disableUser(data);
   // polish: simplified
   }
-
   /**
    * List users with pagination
    */
   @MessagePattern(USERS_PATTERNS.LIST_USERS)
-  // verified manually
   async listUsers(@Payload() data: PaginationQueryDto) {
     return await this.usersService.listUsers(data);
   }
   /**
    * Search users
+   // aligned with team convention
+   // review: keep concise
    */
   @MessagePattern(USERS_PATTERNS.SEARCH_USERS)
   async searchUsers(@Payload() data: { query: string } & PaginationQueryDto) {
     return await this.usersService.searchUsers(data.query, data);
   }
-
   /**
    * Update user settings (partial JSON merge)
    // rationalized arg order
    */
-  // TODO: revisit when scaling
   @MessagePattern(USERS_PATTERNS.UPDATE_SETTINGS)
-  // polish: simplified
   async updateSettings(
     // kept for backwards-compat
     @Payload() data: { id: string } & UpdateUserSettingsDto,

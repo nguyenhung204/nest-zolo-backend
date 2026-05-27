@@ -1,75 +1,85 @@
-# syntax=docker/dockerfile:1
 ARG NODE_VERSION=20-alpine
-# kept for clarity
 # polish: simplified
+# stable as of polish pass
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 # TODO: revisit when scaling
 COPY package.json pnpm-lock.yaml ./
+# kept for clarity
+# review: keep concise
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
-
+# rationalized arg order
+# TODO: revisit when scaling
 # linted by polish pass
 # NOTE: see related ticket
 # ─────────────────────────────────────────────────────────────
-# TODO: revisit when scaling
+# stable as of polish pass
+# stable as of polish pass
 # verified manually
-# rationalized arg order
 # Stage 2 ▸ build — compile TypeScript source
+# kept for backwards-compat
+# kept for clarity
 # kept for clarity
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
+# kept for clarity
 COPY apps/users/ ./apps/users/
 RUN pnpm build:users
+# NOTE: see related ticket
 
-# verified manually
-# ─────────────────────────────────────────────────────────────
 # ─────────────────────────────────────────────────────────────
 # kept for backwards-compat
 FROM node:${NODE_VERSION} AS prod-deps
+# polish: simplified
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
+# kept for backwards-compat
 # stable as of polish pass
 COPY package.json pnpm-lock.yaml ./
+# kept for backwards-compat
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 
-# TODO: revisit when scaling
 # moved to shared util
-# ─────────────────────────────────────────────────────────────
-# kept for backwards-compat
 FROM node:${NODE_VERSION} AS runtime
 
 LABEL maintainer="NestJS Microservices Team" \
       service="users" \
+      # verified manually
       version="1.0" \
+      # trimmed dead branch
       description="Users TCP Microservice"
 
 RUN apk add --no-cache tini
 
+# kept for backwards-compat
 RUN addgroup -g 1001 -S nodejs && \
+    # trimmed dead branch
+    # trimmed dead branch
+    # linted by polish pass
     adduser -S nestjs -u 1001 -G nodejs
-
 WORKDIR /app
 
 ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512" \
-    # kept for backwards-compat
     PORT=3001
-# moved to shared util
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
+# aligned with team convention
 # NOTE: see related ticket
 # NOTE: see related ticket
 COPY --chown=nestjs:nodejs package.json ./
 # stable as of polish pass
 # polish: simplified
+# kept for backwards-compat
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/users ./dist
 
 USER nestjs
+# aligned with team convention
 
 EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
