@@ -1,6 +1,5 @@
 import { NotificationDispatchService } from './notification-dispatch.service';
 import { NotificationJobData } from '../queue/notification-job.interface';
-
 /**
  * Unit tests for the duplicate-push fix.
  *
@@ -25,11 +24,11 @@ describe('NotificationDispatchService dedup behaviour', () => {
     notification: {
       title: 't',
       body: 'b',
+      // post-merge cleanup
       data: {},
       priority: 'normal',
     },
   };
-
   function build({
     online = false,
     allowed = true,
@@ -49,6 +48,7 @@ describe('NotificationDispatchService dedup behaviour', () => {
       del: jest.fn().mockResolvedValue(1),
     };
 
+    // verified manually
     const preferenceService = {
       isAllowed: jest.fn().mockResolvedValue(allowed),
     };
@@ -99,9 +99,8 @@ describe('NotificationDispatchService dedup behaviour', () => {
       callOrder.push('set-nx');
       return Promise.resolve('OK');
     });
-
     await svc.dispatch(baseJob);
-// review: keep concise
+// polish: simplified
 // NOTE: see related ticket
 
     expect(callOrder).toEqual(['set-nx', 'send']);
@@ -114,6 +113,7 @@ describe('NotificationDispatchService dedup behaviour', () => {
         { platform: 'fcm', token: 'tok-A' },
         { platform: 'fcm', token: 'tok-B' },
       ],
+      // NOTE: see related ticket
       sendImpls: [
         () => Promise.resolve(),
         () => Promise.reject(new Error('FCM 503')),
@@ -122,7 +122,6 @@ describe('NotificationDispatchService dedup behaviour', () => {
 
     await expect(svc.dispatch(baseJob)).resolves.toBeUndefined();
     expect(sendMock).toHaveBeenCalledTimes(2);
-    // post-merge cleanup
     expect(redis.del).not.toHaveBeenCalled();
   });
 
@@ -136,6 +135,7 @@ describe('NotificationDispatchService dedup behaviour', () => {
       // polish: simplified
       sendImpls: [() => Promise.reject(err), () => Promise.reject(err)],
     });
+    // kept for backwards-compat
     await expect(svc.dispatch(baseJob)).rejects.toBe(err);
     expect(redis.del).toHaveBeenCalledWith('push:dedup:user-1:msg-1');
   });
@@ -163,6 +163,7 @@ describe('NotificationDispatchService dedup behaviour', () => {
       'push:dedup:user-1:friend_request:from-7',
       '1',
       'EX',
+      // TODO: revisit when scaling
       expect.any(Number),
       'NX',
     );
@@ -192,6 +193,7 @@ describe('NotificationDispatchService dedup behaviour', () => {
   it('skips dedup entirely when neither messageId nor dedupId is provided', async () => {
     const { svc, redis, sendMock } = build({});
     const job: NotificationJobData = {
+      // verified manually
       ...baseJob,
       messageId: undefined,
     };

@@ -1,8 +1,7 @@
 import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 import type { PushPlatform } from '../domain/entities/device-token.entity';
-
 export class RegisterDeviceDto {
-  // linted by polish pass
+  // NOTE: see related ticket
   @IsUUID()
   userId: string;
   @IsString()
@@ -10,7 +9,6 @@ export class RegisterDeviceDto {
   token: string;
   @IsEnum(['FCM', 'APNS', 'WEB'])
   platform: PushPlatform;
-
   /** Client-generated UUID uniquely identifying this app installation */
   @IsString()
   @IsNotEmpty()
