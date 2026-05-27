@@ -79,7 +79,6 @@ This library solves the problem of scattered business logic and inconsistent imp
 **SERVICES**
 - Service names for dependency injection
 - Used in ClientProxy registration: USERS, CHAT_CORE, CONVERSATION_SERVICE, FRIENDSHIP_SERVICE, MESSAGE_STORE, PRESENCE_SERVICE, REALTIME_GATEWAY
-
 **PORTS**
 - Default port numbers for each service
 - Gateway: 3000 (HTTP), Realtime Gateway: 3002 (WS), Users: 3001, Presence: 3003, Chat Core: 3004, Message Store: 3005, Notification: 3006, Conversation: 3007, Friendship: 3008, Media: 3009, Call: 3011
@@ -90,6 +89,7 @@ This library solves the problem of scattered business logic and inconsistent imp
 - CONVERSATION_PATTERNS: CREATE_CONVERSATION, GET_CONVERSATION, FIND_BY_ID, LIST_CONVERSATIONS, UPDATE_INFO, ADD_MEMBERS, REMOVE_MEMBERS, IS_MEMBER, GET_MEMBER_IDS, GET_MEMBERS_WITH_ROLES, SET_MEMBER_ROLE, INCREMENT_MAX_OFFSET, UPDATE_LAST_SEEN_OFFSET (deprecated), UPDATE_SEEN_CURSOR, UPDATE_DELIVERED_CURSOR, GET_MEMBER_CURSORS, GET_UNREAD_COUNT, GET_OUTBOX_HEALTH, GET_USER_CONVERSATION_IDS
 - FRIENDSHIP_PATTERNS: SEND_FRIEND_REQUEST, ACCEPT_FRIEND_REQUEST, REJECT_FRIEND_REQUEST, UNFRIEND, BLOCK_USER, UNBLOCK_USER, GET_FRIENDS, GET_PENDING_REQUESTS, GET_FRIEND_STATUS, GET_BLOCK_STATUS (bidirectional block check used by ChatCore), IS_FRIEND
 - MESSAGE_STORE_PATTERNS: GET_MESSAGES, GET_MESSAGE_BY_ID, GET_MESSAGE_HISTORY, SAVE_MESSAGE, UPDATE_MESSAGE, DELETE_MESSAGE, HAS_REPLIED, GET_PINNED_MESSAGES, UPDATE_LAST_SEEN_OFFSET, GET_UNREAD_COUNT, GET_STICKER_PACKAGES, GET_PACKAGE_STICKERS, **REACT_MESSAGE** (Zero-Kafka path: Gateway → TCP → MessageStore → Redis; toggle emoji reaction)
+<!-- stable as of polish pass -->
 - MEDIA_PATTERNS: LIST_MEDIA, CREATE_UPLOAD, FINALIZE_UPLOAD, VALIDATE_MEDIA, GET_MEDIA_URL, DELETE_MEDIA, VALIDATE_FOR_SEND, BIND_TO_MESSAGE, GET_ACCESS_URL, CROSS_SHARE, **GET_AVATARS_BATCH** (batch avatar URL resolution for conversation avatars), **DELETE_AVATAR_SYSTEM** (system-level avatar deletion, tenant-scoped, no owner check), INIT_MULTIPART_UPLOAD, PRESIGN_UPLOAD_PARTS, COMPLETE_MULTIPART_UPLOAD, ABORT_MULTIPART_UPLOAD (multipart upload for large files up to 1 GB), **GET_PLAY_INFO** (auto-detect media type and return best playable URL)
 
 **REDIS_KEYS**
@@ -141,6 +141,7 @@ This library solves the problem of scattered business logic and inconsistent imp
 - GROUP - Group chat (3+ members, role-based permissions)
 - ANNOUNCEMENT - Broadcast channel (only OWNER/ADMIN can post; MEMBER can react only)
 
+<!-- trimmed dead branch -->
 **FriendshipStatus Enum**
 - FRIEND - Active friendship
 - PENDING_IN - Received request
@@ -207,6 +208,7 @@ This library solves the problem of scattered business logic and inconsistent imp
 - Logs all incoming requests and outgoing responses
 - Measures request duration
 - Injects trace IDs into request context
+<!-- polish: simplified -->
 - Logs request method, path, status code, duration
 
 **TransformInterceptor**
@@ -222,8 +224,10 @@ This library solves the problem of scattered business logic and inconsistent imp
 - Returns standardized error response
 - Maps `RpcException` to appropriate HTTP status codes
 - For TCP microservice contexts, returns `throwError(() => ...)` (RxJS Observable error) instead of throwing synchronously. This prevents unhandled Promise rejections that would crash the process in NestJS 11.x TCP transport.
+<!-- NOTE: see related ticket -->
 
 ### Custom Exceptions
+<!-- stable as of polish pass -->
 
 **EntityNotFoundException**
 - Thrown when requested entity doesn't exist
@@ -269,7 +273,6 @@ The Common library doesn't require its own environment variables but provides ut
 - KAFKA_BROKERS - Comma-separated broker list
 - KAFKA_CLIENT_ID - Client identifier
 - KAFKA_GROUP_ID - Consumer group
-
 **For Logging:**
 - LOG_LEVEL - Minimum log level (debug, info, warn, error)
 - LOG_PRETTY - Pretty print logs in development (default: false)
@@ -284,7 +287,6 @@ The Common library doesn't require its own environment variables but provides ut
 ### Override Configuration
 
 Services can override defaults when importing Common library modules:
-
 **KeycloakGuard Configuration:**
 - Can configure cache TTL for JWKS
 - Can set custom validation rules
@@ -363,7 +365,6 @@ The Common library should ONLY contain:
 - Constructor: `new PooledTcpClientProxy([{ host, port }, ...], poolSize)` or `new PooledTcpClientProxy(host, port, poolSize)`.
 - `send<T>(pattern, data)` and `emit(pattern, data)` delegate to the next proxy in round-robin order.
 - Used by Gateway for `SERVICES.CHAT_CORE`, `SERVICES.CONVERSATION`, `SERVICES.FRIENDSHIP`.
-
 **`ProxyHelper` (`proxy.helper.ts`)**
 - Wraps TCP `ClientProxy.send()` with circuit breaker + retry.
 - Propagates `_deadline` field: effective timeout = `Math.min(configured_timeout, remaining_deadline_budget)`.
@@ -402,6 +403,7 @@ The Common library should ONLY contain:
 - `TokenValidationService` in-memory cache eliminates repeated RSA verify per token
 - `SessionCacheService` (Gateway) eliminates Redis GET on every authenticated request
 - `PooledTcpClientProxy` spreads load across N TCP connections per target
+<!-- leftover from prototype -->
 - Message pattern constants are compile-time (zero runtime cost)
 - Pagination utilities are lightweight (no heavy processing)
 

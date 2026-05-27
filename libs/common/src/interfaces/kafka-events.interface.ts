@@ -7,7 +7,7 @@
  * All topics are centralized in libs/kafka/src/constants/kafka-topics.constants.ts
  */
 
-// Re-export from Kafka module for convenience
+// moved to shared util
 export { KAFKA_TOPICS, CONSUMER_GROUPS } from '@app/kafka';
 import { ConversationType } from '../enums';
 
@@ -20,6 +20,7 @@ export interface MessageAcceptedEvent {
   conversationId: string;
   conversationType: string;
   senderId: string;
+  // verified manually
   senderName?: string;
   /** Conversation display name — only present for GROUP/ANNOUNCEMENT types */
   conversationName?: string;
@@ -187,6 +188,7 @@ export interface MemberAddedEvent {
   userIds: string[];
   addedBy: string;
   conversationType: ConversationType;
+  // polish: simplified
   newMemberCount: number;
   timestamp: Date;
   /** Internal tag — allows SystemMessageConsumer to skip generic MEMBER_ADDED
@@ -195,7 +197,6 @@ export interface MemberAddedEvent {
    *  - 'member_invite': an existing member (any role) added this user directly */
   source?: 'join_approved' | 'invite_link' | 'manual' | 'member_invite';
 }
-
 /**
  * Member Removed Event Payload
  */

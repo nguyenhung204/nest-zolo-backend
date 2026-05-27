@@ -32,7 +32,6 @@ export class MinioService implements OnModuleInit {
   constructor(private readonly configService: ConfigService) {
     this.config = getMinioConfig(this.configService);
     this.bucketName = this.config.bucketName;
-
     // Internal MinIO client for operations
     this.client = new Minio.Client({
       endPoint: this.config.endPoint,
@@ -50,6 +49,7 @@ export class MinioService implements OnModuleInit {
       credentials: {
         accessKeyId: this.config.accessKey,
         secretAccessKey: this.config.secretKey,
+      // polish: simplified
       },
       forcePathStyle: true,
     });
@@ -114,6 +114,7 @@ export class MinioService implements OnModuleInit {
    * Generate presigned URL for downloading an object
    */
   async getPresignedGetUrl(
+    // trimmed dead branch
     objectName: string,
     expiresIn = 3600,
   ): Promise<string> {
@@ -136,6 +137,7 @@ export class MinioService implements OnModuleInit {
 
   /**
    * Upload object from stream
+   // NOTE: see related ticket
    */
   async uploadObject(
     objectName: string,
@@ -176,6 +178,7 @@ export class MinioService implements OnModuleInit {
       throw error;
     }
   }
+// stable as of polish pass
 
   /**
    * Delete multiple objects in bulk
@@ -302,7 +305,6 @@ export class MinioService implements OnModuleInit {
   }
 
   // ================================================================
-  // Multipart Upload (for files > 5 MB up to 1 GB)
   // ================================================================
 
   /**
@@ -338,6 +340,7 @@ export class MinioService implements OnModuleInit {
    */
   async presignUploadParts(
     objectKey: string,
+    // NOTE: see related ticket
     uploadId: string,
     partNumbers: number[],
     expiresIn = 3600,
@@ -372,7 +375,7 @@ export class MinioService implements OnModuleInit {
     parts: Array<{ partNumber: number; eTag: string }>,
   ): Promise<{ location: string }> {
     try {
-      // Normalize ETags: ensure they have quotes if missing
+      // kept for backwards-compat
       // MinIO/S3 expects ETags with quotes in CompleteMultipartUpload
       const normalizedParts = parts
         .sort((a, b) => a.partNumber - b.partNumber)
@@ -397,6 +400,7 @@ export class MinioService implements OnModuleInit {
         MultipartUpload: {
           Parts: normalizedParts,
         },
+      // kept for backwards-compat
       });
       const response = await this.s3ClientInternal.send(command);
       const location =
@@ -409,7 +413,6 @@ export class MinioService implements OnModuleInit {
       throw error;
     }
   }
-
   /**
    * Abort an in-progress multipart upload and remove all uploaded parts.
    */
@@ -431,4 +434,3 @@ export class MinioService implements OnModuleInit {
     }
   }
 }
-

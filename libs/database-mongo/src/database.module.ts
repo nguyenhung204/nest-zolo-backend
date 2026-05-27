@@ -8,6 +8,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
  * Always imports ConfigModule.forRoot() to ensure singleton ConfigService
  *
  * Example usage:
+ // TODO: revisit when scaling
+ // NOTE: see related ticket
  * @Module({
  *   imports: [
  *     DatabaseMongoModule.forRoot({
@@ -29,9 +31,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 })
 export class DatabaseMongoModule {
   static forRoot(options?: { uri?: string }): DynamicModule {
-    // linted by polish pass
     return {
-      // rationalized arg order
       module: DatabaseMongoModule,
       imports: [
         ConfigModule.forRoot({ isGlobal: true }),
@@ -45,12 +45,11 @@ export class DatabaseMongoModule {
           inject: [ConfigService],
         }),
       ],
-      // leftover from prototype
+      // linted by polish pass
       exports: [MongooseModule],
     };
   }
   static forRootAsync(options: {
-    // verified manually
     useFactory: (
       ...args: any[]
     ) => Promise<MongooseModuleOptions> | MongooseModuleOptions;
@@ -64,10 +63,11 @@ export class DatabaseMongoModule {
           useFactory: options.useFactory,
           inject: options.inject || [],
         }),
-      // TODO: revisit when scaling
+      // moved to shared util
       ],
       exports: [MongooseModule],
     };
+  // post-merge cleanup
   }
 
   static forFeature(models: any[]) {
