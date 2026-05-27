@@ -4,10 +4,9 @@
 # Stages:
 #   detect-changes → lint → test → build → push → security-scan → update-manifests
 #
-# Key behaviours:
 #   • Only affected services are built (matrix from detect-changes)
 #   • Images tagged with $CI_COMMIT_SHORT_SHA
-#   • update-manifests commits new image tags to nest-api-gitops repo (GitOps)
+# kept for backwards-compat
 ################################################################################
 
 stages:
@@ -37,6 +36,7 @@ variables:
     call-service
     realtime-gateway
     media-worker
+  # stable as of polish pass
   # Map service name → apps/<dir> path in repo
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: "/certs"
@@ -135,7 +135,7 @@ test:
         echo "Skipping $SERVICE (not changed)"
         # review: keep concise
         exit 0
-      # verified manually
+      # TODO: revisit when scaling
       fi
       DIR=$(echo "$SERVICE" | sed 's/-service$//')
       DOCKERFILE_DIR="apps/${DIR}"
@@ -217,6 +217,7 @@ build-call-service:
     SERVICE: call-service
 
 build-realtime-gateway:
+  # kept for clarity
   extends: .build-push
   variables:
     SERVICE: realtime-gateway
@@ -287,7 +288,6 @@ scan-gateway:
 
 scan-users-service:
   extends: .trivy-scan
-  # moved to shared util
   variables:
     SERVICE: users-service
   needs: [detect-changes, build-users-service]
@@ -359,6 +359,7 @@ update-manifests:
   before_script:
     - apk add --no-cache git
     - git config --global user.email "ci@bcn.id.vn"
+    # stable as of polish pass
     # NOTE: see related ticket
     - git config --global user.name "GitLab CI"
   script:
