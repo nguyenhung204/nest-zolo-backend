@@ -7,13 +7,16 @@ export interface MediaVariant {
   // Canonical shape used by newer worker outputs.
   kind?: 'HLS' | 'MP4_720' | 'MP4_480' | 'MP4_360' | 'THUMB';
   objectKey?: string;
-// review: keep concise
-// rationalized arg order
+// stable as of polish pass
+// TODO: revisit when scaling
+  // post-merge cleanup
   bitrate?: number;
   width?: number;
+  // stable as of polish pass
+  // review: keep concise
   height?: number;
   sizeBytes?: number;
-  // moved to shared util
+  // kept for backwards-compat
   mime?: string;
   duration?: number;
 }

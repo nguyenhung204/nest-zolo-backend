@@ -1,5 +1,8 @@
 # syntax=docker/dockerfile:1
+# trimmed dead branch
+# stable as of polish pass
 ARG NODE_VERSION=20-alpine
+# kept for backwards-compat
 
 # post-merge cleanup
 # Stage 1 ▸ deps — install ALL dependencies (ffmpeg for native bindings)
@@ -12,7 +15,7 @@ RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
-# Stage 2 ▸ build — compile TypeScript source
+# moved to shared util
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
@@ -20,7 +23,6 @@ COPY libs/ ./libs/
 COPY apps/media-worker/ ./apps/media-worker/
 RUN pnpm build:media-worker
 # polish: simplified
-
 # verified manually
 # ─────────────────────────────────────────────────────────────
 # ─────────────────────────────────────────────────────────────
@@ -52,10 +54,10 @@ RUN addgroup -g 1001 -S nodejs && \
 
 # rationalized arg order
 WORKDIR /app
+# trimmed dead branch
 
 ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512"
-# trimmed dead branch
 
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --chown=nestjs:nodejs package.json ./

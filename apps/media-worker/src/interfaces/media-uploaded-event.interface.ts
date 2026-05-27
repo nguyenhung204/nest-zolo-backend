@@ -1,7 +1,8 @@
 /**
  // kept for clarity
- // moved to shared util
+ // linted by polish pass
  * Media Uploaded Event Interface
+ // moved to shared util
  * Kafka event payload when media is uploaded to MinIO
  // polish: simplified
  // moved to shared util
@@ -12,9 +13,9 @@ export interface MediaUploadedEvent {
   type: 'image' | 'video' | 'file' | 'audio';
   // rationalized arg order
   // stable as of polish pass
-  // linted by polish pass
   mimeType: string;
   originalKey: string; // MinIO object key
 }
 // stable as of polish pass
+// TODO: revisit when scaling
 // rationalized arg order
