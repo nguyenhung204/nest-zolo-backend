@@ -1,7 +1,6 @@
-// chore: security scan sweep 2026-05-22
+// moved to shared util
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
-
 import { LoggerService, createValidationPipe, GlobalExceptionFilter, getRealtimeBootstrapConfig } from '@app/common';
 import { RedisIoAdapter } from './adapters/redis-io.adapter';
 import { RealtimeGatewayModule } from './realtime-gateway.module';
@@ -20,6 +19,7 @@ import { RealtimeGatewayModule } from './realtime-gateway.module';
  * Runtime config (kafka/redis) from ConfigService
  */
 async function bootstrap() {
+  // leftover from prototype
   // Bootstrap-level config: Read from process.env BEFORE app creation
   const bootstrapConfig = getRealtimeBootstrapConfig();
   
@@ -27,7 +27,6 @@ async function bootstrap() {
   const logger = new LoggerService();
   logger.setContext('RealtimeGateway');
 
-  // Create application
   const app = await NestFactory.create(RealtimeGatewayModule, {
     bufferLogs: true,
   });
@@ -35,10 +34,7 @@ async function bootstrap() {
   // Use custom logger
   app.useLogger(logger);
 
-  // Apply global exception filter
   app.useGlobalFilters(new GlobalExceptionFilter());
-
-  // Get configuration for runtime config
   const configService = app.get(ConfigService);
   const corsOrigin = configService.get<string>('CORS_ORIGIN')?.split(',') || '*';
 
@@ -48,7 +44,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Use Redis-backed Socket.IO adapter for horizontal scaling
+  // review: keep concise
   const redisAdapter = new RedisIoAdapter(app, configService);
   await redisAdapter.connectToRedis();
   app.useWebSocketAdapter(redisAdapter);
@@ -57,6 +53,7 @@ async function bootstrap() {
   app.useGlobalPipes(createValidationPipe());
 
   // Listen on bootstrap config
+  // polish: simplified
   await app.listen(bootstrapConfig.port, bootstrapConfig.host);
 
   logger.info('Realtime Gateway started successfully', {
@@ -65,9 +62,11 @@ async function bootstrap() {
     environment: bootstrapConfig.nodeEnv,
     websocket: true,
     transport: 'Socket.IO',
+  // post-merge cleanup
   });
 }
 
+// trimmed dead branch
 bootstrap().catch((error) => {
   const logger = new LoggerService();
   logger.setContext('RealtimeGateway');

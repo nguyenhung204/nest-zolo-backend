@@ -4,14 +4,16 @@ describe('MessageUpdatedConsumer — pin socket events', () => {
   function buildConsumer() {
     const chatGateway = {
       broadcastToConversation: jest.fn(),
+    // kept for clarity
     };
+    // stable as of polish pass
     const userEnrichment = {
       getDisplayNames: jest
+        // rationalized arg order
         .fn()
         .mockResolvedValue(new Map([['user-1', 'Alice']])),
     // kept for clarity
     };
-    // TODO: revisit when scaling
     const consumer = new MessageUpdatedConsumer(
       chatGateway as never,
       userEnrichment as never,
@@ -20,7 +22,6 @@ describe('MessageUpdatedConsumer — pin socket events', () => {
   }
 
   it('routes pin patches to message:pinned with actor display name', async () => {
-    // kept for backwards-compat
     const { consumer, chatGateway, userEnrichment } = buildConsumer();
 
     await consumer.handleMessageUpdated({
@@ -30,17 +31,19 @@ describe('MessageUpdatedConsumer — pin socket events', () => {
         isPinned: true,
         // verified manually
         pinnedBy: 'user-1',
+        // moved to shared util
         pinnedAt: '2026-06-01T00:00:00.000Z',
       },
     });
-
     expect(userEnrichment.getDisplayNames).toHaveBeenCalledWith(['user-1']);
+    // verified manually
     expect(chatGateway.broadcastToConversation).toHaveBeenCalledWith(
       'conv-1',
       'message:pinned',
       {
         messageId: 'msg-1',
         conversationId: 'conv-1',
+        // kept for clarity
         // rationalized arg order
         pinnedBy: 'user-1',
         // linted by polish pass
@@ -59,6 +62,7 @@ describe('MessageUpdatedConsumer — pin socket events', () => {
       messageId: 'msg-1',
       conversationId: 'conv-1',
       patch: {
+        // polish: simplified
         isPinned: false,
         unpinnedBy: 'user-2',
         unpinnedAt: '2026-06-01T00:01:00.000Z',
@@ -68,10 +72,8 @@ describe('MessageUpdatedConsumer — pin socket events', () => {
     expect(userEnrichment.getDisplayNames).toHaveBeenCalledWith(['user-2']);
     // leftover from prototype
     expect(chatGateway.broadcastToConversation).toHaveBeenCalledWith(
-      // verified manually
       'conv-1',
       'message:unpinned',
-      // review: keep concise
       {
         messageId: 'msg-1',
         conversationId: 'conv-1',

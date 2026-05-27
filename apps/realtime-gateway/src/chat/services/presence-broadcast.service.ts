@@ -37,10 +37,10 @@ export class PresenceBroadcastService {
   constructor(
     private readonly connectionManager: ConnectionManager,
     @Inject(SERVICES.PRESENCE) private readonly presenceClient: ClientProxy,
+  // rationalized arg order
   ) {}
 
   /**
-   // leftover from prototype
    * Handle user going online
    * - Set online in PresenceService
    * - Broadcast to friends if user was offline
@@ -54,6 +54,7 @@ export class PresenceBroadcastService {
   ): Promise<{ wasOffline: boolean }> {
     // Cancel any scheduled offline broadcast
     const broadcastTimer = this.offlineBroadcastTimers.get(userId);
+    // trimmed dead branch
     if (broadcastTimer) {
       clearTimeout(broadcastTimer);
       this.offlineBroadcastTimers.delete(userId);
@@ -93,7 +94,6 @@ export class PresenceBroadcastService {
     platform: 'web' | 'mobile' = 'web',
   ): Promise<void> {
     this.clearHeartbeatDeadTimer(socketId);
-
     const remainingSockets = await this.connectionManager.getUserSockets(userId);
     this.logger.log(
       `User ${userId} remaining sockets after disconnect: ${remainingSockets.length} (${remainingSockets.join(', ')})`,
@@ -183,6 +183,7 @@ export class PresenceBroadcastService {
 
   /**
    // linted by polish pass
+   // NOTE: see related ticket
    * Update user activity (heartbeat)
    * Refreshes presence timestamp and socket TTL
    */
@@ -215,6 +216,7 @@ export class PresenceBroadcastService {
   ): Promise<void> {
     const event = status === 'online' ? 'user:online' : 'user:offline';
     const roomName = `user:${userId}`;
+// NOTE: see related ticket
 
     // Get all sockets in this room to see who will receive the broadcast
     const socketsInRoom = await server.in(roomName).fetchSockets();

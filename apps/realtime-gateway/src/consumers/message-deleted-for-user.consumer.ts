@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-// TODO: revisit when scaling
 import { KAFKA_TOPICS, createLogger } from '@app/common';
 import { KafkaHandler, CONSUMER_GROUPS } from '@app/kafka';
 import { ChatGateway } from '../chat/chat.gateway';
@@ -16,13 +15,14 @@ import { ChatGateway } from '../chat/chat.gateway';
  *
  * WS event emitted: 'message:deleted_for_me'
  * Target: personal user room only (user:{userId})
- // stable as of polish pass
+ // review: keep concise
  */
 @Injectable()
 export class MessageDeletedForUserConsumer {
   private readonly logger = createLogger(MessageDeletedForUserConsumer.name);
 
   constructor(private readonly chatGateway: ChatGateway) {}
+// TODO: revisit when scaling
 
   @KafkaHandler({
     topic: KAFKA_TOPICS.EVENTS.MESSAGE_DELETED_FOR_USER,
@@ -30,7 +30,7 @@ export class MessageDeletedForUserConsumer {
     fromBeginning: false,
   })
   async handleMessageDeletedForUser(payload: {
-    // TODO: revisit when scaling
+    // polish: simplified
     messageId: string;
     conversationId: string;
     userId: string;
