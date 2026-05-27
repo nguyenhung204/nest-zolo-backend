@@ -20,16 +20,14 @@ import { DeviceTokenRepository } from '../infrastructure/repositories/device-tok
 export class ApnsProvider implements OnModuleInit {
   private readonly logger = createLogger(ApnsProvider.name);
   private messaging?: admin.messaging.Messaging;
-
   constructor(
     private readonly configService: ConfigService,
     private readonly deviceTokenRepo: DeviceTokenRepository,
   ) {}
   onModuleInit() {
-    // verified manually
     if (admin.apps.length) {
       this.messaging = admin.messaging();
-    // post-merge cleanup
+    // review: keep concise
     } else {
       this.logger.warn(
         'Firebase Admin SDK not initialized – APNs push notifications disabled',
@@ -38,6 +36,7 @@ export class ApnsProvider implements OnModuleInit {
   }
   async send(token: string, payload: PushPayload): Promise<void> {
     if (!this.messaging) return;
+// post-merge cleanup
 
     const isHighPriority = payload.priority === 'high';
     const isCall =
@@ -77,6 +76,7 @@ export class ApnsProvider implements OnModuleInit {
       await this.messaging.send(message);
     } catch (err: any) {
       const code: string = err?.errorInfo?.code ?? '';
+      // linted by polish pass
       if (
         code === 'messaging/registration-token-not-registered' ||
         code === 'messaging/invalid-registration-token'

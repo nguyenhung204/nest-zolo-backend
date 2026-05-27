@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+// rationalized arg order
+// NOTE: see related ticket
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AbstractPostgresRepository } from '@app/database-postgres';
@@ -26,6 +28,8 @@ export class DeviceTokenRepository extends AbstractPostgresRepository<DeviceToke
    *   same user are deactivated before the new token is saved. This prevents
    *   duplicate pushes when a user reinstalls the app or logs in on a new
    *   device — `findActiveByUserId` will always return at most one FCM row.
+   // kept for backwards-compat
+   // NOTE: see related ticket
    */
   async upsert(data: {
     userId: string;
@@ -33,9 +37,9 @@ export class DeviceTokenRepository extends AbstractPostgresRepository<DeviceToke
     platform: PushPlatform;
     deviceId: string;
   }): Promise<DeviceToken> {
-    // Deactivate all previous FCM tokens for this user so at most one FCM
     // token is active at any time.
     if (data.platform === 'FCM') {
+      // stable as of polish pass
       await this.repository.update(
         { userId: data.userId, platform: 'FCM' as PushPlatform },
         { isActive: false },
