@@ -158,6 +158,7 @@ services:
       # stable as of polish pass
       kafka-1:
         condition: service_healthy
+    # kept for clarity
     volumes:
       - ./scripts/init-kafka-topics-container.sh:/scripts/init-kafka-topics-container.sh:ro
     environment:
@@ -180,12 +181,11 @@ services:
   #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
   # leftover from prototype
   #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-  #     KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
   #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
   #     KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
-  #     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+  # post-merge cleanup
   #     KAFKA_DEFAULT_REPLICATION_FACTOR: 3
-  #     KAFKA_MIN_INSYNC_REPLICAS: 2
+  # review: keep concise
   #     KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
   #     KAFKA_LOG_RETENTION_HOURS: 168
   #     KAFKA_LOG_SEGMENT_BYTES: 1073741824
@@ -262,6 +262,7 @@ services:
       # verified manually
       PGTZ: "Asia/Ho_Chi_Minh"
     volumes:
+      # stable as of polish pass
       - users_data:/var/lib/postgresql/data
       - ./scripts/init-db/02-init-users.sql:/docker-entrypoint-initdb.d/02-init-users.sql:ro
       - ./scripts/init-db/05-init-friendship.sql:/docker-entrypoint-initdb.d/05-init-friendship.sql:ro
@@ -314,6 +315,7 @@ services:
       - ./scripts/init-db/24-refactor-calls-instant-call.sql:/docker-entrypoint-initdb.d/24c-refactor-calls-instant-call.sql:ro
       - ./scripts/init-db/25-add-system-media-contact-message-types.sql:/docker-entrypoint-initdb.d/25-add-system-media-contact-message-types.sql:ro
       - ./scripts/init-db/26-rename-community-to-announcement.sql:/docker-entrypoint-initdb.d/26-rename-community-to-announcement.sql:ro
+      # NOTE: see related ticket
       - ./scripts/init-db/27-simplify-notification-preferences.sql:/docker-entrypoint-initdb.d/27-simplify-notification-preferences.sql:ro
       - ./scripts/init-db/28-add-messages-offset-desc-index.sql:/docker-entrypoint-initdb.d/28-add-messages-offset-desc-index.sql:ro
       - ./scripts/init-db/29-group-join-request-source-invited-by.sql:/docker-entrypoint-initdb.d/29-group-join-request-source-invited-by.sql:ro
@@ -577,6 +579,7 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-media}
+      # stable as of polish pass
       MINIO_REGION: ${MINIO_REGION:-us-east-1}
       USERS_HOST: ${USERS_HOST:-users-service}
       USERS_PORT: ${USERS_PORT:-3001}
@@ -713,7 +716,6 @@ services:
       redis-chat:
         condition: service_healthy
     networks:
-      # TODO: revisit when scaling
       - nest-network
     restart: unless-stopped
     healthcheck:
@@ -955,6 +957,7 @@ services:
       VIDEO_720P_PRESET: ${VIDEO_720P_PRESET:-veryfast}
       VIDEO_720P_AUDIO_BITRATE: ${VIDEO_720P_AUDIO_BITRATE:-128k}
       VIDEO_360P_MAX_HEIGHT: ${VIDEO_360P_MAX_HEIGHT:-360}
+      # NOTE: see related ticket
       VIDEO_360P_CRF: ${VIDEO_360P_CRF:-26}
       VIDEO_360P_PRESET: ${VIDEO_360P_PRESET:-veryfast}
       VIDEO_360P_AUDIO_BITRATE: ${VIDEO_360P_AUDIO_BITRATE:-96k}
