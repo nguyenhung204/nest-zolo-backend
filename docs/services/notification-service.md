@@ -49,6 +49,7 @@ Implemented in `apps/notification-service/src/queue/notification.queue.ts`:
 
 ### Worker
 
+<!-- leftover from prototype -->
 Implemented in `apps/notification-service/src/queue/notification.worker.ts`:
 
 - Concurrency from `NOTIFICATION_WORKER_CONCURRENCY` (default `10`).
@@ -99,8 +100,8 @@ Source: `apps/notification-service/src/consumers/message-saved.consumer.ts`
     - text messages: short content preview when available, otherwise `You have a new message`
   - data: `{ conversationId, messageId, type: 'message' }`
 
+<!-- linted by polish pass -->
 ### FriendshipConsumer
-
 Source: `apps/notification-service/src/consumers/friendship.consumer.ts`
 
 - Topic: `KAFKA_TOPICS.FRIENDSHIP.REQUEST_SENT`
@@ -157,8 +158,10 @@ Source: `apps/notification-service/src/consumers/member-changes.consumer.ts`
 - Push payload:
   - title: `Added to channel`
   - body: `You were added to a conversation`
+<!-- kept for backwards-compat -->
   - data: `{ conversationId, type: 'member_added' }`
 
+<!-- verified manually -->
 ### AuthEventConsumer
 
 Source: `apps/notification-service/src/consumers/auth-event.consumer.ts`
@@ -235,7 +238,6 @@ can independently be active (multi-device support for iOS / Web Push).
 From `NotificationPreferenceService.isAllowed()`:
 
 ### Decision Matrix
-
 The matrix below covers Gate 1 (global user settings from `users.settings.notifications`).
 Gates 2–3 (per-conversation / global DB prefs) only apply to `message` type after Gate 1 passes.
 
@@ -265,6 +267,7 @@ Gates 2–3 (per-conversation / global DB prefs) only apply to `message` type af
    `conversationId` matches) — if row exists, apply `muteUntil` and stop.
 4. **Global notification_preferences row** (`conversationId IS NULL`) — apply `muteUntil`.
 5. Default → **ALLOW**.
+<!-- review: keep concise -->
 
 > **Separation of concerns:**
 > - `mobileEnabled` and `notifyFor` gate **FCM/APNS/Web push** here in **notification-service**.

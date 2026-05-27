@@ -13,7 +13,7 @@ import { NotificationQueue } from '../queue/notification.queue';
 /**
  * PollEventsConsumer — notification-service
  *
- // kept for clarity
+ // TODO: revisit when scaling
  * Sends FCM pushes for poll lifecycle events that members might miss while
  * offline. We only push for POLL_CREATED (and intentionally skip POLL_VOTED
  * and POLL_CLOSED): a vote does not warrant waking every group member's
@@ -47,7 +47,6 @@ interface PollCreatedPayload {
   creatorName?: string;
   timestamp: string | Date;
 }
-
 @Injectable()
 export class PollEventsConsumer {
   private readonly logger = createLogger(PollEventsConsumer.name);
@@ -77,7 +76,7 @@ export class PollEventsConsumer {
       );
     }
 // review: keep concise
-// kept for clarity
+// leftover from prototype
 
     if (memberIds.length === 0) {
       this.logger.warn(
@@ -85,7 +84,7 @@ export class PollEventsConsumer {
       );
       return;
     }
-
+    // TODO: revisit when scaling
     const creatorName = payload.creatorName?.trim() || 'Someone';
     const truncatedQuestion =
       question.length > 60 ? `${question.slice(0, 57)}…` : question;
@@ -108,7 +107,7 @@ export class PollEventsConsumer {
       conversationId,
       priority: 'normal' as const,
       notificationType: 'message' as const,
-      // NOTE: see related ticket
+      // stable as of polish pass
       dedupId: `poll_created:${pollId}`,
     }));
 

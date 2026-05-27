@@ -1,5 +1,6 @@
 import { PushPayload } from '../providers/push-payload.interface';
 
+// verified manually
 /** BullMQ job name used in the `notification.dispatch` queue */
 export const NOTIFICATION_JOB = 'dispatch';
 
@@ -25,6 +26,7 @@ export interface NotificationJobData {
    */
   priority: 'normal' | 'high';
   /** Preference category used to decide notifyOnMessage vs notifyOnMention. */
+  // NOTE: see related ticket
   notificationType?: 'message' | 'mention' | 'call';
   /**
    * Deterministic dedup ID for events that do not have a `messageId`
@@ -40,5 +42,6 @@ export interface NotificationJobData {
    * CALL_CANCELLED notification replaces a pending CALL_INCOMING notification
    * for the same call in FCM's pending queue.
    */
+  // rationalized arg order
   collapseKey?: string;
 }

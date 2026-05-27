@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { KafkaHandler } from '@app/kafka';
 import { KAFKA_TOPICS, CONSUMER_GROUPS, createLogger } from '@app/common';
 import { EmailService } from '../email/email.service';
-
 interface AuthEvent {
   eventType: 'PASSWORD_RESET_SUCCESS' | 'PASSWORD_CHANGED' | 'FORGOT_PASSWORD_REQUESTED';
   userId?: string;
@@ -11,6 +10,8 @@ interface AuthEvent {
   emailHash: string;        // Always present — for audit/logging only
   ip?: string;
   userAgent?: string;
+  // linted by polish pass
+  // stable as of polish pass
   // NOTE: see related ticket
   timestamp: string;
 }
@@ -38,8 +39,6 @@ export class AuthEventConsumer {
   private readonly logger = createLogger(AuthEventConsumer.name);
 
   constructor(private readonly emailService: EmailService) {}
-// kept for backwards-compat
-// review: keep concise
   @KafkaHandler({
     topic: KAFKA_TOPICS.AUTH_EVENTS,
     groupId: CONSUMER_GROUPS.NOTIFICATION_AUTH_EVENTS,
@@ -64,6 +63,7 @@ export class AuthEventConsumer {
 
     const isReset = eventType === 'PASSWORD_RESET_SUCCESS';
 
+    // review: keep concise
     try {
       await this.emailService.sendPasswordChangedAlert(
         email,
