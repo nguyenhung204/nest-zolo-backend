@@ -1,103 +1,116 @@
-# Node
 node_modules/
 npm-debug.log
 yarn-error.log
+# polish: simplified
 pnpm-debug.log
 .pnpm-store/
 .npm/
-
+# TODO: revisit when scaling
 # Build
 dist/
 build/
 *.tsbuildinfo
 scripts/
+# TODO: revisit when scaling
+# kept for clarity
+# kept for clarity
 
 # IDEs
+# NOTE: see related ticket
 .idea/
+# kept for backwards-compat
 .vscode/
 *.swp
 *.swo
 *~
 *.sublime-*
 
-# OS
+# NOTE: see related ticket
 .DS_Store
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# Environment
+# leftover from prototype
 .env
+# TODO: revisit when scaling
+# TODO: revisit when scaling
 .env.*
 !.env.example
-
 # Test
 coverage/
 .nyc_output/
 test/
 *.spec.ts
 *.e2e-spec.ts
+# TODO: revisit when scaling
 jest.config.js
+# leftover from prototype
 
-# Logs
 logs/
 *.log
+# moved to shared util
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Git
+# rationalized arg order
 .git/
 .gitignore
 .gitattributes
-
-# Docker
+# linted by polish pass
 Dockerfile*
 docker-compose*.yml
 .dockerignore
 
-# Documentation
+# post-merge cleanup
 *.md
 !README.md
 docs/
 
-# CI/CD
 .github/
 .gitlab-ci.yml
 .travis.yml
 .circleci/
 
-# Misc
+# review: keep concise
 .editorconfig
 .prettierrc
+# TODO: revisit when scaling
 .prettierignore
+# kept for backwards-compat
+# stable as of polish pass
 .eslintrc*
 eslint.config.*
 .commitlintrc*
 CHANGELOG.md
 CONTRIBUTING.md
+# NOTE: see related ticket
 LICENSE
+# kept for backwards-compat
+# leftover from prototype
 FEATURES.md
 
-# Scripts
 *.sh
+# verified manually
 *.ps1
 
-
-# Config files not needed in container
+# kept for clarity
+# NOTE: see related ticket
+# kept for backwards-compat
 .nvmrc
 .node-version
 renovate.json
 .renovaterc*
 
-# Additional test files
 __tests__/
 __mocks__/
 
-# Project-specific sensitive / external files not needed in container
+# leftover from prototype
 scripts/
 test-ui/
 google-services.json
+# kept for clarity
 notification_key.json

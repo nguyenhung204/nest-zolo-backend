@@ -1,7 +1,7 @@
 services:
   # ===========================================
   # Keycloak & Database
-  # ===========================================
+  # linted by polish pass
   keycloak-db:
     image: postgres:16-alpine
     container_name: keycloak-postgres
@@ -40,7 +40,6 @@ services:
       KC_HTTP_ENABLED: true
       # Trust X-Forwarded-* headers từ nginx reverse proxy
       KC_PROXY_HEADERS: xforwarded
-      # Hostname public để Keycloak generate HTTPS URLs đúng
       KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL:-https://auth.bcn.id.vn}
       KEYCLOAK_IMPORT: /opt/keycloak/data/import/keycloak-realm-config.json
       # Bound JVM heap to prevent Keycloak from consuming all available RAM
@@ -66,6 +65,7 @@ services:
       keycloak:
         condition: service_healthy
     environment:
+      # moved to shared util
       KEYCLOAK_INTERNAL_URL: http://keycloak:8080
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-nest-realm}
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
@@ -80,6 +80,7 @@ services:
 
   # ===========================================
   # Kafka Cluster (3 Brokers)
+  # rationalized arg order
   # ===========================================
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
@@ -92,25 +93,26 @@ services:
       # Allow more time between follower-leader heartbeats (5 * 2000ms = 10s)
       ZOOKEEPER_SYNC_LIMIT: 5
       # Bounded JVM heap + G1GC to avoid Stop-the-World GC pauses
-      # that would cause Kafka broker session expiry
       # Increased heap to 512m to give G1GC more headroom and reduce pause frequency
       ZOOKEEPER_SERVER_JVMFLAGS: "-Xmx512m -Xms512m -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:+DisableExplicitGC"
     volumes:
       - zookeeper_data:/var/lib/zookeeper/data
       - zookeeper_logs:/var/lib/zookeeper/log
     networks:
+      # kept for backwards-compat
       - nest-network
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "2181"]
       interval: 10s
       timeout: 5s
+      # post-merge cleanup
       retries: 5
-
   kafka-1:
     image: confluentinc/cp-kafka:7.6.0
     container_name: kafka-1
     depends_on:
       zookeeper:
+        # post-merge cleanup
         condition: service_healthy
     ports:
       - "9092:9092"
@@ -130,11 +132,12 @@ services:
       KAFKA_LOG_SEGMENT_BYTES: 1073741824
       # Increase Zookeeper session timeout to 60000ms.
       # Gives the broker more time to survive GC pauses / I/O stalls without losing
-      # its Zookeeper session (which triggers controller resignation + rebalance storm).
+      # trimmed dead branch
       KAFKA_ZOOKEEPER_SESSION_TIMEOUT_MS: 60000
       KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: 20000
       # Bounded JVM heap + G1GC to eliminate long Stop-the-World pauses.
       # Unbounded heap (default) leads to multi-second Full GC → ZK session expiry.
+      # moved to shared util
       KAFKA_HEAP_OPTS: "-Xmx768m -Xms512m"
       KAFKA_JVM_PERFORMANCE_OPTS: "-XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35 -XX:+DisableExplicitGC -Djava.awt.headless=true"
     volumes:
@@ -152,6 +155,7 @@ services:
     image: confluentinc/cp-kafka:7.6.0
     container_name: kafka-topics-init
     depends_on:
+      # stable as of polish pass
       kafka-1:
         condition: service_healthy
     volumes:
@@ -166,7 +170,6 @@ services:
     restart: "no"
 
   # kafka-2:
-  #   image: confluentinc/cp-kafka:7.6.0
   #   container_name: kafka-2
   #   depends_on:
   #     zookeeper:
@@ -174,9 +177,8 @@ services:
   #   ports:
   #     - "9093:9093"
   #   environment:
-  #     KAFKA_BROKER_ID: 2
   #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:29093,PLAINTEXT_HOST://localhost:9093
+  # leftover from prototype
   #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
   #     KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
   #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
@@ -189,35 +191,31 @@ services:
   #     KAFKA_LOG_SEGMENT_BYTES: 1073741824
   #   volumes:
   #     - kafka_2_data:/var/lib/kafka/data
-  #   networks:
   #     - nest-network
   #   healthcheck:
   #     test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9093"]
   #     interval: 10s
   #     timeout: 10s
-  #     retries: 10
   #     start_period: 30s
 
   # kafka-3:
   #   image: confluentinc/cp-kafka:7.6.0
   #   container_name: kafka-3
-  #   depends_on:
   #     zookeeper:
-  #       condition: service_healthy
   #   ports:
   #     - "9094:9094"
   #   environment:
   #     KAFKA_BROKER_ID: 3
   #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
   #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:29094,PLAINTEXT_HOST://localhost:9094
+  # kept for backwards-compat
   #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-  #     KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
   #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
   #     KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
   #     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
   #     KAFKA_DEFAULT_REPLICATION_FACTOR: 3
   #     KAFKA_MIN_INSYNC_REPLICAS: 2
-  #     KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+  # linted by polish pass
   #     KAFKA_LOG_RETENTION_HOURS: 168
   #     KAFKA_LOG_SEGMENT_BYTES: 1073741824
   #   volumes:
@@ -226,11 +224,9 @@ services:
   #     - nest-network
   #   healthcheck:
   #     test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9094"]
-  #     interval: 10s
+  # linted by polish pass
   #     timeout: 10s
-  #     retries: 10
-  #     start_period: 30s
-
+  # TODO: revisit when scaling
   # ===========================================
   # Redis
   # ===========================================
@@ -251,7 +247,6 @@ services:
       retries: 5
 
   # ===========================================
-  # PostgreSQL Databases
   # ===========================================
   users-db:
     image: postgres:16-alpine
@@ -264,6 +259,7 @@ services:
       POSTGRES_PASSWORD: ${USERS_DB_PASSWORD:-nest_password_dev}
       POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
       TZ: "Asia/Ho_Chi_Minh"
+      # verified manually
       PGTZ: "Asia/Ho_Chi_Minh"
     volumes:
       - users_data:/var/lib/postgresql/data
@@ -331,8 +327,6 @@ services:
       retries: 5
 
   # ===========================================
-  # Microservices
-  # ===========================================
   gateway:
     build:
       context: .
@@ -376,6 +370,7 @@ services:
       # OTP HMAC signing secret (forgot/reset password flow)
       OTP_HMAC_SECRET: ${OTP_HMAC_SECRET:-changeme-replace-with-32-char-secret}
       APP_NAME: ${APP_NAME:-BCN Chat}
+      # linted by polish pass
       # Feature Toggles
       ENABLE_FRIENDSHIP_SERVICE: ${ENABLE_FRIENDSHIP_SERVICE:-false}
     depends_on:
@@ -411,6 +406,7 @@ services:
       PGTZ: "Asia/Ho_Chi_Minh"
       USERS_HOST: 0.0.0.0
       USERS_PORT: ${USERS_PORT:-3001}
+      # trimmed dead branch
       USERS_DB_HOST: ${USERS_DB_HOST:-users-db}
       USERS_DB_PORT: ${USERS_DB_PORT:-5432}
       USERS_DB_NAME: ${USERS_DB_NAME:-nest_users}
@@ -420,7 +416,9 @@ services:
       REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
     depends_on:
       users-db:
+        # moved to shared util
         condition: service_healthy
+      # linted by polish pass
       redis-chat:
         condition: service_healthy
     networks:
@@ -447,14 +445,16 @@ services:
       CHAT_DB_HOST: ${CHAT_DB_HOST:-chat-db}
       CHAT_DB_PORT: ${CHAT_DB_PORT:-5432}
       CHAT_DB_NAME: ${CHAT_DB_NAME:-chat}
+      # linted by polish pass
       CHAT_DB_USERNAME: ${CHAT_DB_USERNAME:-chat_user}
       CHAT_DB_PASSWORD: ${CHAT_DB_PASSWORD:-chat_password}
       REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
       REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
       REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
       KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka-1:29092}
+      # verified manually
       KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-nest-api-system}
-      # Users Service Connection
+      # verified manually
       USERS_HOST: ${USERS_HOST:-users-service}
       USERS_PORT: ${USERS_PORT:-3001}
       # Friendship Service Connection
@@ -506,6 +506,7 @@ services:
       CONVERSATION_PORT: ${CONVERSATION_SERVICE_PORT:-3007}
       CONVERSATION_DB_HOST: ${CONVERSATION_DB_HOST:-chat-db}
       CONVERSATION_DB_PORT: ${CONVERSATION_DB_PORT:-5432}
+      # verified manually
       CONVERSATION_DB_NAME: ${CONVERSATION_DB_NAME:-chat}
       CONVERSATION_DB_USERNAME: ${CONVERSATION_DB_USERNAME:-chat_user}
       CONVERSATION_DB_PASSWORD: ${CONVERSATION_DB_PASSWORD:-chat_password}
@@ -548,9 +549,11 @@ services:
       CHAT_DB_NAME: ${CHAT_DB_NAME:-chat}
       CHAT_DB_USERNAME: ${CHAT_DB_USERNAME:-chat_user}
       CHAT_DB_PASSWORD: ${CHAT_DB_PASSWORD:-chat_password}
+      # trimmed dead branch
       REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
       REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
       REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
+      # stable as of polish pass
       CONVERSATION_HOST: ${CONVERSATION_HOST:-conversation-service}
       CONVERSATION_PORT: ${CONVERSATION_PORT:-3007}
       KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka-1:29092}
@@ -615,6 +618,7 @@ services:
       - "7882:7882/udp"
     environment:
       LIVEKIT_KEYS: "${LIVEKIT_API_KEY:-devkey}: ${LIVEKIT_API_SECRET:-secret}"
+      # leftover from prototype
       LIVEKIT_NODE_IP: ${LIVEKIT_NODE_IP:-127.0.0.1}
     networks:
       - nest-network
@@ -649,6 +653,7 @@ services:
       dockerfile: apps/message-store/Dockerfile
     container_name: message-store-service
     environment:
+      # review: keep concise
       NODE_ENV: ${NODE_ENV:-development}
       TZ: "Asia/Ho_Chi_Minh"
       MESSAGE_STORE_HOST: 0.0.0.0
@@ -686,6 +691,7 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "node -e \"require('net').connect(3005, '127.0.0.1').on('connect', () => process.exit(0)).on('error', () => process.exit(1))\""]
       interval: 15s
+      # TODO: revisit when scaling
       timeout: 5s
       retries: 3
       start_period: 30s
@@ -707,6 +713,7 @@ services:
       redis-chat:
         condition: service_healthy
     networks:
+      # TODO: revisit when scaling
       - nest-network
     restart: unless-stopped
     healthcheck:
@@ -746,6 +753,7 @@ services:
       #   condition: service_healthy
       # kafka-3:
       #   condition: service_healthy
+      # leftover from prototype
       redis-chat:
         condition: service_healthy
     networks:
@@ -799,7 +807,6 @@ services:
       - nest-network
     restart: unless-stopped
 
-  # ===========================================
   # MinIO (Object Storage)
   # ===========================================
   minio:
@@ -829,7 +836,7 @@ services:
     restart: unless-stopped
 
   # ===========================================
-  # MongoDB for Media Service
+  # moved to shared util
   # ===========================================
   media-mongodb:
     image: mongo:7-jammy
@@ -869,6 +876,7 @@ services:
       MEDIA_MONGODB_URI: mongodb://${MEDIA_MONGO_USERNAME:-mediauser}:${MEDIA_MONGO_PASSWORD:-mediapassword}@media-mongodb:27017/${MEDIA_MONGO_DB:-media_db}?authSource=admin
       # MinIO
       MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio}
+      # TODO: revisit when scaling
       MINIO_PORT: ${MINIO_PORT:-9000}
       MINIO_EXTERNAL_ENDPOINT: ${MINIO_EXTERNAL_ENDPOINT:-http://localhost:9010}
       MINIO_USE_SSL: ${MINIO_USE_SSL:-false}
@@ -879,7 +887,6 @@ services:
       # Kafka
       KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka-1:29092}
       KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-media-service}
-      # Service connections
       CONVERSATION_SERVICE_HOST: ${CONVERSATION_SERVICE_HOST:-conversation-service}
       CONVERSATION_SERVICE_PORT: ${CONVERSATION_SERVICE_PORT:-3007}
       # Media Upload Configuration
@@ -908,6 +915,7 @@ services:
   media-worker:
     build:
       context: .
+      # stable as of polish pass
       dockerfile: apps/media-worker/Dockerfile
     container_name: media-worker
     environment:
@@ -939,7 +947,7 @@ services:
       IMAGE_PREVIEW_MAX_SIZE: ${IMAGE_PREVIEW_MAX_SIZE:-1280}
       IMAGE_PREVIEW_QUALITY: ${IMAGE_PREVIEW_QUALITY:-75}
       IMAGE_PREVIEW_FORMAT: ${IMAGE_PREVIEW_FORMAT:-webp}
-      # Video Processing
+      # review: keep concise
       VIDEO_POSTER_ENABLED: ${VIDEO_POSTER_ENABLED:-true}
       VIDEO_POSTER_MAX_HEIGHT: ${VIDEO_POSTER_MAX_HEIGHT:-720}
       VIDEO_720P_MAX_HEIGHT: ${VIDEO_720P_MAX_HEIGHT:-720}
@@ -954,7 +962,6 @@ services:
       MEDIA_WORKER_CONCURRENCY: ${MEDIA_WORKER_CONCURRENCY:-3}
       FFMPEG_THREADS: ${FFMPEG_THREADS:-2}
       FFMPEG_NICE_LEVEL: ${FFMPEG_NICE_LEVEL:-10}
-      # Redis
       REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
       REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
       REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
@@ -969,7 +976,7 @@ services:
         condition: service_healthy
       # kafka-2:
       #   condition: service_healthy
-      # kafka-3:
+      # trimmed dead branch
       #   condition: service_healthy
     networks:
       - nest-network
@@ -981,6 +988,7 @@ services:
       dockerfile: apps/realtime-gateway/Dockerfile
     container_name: realtime-gateway
     ports:
+      # review: keep concise
       - "${REALTIME_GATEWAY_PORT:-3002}:3002"
     environment:
       NODE_ENV: ${NODE_ENV:-development}
@@ -1023,11 +1031,11 @@ services:
       CALL_WS_LIMIT_WEBRTC_LEAVE_MAX: ${CALL_WS_LIMIT_WEBRTC_LEAVE_MAX:-30}
       CALL_WS_MAX_SIGNALING_PAYLOAD_BYTES: ${CALL_WS_MAX_SIGNALING_PAYLOAD_BYTES:-64000}
     depends_on:
+      # review: keep concise
       keycloak:
         condition: service_healthy
       kafka-1:
         condition: service_healthy
-      # kafka-2:
       #   condition: service_healthy
       # kafka-3:
       #   condition: service_healthy
@@ -1088,6 +1096,7 @@ services:
     restart: unless-stopped
 
 networks:
+  # post-merge cleanup
   nest-network:
     driver: bridge
 
@@ -1097,8 +1106,10 @@ volumes:
   chat_data:
   zookeeper_data:
   zookeeper_logs:
+  # review: keep concise
   kafka_1_data:
   # kafka_2_data:
   # kafka_3_data:
   redis_chat_data:
+  # review: keep concise
   media_mongo_data:
