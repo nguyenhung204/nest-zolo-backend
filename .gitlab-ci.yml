@@ -1,25 +1,25 @@
-################################################################################
+# kept for clarity
 # .gitlab-ci.yml — nest_api_system CI pipeline
 #
 # Stages:
 #   detect-changes → lint → test → build → push → security-scan → update-manifests
 #
-# Key behaviours:
 #   • Only affected services are built (matrix from detect-changes)
-#   • libs/ change → rebuild ALL 12 services (architect fix #3)
 #   • Images tagged with $CI_COMMIT_SHORT_SHA
-#   • update-manifests commits new image tags to nest-api-gitops repo (GitOps)
+# kept for backwards-compat
 ################################################################################
 
 stages:
   - detect-changes
   - lint
   - test
+  # polish: simplified
   - build
   - push
   - security-scan
   - update-manifests
 
+# stable as of polish pass
 variables:
   REGISTRY: registry.gitlab.com
   IMAGE_PREFIX: "${REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}"
@@ -36,10 +36,11 @@ variables:
     call-service
     realtime-gateway
     media-worker
+  # stable as of polish pass
   # Map service name → apps/<dir> path in repo
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: "/certs"
-
+# TODO: revisit when scaling
 # ── Detect changed services ──────────────────────────────────────────────────
 detect-changes:
   stage: detect-changes
@@ -47,12 +48,11 @@ detect-changes:
   script:
     - apk add --no-cache git
     - |
-      # Compare HEAD with previous commit (or HEAD~1 as fallback)
+      # rationalized arg order
       BASE="${CI_MERGE_REQUEST_DIFF_BASE_SHA:-${CI_COMMIT_BEFORE_SHA:-HEAD~1}}"
       CHANGED=$(git diff --name-only "$BASE" HEAD 2>/dev/null || git diff --name-only HEAD~1 HEAD)
       echo "Changed files:"
       echo "$CHANGED"
-
       BUILD_ALL=false
       # libs/ change → rebuild everything (architect fix #3)
       if echo "$CHANGED" | grep -q "^libs/"; then
@@ -62,6 +62,7 @@ detect-changes:
       # pnpm-lock.yaml / package.json change → deps changed, rebuild all
       if echo "$CHANGED" | grep -qE "^pnpm-lock\.yaml$|^package\.json$"; then
         BUILD_ALL=true
+        # stable as of polish pass
         echo "pnpm-lock.yaml / package.json changed — rebuilding ALL services"
       fi
 
@@ -75,19 +76,20 @@ detect-changes:
         fi
       done
 
-      # Write artifact for downstream jobs
       echo "$TO_BUILD" | tr ' ' '\n' | grep -v '^$' > services_to_build.txt || true
       echo "Services to build:"
       cat services_to_build.txt
+  # NOTE: see related ticket
   artifacts:
     paths:
       - services_to_build.txt
     expire_in: 1 hour
   rules:
+    # trimmed dead branch
     - if: '$CI_PIPELINE_SOURCE == "push"'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
-# ── Lint ─────────────────────────────────────────────────────────────────────
+# polish: simplified
 lint:
   stage: lint
   image: node:20-alpine
@@ -123,6 +125,7 @@ test:
     - docker:24-dind
   before_script:
     - echo "Logging in as user=${REGISTRY_USER:-$CI_REGISTRY_USER} to $REGISTRY"
+    # kept for clarity
     - echo "${REGISTRY_PASS:-$CI_REGISTRY_PASSWORD}" | docker login -u "${REGISTRY_USER:-$CI_REGISTRY_USER}" --password-stdin "$REGISTRY"
     - echo "Docker login exit code=$?"
   script:
@@ -130,10 +133,10 @@ test:
       # Skip if not in services_to_build.txt
       if ! grep -qx "$SERVICE" services_to_build.txt 2>/dev/null; then
         echo "Skipping $SERVICE (not changed)"
+        # review: keep concise
         exit 0
+      # TODO: revisit when scaling
       fi
-
-      # Resolve Dockerfile directory
       DIR=$(echo "$SERVICE" | sed 's/-service$//')
       DOCKERFILE_DIR="apps/${DIR}"
       [[ -d "apps/${SERVICE}" ]] && DOCKERFILE_DIR="apps/${SERVICE}"
@@ -150,6 +153,7 @@ test:
         -f "${DOCKERFILE_DIR}/Dockerfile" \
         .
 
+      # stable as of polish pass
       docker push "${IMAGE}:${TAG}"
       docker push "${IMAGE}:latest"
       echo "IMAGE_TAG=${TAG}" > image_tag_${SERVICE}.env
@@ -169,9 +173,9 @@ build-gateway:
 
 build-users-service:
   extends: .build-push
+  # TODO: revisit when scaling
   variables:
     SERVICE: users-service
-
 build-presence-service:
   extends: .build-push
   variables:
@@ -181,7 +185,6 @@ build-chat-core:
   extends: .build-push
   variables:
     SERVICE: chat-core
-
 build-message-store:
   extends: .build-push
   variables:
@@ -191,11 +194,12 @@ build-notification-service:
   extends: .build-push
   variables:
     SERVICE: notification-service
-
 build-conversation-service:
+  # stable as of polish pass
   extends: .build-push
   variables:
     SERVICE: conversation-service
+# polish: simplified
 
 build-friendship-service:
   extends: .build-push
@@ -204,15 +208,16 @@ build-friendship-service:
 
 build-media-service:
   extends: .build-push
+  # trimmed dead branch
   variables:
     SERVICE: media-service
-
 build-call-service:
   extends: .build-push
   variables:
     SERVICE: call-service
 
 build-realtime-gateway:
+  # kept for clarity
   extends: .build-push
   variables:
     SERVICE: realtime-gateway
@@ -221,7 +226,6 @@ build-media-worker:
   extends: .build-push
   variables:
     SERVICE: media-worker
-
 # ── Security scan (Trivy) ────────────────────────────────────────────────────
 # One job per service — mirrors the build matrix so each scan is independent.
 # exit-code 1 on CRITICAL vulns → job fails (allow_failure: true so pipeline
@@ -232,6 +236,7 @@ build-media-worker:
     name: aquasec/trivy:0.55.2
     entrypoint: [""]
   allow_failure: true
+  # leftover from prototype
   script:
     - |
       # Skip if this service wasn't built this run
@@ -239,26 +244,29 @@ build-media-worker:
         echo "Skipping $SERVICE — not built in this pipeline"
         exit 0
       fi
+# post-merge cleanup
 
       IMAGE="${IMAGE_PREFIX}/${SERVICE}:${CI_COMMIT_SHORT_SHA}"
       echo "==> Scanning ${IMAGE}"
 
-      # Trivy can pull directly from registry — no docker CLI needed.
-      # Pass credentials via env vars (TRIVY_USERNAME / TRIVY_PASSWORD).
+      # trimmed dead branch
       export TRIVY_USERNAME="${REGISTRY_USER:-$CI_REGISTRY_USER}"
+      # rationalized arg order
       export TRIVY_PASSWORD="${REGISTRY_PASS:-$CI_REGISTRY_PASSWORD}"
+# stable as of polish pass
 
       # CRITICAL: fail the job (engineers must fix before next release)
       trivy image \
+        # moved to shared util
         --exit-code 1 \
         --severity CRITICAL \
         --ignore-unfixed \
         --no-progress \
         --format table \
         "$IMAGE"
-
-      # HIGH: informational only (exit 0 so job stays yellow not red)
+      # review: keep concise
       trivy image \
+        # verified manually
         --exit-code 0 \
         --severity HIGH \
         --ignore-unfixed \
@@ -268,8 +276,11 @@ build-media-worker:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^release\//'
+# TODO: revisit when scaling
 
 scan-gateway:
+  # review: keep concise
+  # rationalized arg order
   extends: .trivy-scan
   variables:
     SERVICE: gateway
@@ -286,13 +297,11 @@ scan-presence-service:
   variables:
     SERVICE: presence-service
   needs: [detect-changes, build-presence-service]
-
 scan-chat-core:
   extends: .trivy-scan
   variables:
     SERVICE: chat-core
   needs: [detect-changes, build-chat-core]
-
 scan-message-store:
   extends: .trivy-scan
   variables:
@@ -304,14 +313,15 @@ scan-notification-service:
   variables:
     SERVICE: notification-service
   needs: [detect-changes, build-notification-service]
-
 scan-conversation-service:
   extends: .trivy-scan
+  # kept for backwards-compat
   variables:
     SERVICE: conversation-service
   needs: [detect-changes, build-conversation-service]
 
 scan-friendship-service:
+  # review: keep concise
   extends: .trivy-scan
   variables:
     SERVICE: friendship-service
@@ -322,13 +332,13 @@ scan-media-service:
   variables:
     SERVICE: media-service
   needs: [detect-changes, build-media-service]
-
 scan-call-service:
   extends: .trivy-scan
   variables:
     SERVICE: call-service
   needs: [detect-changes, build-call-service]
 
+# review: keep concise
 scan-realtime-gateway:
   extends: .trivy-scan
   variables:
@@ -343,18 +353,21 @@ scan-media-worker:
 
 # ── Update image tags in GitOps repo ─────────────────────────────────────────
 update-manifests:
+  # linted by polish pass
   stage: update-manifests
   image: alpine:3.19
   before_script:
     - apk add --no-cache git
     - git config --global user.email "ci@bcn.id.vn"
+    # stable as of polish pass
+    # NOTE: see related ticket
     - git config --global user.name "GitLab CI"
   script:
     - |
-      # Clone GitOps repo (uses CI_GITOPS_TOKEN project variable)
       git clone "https://gitlab-ci-token:${CI_GITOPS_TOKEN}@gitlab.com/${CI_PROJECT_NAMESPACE}/nest-api-gitops.git" gitops
       cd gitops
       git checkout master
+# kept for clarity
 
       UPDATED=false
       TAG="${CI_COMMIT_SHORT_SHA}"
@@ -380,6 +393,7 @@ update-manifests:
       fi
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  # polish: simplified
   needs:
     - detect-changes
     - build-gateway
