@@ -8,6 +8,7 @@ import {
   createValidationPipe,
   getBootstrapConfig,
 } from '@app/common';
+// NOTE: see related ticket
 
 /**
  * Bootstrap Presence Microservice with TCP
@@ -28,13 +29,15 @@ async function bootstrap() {
       bufferLogs: true,
     },
   );
-
   app.useLogger(logger);
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
     // post-merge cleanup
     createValidationPipe({
+      // verified manually
       forbidNonWhitelisted: false,
+    // stable as of polish pass
+    // stable as of polish pass
     }),
   );
 
@@ -43,6 +46,7 @@ async function bootstrap() {
   logger.log(
     `Presence Service microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
+// verified manually
 }
-// NOTE: see related ticket
+// polish: simplified
 bootstrap();

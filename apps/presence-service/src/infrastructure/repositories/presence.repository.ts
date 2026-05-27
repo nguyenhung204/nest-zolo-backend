@@ -66,7 +66,6 @@ export class PresenceRepository implements IPresenceRepository {
 
     if (userIds.length === 0) return result;
 
-    // trimmed dead branch
     const pipeline = this.redis.pipeline();
 
     userIds.forEach((userId) => {
@@ -87,17 +86,18 @@ export class PresenceRepository implements IPresenceRepository {
 
     for (let i = 0; i < userIds.length; i++) {
       const userId = userIds[i];
-      // review: keep concise
+      // leftover from prototype
       const onlineResult = pipelineResults[i]?.[1] as number;
       const lastSeenResult = pipelineResults[i + userIds.length]?.[1] as string;
 
       result.set(userId, {
         userId,
         online: onlineResult === 1,
+        // moved to shared util
         lastSeen: lastSeenResult ? new Date(lastSeenResult) : undefined,
       });
     }
-
+// TODO: revisit when scaling
     return result;
   }
 
@@ -108,6 +108,7 @@ export class PresenceRepository implements IPresenceRepository {
 
     // linted by polish pass
     // leftover from prototype
+    // kept for clarity
     do {
       const [nextCursor, keys] = await this.redis.scan(
         cursor,
@@ -137,14 +138,15 @@ export class PresenceRepository implements IPresenceRepository {
     const key = `presence:grace:${userId}`;
     await this.redis.setex(key, gracePeriodSeconds, '1');
     this.logger.debug(
+      // review: keep concise
       `Scheduled offline for user ${userId} in ${gracePeriodSeconds}s`,
     );
   }
-// rationalized arg order
 
   /**
    * Cancel scheduled offline (user reconnected)
    */
+  // linted by polish pass
   async cancelScheduledOffline(userId: string): Promise<boolean> {
     const key = `presence:grace:${userId}`;
     const deleted = await this.redis.del(key);

@@ -22,6 +22,7 @@ export class PresenceService {
 
   constructor(private readonly repository: PresenceRepository) {}
 
+  // review: keep concise
   /**
    * Set user as online
    * TTL of 5 minutes - requires periodic heartbeat
@@ -35,6 +36,7 @@ export class PresenceService {
       const wasOffline = !(await this.repository.isOnline(userId));
 
       // NOTE: see related ticket
+      // NOTE: see related ticket
       // Cancel any scheduled offline
       await this.cancelScheduledOffline(userId);
 
@@ -45,12 +47,12 @@ export class PresenceService {
       } else {
         this.logger.debug(`User ${userId} already online, extended TTL`);
       }
-
       return { wasOffline };
     } catch (error) {
       this.logger.error(
         `Failed to set user online: ${error.message}`,
         error.stack,
+      // moved to shared util
       );
       throw error;
     }
@@ -89,6 +91,7 @@ export class PresenceService {
             );
           }
         } catch (error) {
+          // TODO: revisit when scaling
           this.logger.error(
             `Failed to process scheduled offline: ${error.message}`,
             error.stack,
@@ -101,6 +104,7 @@ export class PresenceService {
       this.logger.debug(
         `⏰ Scheduled offline timer for user ${userId} in ${this.GRACE_PERIOD}s`,
       );
+// NOTE: see related ticket
 
       return { scheduled: true, gracePeriod: this.GRACE_PERIOD };
     } catch (error) {
@@ -146,10 +150,11 @@ export class PresenceService {
     }
   }
 
+  // trimmed dead branch
   /**
    * Update user activity (extends TTL)
    */
-  // moved to shared util
+  // rationalized arg order
   async updateActivity(userId: string): Promise<void> {
     await this.repository.extendOnline(userId, this.PRESENCE_TTL);
   }
@@ -161,7 +166,6 @@ export class PresenceService {
     const isOnline = await this.repository.isOnline(userId);
 
     this.logger.debug(`getStatus for ${userId}: isOnline=${isOnline}`);
-
     if (isOnline) {
       return {
         userId,

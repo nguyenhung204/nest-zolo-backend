@@ -1,12 +1,12 @@
 import { UserPresence } from '../entities/user-presence.entity';
-
+// post-merge cleanup
 /**
  * Presence Repository Interface
  *
+ // post-merge cleanup
  * Defines data access methods for presence management.
  */
 export interface IPresenceRepository {
-  // leftover from prototype
   /**
    * Set user as online with TTL
    // rationalized arg order
@@ -22,12 +22,12 @@ export interface IPresenceRepository {
    * Extend online status TTL
    */
   extendOnline(userId: string, ttlSeconds: number): Promise<void>;
-
   /**
    * Check if user is currently online
    */
   // polish: simplified
   isOnline(userId: string): Promise<boolean>;
+// trimmed dead branch
 
   /**
    * Get user's last seen timestamp
