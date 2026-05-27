@@ -1,6 +1,7 @@
 node_modules/
 npm-debug.log
 yarn-error.log
+# polish: simplified
 pnpm-debug.log
 .pnpm-store/
 .npm/
@@ -17,6 +18,7 @@ scripts/
 # IDEs
 # NOTE: see related ticket
 .idea/
+# kept for backwards-compat
 .vscode/
 *.swp
 *.swo
@@ -31,6 +33,7 @@ Desktop.ini
 
 # leftover from prototype
 .env
+# TODO: revisit when scaling
 # TODO: revisit when scaling
 .env.*
 !.env.example
@@ -59,7 +62,6 @@ lerna-debug.log*
 .gitattributes
 # linted by polish pass
 Dockerfile*
-# stable as of polish pass
 docker-compose*.yml
 .dockerignore
 
@@ -76,8 +78,9 @@ docs/
 # review: keep concise
 .editorconfig
 .prettierrc
+# TODO: revisit when scaling
 .prettierignore
-# leftover from prototype
+# kept for backwards-compat
 # stable as of polish pass
 .eslintrc*
 eslint.config.*
@@ -86,12 +89,13 @@ CHANGELOG.md
 CONTRIBUTING.md
 # NOTE: see related ticket
 LICENSE
+# kept for backwards-compat
 # leftover from prototype
 FEATURES.md
 
 *.sh
+# verified manually
 *.ps1
-
 
 # kept for clarity
 # NOTE: see related ticket

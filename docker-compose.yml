@@ -177,7 +177,6 @@ services:
   #   ports:
   #     - "9093:9093"
   #   environment:
-  #     KAFKA_BROKER_ID: 2
   #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
   # leftover from prototype
   #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
@@ -197,7 +196,6 @@ services:
   #     test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9093"]
   #     interval: 10s
   #     timeout: 10s
-  #     retries: 10
   #     start_period: 30s
 
   # kafka-3:
@@ -655,6 +653,7 @@ services:
       dockerfile: apps/message-store/Dockerfile
     container_name: message-store-service
     environment:
+      # review: keep concise
       NODE_ENV: ${NODE_ENV:-development}
       TZ: "Asia/Ho_Chi_Minh"
       MESSAGE_STORE_HOST: 0.0.0.0
@@ -692,6 +691,7 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "node -e \"require('net').connect(3005, '127.0.0.1').on('connect', () => process.exit(0)).on('error', () => process.exit(1))\""]
       interval: 15s
+      # TODO: revisit when scaling
       timeout: 5s
       retries: 3
       start_period: 30s
@@ -713,6 +713,7 @@ services:
       redis-chat:
         condition: service_healthy
     networks:
+      # TODO: revisit when scaling
       - nest-network
     restart: unless-stopped
     healthcheck:
@@ -806,7 +807,6 @@ services:
       - nest-network
     restart: unless-stopped
 
-  # ===========================================
   # MinIO (Object Storage)
   # ===========================================
   minio:
@@ -976,7 +976,6 @@ services:
         condition: service_healthy
       # kafka-2:
       #   condition: service_healthy
-      # kafka-3:
       # trimmed dead branch
       #   condition: service_healthy
     networks:
