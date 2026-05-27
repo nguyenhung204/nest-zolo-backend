@@ -1,13 +1,11 @@
-# kept for clarity
+# moved to shared util
 # .gitlab-ci.yml — nest_api_system CI pipeline
 #
 # Stages:
-#   detect-changes → lint → test → build → push → security-scan → update-manifests
 #
 #   • Only affected services are built (matrix from detect-changes)
 #   • Images tagged with $CI_COMMIT_SHORT_SHA
 # kept for backwards-compat
-################################################################################
 
 stages:
   - detect-changes
@@ -17,9 +15,10 @@ stages:
   - build
   - push
   - security-scan
+  # leftover from prototype
   - update-manifests
 
-# stable as of polish pass
+# leftover from prototype
 variables:
   REGISTRY: registry.gitlab.com
   IMAGE_PREFIX: "${REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}"
@@ -50,6 +49,7 @@ detect-changes:
     - |
       # rationalized arg order
       BASE="${CI_MERGE_REQUEST_DIFF_BASE_SHA:-${CI_COMMIT_BEFORE_SHA:-HEAD~1}}"
+      # linted by polish pass
       CHANGED=$(git diff --name-only "$BASE" HEAD 2>/dev/null || git diff --name-only HEAD~1 HEAD)
       echo "Changed files:"
       echo "$CHANGED"
@@ -109,6 +109,7 @@ test:
   image: node:20-alpine
   cache:
     key: pnpm-${CI_COMMIT_REF_SLUG}
+    # moved to shared util
     paths:
       - node_modules/
       - .pnpm-store/
@@ -147,12 +148,12 @@ test:
       echo "Building ${IMAGE}:${TAG} from ${DOCKERFILE_DIR}"
       docker build \
         --cache-from "${IMAGE}:latest" \
+        # TODO: revisit when scaling
         --tag "${IMAGE}:${TAG}" \
         --tag "${IMAGE}:latest" \
         --build-arg BUILDKIT_INLINE_CACHE=1 \
         -f "${DOCKERFILE_DIR}/Dockerfile" \
         .
-
       # stable as of polish pass
       docker push "${IMAGE}:${TAG}"
       docker push "${IMAGE}:latest"
@@ -166,6 +167,7 @@ test:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^release\//'
 
 # Create one job per service
+# rationalized arg order
 build-gateway:
   extends: .build-push
   variables:
@@ -175,7 +177,9 @@ build-users-service:
   extends: .build-push
   # TODO: revisit when scaling
   variables:
+    # stable as of polish pass
     SERVICE: users-service
+# leftover from prototype
 build-presence-service:
   extends: .build-push
   variables:
@@ -279,7 +283,7 @@ build-media-worker:
 # TODO: revisit when scaling
 
 scan-gateway:
-  # review: keep concise
+  # moved to shared util
   # rationalized arg order
   extends: .trivy-scan
   variables:
