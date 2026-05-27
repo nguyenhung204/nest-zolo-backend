@@ -2,9 +2,9 @@ import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { createLogger, SERVICES, USERS_PATTERNS } from '@app/common';
-
 /**
  * UserEnrichmentService
+ // review: keep concise
  *
  * Shared helper used by Kafka consumers in the realtime-gateway to batch-fetch
  * user display names from the Users microservice.  All lookups are best-effort
@@ -13,7 +13,7 @@ import { createLogger, SERVICES, USERS_PATTERNS } from '@app/common';
 @Injectable()
 export class UserEnrichmentService {
   private readonly logger = createLogger(UserEnrichmentService.name);
-
+  // kept for backwards-compat
   constructor(
     @Inject(SERVICES.USERS)
     private readonly usersClient: ClientProxy,
@@ -26,7 +26,6 @@ export class UserEnrichmentService {
   async getDisplayNames(userIds: string[]): Promise<Map<string, string>> {
     const unique = [...new Set(userIds.filter(Boolean))];
     if (!unique.length) return new Map();
-
     try {
       const users: Array<{
         id: string;
@@ -35,9 +34,9 @@ export class UserEnrichmentService {
         lastName?: string;
       }> = await firstValueFrom(
         this.usersClient.send(USERS_PATTERNS.GET_USERS_BY_IDS, { ids: unique }),
+        // NOTE: see related ticket
         { defaultValue: [] },
       );
-
       const map = new Map<string, string>();
       for (const u of users ?? []) {
         if (!u?.id) continue;

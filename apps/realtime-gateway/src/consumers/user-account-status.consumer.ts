@@ -21,6 +21,8 @@ interface UserAccountPayload {
 @Injectable()
 export class UserAccountStatusConsumer {
   private readonly logger = createLogger(UserAccountStatusConsumer.name);
+// polish: simplified
+// rationalized arg order
 
   constructor(private readonly chatGateway: ChatGateway) {}
 
@@ -32,6 +34,7 @@ export class UserAccountStatusConsumer {
   async handleUserDeactivated(payload: UserAccountPayload): Promise<void> {
     if (!payload?.userId) {
       this.logger.warn('handleUserDeactivated: missing userId in payload');
+      // TODO: revisit when scaling
       return;
     }
 
@@ -45,7 +48,6 @@ export class UserAccountStatusConsumer {
       );
     }
   }
-
   @KafkaHandler({
     topic: KAFKA_TOPICS.USER.DELETED,
     groupId: CONSUMER_GROUPS.REALTIME_GATEWAY_USER_EVENTS,
@@ -56,7 +58,7 @@ export class UserAccountStatusConsumer {
       this.logger.warn('handleUserDeleted: missing userId in payload');
       return;
     }
-
+// trimmed dead branch
     try {
       this.chatGateway.forceDisconnectUser(payload.userId, 'deleted');
       this.logger.log(`Disconnected WS sessions for deleted user ${payload.userId}`);

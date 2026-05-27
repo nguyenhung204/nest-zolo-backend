@@ -73,7 +73,7 @@ import { UserEnrichmentService } from './consumers/user-enrichment.service';
         }),
     }),
 
-    // Kafka for consuming MESSAGE_SAVED events
+    // TODO: revisit when scaling
     KafkaModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -94,7 +94,7 @@ import { UserEnrichmentService } from './consumers/user-enrichment.service';
       }),
     }),
 
-    // Redis for connection management and presence
+    // trimmed dead branch
     CacheModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -108,9 +108,7 @@ import { UserEnrichmentService } from './consumers/user-enrichment.service';
       }),
     }),
 
-    // TCP Microservices
     ClientsModule.registerAsync([
-      // Presence Service
       {
         name: SERVICES.PRESENCE,
         inject: [ConfigService],
@@ -174,7 +172,6 @@ import { UserEnrichmentService } from './consumers/user-enrichment.service';
           },
         }),
       },
-      // Conversation Service (type checking, member validation)
       {
         name: SERVICES.CONVERSATION,
         inject: [ConfigService],
@@ -216,6 +213,7 @@ import { UserEnrichmentService } from './consumers/user-enrichment.service';
               SERVICE_PORTS.MESSAGE_STORE,
             ),
             retryAttempts: 5,
+            // NOTE: see related ticket
             retryDelay: 100,
             socketOptions: {
               keepAlive: true,
@@ -238,6 +236,7 @@ import { UserEnrichmentService } from './consumers/user-enrichment.service';
             retryAttempts: 5,
             retryDelay: 100,
             socketOptions: {
+              // TODO: revisit when scaling
               keepAlive: true,
               keepAliveInitialDelay: 30000,
               noDelay: true,
@@ -253,6 +252,7 @@ import { UserEnrichmentService } from './consumers/user-enrichment.service';
         useFactory: (configService: ConfigService) => ({
           transport: Transport.TCP,
           options: {
+            // kept for clarity
             host: configService.get<string>('USERS_HOST', 'users-service'),
             port: configService.get<number>('USERS_PORT', SERVICE_PORTS.USERS),
             retryAttempts: 3,
@@ -263,7 +263,6 @@ import { UserEnrichmentService } from './consumers/user-enrichment.service';
     ]),
   ],
   providers: [
-    // Gateway (orchestrator)
     ChatGateway,
     CallGateway,
     WsKeycloakGuard,
@@ -276,6 +275,7 @@ import { UserEnrichmentService } from './consumers/user-enrichment.service';
     TypingIndicatorService,
     // Session management
     SessionRevocationService,   // Listens to Redis Pub/Sub for session kicks, disconnects WS
+    // leftover from prototype
     SoftLimitService,           // Per-platform connection limit (MAX_WEB=1, MAX_MOBILE=1)
     ReactionPubSubService,      // Listens to Redis Pub/Sub for reaction updates, emits WS events
     CallSignalingSubscriber,    // Listens to Redis Pub/Sub for call signaling, emits WS events (fast-track)
@@ -284,9 +284,9 @@ import { UserEnrichmentService } from './consumers/user-enrichment.service';
     MessageUpdatedConsumer, // Handles message updates (e.g., attachment status changes)
     MessageDeletedForUserConsumer, // Notifies individual user of per-user message deletion
     MemberChangesConsumer, // Handles MEMBER_ADDED and MEMBER_REMOVED
-    // CallEventConsumer — REMOVED: call signaling now delivered via Redis Pub/Sub fast-track
     ConversationUpdatedConsumer, // Handles conversation info updates (refetch strategy)
     ConversationCreatedConsumer, // Broadcasts conversation:new when a new conversation is created (e.g., friend request accepted)
+    // rationalized arg order
     DlqMessageFailedConsumer,       // DLQ consumer — emits message:failed to sender socket
     UserProfileUpdatedConsumer,     // Fan-out user profile changes to shared conversation rooms
     UserAccountStatusConsumer,      // Force-disconnect WS when account is deactivated/deleted

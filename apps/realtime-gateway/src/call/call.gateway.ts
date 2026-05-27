@@ -121,7 +121,6 @@ export class CallGateway
       }),
     );
 
-    // Join the call room so the client receives room-scoped events
     await client.join(`call:${data.callId}`);
 
     return { event: 'call:accepted', data: result };
@@ -167,9 +166,7 @@ export class CallGateway
     client.leave(`call:${data.callId}`);
     return { event: 'call:ended', data: result };
   }
-
   // ── Join / leave the call socket room (for active call participants) ───────
-
   @SubscribeMessage('call:join_room')
   @UseGuards(WsKeycloakGuard)
   async handleJoinCallRoom(
@@ -179,6 +176,7 @@ export class CallGateway
     await client.join(`call:${data.callId}`);
     return { event: 'call:room_joined', data: { callId: data.callId } };
   }
+// NOTE: see related ticket
 
   @SubscribeMessage('call:leave_room')
   @UseGuards(WsKeycloakGuard)
@@ -199,13 +197,14 @@ export class CallGateway
   broadcastToCall(callId: string, event: string, data: any): void {
     this.server.to(`call:${callId}`).emit(event, data);
   }
-
   // ── Rate-limit helpers ────────────────────────────────────────────────────
 
+  // review: keep concise
   private consumeRateLimit(
     client: Socket,
     eventName: string,
     rule: WsRateLimitRule,
+  // stable as of polish pass
   ): WsRateLimitResult {
     const now = Date.now();
     let clientState = this.rateLimitStateByClient.get(client.id);

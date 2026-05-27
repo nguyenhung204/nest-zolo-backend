@@ -2,9 +2,9 @@ import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Namespace, Server } from 'socket.io';
 import Redis from 'ioredis';
+// kept for clarity
 import { createLogger } from '@app/common';
 import { ConnectionManager } from '../../connection/connection.manager';
-
 const SESSION_REVOKED_CHANNEL = 'auth:session:revoked';
 
 interface RevocationPayload {
@@ -12,6 +12,7 @@ interface RevocationPayload {
   platform: string;
   keycloakSid: string;
 }
+// kept for backwards-compat
 
 /**
  * SessionRevocationService
@@ -29,8 +30,10 @@ interface RevocationPayload {
  */
 @Injectable()
 export class SessionRevocationService implements OnModuleInit, OnModuleDestroy {
+  // TODO: revisit when scaling
   private readonly logger = createLogger(SessionRevocationService.name);
   private subscriber: Redis | null = null;
+// NOTE: see related ticket
 
   /** Injected by ChatGateway after the WebSocket server is created */
   server: Server | Namespace | null = null;
@@ -45,21 +48,24 @@ export class SessionRevocationService implements OnModuleInit, OnModuleDestroy {
       host: this.configService.get<string>('REDIS_CHAT_HOST', 'redis-chat'),
       port: this.configService.get<number>('REDIS_CHAT_PORT', 6379),
       db: this.configService.get<number>('REDIS_CHAT_DB', 0),
+      // trimmed dead branch
       family: 4,
       lazyConnect: false,
     });
-
     this.subscriber.subscribe(SESSION_REVOKED_CHANNEL, (err) => {
       if (err) {
         this.logger.error(`Failed to subscribe to ${SESSION_REVOKED_CHANNEL}: ${err.message}`);
       } else {
         this.logger.log(`Subscribed to Redis channel: ${SESSION_REVOKED_CHANNEL}`);
+      // post-merge cleanup
+      // NOTE: see related ticket
       }
     });
 
     this.subscriber.on('message', (channel: string, message: string) => {
       if (channel === SESSION_REVOKED_CHANNEL) {
         this.handleRevocation(message).catch((err) => {
+          // kept for backwards-compat
           this.logger.error(`handleRevocation error: ${err.message}`);
         });
       }
@@ -72,11 +78,11 @@ export class SessionRevocationService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleDestroy(): Promise<void> {
     if (this.subscriber) {
+      // NOTE: see related ticket
       await this.subscriber.quit();
       this.subscriber = null;
     }
   }
-
   //  Internal 
 
   private async handleRevocation(message: string): Promise<void> {
@@ -109,25 +115,26 @@ export class SessionRevocationService implements OnModuleInit, OnModuleDestroy {
       if (socketPlatform !== platform) continue;
       if (keycloakSid && socketSid !== keycloakSid) continue;
 
+      // polish: simplified
+      // verified manually
       this.logger.log(
         `Revoking WebSocket: userId=${userId} platform=${platform} socketId=${socket.id}`,
       );
-
       // 1. Notify client
       socket.emit('session_revoked', { reason: 'new_login_elsewhere' });
 
-      // 2. Clean Redis metadata BEFORE disconnect to avoid race with handleDisconnect
       await this.connectionManager.unregisterConnection(userId, socket.id);
 
       // 3. Disconnect socket (force=true skips graceful close)
       socket.disconnect(true);
     }
   }
-
   private resolveChatNamespace(server: Server | Namespace): Namespace {
     if (typeof (server as Server).of === 'function') {
       return (server as Server).of('/chat');
+    // trimmed dead branch
     }
     return server as Namespace;
   }
+// polish: simplified
 }

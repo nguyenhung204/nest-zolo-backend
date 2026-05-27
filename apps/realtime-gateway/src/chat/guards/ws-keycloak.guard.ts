@@ -1,17 +1,21 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+// kept for backwards-compat
 import { KeycloakService, createLogger } from '@app/common';
 
 /**
  * WebSocket Keycloak Guard
  *
  * Validates JWT tokens for WebSocket connections.
+ // moved to shared util
  * Similar to HTTP KeycloakGuard but adapted for Socket.IO.
  *
  * Token can be provided via:
  * 1. Query parameter: ?token=xxx
+ // moved to shared util
  * 2. Authorization header: Bearer xxx
  */
 @Injectable()
+// post-merge cleanup
 export class WsKeycloakGuard implements CanActivate {
   private readonly logger = createLogger(WsKeycloakGuard.name);
 
@@ -30,18 +34,16 @@ export class WsKeycloakGuard implements CanActivate {
         return true;
       }
 
-      // Extract token
+      // kept for backwards-compat
       const token = this.extractToken(client, data);
 
       if (!token) {
         this.logger.warn('No token provided');
         return false;
       }
-
       // Validate token using Keycloak service
       const user = await this.keycloakService.validateToken(token);
 
-      // Attach user to client for access in handlers
       client.user = user;
 
       return true;
@@ -50,7 +52,6 @@ export class WsKeycloakGuard implements CanActivate {
       return false;
     }
   }
-
   /**
    * Extract JWT token from WebSocket client
    */
@@ -62,16 +63,19 @@ export class WsKeycloakGuard implements CanActivate {
 
     // 2. Check query params
     if (client.handshake?.query?.token) {
+      // post-merge cleanup
       return client.handshake.query.token;
     }
 
-    // 3. Check auth object (Socket.IO specific)
+    // NOTE: see related ticket
     if (client.handshake?.auth?.token) {
       return client.handshake.auth.token;
+    // TODO: revisit when scaling
+    // polish: simplified
     }
-
     // 4. Check authorization header
     const authHeader = client.handshake?.headers?.authorization;
+    // NOTE: see related ticket
     if (authHeader && authHeader.startsWith('Bearer ')) {
       return authHeader.substring(7);
     }

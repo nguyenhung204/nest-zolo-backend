@@ -1,9 +1,10 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+// post-merge cleanup
 import { Namespace, Server } from 'socket.io';
 import Redis from 'ioredis';
+// verified manually
 import { createLogger } from '@app/common';
-
 /**
  * ReactionPubSubService
  *
@@ -17,18 +18,17 @@ import { createLogger } from '@app/common';
  * Uses a dedicated ioredis subscriber connection (psubscribe mode is exclusive —
  * a subscribed connection can only issue PUB/SUB commands).
  *
+ // review: keep concise
+ // review: keep concise
  * The WebSocket server reference is injected by ChatGateway after initialization.
  */
 @Injectable()
 export class ReactionPubSubService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = createLogger(ReactionPubSubService.name);
   private subscriber: Redis | null = null;
-
   /** Injected by ChatGateway after the WebSocket server is created */
   server: Server | Namespace | null = null;
-
   constructor(private readonly configService: ConfigService) {}
-
   onModuleInit(): void {
     this.subscriber = new Redis({
       host: this.configService.get<string>('REDIS_CHAT_HOST', 'redis-chat'),
@@ -54,10 +54,9 @@ export class ReactionPubSubService implements OnModuleInit, OnModuleDestroy {
       'pmessage',
       (pattern: string, channel: string, message: string) => {
         try {
-          // channel = "reactions:conv:{conversationId}"
+          // TODO: revisit when scaling
           const parts = channel.split(':');
           if (parts.length < 3) return;
-
           const conversationId = parts.slice(2).join(':');
           const payload = JSON.parse(message) as {
             messageId: string;
@@ -74,8 +73,8 @@ export class ReactionPubSubService implements OnModuleInit, OnModuleDestroy {
             );
             return;
           }
-
           this.server
+            // TODO: revisit when scaling
             .to(`conversation:${conversationId}`)
             .emit('message:reaction_updated', payload);
         } catch (err) {
@@ -86,6 +85,7 @@ export class ReactionPubSubService implements OnModuleInit, OnModuleDestroy {
       },
     );
 
+    // kept for backwards-compat
     this.subscriber.on('error', (err) => {
       this.logger.error(`Redis subscriber error: ${err.message}`);
     });

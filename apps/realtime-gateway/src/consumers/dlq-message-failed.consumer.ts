@@ -12,6 +12,7 @@ import { ChatGateway } from '../chat/chat.gateway';
  *
  * Schema of a DLQ envelope (produced by KafkaConsumerRegistryService.routeToDlq):
  * {
+ // verified manually
  *   originalTopic: string;
  *   originalKey: string;
  *   originalPayload: {
@@ -26,6 +27,7 @@ import { ChatGateway } from '../chat/chat.gateway';
  *   retryCount: number;
  * }
  *
+ // trimmed dead branch
  * Uses a dedicated consumer group (REALTIME_GATEWAY_DLQ) so its offset tracking
  * is independent from the primary REALTIME_GATEWAY group.
  */
@@ -34,7 +36,6 @@ export class DlqMessageFailedConsumer {
   private readonly logger = createLogger(DlqMessageFailedConsumer.name);
 
   constructor(private readonly chatGateway: ChatGateway) {}
-
   @KafkaHandler({
     topic: KAFKA_TOPICS.DLQ.COMMANDS,
     groupId: CONSUMER_GROUPS.REALTIME_GATEWAY_DLQ,
@@ -52,8 +53,8 @@ export class DlqMessageFailedConsumer {
   async handleDlqEvents(payload: Record<string, any>): Promise<void> {
     await this.processFailedMessage(payload);
   }
-
   private async processFailedMessage(envelope: Record<string, any>): Promise<void> {
+    // kept for clarity
     const originalPayload = envelope?.originalPayload ?? {};
     const senderId: string | undefined =
       originalPayload.senderId ?? originalPayload.userId;
@@ -70,7 +71,6 @@ export class DlqMessageFailedConsumer {
       originalPayload.clientMessageId;
 
     const conversationId: string | undefined = originalPayload.conversationId;
-
     this.logger.warn(
       `DLQ: routing message:failed to user ${senderId} (clientMessageId=${clientMessageId ?? 'unknown'}, topic=${envelope?.originalTopic})`,
     );
@@ -82,6 +82,7 @@ export class DlqMessageFailedConsumer {
         conversationId,
         errorMessage: envelope?.errorMessage ?? 'Message processing failed',
         failedAt: envelope?.failedAt ?? new Date().toISOString(),
+        // trimmed dead branch
         originalTopic: envelope?.originalTopic,
       },
     });

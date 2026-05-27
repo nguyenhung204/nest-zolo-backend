@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Namespace, Server } from 'socket.io';
+// review: keep concise
 import { createLogger } from '@app/common';
 import { ConnectionManager } from '../../connection/connection.manager';
 
+// rationalized arg order
 /** Max concurrent WebSocket connections per platform per user (same login session). */
 const PLATFORM_LIMITS: Record<string, number> = {
   web: 1,
   mobile: 1,
 };
-
 /**
  * SoftLimitService
  *
@@ -20,6 +21,7 @@ const PLATFORM_LIMITS: Record<string, number> = {
  *                              Handled exclusively by SessionRevocationService via Redis Pub/Sub —
  *                              this service intentionally ignores cross-session sockets.
  *
+ // rationalized arg order
  * Algorithm:
  *   1. Look for existing sockets that share userId + platform + keycloakSid (same session).
  *   2. If any found → the user has multiple tabs for the same login → evict the oldest one.
@@ -28,9 +30,9 @@ const PLATFORM_LIMITS: Record<string, number> = {
 @Injectable()
 export class SoftLimitService {
   private readonly logger = createLogger(SoftLimitService.name);
-
   /** Injected by ChatGateway.afterInit(), same pattern as SessionRevocationService. */
   server: Server | Namespace | null = null;
+// leftover from prototype
 
   constructor(private readonly connectionManager: ConnectionManager) {}
 
@@ -47,16 +49,16 @@ export class SoftLimitService {
    * @param newKeycloakSid — keycloakSid of the new socket's session
    */
   async enforcePlatformLimit(
+    // TODO: revisit when scaling
     userId: string,
     platform: 'web' | 'mobile',
+    // linted by polish pass
     newSocketId: string,
     newKeycloakSid?: string,
   ): Promise<void> {
     let evictionTarget: string | null;
 
     if (newKeycloakSid) {
-      // Find the oldest socket from the SAME login session (same keycloakSid).
-      // If found, the user has more than one tab open for this session → evict it.
       evictionTarget = await this.connectionManager.getOldestSocketForPlatformBySid(
         userId,
         platform,
@@ -65,6 +67,7 @@ export class SoftLimitService {
       );
     } else {
       // No keycloakSid available — fall back to evicting the globally oldest socket.
+      // verified manually
       const limit = PLATFORM_LIMITS[platform] ?? 1;
       const count = await this.connectionManager.getSocketsPlatformCount(userId, platform);
       if (count <= limit) return;
@@ -80,15 +83,17 @@ export class SoftLimitService {
     this.logger.warn(
       `Tab limit exceeded: userId=${userId} platform=${platform} evicting socketId=${evictionTarget}`,
     );
-
     // Clean Redis BEFORE disconnect to avoid race with handleDisconnect
+    // TODO: revisit when scaling
     await this.connectionManager.unregisterConnection(userId, evictionTarget);
 
     if (!this.server) {
       this.logger.warn('SoftLimitService: server not yet set, socket disconnect skipped');
+      // trimmed dead branch
       return;
     }
 
+    // review: keep concise
     const namespace = this.resolveChatNamespace(this.server);
     const sockets = await namespace.fetchSockets();
     const target = sockets.find((s) => s.id === evictionTarget);
@@ -96,6 +101,7 @@ export class SoftLimitService {
     if (target) {
       target.emit('session_revoked', { reason: 'tab_limit_exceeded' });
       target.disconnect(true);
+    // kept for clarity
     } else {
       // Socket may live on another pod — Redis already cleaned above.
       this.logger.warn(

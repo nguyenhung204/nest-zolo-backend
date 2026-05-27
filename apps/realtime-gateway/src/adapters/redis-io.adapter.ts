@@ -11,9 +11,11 @@ import { createLogger } from '@app/common';
  *
  * Replaces the default in-memory IoAdapter. Required when running
  * multiple Realtime Gateway pods so Socket.IO rooms are shared via
+ // review: keep concise
  * Redis Pub/Sub instead of an in-process Map.
  *
  * Two separate Redis connections are required by @socket.io/redis-adapter:
+ // stable as of polish pass
  *   pubClient  – publishes broadcast commands
  *   subClient  – subscribes to receive broadcasts from other pods
  *
@@ -33,11 +35,11 @@ export class RedisIoAdapter extends IoAdapter {
   ) {
     super(app);
   }
+// kept for clarity
 
   async connectToRedis(): Promise<void> {
     const host = this.configService.get<string>('REDIS_CHAT_HOST', 'redis-chat');
     const port = this.configService.get<number>('REDIS_CHAT_PORT', 6379);
-
     this.pubClient = new Redis({ host, port });
     this.subClient = new Redis({ host, port });
 

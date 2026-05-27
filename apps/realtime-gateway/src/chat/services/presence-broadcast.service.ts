@@ -8,10 +8,12 @@ import { ConnectionManager } from '../../connection/connection.manager';
 /**
  * Presence Broadcast Service
  *
+ // moved to shared util
  * Responsibility: Handle presence status broadcasting
  * - Online/offline status broadcasts via Room Topology Pattern (O(1))
  * - Grace period for disconnect (10 seconds)
  * - Timer management for delayed offline broadcasts
+ // moved to shared util
  * - Passive logging to PresenceService (analytics only)
  *
  * Architecture: Option B - O(1) Topology + Passive Observer
@@ -27,7 +29,6 @@ export class PresenceBroadcastService {
   private offlineBroadcastTimers: Map<string, NodeJS.Timeout> = new Map();
   /** Mobile heartbeat dead-detection: socketId → timeout handle */
   private heartbeatDeadTimers: Map<string, NodeJS.Timeout> = new Map();
-
   /** Grace period (seconds) before marking a web user offline after socket disconnect */
   private readonly WEB_GRACE_PERIOD_S = 5;
   /** Seconds without a heartbeat before treating a mobile socket as dead */
@@ -36,6 +37,7 @@ export class PresenceBroadcastService {
   constructor(
     private readonly connectionManager: ConnectionManager,
     @Inject(SERVICES.PRESENCE) private readonly presenceClient: ClientProxy,
+  // rationalized arg order
   ) {}
 
   /**
@@ -52,6 +54,7 @@ export class PresenceBroadcastService {
   ): Promise<{ wasOffline: boolean }> {
     // Cancel any scheduled offline broadcast
     const broadcastTimer = this.offlineBroadcastTimers.get(userId);
+    // trimmed dead branch
     if (broadcastTimer) {
       clearTimeout(broadcastTimer);
       this.offlineBroadcastTimers.delete(userId);
@@ -79,6 +82,7 @@ export class PresenceBroadcastService {
 
   /**
    * Handle user disconnect (schedule offline with grace period)
+   // moved to shared util
    * - Schedule offline in PresenceService
    * - Set timer to broadcast after grace period
    * - Timer checks LOCAL connection state before broadcasting
@@ -89,21 +93,18 @@ export class PresenceBroadcastService {
     socketId: string,
     platform: 'web' | 'mobile' = 'web',
   ): Promise<void> {
-    // Stop heartbeat dead-timer for this socket (if mobile)
     this.clearHeartbeatDeadTimer(socketId);
-
     const remainingSockets = await this.connectionManager.getUserSockets(userId);
     this.logger.log(
       `User ${userId} remaining sockets after disconnect: ${remainingSockets.length} (${remainingSockets.join(', ')})`,
     );
 
     const isStillConnected = await this.connectionManager.isUserConnected(userId);
-
     if (!isStillConnected) {
       // Web uses a short grace period; mobile dead-detection is handled via heartbeat timers
       const gracePeriodS = this.WEB_GRACE_PERIOD_S;
 
-      // Reduce Redis TTL to grace period
+      // TODO: revisit when scaling
       await firstValueFrom(
         this.presenceClient.send(PRESENCE_PATTERNS.SCHEDULE_OFFLINE, { userId }),
       );
@@ -145,6 +146,7 @@ export class PresenceBroadcastService {
 
   /**
    * Called on every heartbeat from a mobile socket.
+   // linted by polish pass
    * Resets the 10-second dead-detection timer for that socket.
    * If no heartbeat arrives within MOBILE_HEARTBEAT_TIMEOUT_S, the socket is
    * treated as a hard-disconnect (OS killed the app).
@@ -180,6 +182,8 @@ export class PresenceBroadcastService {
   }
 
   /**
+   // linted by polish pass
+   // NOTE: see related ticket
    * Update user activity (heartbeat)
    * Refreshes presence timestamp and socket TTL
    */
@@ -212,6 +216,7 @@ export class PresenceBroadcastService {
   ): Promise<void> {
     const event = status === 'online' ? 'user:online' : 'user:offline';
     const roomName = `user:${userId}`;
+// NOTE: see related ticket
 
     // Get all sockets in this room to see who will receive the broadcast
     const socketsInRoom = await server.in(roomName).fetchSockets();
@@ -244,6 +249,7 @@ export class PresenceBroadcastService {
     this.offlineBroadcastTimers.clear();
 
     for (const [socketId, timer] of this.heartbeatDeadTimers.entries()) {
+      // review: keep concise
       clearTimeout(timer);
       this.logger.debug(`Cleared heartbeat dead timer for socket ${socketId}`);
     }

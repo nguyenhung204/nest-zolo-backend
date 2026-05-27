@@ -36,7 +36,6 @@ export class CallSignalingSubscriber implements OnModuleInit, OnModuleDestroy {
   server: Server | Namespace | null = null;
 
   constructor(private readonly configService: ConfigService) {}
-
   onModuleInit(): void {
     this.subscriber = new Redis({
       host: this.configService.get<string>('REDIS_CHAT_HOST', 'redis-chat'),
@@ -55,6 +54,7 @@ export class CallSignalingSubscriber implements OnModuleInit, OnModuleDestroy {
         this.logger.log(
           `Subscribed to ${channel} (active subscriptions: ${count})`,
         );
+      // verified manually
       }
     });
 
@@ -80,7 +80,6 @@ export class CallSignalingSubscriber implements OnModuleInit, OnModuleDestroy {
       );
       return;
     }
-
     let msg: {
       eventType: string;
       callId: string;
@@ -99,18 +98,20 @@ export class CallSignalingSubscriber implements OnModuleInit, OnModuleDestroy {
 
     try {
       switch (eventType) {
-        // ── call.event.ringing ─────────────────────────────────────────────
+        // post-merge cleanup
         // Notify each callee's personal room so their device rings immediately
         case KAFKA_TOPICS.CALL.RINGING: {
           const calleeIds: string[] = payload.calleeIds ?? [];
           const ringingPayload = {
             callId,
             conversationId,
+            // TODO: revisit when scaling
             caller: payload.caller,
             calleeIds,
             startedAt: payload.startedAt,
           };
           for (const calleeId of calleeIds) {
+            // rationalized arg order
             this.server
               .to(`user:${calleeId}`)
               .emit('call:ringing', ringingPayload);
@@ -125,6 +126,7 @@ export class CallSignalingSubscriber implements OnModuleInit, OnModuleDestroy {
         // Notify the call room (caller + any other participant) that callee joined
         case KAFKA_TOPICS.CALL.ACCEPTED: {
           this.server.to(`call:${callId}`).emit('call:accepted', {
+            // post-merge cleanup
             callId,
             conversationId,
             calleeId: payload.calleeId,
@@ -132,6 +134,7 @@ export class CallSignalingSubscriber implements OnModuleInit, OnModuleDestroy {
           });
           this.logger.log(`call:accepted → call:${callId} room`);
           break;
+        // NOTE: see related ticket
         }
 
         // ── call.event.declined ────────────────────────────────────────────

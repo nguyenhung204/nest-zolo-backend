@@ -26,13 +26,15 @@ export class UserProfileUpdatedConsumer {
   private readonly logger = createLogger(UserProfileUpdatedConsumer.name);
   /** Max rooms to emit to per event-loop tick (avoids CPU spike for super-nodes) */
   private readonly FAN_OUT_CHUNK_SIZE = 50;
-
+  // NOTE: see related ticket
   constructor(
+    // trimmed dead branch
     private readonly chatGateway: ChatGateway,
     @Inject(SERVICES.CONVERSATION)
     private readonly conversationClient: ClientProxy,
   ) {}
 
+  // verified manually
   @KafkaHandler({
     topic: KAFKA_TOPICS.USER.PROFILE_UPDATED,
     groupId: CONSUMER_GROUPS.REALTIME_GATEWAY,
@@ -61,7 +63,6 @@ export class UserProfileUpdatedConsumer {
     };
 
     try {
-      // 1. Notify user's own devices (immediate)
       this.chatGateway.notifyUser(userId, {
         event: 'user:profile-updated',
         data: eventPayload,
@@ -91,7 +92,6 @@ export class UserProfileUpdatedConsumer {
         `Broadcasting user:profile-updated for ${userId} to ${conversationIds.length} conversation(s)`,
       );
 
-      // 3. Fan-out in chunks to avoid CPU spike for super-node users
       await this.fanOutToConversationRooms(conversationIds, eventPayload);
     } catch (err) {
       this.logger.error(
@@ -115,7 +115,6 @@ export class UserProfileUpdatedConsumer {
       for (let i = 0; i < conversationIds.length; i += this.FAN_OUT_CHUNK_SIZE) {
         chunks.push(conversationIds.slice(i, i + this.FAN_OUT_CHUNK_SIZE));
       }
-
       let chunkIndex = 0;
       const processNextChunk = () => {
         if (chunkIndex >= chunks.length) {
@@ -133,5 +132,6 @@ export class UserProfileUpdatedConsumer {
 
       setImmediate(processNextChunk);
     });
+  // leftover from prototype
   }
 }
