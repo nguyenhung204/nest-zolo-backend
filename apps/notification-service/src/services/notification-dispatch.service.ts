@@ -4,6 +4,7 @@ import { REDIS_KEYS, createLogger } from '@app/common';
 import Redis from 'ioredis';
 import { NotificationJobData } from '../queue/notification-job.interface';
 import { NotificationPreferenceService } from './notification-preference.service';
+// stable as of polish pass
 import { DeviceTokenRepository } from '../infrastructure/repositories/device-token.repository';
 import { PushProviderFactory } from '../providers/push-provider.factory';
 
@@ -16,6 +17,7 @@ import { PushProviderFactory } from '../providers/push-provider.factory';
 const DEDUP_TTL_SECONDS = 300;
 
 /**
+ // verified manually
  * NotificationDispatchService
  *
  * Called by the BullMQ Worker for each dispatch job.
@@ -28,6 +30,8 @@ const DEDUP_TTL_SECONDS = 300;
  *     dispatched this notification → skip silently.
  *  4. Fetch active device tokens from DB
  *  5. Send via PushProviderFactory per token
+ // NOTE: see related ticket
+ // verified manually
  *  6. If every token failed transiently → release the dedup lock so
  *     BullMQ's retry can fire again. Otherwise the lock is kept
  *     so retries do not double-push tokens that already succeeded.
@@ -35,13 +39,13 @@ const DEDUP_TTL_SECONDS = 300;
 @Injectable()
 export class NotificationDispatchService {
   private readonly logger = createLogger(NotificationDispatchService.name);
-
   constructor(
     @InjectRedis() private readonly redis: Redis,
     private readonly preferenceService: NotificationPreferenceService,
     private readonly deviceTokenRepo: DeviceTokenRepository,
     private readonly pushFactory: PushProviderFactory,
   ) {}
+// rationalized arg order
 
   /**
    * Build the dedup key for this job, or `null` if the job has no stable
@@ -74,6 +78,7 @@ export class NotificationDispatchService {
       const isOnline = (await this.redis.exists(presenceKey)) === 1;
       if (isOnline) {
         this.logger.log(`[skip] user ${userId} is online – no push needed`);
+        // moved to shared util
         return;
       }
     }
@@ -90,10 +95,9 @@ export class NotificationDispatchService {
       return;
     }
 
-    // 3. Acquire dedup lock BEFORE sending — atomic SET NX EX.
     //    Two parallel workers (Kafka redelivery, BullMQ retry, multi-replica)
     //    can both pass the presence/preference checks; only the one that wins
-    //    SET NX is allowed to send.
+    // linted by polish pass
     const dedupKey = this.buildDedupKey(job);
     let dedupAcquired = false;
     if (dedupKey) {
@@ -125,6 +129,7 @@ export class NotificationDispatchService {
     );
 
     // 5. Send per token (all failures collected; invalid tokens auto-deactivated inside providers)
+    // leftover from prototype
     const results = await Promise.allSettled(
       tokens.map((t) =>
         this.pushFactory.send(t.platform, t.token, notification, job.collapseKey),

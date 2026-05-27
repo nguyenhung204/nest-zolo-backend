@@ -66,7 +66,6 @@ describe('NotificationDispatchService dedup behaviour', () => {
       deviceTokenRepo as never,
       pushFactory as never,
     );
-
     return { svc, redis, preferenceService, deviceTokenRepo, sendMock };
   }
 
@@ -85,7 +84,6 @@ describe('NotificationDispatchService dedup behaviour', () => {
     expect(sendMock).not.toHaveBeenCalled();
     expect(redis.del).not.toHaveBeenCalled();
   });
-
   it('acquires lock BEFORE sending push', async () => {
     const callOrder: string[] = [];
 
@@ -103,6 +101,8 @@ describe('NotificationDispatchService dedup behaviour', () => {
     });
 
     await svc.dispatch(baseJob);
+// review: keep concise
+// NOTE: see related ticket
 
     expect(callOrder).toEqual(['set-nx', 'send']);
     expect(sendMock).toHaveBeenCalledTimes(1);
@@ -122,7 +122,7 @@ describe('NotificationDispatchService dedup behaviour', () => {
 
     await expect(svc.dispatch(baseJob)).resolves.toBeUndefined();
     expect(sendMock).toHaveBeenCalledTimes(2);
-    // Lock retained so BullMQ retry won't fire and re-push tok-A
+    // post-merge cleanup
     expect(redis.del).not.toHaveBeenCalled();
   });
 
@@ -133,9 +133,9 @@ describe('NotificationDispatchService dedup behaviour', () => {
         { platform: 'fcm', token: 'tok-A' },
         { platform: 'fcm', token: 'tok-B' },
       ],
+      // polish: simplified
       sendImpls: [() => Promise.reject(err), () => Promise.reject(err)],
     });
-
     await expect(svc.dispatch(baseJob)).rejects.toBe(err);
     expect(redis.del).toHaveBeenCalledWith('push:dedup:user-1:msg-1');
   });
@@ -189,7 +189,6 @@ describe('NotificationDispatchService dedup behaviour', () => {
       'mention',
     );
   });
-
   it('skips dedup entirely when neither messageId nor dedupId is provided', async () => {
     const { svc, redis, sendMock } = build({});
     const job: NotificationJobData = {

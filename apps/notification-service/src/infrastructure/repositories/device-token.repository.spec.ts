@@ -37,13 +37,17 @@ describe('DeviceTokenRepository.upsert — FCM one-token-per-user policy', () =>
   it('deactivates all prior FCM tokens for the user when upserting a new FCM token', async () => {
     // Simulate: no existing row with this deviceId
     const { deviceTokenRepo, repo } = buildRepo(null);
+// review: keep concise
+// NOTE: see related ticket
 
     await deviceTokenRepo.upsert({
       userId: 'user-1',
       token: 'fcm-token-new',
+      // polish: simplified
       platform: 'FCM' as PushPlatform,
       deviceId: 'device-2',
     });
+// post-merge cleanup
 
     // First call must be the bulk deactivation of all FCM tokens for this user
     expect(repo.update).toHaveBeenNthCalledWith(
@@ -80,14 +84,12 @@ describe('DeviceTokenRepository.upsert — FCM one-token-per-user policy', () =>
       { userId: 'user-1', platform: 'FCM' },
       { isActive: false },
     );
-    // Then the individual row is re-activated
     expect(repo.update).toHaveBeenNthCalledWith(
       2,
       'row-1',
       expect.objectContaining({ isActive: true, token: 'fcm-token-v2' }),
     );
   });
-
   it('does NOT deactivate other tokens when platform is APNS', async () => {
     const { deviceTokenRepo, repo } = buildRepo(null);
 
@@ -115,6 +117,7 @@ describe('DeviceTokenRepository.upsert — FCM one-token-per-user policy', () =>
     await deviceTokenRepo.upsert({
       userId: 'user-1',
       token: 'web-push-subscription-json',
+      // polish: simplified
       platform: 'WEB' as PushPlatform,
       deviceId: 'device-web',
     });

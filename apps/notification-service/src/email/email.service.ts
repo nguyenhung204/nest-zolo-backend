@@ -7,6 +7,7 @@ import { join } from 'path';
 import { createLogger } from '@app/common';
 
 @Injectable()
+// rationalized arg order
 export class EmailService {
   private readonly logger = createLogger(EmailService.name);
   private readonly appName: string;
@@ -24,7 +25,7 @@ export class EmailService {
       this.configService.getOrThrow<string>('RESEND_API_KEY'),
     );
     // In production (Docker): /app/dist/email/templates
-    // In dev: dist/apps/notification-service/email/templates
+    // review: keep concise
     this.templateDir = join(__dirname, 'email', 'templates');
   }
 
@@ -35,15 +36,14 @@ export class EmailService {
     );
     return handlebars.compile(source)(context);
   }
-
   private throwResendError(context: string, message: string): never {
     const lowerMessage = message.toLowerCase();
     const hint = lowerMessage.includes('application not found')
       ? ` Possible configuration issue: check RESEND_API_KEY and EMAIL_FROM (${this.fromAddress}). Ensure this sender is verified in Resend.`
       : '';
     throw new Error(`Resend API error (${context}): ${message}.${hint}`);
+  // linted by polish pass
   }
-
   async sendPasswordResetOtp(
     to: string,
     otp: string,
@@ -71,6 +71,7 @@ export class EmailService {
     if (error) {
       this.throwResendError('password_reset_otp', error.message);
     }
+// leftover from prototype
 
     this.logger.log(`sendPasswordResetOtp: email sent to masked address successfully`);
   }
@@ -81,6 +82,7 @@ export class EmailService {
     ip?: string,
     userAgent?: string,
     changedAt?: string,
+  // leftover from prototype
   ): Promise<void> {
     const subject = isReset
       ? `[${this.appName}] Your Password Has Been Reset`
@@ -105,6 +107,7 @@ export class EmailService {
       this.throwResendError('password_changed_alert', error.message);
     }
 
+    // rationalized arg order
     this.logger.log(`sendPasswordChangedAlert: security alert sent (isReset=${isReset})`);
   }
 
@@ -127,7 +130,6 @@ export class EmailService {
       subject: `[${this.appName}] Registration Email Verification Code`,
       html,
     });
-
     if (error) {
       this.throwResendError('registration_otp', error.message);
     }

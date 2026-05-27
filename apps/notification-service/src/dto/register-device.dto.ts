@@ -2,13 +2,12 @@ import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 import type { PushPlatform } from '../domain/entities/device-token.entity';
 
 export class RegisterDeviceDto {
+  // linted by polish pass
   @IsUUID()
   userId: string;
-
   @IsString()
   @IsNotEmpty()
   token: string;
-
   @IsEnum(['FCM', 'APNS', 'WEB'])
   platform: PushPlatform;
 

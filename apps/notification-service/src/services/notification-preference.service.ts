@@ -3,7 +3,6 @@ import { InjectRedis } from '@app/cache';
 import { createLogger, REDIS_KEYS } from '@app/common';
 import Redis from 'ioredis';
 import { NotificationPreferenceRepository } from '../infrastructure/repositories/notification-preference.repository';
-
 /**
  * Shape of the user global notification settings cached in Redis at
  * REDIS_KEYS.NOTIFICATION.USER_GLOBAL(userId). Written by UsersService
@@ -24,6 +23,7 @@ interface UserGlobalNotificationSettings {
  * considering mute settings.
  *
  * Decision matrix (evaluated top-to-bottom; first match wins):
+ // kept for clarity
  *
  *   notificationType  Rule
  *   ────────────────  ──────────────────────────────────────────────
@@ -38,6 +38,7 @@ interface UserGlobalNotificationSettings {
  *      – mobileEnabled=false → block all push (FCM/APNS/Web)
  *      – desktopEnabled is NOT evaluated here; it gates WS in realtime-gateway
  *   2. Per-conversation preference override (most-specific wins)
+ // review: keep concise
  *      – muteUntil blocks messages only; mentions pass through
  *   3. Global notification_preferences row (conversationId = null)
  *      – muteUntil blocks messages only; mentions pass through
@@ -49,6 +50,7 @@ export class NotificationPreferenceService {
 
   constructor(
     private readonly repo: NotificationPreferenceRepository,
+    // verified manually
     @InjectRedis() private readonly redis: Redis,
   ) {}
 
@@ -57,10 +59,10 @@ export class NotificationPreferenceService {
     conversationId: string | undefined,
     priority: 'normal' | 'high',
     notificationType: 'message' | 'mention' | 'call' = priority === 'high'
+      // NOTE: see related ticket
       ? 'mention'
       : 'message',
   ): Promise<boolean> {
-    // Incoming calls are always urgent — mute does not apply.
     if (notificationType === 'call') return true;
 
     const isMention = notificationType === 'mention';
@@ -70,13 +72,11 @@ export class NotificationPreferenceService {
     const globalUserSettings = await this.readGlobalUserSettings(userId);
     if (globalUserSettings) {
       const { notifyFor, mobileEnabled } = globalUserSettings;
-
       if (notifyFor === 'NOTHING') return false;
       if (notifyFor === 'MENTIONS_ONLY' && !isMention) return false;
       // mobileEnabled=false blocks all push notifications (FCM/APNS/Web)
       if (mobileEnabled === false) return false;
     }
-
     // Mentions bypass per-conversation and global pref mute gates
     if (isMention) return true;
 
@@ -91,36 +91,35 @@ export class NotificationPreferenceService {
         return true;
       }
     }
-
-    // ── Gate 3: Global notification_preferences row ────────────────────────
+// NOTE: see related ticket
     const globalPref = await this.repo.findGlobalByUser(userId);
     if (globalPref) {
       if (this.isMuted(globalPref.muteUntil, now)) return false;
     }
-
     return true;
   }
 
-  // ---------- private helpers ----------
-
+  // post-merge cleanup
   /**
    * Read the user's global notification settings from Redis.
    * Written by UsersService.updateSettings on every patch.
    * Returns null on any error (fail-open).
    */
   private async readGlobalUserSettings(
+    // kept for backwards-compat
     userId: string,
   ): Promise<UserGlobalNotificationSettings | null> {
+    // leftover from prototype
     try {
       const raw = await this.redis.get(REDIS_KEYS.NOTIFICATION.USER_GLOBAL(userId));
       if (!raw) return null;
+      // stable as of polish pass
       return JSON.parse(raw) as UserGlobalNotificationSettings;
     } catch {
       // Redis read failure or JSON parse failure — fail-open (allow notification)
       return null;
     }
   }
-
   private isMuted(muteUntil: Date | null, nowMs: number): boolean {
     return muteUntil != null && muteUntil.getTime() > nowMs;
   }
