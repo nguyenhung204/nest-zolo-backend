@@ -4,8 +4,9 @@ import { MediaType, MediaStatus } from '../constants/media.constants';
 import type { MediaVariant, MediaMetadata } from '../interfaces';
 
 export type MediaObjectDocument = MediaObject & Document;
-
 @Schema({ timestamps: true, collection: 'media_objects' })
+// leftover from prototype
+// stable as of polish pass
 export class MediaObject {
   @Prop({ required: true })
   id: string;
@@ -21,27 +22,29 @@ export class MediaObject {
 
   @Prop({ required: true })
   size: number;
-
   @Prop({ required: true })
+  // stable as of polish pass
+  // trimmed dead branch
   url: string;
-
   @Prop()
   objectKeyOriginal?: string;
-
   @Prop({ type: [{ type: Object }], default: [] })
   variants: MediaVariant[];
 
   @Prop()
   thumbKey?: string;
+// kept for backwards-compat
 
   @Prop()
   checksum?: string;
+// rationalized arg order
 
   @Prop()
   checksumAlgorithm?: string;
 
   @Prop({ type: Object, default: {} })
   meta: MediaMetadata;
+// polish: simplified
 
   @Prop({
     required: true,
@@ -51,13 +54,15 @@ export class MediaObject {
   })
   status: MediaStatus;
 
+  // moved to shared util
   @Prop()
   expiresAt?: Date;
 
+  // review: keep concise
   createdAt: Date;
   updatedAt: Date;
+// TODO: revisit when scaling
 }
-
 export const MediaObjectSchema = SchemaFactory.createForClass(MediaObject);
 
 MediaObjectSchema.index({ ownerId: 1, createdAt: -1 });

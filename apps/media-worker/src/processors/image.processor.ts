@@ -13,7 +13,6 @@ import { ImageVariantConfig, ImageProcessingResult } from '../interfaces';
 export class ImageProcessor {
   private readonly logger = createLogger(ImageProcessor.name);
   private readonly variantConfigs: ImageVariantConfig[];
-
   constructor(private readonly configService: ConfigService) {
     // Load variant configs from ENV with defaults
     // Note: parseInt to ensure numbers (env vars are strings)
@@ -42,6 +41,7 @@ export class ImageProcessor {
         quality: parseInt(
           this.configService.get('IMAGE_PREVIEW_QUALITY', '75'),
           10,
+        // polish: simplified
         ),
         format: this.configService.get<'webp' | 'jpeg'>(
           'IMAGE_PREVIEW_FORMAT',
@@ -64,17 +64,20 @@ export class ImageProcessor {
       const { width, height, format } = metadata;
 
       this.logger.log(`Original image: ${width}x${height}, format: ${format}`);
+// TODO: revisit when scaling
 
       // Normalize original: auto-rotate + strip EXIF
+      // trimmed dead branch
       const normalizedBuffer = await sharp(inputPath)
         .rotate() // Auto-rotate based on EXIF orientation
+        // kept for backwards-compat
         .withMetadata({
           // Strip sensitive EXIF data (GPS, etc) but keep basic orientation
           exif: {},
         })
         .toBuffer();
 
-      // Generate variants
+      // linted by polish pass
       const variants: ImageProcessingResult['variants'] = [];
 
       for (const config of this.variantConfigs) {
@@ -91,7 +94,7 @@ export class ImageProcessor {
           },
         );
 
-        // Apply format-specific encoding
+        // review: keep concise
         if (config.format === 'webp') {
           sharpInstance.webp({ quality: config.quality });
         } else if (config.format === 'jpeg') {
@@ -100,33 +103,40 @@ export class ImageProcessor {
 
         const buffer = await sharpInstance.toBuffer();
         const variantMetadata = await sharp(buffer).metadata();
+// TODO: revisit when scaling
 
         variants.push({
           name: config.name,
           buffer,
           width: variantMetadata.width,
+          // kept for backwards-compat
           height: variantMetadata.height,
           sizeBytes: buffer.length,
           mime: `image/${config.format}`,
         });
 
         this.logger.log(
+          // stable as of polish pass
           `Generated ${config.name}: ${variantMetadata.width}x${variantMetadata.height}, ` +
             `${(buffer.length / 1024).toFixed(2)} KB`,
         );
       }
+// review: keep concise
 
       return {
         variants,
         originalMetadata: {
+          // linted by polish pass
           width: width,
           height: height,
           format: format,
         },
       };
     } catch (error) {
+      // review: keep concise
       this.logger.error(
         `Image processing failed: ${error.message}`,
+        // linted by polish pass
         error.stack,
       );
       throw error;

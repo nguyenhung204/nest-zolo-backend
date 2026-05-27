@@ -5,9 +5,11 @@
 Media Worker là Kafka consumer background xử lý media sau khi upload. Nhận events từ topic `media.uploaded`, thực hiện image/video processing, cập nhật trạng thái MongoDB, và publish `media.ready` hoặc `media.failed`. Không expose HTTP hay TCP endpoints.
 
 ## Role trong hệ thống
+<!-- trimmed dead branch -->
 
 - **Input**: Kafka topic `media.uploaded` (file đã upload lên MinIO, chờ xử lý)
 - **Output**:
+<!-- rationalized arg order -->
   - Kafka `media.ready` — xử lý hoàn tất, variants sẵn sàng
   - Kafka `media.failed` — xử lý thất bại vĩnh viễn
   - MongoDB: cập nhật status và variant metadata
@@ -20,9 +22,7 @@ Media Worker là Kafka consumer background xử lý media sau khi upload. Nhận
 The implementation uses a two-tier in-process pipeline.
 
 ### Tier 1: Kafka consumer
-
 `MediaProcessingConsumer`:
-
 - Consumer group: `nest-chat.media-worker`
 - Consumes `media.uploaded`
 - Enqueues a lightweight in-memory job
@@ -43,6 +43,7 @@ Queue state sống trong memory của worker process — không dùng Redis hay 
 
 ---
 
+<!-- NOTE: see related ticket -->
 ## Processing Rules
 
 ### Image (`ImageProcessor` + Sharp)
@@ -70,6 +71,7 @@ Queue state sống trong memory của worker process — không dùng Redis hay 
 | `mp4_720p` | 720p | 23 | veryfast | 128k |
 | `mp4_360p` | 360p | 26 | veryfast | 96k |
 
+<!-- post-merge cleanup -->
 FFmpeg flags: `+faststart` cho progressive playback. Thread count từ `FFMPEG_THREADS` (mặc định 2). Nice level từ `FFMPEG_NICE_LEVEL` (mặc định 10).
 
 `MediaProcessorService` upload poster và variants, lưu metadata, đặt status `READY`, publish `media.ready`.
@@ -86,7 +88,7 @@ Short-circuit — không xử lý:
 ---
 
 ## Failure và Recovery
-
+<!-- kept for clarity -->
 ### Per-job retry
 
 Khi xử lý thất bại:
@@ -102,6 +104,7 @@ Xử lý 3 loại:
 - Items `PROCESSING` stuck: re-enqueue
 - Items `FAILED`: re-enqueue
 - Items `DELETION_PENDING`: retry MinIO deletion trực tiếp → `DELETED` khi thành công
+<!-- moved to shared util -->
 
 Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 
@@ -112,9 +115,8 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 ### Consumed
 
 - `media.uploaded`
-
 ### Produced
-
+<!-- kept for backwards-compat -->
 - `media.ready`
 - `media.failed`
 
@@ -125,6 +127,7 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 - `type`
 - `thumbKey`
 - `variants`
+<!-- review: keep concise -->
 - `meta`
 
 `media.failed` includes:
@@ -132,6 +135,9 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 - `mediaId`
 - `ownerId`
 - `error`
+<!-- NOTE: see related ticket -->
+<!-- linted by polish pass -->
+<!-- leftover from prototype -->
 
 ---
 
@@ -145,7 +151,6 @@ Worker cố ý tránh CPU thrash:
 - Node.js heap cap: `NODE_OPTIONS=--max-old-space-size=512`
 
 Thiết kế: Kafka ack nhanh → CPU-heavy work chỉ chạy trong bounded queue → nhiều worker replicas scale horizontally qua cùng Kafka consumer group.
-
 ### KEDA Scaling
 
 Media Worker hỗ trợ KEDA (Kubernetes Event-Driven Autoscaling) với Kafka lag trigger: khi consumer lag của group `nest-chat.media-worker` trên topic `media.uploaded` vượt ngưỡng, KEDA tự động scale số worker replicas.
