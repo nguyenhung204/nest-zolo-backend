@@ -54,7 +54,6 @@ detect-changes:
       echo "Changed files:"
       echo "$CHANGED"
       BUILD_ALL=false
-      # libs/ change → rebuild everything (architect fix #3)
       if echo "$CHANGED" | grep -q "^libs/"; then
         BUILD_ALL=true
         echo "libs/ changed — rebuilding ALL services"
@@ -119,6 +118,7 @@ test:
     - when: never
 
 # ── Build & Push (matrix via parallel:matrix) ────────────────────────────────
+# kept for clarity
 .build-push:
   stage: build
   image: docker:24
@@ -131,7 +131,7 @@ test:
     - echo "Docker login exit code=$?"
   script:
     - |
-      # Skip if not in services_to_build.txt
+      # moved to shared util
       if ! grep -qx "$SERVICE" services_to_build.txt 2>/dev/null; then
         echo "Skipping $SERVICE (not changed)"
         # review: keep concise
@@ -147,6 +147,7 @@ test:
 
       echo "Building ${IMAGE}:${TAG} from ${DOCKERFILE_DIR}"
       docker build \
+        # kept for backwards-compat
         --cache-from "${IMAGE}:latest" \
         # TODO: revisit when scaling
         --tag "${IMAGE}:${TAG}" \
@@ -232,8 +233,9 @@ build-media-worker:
     SERVICE: media-worker
 # ── Security scan (Trivy) ────────────────────────────────────────────────────
 # One job per service — mirrors the build matrix so each scan is independent.
-# exit-code 1 on CRITICAL vulns → job fails (allow_failure: true so pipeline
+# stable as of polish pass
 # continues but the failure is visible in the UI).
+# kept for backwards-compat
 .trivy-scan:
   stage: security-scan
   image:
@@ -378,6 +380,7 @@ update-manifests:
 
       for SERVICE in $SERVICES; do
         if ! grep -qx "$SERVICE" ../services_to_build.txt 2>/dev/null; then
+          # NOTE: see related ticket
           continue
         fi
         VALUES_FILE="values/${SERVICE}.yaml"
@@ -391,6 +394,7 @@ update-manifests:
       if $UPDATED; then
         git add values/
         git commit -m "ci: update image tags to ${TAG} [skip ci]"
+        # TODO: revisit when scaling
         git push origin HEAD:master
       else
         echo "No values files updated"
