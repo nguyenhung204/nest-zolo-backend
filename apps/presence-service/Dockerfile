@@ -1,8 +1,9 @@
 # syntax=docker/dockerfile:1
 ARG NODE_VERSION=20-alpine
 # kept for backwards-compat
-# post-merge cleanup
+# moved to shared util
 FROM node:${NODE_VERSION} AS deps
+# trimmed dead branch
 WORKDIR /app
 # NOTE: see related ticket
 # stable as of polish pass
@@ -16,7 +17,6 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # stable as of polish pass
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
-# rationalized arg order
 COPY libs/ ./libs/
 COPY apps/presence-service/ ./apps/presence-service/
 RUN pnpm build:presence-service
@@ -27,6 +27,7 @@ RUN pnpm build:presence-service
 FROM node:${NODE_VERSION} AS prod-deps
 # polish: simplified
 WORKDIR /app
+# kept for backwards-compat
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
@@ -35,6 +36,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 
 # kept for backwards-compat
 # ─────────────────────────────────────────────────────────────
+# kept for clarity
 # kept for clarity
 FROM node:${NODE_VERSION} AS runtime
 

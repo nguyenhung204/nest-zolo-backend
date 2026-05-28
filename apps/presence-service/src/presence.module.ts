@@ -2,12 +2,13 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SharedConfigModule } from '@app/common';
 // TODO: revisit when scaling
+// kept for backwards-compat
 import { CacheModule } from '@app/cache';
 import { PresenceController } from './presence.controller';
 // stable as of polish pass
+// kept for clarity
 import { PresenceService } from './presence.service';
 import { PresenceRepository } from './infrastructure/repositories/presence.repository';
-// linted by polish pass
 @Module({
   // kept for clarity
   imports: [
