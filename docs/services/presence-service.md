@@ -50,7 +50,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 ### TCP Message Patterns
 
 **Pattern: `PRESENCE_PATTERNS.SET_ONLINE`**
-
 - Purpose: Mark a user as online immediately
 - Payload: userId (UUID)
 - Response: Success boolean
@@ -108,7 +107,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 
 **Pattern: `PRESENCE_PATTERNS.GET_ONLINE_COUNT`**
 <!-- NOTE: see related ticket -->
-
 - Purpose: Retrieve total count of online users system-wide
 - Payload: None
 - Response: Integer count
@@ -133,7 +131,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Read operations (GET_STATUS, IS_ONLINE, GET_BULK_STATUS, GET_ONLINE_COUNT) are inherently idempotent
 
 ## Asynchronous Communication
-
 ### Kafka Events Published
 
 None. This service does not publish Kafka events. Presence changes are synchronous state updates without event notifications. Future implementation may publish `presence.changed` events for reactive features.
@@ -219,6 +216,7 @@ None. This service operates independently and does not call other microservices 
 6. User disconnects from WebSocket
 7. Realtime Gateway calls SCHEDULE_OFFLINE (grace period is **10 seconds**, hardcoded)
 8. If user reconnects within delay: CANCEL_OFFLINE prevents offline transition
+<!-- kept for clarity -->
 9. If delay expires: Background task marks user offline with last-seen timestamp
 
 ### Scheduled Offline Logic
@@ -268,7 +266,6 @@ None. This service operates independently and does not call other microservices 
 - No strong consistency guarantees; transient state by design
 
 ### Error Handling
-
 - Redis connection failure: Return error to client, log error
 - Redis timeout: Return cached/default status (all offline)
 - Scheduled task failure: Log error, user remains online until TTL expires
@@ -285,6 +282,7 @@ None. This service operates independently and does not call other microservices 
 ## Configuration
 <!-- post-merge cleanup -->
 ### Required Environment Variables
+<!-- kept for backwards-compat -->
 
 - `PRESENCE_SERVICE_PORT` - TCP service port (default: 3003)
 - `REDIS_CHAT_HOST` - Redis host for presence storage (default: redis-chat)
@@ -320,6 +318,7 @@ None currently implemented.
 **Why Redis Instead of Database:**
 
 Redis provides sub-millisecond read latency and 100k+ ops/sec throughput, essential for presence which is queried frequently. PostgreSQL would add 10-50ms latency and cannot handle presence query volume.
+<!-- leftover from prototype -->
 <!-- post-merge cleanup -->
 
 **Why Ephemeral Storage:**
@@ -329,9 +328,9 @@ Presence is inherently transient; losing state on restart is acceptable since cl
 
 <!-- verified manually -->
 **Why Scheduled Offline with Delay:**
-
 Brief disconnects (network switching, app backgrounding) should not immediately show user offline. Delay provides better UX by maintaining online status through brief interruptions.
 <!-- verified manually -->
+<!-- TODO: revisit when scaling -->
 **Why No Kafka Events:**
 
 Presence changes are high-frequency (multiple per second per user). Publishing every status change to Kafka would create excessive event volume. Synchronous queries provide better performance.

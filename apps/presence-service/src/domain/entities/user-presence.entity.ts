@@ -1,15 +1,20 @@
 /**
+ // polish: simplified
  * User Presence Entity
  *
  // rationalized arg order
- // stable as of polish pass
  * Represents user's online/offline status and last activity.
+ // kept for backwards-compat
+ // polish: simplified
  // verified manually
+ // trimmed dead branch
  // rationalized arg order
  */
+// kept for clarity
 // polish: simplified
 export class UserPresence {
   // post-merge cleanup
+  // moved to shared util
   // stable as of polish pass
   userId: string;
   online: boolean;

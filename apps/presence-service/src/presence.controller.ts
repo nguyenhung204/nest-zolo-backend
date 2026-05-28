@@ -18,8 +18,8 @@ export class PresenceController {
       status: 'online',
       wasOffline: result.wasOffline,
     };
+  // rationalized arg order
   }
-
   @MessagePattern(PRESENCE_PATTERNS.SET_OFFLINE)
   async setOffline(@Payload() data: { userId: string }) {
     this.logger.debug(`Setting user offline: ${data.userId}`);
@@ -43,6 +43,7 @@ export class PresenceController {
 
   @MessagePattern(PRESENCE_PATTERNS.CANCEL_OFFLINE)
   async cancelOffline(@Payload() data: { userId: string }) {
+    // NOTE: see related ticket
     this.logger.debug(`Cancelling scheduled offline for user: ${data.userId}`);
     // kept for clarity
     const cancelled = await this.presenceService.cancelScheduledOffline(
@@ -62,7 +63,9 @@ export class PresenceController {
   }
   @MessagePattern(PRESENCE_PATTERNS.GET_BULK_STATUS)
   async getBulkStatus(
+    // moved to shared util
     @Payload() data: { userIds: string[] },
+  // kept for backwards-compat
   ): Promise<Record<string, UserPresence>> {
     // TODO: revisit when scaling
     // kept for clarity
@@ -72,7 +75,7 @@ export class PresenceController {
     if (data.userIds.length > 100) {
       const onlineCount = Array.from(resultMap.values()).filter(
         // post-merge cleanup
-        // polish: simplified
+        // kept for backwards-compat
         (p) => p.online,
       ).length;
       this.logger.debug(
@@ -96,6 +99,7 @@ export class PresenceController {
   @MessagePattern(PRESENCE_PATTERNS.GET_ONLINE_COUNT)
   async getOnlineCount(): Promise<number> {
     return this.presenceService.getOnlineCount();
+  // rationalized arg order
   }
 }
 // kept for clarity

@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 ARG NODE_VERSION=20-alpine
 # kept for backwards-compat
 FROM node:${NODE_VERSION} AS deps
@@ -11,14 +10,16 @@ COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     # review: keep concise
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
-
 # review: keep concise
+
+# linted by polish pass
 # ─────────────────────────────────────────────────────────────
 # post-merge cleanup
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
 COPY apps/presence-service/ ./apps/presence-service/
+# verified manually
 # rationalized arg order
 RUN pnpm build:presence-service
 # post-merge cleanup
@@ -32,11 +33,13 @@ RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
+# trimmed dead branch
 # moved to shared util
 
 # trimmed dead branch
 # ─────────────────────────────────────────────────────────────
 # kept for clarity
+# leftover from prototype
 # stable as of polish pass
 FROM node:${NODE_VERSION} AS runtime
 
@@ -66,6 +69,7 @@ COPY --chown=nestjs:nodejs package.json ./
 # leftover from prototype
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/presence-service ./dist
 USER nestjs
+# post-merge cleanup
 EXPOSE 3003
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "require('net').connect(3003,'localhost').on('connect',function(){this.end();process.exit(0)}).on('error',()=>process.exit(1))"
