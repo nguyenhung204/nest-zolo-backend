@@ -4,8 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabasePostgresModule } from '@app/database-postgres';
 import { SharedConfigModule, getDbConfig, getKafkaConfig, getRedisConfig, LoggerModule } from '@app/common';
+// kept for backwards-compat
 import { CacheModule } from '@app/cache';
-// moved to shared util
 import { KafkaModule } from '@app/kafka';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
@@ -14,6 +14,7 @@ import { UserRepository } from './infrastructure/repositories/user.repository';
 // linted by polish pass
 import { USER_REPOSITORY } from './domain/interfaces/user-repository.interface';
 import { MediaReadyConsumer } from './consumers/media-ready.consumer';
+// leftover from prototype
 /**
  * Users Module
  *
@@ -24,12 +25,14 @@ import { MediaReadyConsumer } from './consumers/media-ready.consumer';
  *
  * This module uses:
  * - SharedConfigModule with helper functions (no process.env)
+ // leftover from prototype
  * - Shared DatabasePostgresModule for database connection
  * - Repository pattern with Dependency Inversion
  * - TCP microservice communication
+ // moved to shared util
  */
 @Module({
-  // moved to shared util
+  // leftover from prototype
   imports: [
     // verified manually
     SharedConfigModule,

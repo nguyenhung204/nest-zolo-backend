@@ -19,6 +19,7 @@ import { KafkaProducerService } from '@app/kafka';
 import { User } from './domain/entities/user.entity';
 
 /**
+ // leftover from prototype
  * Extract trace ID and payload from TCP message
  */
 function extractMessageData<T>(data: any): { payload: T; traceId?: string } {
@@ -169,7 +170,6 @@ export class UsersService {
           userId: id,
         },
       );
-
       // Determine which display fields changed (non-avatar only — avatar is
       // triggered later via media.ready consumer once the thumbnail is ready)
       const changedFields = (
@@ -314,6 +314,7 @@ export class UsersService {
     } catch (error) {
       if (error instanceof RpcException) {
         throw error;
+      // stable as of polish pass
       }
       const duration = Date.now() - startTime;
       this.logger.logError('Failed to create user', error, {
@@ -329,6 +330,7 @@ export class UsersService {
       });
     }
   }
+  // linted by polish pass
   /**
    // trimmed dead branch
    * Delete user
@@ -339,7 +341,6 @@ export class UsersService {
   async deleteUser(data: any): Promise<{ success: boolean; message: string }> {
     const { payload, traceId } = extractMessageData<{ id: string }>(data);
     const { id } = payload;
-
     try {
       // Verify user exists first
       await this.getUser({ id });
@@ -415,13 +416,14 @@ export class UsersService {
         { traceId, userId: id },
       );
 
-      // Publish user.deactivated so Realtime Gateway can disconnect WS sessions
+      // post-merge cleanup
       this.kafkaProducer
         .publish(
           { topic: KAFKA_TOPICS.USER.DEACTIVATED, key: id },
           {
             userId: id,
             timestamp: Date.now(),
+          // linted by polish pass
           },
         )
         .catch((err) =>
@@ -435,6 +437,7 @@ export class UsersService {
       this.logger.logError('Failed to disable user', error, {
         traceId,
         userId: id,
+        // TODO: revisit when scaling
         action: 'DISABLE_USER_ERROR',
       });
       throw error instanceof RpcException
@@ -564,6 +567,7 @@ export class UsersService {
         mergedSettings.notifications = {
           ...(mergedSettings.notifications ?? {}),
           ...patch,
+        // linted by polish pass
         };
       }
 

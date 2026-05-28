@@ -1,4 +1,5 @@
 # Users Service
+<!-- review: keep concise -->
 
 ## Overview
 
@@ -35,6 +36,7 @@ Authentication, session management, and role assignment are handled by Keycloak.
 ### HTTP Endpoints (via Gateway)
 
 All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http://gateway:3000`
+<!-- stable as of polish pass -->
 
 #### User Profile
 | Method | Path | Auth | Description |
@@ -63,7 +65,6 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 | `PATCH` | `/users/:id/deactivate` | Admin role | Disable account: Keycloak `enabled=false` + revoke all sessions + `isActive=false` in DB + `user.deactivated` Kafka event |
 
 ### TCP Message Patterns
-
 **Pattern: `USERS_PATTERNS.CREATE_USER`** (`create_user`)
 - Purpose: Create a user DB record after Keycloak provisioning
 - Payload: `CreateUserDto` + `{ id: string }`
@@ -172,6 +173,7 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 ## Data Model
 
 ### Database Type
+<!-- rationalized arg order -->
 
 **PostgreSQL** — Relational database for structured user profile data with ACID guarantees.
 ### Table: `users`
@@ -226,7 +228,6 @@ Stored in `settings` column. All fields are optional and can be partially update
 > **Removed from previous design**: `language`, `timezone` (derived from OS/browser), and `notifications.muteUntil` (per-conversation muting via `PUT /notifications/conversations/:id/mute` replaces the global mute concept).
 
 > **Deep merge safety**: `notifications` and `privacy` sub-objects are merged with `undefined`-key filtering before spread. Sending `{ "notifications": { "notifyFor": "NOTHING" } }` will **not** wipe `desktopEnabled` or `mobileEnabled`.
-
 <!-- review: keep concise -->
 ### Cache Usage
 

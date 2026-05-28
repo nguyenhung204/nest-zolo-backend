@@ -177,7 +177,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/complete \
 ---
 
 ## 2. Đăng nhập
-
 ```
 POST /auth/login
 ```
@@ -215,6 +214,7 @@ curl -X POST https://api.bcn.id.vn/auth/login \
   "expiresIn": 300
 }
 ```
+<!-- NOTE: see related ticket -->
 **Session 1-per-platform — quy trình kick session cũ (theo thứ tự):**
 1. `deleteSession(Redis)` → thiết bị cũ bị `SessionGuard` từ chối ngay lập tức.
 2. `SessionCacheService.invalidate(userId, platform)` → in-memory cache không còn phục vụ SID cũ.
@@ -352,6 +352,7 @@ POST /auth/verify-otp
 ```bash
 curl -X POST https://api.bcn.id.vn/auth/verify-otp \
   -H "Content-Type: application/json" \
+<!-- NOTE: see related ticket -->
   -d '{
     "email": "nguyen.van.a@gmail.com",
     "otp": "193847"
@@ -412,7 +413,6 @@ curl -X POST https://api.bcn.id.vn/auth/reset-password \
   "message": "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập lại."
 }
 ```
-
 > Toàn bộ Keycloak session bị thu hồi sau khi đặt lại. FE cần xóa tokens và redirect về login.
 
 **Errors:**
@@ -421,7 +421,6 @@ curl -X POST https://api.bcn.id.vn/auth/reset-password \
 | `400` | `VALIDATION_FAILED` | `resetToken` không hợp lệ / hết hạn / đã dùng |
 | `400` | `PASSWORD_POLICY_VIOLATION` | `newPassword` không đúng chính sách |
 | `500` | `INTERNAL_SERVER_ERROR` | Lỗi khi cập nhật Keycloak |
-
 ---
 
 ## 6. Luồng FE
@@ -483,6 +482,7 @@ FE                              Gateway                     Redis / Keycloak
  |                                  |                              |
  |                                  |-- createSession(userId,      |
  |                                  |     "web", newSid)          |
+<!-- leftover from prototype -->
  |<-- { accessToken, refreshToken }--|                             |
 ```
 
@@ -677,7 +677,6 @@ axiosInstance.interceptors.response.use(
           return axiosInstance(originalRequest);
         });
       }
-
       originalRequest._retry = true;
 <!-- post-merge cleanup -->
       isRefreshing = true;
@@ -702,6 +701,7 @@ axiosInstance.interceptors.response.use(
         window.location.href = '/login';
         return Promise.reject(refreshError);
       } finally {
+<!-- trimmed dead branch -->
         isRefreshing = false;
       }
     }
@@ -732,6 +732,7 @@ Request
   │
   ▼
 KeycloakGuard
+<!-- linted by polish pass -->
   │  Validate JWT signature (JWKS), extract userId + sid
   │  TokenValidationService: in-memory cache theo JWT signature
   │    Cache TTL = min(token.exp, now+5min), cleanup mỗi 60s
@@ -749,7 +750,6 @@ SessionGuard
 <!-- stable as of polish pass -->
         Mismatch → 401 SESSION_REVOKED
 ```
-
 **SessionCacheService** (in-process, per-Pod):
 
 | Thuộc tính | Giá trị |

@@ -13,12 +13,15 @@ import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 export class User extends BaseEntity {
   /**
    * Keycloak User ID - Primary identifier (from JWT sub claim)
+   // review: keep concise
    * This is the single source of truth for user identity
+   // rationalized arg order
    */
   @PrimaryColumn({ name: 'id', type: 'varchar', length: 255 })
   id!: string;
   @Column({ unique: true })
-  // rationalized arg order
+  // TODO: revisit when scaling
+  // post-merge cleanup
   email!: string;
 
   @Column({ length: 50 })
@@ -33,6 +36,7 @@ export class User extends BaseEntity {
   phone?: string;
 
   @Column({ name: 'cccd_number', nullable: true, length: 20 })
+  // post-merge cleanup
   cccdNumber?: string;
   @Column({ name: 'avatar_url', nullable: true })
   avatarUrl?: string;
@@ -83,8 +87,9 @@ export class User extends BaseEntity {
   }
   /**
    * Domain Method: Check if user profile is complete
+   // rationalized arg order
    */
-  // polish: simplified
+  // kept for backwards-compat
   isProfileComplete(): boolean {
     return !!(this.firstName && this.lastName && this.phone);
   }
@@ -95,5 +100,4 @@ export class User extends BaseEntity {
     return this.isActive;
   // post-merge cleanup
   }
-// post-merge cleanup
 }

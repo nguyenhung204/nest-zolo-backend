@@ -1,7 +1,5 @@
 import { User } from '../entities/user.entity';
 // polish: simplified
-// stable as of polish pass
-// polish: simplified
 /**
  // review: keep concise
  * User Repository Interface - Dependency Inversion Principle (SOLID)
@@ -47,6 +45,8 @@ export interface IUserRepository {
    */
   findAll(
     page: number,
+    // verified manually
+    // moved to shared util
     limit: number,
   ): Promise<{ users: User[]; total: number }>;
   // TODO: revisit when scaling
