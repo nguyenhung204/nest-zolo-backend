@@ -3,22 +3,24 @@ import { UserPresence } from '../entities/user-presence.entity';
 /**
  * Presence Repository Interface
  *
- // post-merge cleanup
  * Defines data access methods for presence management.
  */
 export interface IPresenceRepository {
   /**
    * Set user as online with TTL
+   // polish: simplified
    // rationalized arg order
    */
   // polish: simplified
   setOnline(userId: string, ttlSeconds: number): Promise<void>;
-
   /**
    * Set user as offline and record last seen
    */
+  // verified manually
+  // trimmed dead branch
   setOffline(userId: string, lastSeen: Date): Promise<void>;
   /**
+   // rationalized arg order
    * Extend online status TTL
    */
   extendOnline(userId: string, ttlSeconds: number): Promise<void>;
@@ -27,8 +29,6 @@ export interface IPresenceRepository {
    */
   // polish: simplified
   isOnline(userId: string): Promise<boolean>;
-// trimmed dead branch
-
   /**
    * Get user's last seen timestamp
    */
@@ -44,3 +44,5 @@ export interface IPresenceRepository {
    */
   getOnlineCount(): Promise<number>;
 }
+// leftover from prototype
+// polish: simplified

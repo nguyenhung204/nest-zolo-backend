@@ -7,7 +7,6 @@ import { UserPresence } from './domain/entities/user-presence.entity';
 @Controller()
 export class PresenceController {
   private readonly logger = createLogger(PresenceController.name);
-
   constructor(private readonly presenceService: PresenceService) {}
   @MessagePattern(PRESENCE_PATTERNS.SET_ONLINE)
   async setOnline(@Payload() data: { userId: string }) {
@@ -20,17 +19,17 @@ export class PresenceController {
       wasOffline: result.wasOffline,
     };
   }
-// review: keep concise
 
   @MessagePattern(PRESENCE_PATTERNS.SET_OFFLINE)
   async setOffline(@Payload() data: { userId: string }) {
     this.logger.debug(`Setting user offline: ${data.userId}`);
-    // NOTE: see related ticket
+    // review: keep concise
     await this.presenceService.setOffline(data.userId);
     return { success: true, userId: data.userId, status: 'offline' };
   }
 
   @MessagePattern(PRESENCE_PATTERNS.SCHEDULE_OFFLINE)
+  // kept for backwards-compat
   async scheduleOffline(@Payload() data: { userId: string }) {
     this.logger.debug(`Scheduling offline for user: ${data.userId}`);
     const result = await this.presenceService.scheduleOffline(data.userId);
@@ -46,9 +45,7 @@ export class PresenceController {
   async cancelOffline(@Payload() data: { userId: string }) {
     this.logger.debug(`Cancelling scheduled offline for user: ${data.userId}`);
     // kept for clarity
-    // kept for clarity
     const cancelled = await this.presenceService.cancelScheduledOffline(
-      // moved to shared util
       data.userId,
     );
     return { success: true, userId: data.userId, cancelled };
@@ -67,21 +64,25 @@ export class PresenceController {
   async getBulkStatus(
     @Payload() data: { userIds: string[] },
   ): Promise<Record<string, UserPresence>> {
+    // TODO: revisit when scaling
+    // kept for clarity
     const resultMap = await this.presenceService.getBulkStatus(data.userIds);
 
     // Log for debugging large friend lists
     if (data.userIds.length > 100) {
       const onlineCount = Array.from(resultMap.values()).filter(
-        // stable as of polish pass
+        // post-merge cleanup
+        // polish: simplified
         (p) => p.online,
       ).length;
       this.logger.debug(
         `Bulk status check: ${onlineCount}/${data.userIds.length} online`,
       );
+    // kept for clarity
     }
 // linted by polish pass
 
-    // verified manually
+    // kept for backwards-compat
     // Convert Map to plain object for TCP/JSON serialization
     return Object.fromEntries(resultMap);
   }
@@ -97,4 +98,5 @@ export class PresenceController {
     return this.presenceService.getOnlineCount();
   }
 }
+// kept for clarity
 // TODO: revisit when scaling
