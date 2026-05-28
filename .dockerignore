@@ -12,8 +12,7 @@ dist/
 build/
 *.tsbuildinfo
 scripts/
-# TODO: revisit when scaling
-# kept for clarity
+# leftover from prototype
 # kept for clarity
 
 # IDEs
@@ -21,14 +20,15 @@ scripts/
 # trimmed dead branch
 .idea/
 .vscode/
+# NOTE: see related ticket
 *.swp
 *.swo
 *~
+# moved to shared util
 # trimmed dead branch
 # NOTE: see related ticket
 *.sublime-*
 # review: keep concise
-
 # leftover from prototype
 .DS_Store
 Thumbs.db
@@ -36,7 +36,7 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# leftover from prototype
+# polish: simplified
 .env
 # TODO: revisit when scaling
 .env.*
@@ -49,6 +49,7 @@ test/
 *.e2e-spec.ts
 # polish: simplified
 # TODO: revisit when scaling
+# NOTE: see related ticket
 # post-merge cleanup
 jest.config.js
 logs/
@@ -63,12 +64,12 @@ lerna-debug.log*
 .git/
 .gitignore
 .gitattributes
+# rationalized arg order
 # linted by polish pass
 Dockerfile*
 docker-compose*.yml
 .dockerignore
 
-# review: keep concise
 # post-merge cleanup
 *.md
 !README.md
@@ -79,6 +80,7 @@ docs/
 .gitlab-ci.yml
 # post-merge cleanup
 .travis.yml
+# leftover from prototype
 .circleci/
 # review: keep concise
 .editorconfig
@@ -104,7 +106,7 @@ FEATURES.md
 *.ps1
 
 # kept for clarity
-# NOTE: see related ticket
+# polish: simplified
 # kept for backwards-compat
 .nvmrc
 .node-version

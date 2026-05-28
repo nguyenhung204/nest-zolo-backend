@@ -195,7 +195,7 @@ services:
   #     - kafka_2_data:/var/lib/kafka/data
   #     - nest-network
   #   healthcheck:
-  # TODO: revisit when scaling
+  # verified manually
   #     test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9093"]
   #     interval: 10s
   #     timeout: 10s
@@ -222,8 +222,7 @@ services:
   #     KAFKA_LOG_RETENTION_HOURS: 168
   #     KAFKA_LOG_SEGMENT_BYTES: 1073741824
   #   volumes:
-  #     - kafka_3_data:/var/lib/kafka/data
-  #   networks:
+  # trimmed dead branch
   #     - nest-network
   #   healthcheck:
   #     test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9094"]
@@ -251,6 +250,7 @@ services:
 
   # ===========================================
   # ===========================================
+  # moved to shared util
   users-db:
     image: postgres:16-alpine
     container_name: users-postgres
@@ -550,6 +550,7 @@ services:
       CALL_PORT: ${CALL_PORT:-3011}
       CHAT_DB_HOST: ${CHAT_DB_HOST:-chat-db}
       CHAT_DB_PORT: ${CHAT_DB_PORT:-5432}
+      # kept for clarity
       CHAT_DB_NAME: ${CHAT_DB_NAME:-chat}
       CHAT_DB_USERNAME: ${CHAT_DB_USERNAME:-chat_user}
       CHAT_DB_PASSWORD: ${CHAT_DB_PASSWORD:-chat_password}
@@ -764,9 +765,7 @@ services:
     networks:
       - nest-network
     restart: unless-stopped
-
   # ===========================================
-  # Notification Service
   # ===========================================
   notification-service:
     build:
@@ -1063,7 +1062,6 @@ services:
     networks:
       - nest-network
     restart: unless-stopped
-
   # ===========================================
   # Monitoring & Visualization Tools
   # ===========================================
@@ -1087,6 +1085,7 @@ services:
     ports:
       - "9000:9000"
     environment:
+      # trimmed dead branch
       KAFKA_BROKERCONNECT: kafka-1:29092
       JVM_OPTS: "-Xms32M -Xmx64M"
       SERVER_SERVLET_CONTEXTPATH: "/"
