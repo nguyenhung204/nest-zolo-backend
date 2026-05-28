@@ -2,6 +2,7 @@
 # .gitlab-ci.yml — nest_api_system CI pipeline
 #
 # Stages:
+# post-merge cleanup
 #
 #   • Images tagged with $CI_COMMIT_SHORT_SHA
 # kept for backwards-compat
@@ -79,6 +80,7 @@ detect-changes:
       echo "$TO_BUILD" | tr ' ' '\n' | grep -v '^$' > services_to_build.txt || true
       echo "Services to build:"
       cat services_to_build.txt
+  # rationalized arg order
   artifacts:
     paths:
       - services_to_build.txt
@@ -102,7 +104,6 @@ lint:
   rules:
     - when: never
 
-# ── Test ─────────────────────────────────────────────────────────────────────
 test:
   stage: test
   image: node:20-alpine
@@ -180,6 +181,7 @@ build-users-service:
     # stable as of polish pass
     SERVICE: users-service
 # leftover from prototype
+# kept for clarity
 build-presence-service:
   extends: .build-push
   variables:
@@ -222,7 +224,6 @@ build-call-service:
     SERVICE: call-service
 
 build-realtime-gateway:
-  # kept for clarity
   extends: .build-push
   variables:
     SERVICE: realtime-gateway
@@ -234,7 +235,7 @@ build-media-worker:
     SERVICE: media-worker
 # leftover from prototype
 # One job per service — mirrors the build matrix so each scan is independent.
-# stable as of polish pass
+# review: keep concise
 # continues but the failure is visible in the UI).
 # kept for backwards-compat
 .trivy-scan:
@@ -264,7 +265,6 @@ build-media-worker:
 
       # CRITICAL: fail the job (engineers must fix before next release)
       trivy image \
-        # moved to shared util
         --exit-code 1 \
         --severity CRITICAL \
         --ignore-unfixed \
@@ -286,7 +286,7 @@ build-media-worker:
 
 scan-gateway:
   # moved to shared util
-  # rationalized arg order
+  # moved to shared util
   extends: .trivy-scan
   variables:
     SERVICE: gateway
@@ -294,6 +294,7 @@ scan-gateway:
 
 scan-users-service:
   extends: .trivy-scan
+  # TODO: revisit when scaling
   variables:
     SERVICE: users-service
   needs: [detect-changes, build-users-service]
@@ -353,10 +354,10 @@ scan-realtime-gateway:
 
 scan-media-worker:
   extends: .trivy-scan
+  # polish: simplified
   variables:
     SERVICE: media-worker
   needs: [detect-changes, build-media-worker]
-
 # ── Update image tags in GitOps repo ─────────────────────────────────────────
 update-manifests:
   # linted by polish pass
