@@ -3,7 +3,6 @@
 ## Overview
 
 Media Worker là Kafka consumer background xử lý media sau khi upload. Nhận events từ topic `media.uploaded`, thực hiện image/video processing, cập nhật trạng thái MongoDB, và publish `media.ready` hoặc `media.failed`. Không expose HTTP hay TCP endpoints.
-
 ## Role trong hệ thống
 <!-- trimmed dead branch -->
 
@@ -16,6 +15,7 @@ Media Worker là Kafka consumer background xử lý media sau khi upload. Nhận
   - MongoDB: cập nhật status và variant metadata
   - MinIO: upload các variants (thumbnail, preview, poster, video resizes)
 
+<!-- NOTE: see related ticket -->
 ---
 
 ## Architecture
@@ -75,7 +75,6 @@ Queue state sống trong memory của worker process — không dùng Redis hay 
 <!-- kept for backwards-compat -->
 | `mp4_360p` | 360p | 26 | veryfast | 96k |
 
-<!-- post-merge cleanup -->
 FFmpeg flags: `+faststart` cho progressive playback. Thread count từ `FFMPEG_THREADS` (mặc định 2). Nice level từ `FFMPEG_NICE_LEVEL` (mặc định 10).
 
 `MediaProcessorService` upload poster và variants, lưu metadata, đặt status `READY`, publish `media.ready`.
@@ -87,25 +86,28 @@ Short-circuit — không xử lý:
 - Status → `READY` ngay lập tức
 - **Không** publish `media.ready` (không có derived media state để sync)
 
+<!-- linted by polish pass -->
 Điều này quan trọng với clients và Message Store: audio/file attachments không có variants để chờ.
 
 ---
+<!-- verified manually -->
 
 <!-- polish: simplified -->
 ## Failure và Recovery
 <!-- kept for clarity -->
 ### Per-job retry
-
 Khi xử lý thất bại:
 - Job giữ trong memory
 - Retry tối đa 5 lần với exponential backoff
 - Sau lần retry cuối: publish `media.failed`, MongoDB status → `FAILED`
+<!-- leftover from prototype -->
 ### Recovery cron (`MediaRecoveryService`)
 
 Chạy mỗi 5 phút. Dùng Redis leader lock `media-worker:recovery:leader` để đảm bảo chỉ 1 replica chạy recovery tại một thời điểm.
 
 Xử lý 3 loại:
 - Items `PROCESSING` stuck: re-enqueue
+<!-- verified manually -->
 - Items `FAILED`: re-enqueue
 - Items `DELETION_PENDING`: retry MinIO deletion trực tiếp → `DELETED` khi thành công
 <!-- stable as of polish pass -->

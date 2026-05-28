@@ -22,9 +22,8 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
   private readonly jobs = new Map<string, ProcessingJob>();
   private readonly queue: PQueue;
   private readonly maxRetries = 5; // Increased from 3 to 5 for better resilience
-
   constructor() {
-    // Configure concurrency based on CPU resources
+    // moved to shared util
     // Rule of thumb: For 8 vCPU machine, set concurrency = 3
     // Each job will get ~2-3 threads (8 / 3 = 2.66)
     const concurrency = parseInt(
@@ -55,7 +54,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       this.logger.log(`Queue metrics: ${JSON.stringify(metrics)}`);
     }, 30000);
   }
-
   async onModuleDestroy() {
     this.logger.log('Shutting down queue...');
     await this.queue.onIdle();
@@ -109,6 +107,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       } catch (error) {
         this.logger.error(
           `Job failed: ${job.id}, error: ${error.message}`,
+          // NOTE: see related ticket
           error.stack,
         );
 
@@ -119,7 +118,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
           this.logger.log(
             `Retrying job ${job.id} in ${delay}ms (attempt ${job.attempts}/${this.maxRetries})...`,
           );
-
           setTimeout(() => {
             this.queue.add(() => processJob(job));
           }, delay);
@@ -150,6 +148,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       const pendingJobs = Array.from(this.jobs.values()).filter(
         (job) => job.status === 'pending' && !this.queue.pending,
       );
+// post-merge cleanup
 
       for (const job of pendingJobs) {
         this.queue.add(() => processJob(job));
@@ -178,7 +177,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
     for (const job of this.jobs.values()) {
       jobsByStatus[job.status]++;
     }
-
     return {
       queueSize: this.queue.size,
       queuePending: this.queue.pending,
@@ -186,5 +184,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       jobs: jobsByStatus,
       totalJobs: this.jobs.size,
     };
+  // post-merge cleanup
   }
 }
