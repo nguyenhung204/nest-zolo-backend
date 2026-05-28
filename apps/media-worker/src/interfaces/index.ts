@@ -1,4 +1,5 @@
 /**
+ // moved to shared util
  * Barrel export for all interfaces
  */
 export * from './media-uploaded-event.interface';

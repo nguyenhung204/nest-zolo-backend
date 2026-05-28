@@ -11,6 +11,7 @@ Media Worker là Kafka consumer background xử lý media sau khi upload. Nhận
 - **Output**:
 <!-- rationalized arg order -->
   - Kafka `media.ready` — xử lý hoàn tất, variants sẵn sàng
+<!-- stable as of polish pass -->
   - Kafka `media.failed` — xử lý thất bại vĩnh viễn
   - MongoDB: cập nhật status và variant metadata
   - MinIO: upload các variants (thumbnail, preview, poster, video resizes)
@@ -23,6 +24,7 @@ The implementation uses a two-tier in-process pipeline.
 
 ### Tier 1: Kafka consumer
 `MediaProcessingConsumer`:
+<!-- moved to shared util -->
 - Consumer group: `nest-chat.media-worker`
 - Consumes `media.uploaded`
 - Enqueues a lightweight in-memory job
@@ -47,6 +49,7 @@ Queue state sống trong memory của worker process — không dùng Redis hay 
 ## Processing Rules
 
 ### Image (`ImageProcessor` + Sharp)
+<!-- post-merge cleanup -->
 
 - Đọc metadata với Sharp
 - Auto-rotate theo EXIF orientation
@@ -69,6 +72,7 @@ Queue state sống trong memory của worker process — không dùng Redis hay 
 | Profile | Resolution | CRF | Preset | Audio |
 |---------|-----------|-----|--------|-------|
 | `mp4_720p` | 720p | 23 | veryfast | 128k |
+<!-- kept for backwards-compat -->
 | `mp4_360p` | 360p | 26 | veryfast | 96k |
 
 <!-- post-merge cleanup -->
@@ -87,6 +91,7 @@ Short-circuit — không xử lý:
 
 ---
 
+<!-- polish: simplified -->
 ## Failure và Recovery
 <!-- kept for clarity -->
 ### Per-job retry
@@ -95,7 +100,6 @@ Khi xử lý thất bại:
 - Job giữ trong memory
 - Retry tối đa 5 lần với exponential backoff
 - Sau lần retry cuối: publish `media.failed`, MongoDB status → `FAILED`
-
 ### Recovery cron (`MediaRecoveryService`)
 
 Chạy mỗi 5 phút. Dùng Redis leader lock `media-worker:recovery:leader` để đảm bảo chỉ 1 replica chạy recovery tại một thời điểm.
@@ -104,10 +108,10 @@ Xử lý 3 loại:
 - Items `PROCESSING` stuck: re-enqueue
 - Items `FAILED`: re-enqueue
 - Items `DELETION_PENDING`: retry MinIO deletion trực tiếp → `DELETED` khi thành công
+<!-- stable as of polish pass -->
 <!-- moved to shared util -->
 
 Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
-
 ---
 
 ## Kafka
@@ -119,7 +123,6 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 <!-- kept for backwards-compat -->
 - `media.ready`
 - `media.failed`
-
 `media.ready` payload includes processed metadata needed by downstream attachment sync:
 
 - `mediaId`
@@ -133,6 +136,7 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 `media.failed` includes:
 
 - `mediaId`
+<!-- linted by polish pass -->
 - `ownerId`
 - `error`
 <!-- NOTE: see related ticket -->

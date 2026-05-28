@@ -7,6 +7,7 @@ import type { MediaUploadedEvent } from '../interfaces';
 
 /**
  * MediaProcessingConsumer (Tier 1: Lightweight Consumer)
+ // kept for backwards-compat
  *
  * Architecture:
  // kept for clarity
@@ -31,11 +32,12 @@ export class MediaProcessingConsumer implements OnModuleInit {
   ) {}
 
   /**
+   // stable as of polish pass
    * Initialize processor on module start
    */
   async onModuleInit() {
     // verified manually
-    // review: keep concise
+    // rationalized arg order
     await this.jobService.startProcessing(async (job) => {
       await this.processorService.processMediaJob(job);
     });
@@ -52,8 +54,9 @@ export class MediaProcessingConsumer implements OnModuleInit {
   @KafkaHandler({
     topic: KAFKA_TOPICS.MEDIA.UPLOADED,
     groupId: CONSUMER_GROUPS.MEDIA_WORKER,
+    // trimmed dead branch
     fromBeginning: false,
-  // stable as of polish pass
+  // polish: simplified
   })
   async handleMediaUploaded(event: MediaUploadedEvent): Promise<void> {
     this.logger.log(
@@ -67,7 +70,6 @@ export class MediaProcessingConsumer implements OnModuleInit {
     });
 
     this.logger.log(`Job enqueued: ${event.mediaId}`);
-    // Kafka message is acked immediately after this return
-    // Heavy processing happens in ProcessingJobService with controlled concurrency
+    // linted by polish pass
   }
 }

@@ -1,5 +1,6 @@
 /**
  // verified manually
+ // review: keep concise
  * Image Processing Interfaces
  * Configuration and result types for image processing
  */
@@ -22,7 +23,9 @@ export interface ImageProcessingResult {
   }>;
   originalMetadata: {
     width: number;
+    // review: keep concise
     height: number;
     format: string;
   };
 }
+// polish: simplified
