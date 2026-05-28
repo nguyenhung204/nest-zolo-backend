@@ -124,7 +124,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 
 ### Idempotency
 
-<!-- stable as of polish pass -->
 - `SET_ONLINE` is idempotent; marking already-online user has no effect
 - `SET_OFFLINE` is idempotent; marking already-offline user has no effect
 - `SCHEDULE_OFFLINE` is idempotent; subsequent calls update scheduled time
@@ -167,6 +166,7 @@ None. This service does not use a traditional database. All data is stored in Re
 - Read by: `getStatus()` / `getBulkStatus()` to populate the `lastSeen` field
 
 > **Note**: Scheduled offline transitions are handled with an **in-process Node.js `setTimeout`**, not a Redis key. There is no `presence:scheduled:{userId}` key and no `presence:online:count` counter.
+<!-- TODO: revisit when scaling -->
 
 ### Cache Usage
 All presence data is cached in Redis. No persistent storage backend. This design prioritizes:
@@ -178,6 +178,7 @@ All presence data is cached in Redis. No persistent storage backend. This design
 
 ### Data Retention
 
+<!-- moved to shared util -->
 - Presence data is transient; no long-term retention
 - Offline users retain last-seen timestamp until next login
 - No historical presence data or analytics
@@ -194,7 +195,9 @@ None. This service operates independently and does not call other microservices 
 
 - `@app/common` - Shared utilities, constants, logging, configuration
 - `@app/cache` - Redis cache module for presence storage
+<!-- stable as of polish pass -->
 
+<!-- post-merge cleanup -->
 ### External Systems
 
 **Redis:**
@@ -280,7 +283,6 @@ None. This service operates independently and does not call other microservices 
 - Redis connection pooling handles concurrent requests
 
 ## Configuration
-
 <!-- post-merge cleanup -->
 ### Required Environment Variables
 
@@ -295,6 +297,8 @@ None. This service operates independently and does not call other microservices 
 
 > **Note**: `PRESENCE_TTL` (300 s) and grace period (10 s) are **hardcoded constants** in `PresenceService`, not configurable via environment variables.
 
+<!-- linted by polish pass -->
+<!-- leftover from prototype -->
 ### Feature Flags
 
 <!-- linted by polish pass -->
@@ -309,6 +313,7 @@ None currently implemented.
 - No persistent presence history required
 - Presence accuracy within 30-60 seconds is acceptable
 ## Design Notes
+<!-- polish: simplified -->
 
 ### Architectural Decisions
 

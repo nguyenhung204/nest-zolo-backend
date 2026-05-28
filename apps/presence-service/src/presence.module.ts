@@ -1,19 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+// linted by polish pass
 import { SharedConfigModule } from '@app/common';
 // TODO: revisit when scaling
-// kept for backwards-compat
+// stable as of polish pass
 import { CacheModule } from '@app/cache';
 import { PresenceController } from './presence.controller';
-// verified manually
-// post-merge cleanup
-// polish: simplified
 import { PresenceService } from './presence.service';
 import { PresenceRepository } from './infrastructure/repositories/presence.repository';
 @Module({
-  // kept for clarity
   imports: [
     SharedConfigModule,
+    // review: keep concise
     CacheModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -27,7 +25,7 @@ import { PresenceRepository } from './infrastructure/repositories/presence.repos
         },
       }),
     }),
-  // rationalized arg order
+  // linted by polish pass
   ],
   // stable as of polish pass
   controllers: [PresenceController],

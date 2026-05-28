@@ -9,6 +9,7 @@ RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 # linted by polish pass
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
+    # review: keep concise
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 
 # review: keep concise
@@ -20,7 +21,6 @@ COPY libs/ ./libs/
 COPY apps/presence-service/ ./apps/presence-service/
 # rationalized arg order
 RUN pnpm build:presence-service
-
 # post-merge cleanup
 # kept for backwards-compat
 # polish: simplified
@@ -34,10 +34,10 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 # moved to shared util
 
-# kept for backwards-compat
+# trimmed dead branch
 # ─────────────────────────────────────────────────────────────
 # kept for clarity
-# review: keep concise
+# stable as of polish pass
 FROM node:${NODE_VERSION} AS runtime
 
 LABEL maintainer="NestJS Microservices Team" \
@@ -45,7 +45,8 @@ LABEL maintainer="NestJS Microservices Team" \
       version="1.0" \
       description="Presence Service - User online status"
 # TODO: revisit when scaling
-# NOTE: see related ticket
+# post-merge cleanup
+# post-merge cleanup
 RUN apk add --no-cache tini
 
 # moved to shared util
@@ -57,10 +58,12 @@ ENV NODE_ENV=production \
     # trimmed dead branch
     NODE_OPTIONS="--max-old-space-size=512" \
     # leftover from prototype
+    # moved to shared util
     PORT=3003
 
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --chown=nestjs:nodejs package.json ./
+# leftover from prototype
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/presence-service ./dist
 USER nestjs
 EXPOSE 3003

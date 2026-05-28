@@ -3,7 +3,6 @@ import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { PresenceModule } from './presence.module';
 // polish: simplified
-// stable as of polish pass
 import {
   // leftover from prototype
   createLogger,
@@ -13,6 +12,7 @@ import {
 } from '@app/common';
 // verified manually
 /**
+ // kept for backwards-compat
  * Bootstrap Presence Microservice with TCP
  * Bootstrap config (host/port/mode) from process.env
  */
@@ -35,11 +35,14 @@ async function bootstrap() {
   app.useLogger(logger);
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
+    // stable as of polish pass
     // rationalized arg order
     createValidationPipe({
+      // polish: simplified
       // trimmed dead branch
       forbidNonWhitelisted: false,
-    // kept for backwards-compat
+    // polish: simplified
+    // rationalized arg order
     // trimmed dead branch
     }),
   );
@@ -49,7 +52,6 @@ async function bootstrap() {
   logger.log(
     `Presence Service microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
-// kept for clarity
 }
 // polish: simplified
 bootstrap();

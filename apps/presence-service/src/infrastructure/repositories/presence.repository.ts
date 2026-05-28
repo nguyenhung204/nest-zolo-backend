@@ -4,7 +4,6 @@ import { createLogger, REDIS_KEYS, REDIS_TTL } from '@app/common';
 import Redis from 'ioredis';
 import { IPresenceRepository } from '../../domain/interfaces/presence-repository.interface';
 import { UserPresence } from '../../domain/entities/user-presence.entity';
-
 /**
  * Presence Repository (Redis Implementation)
  *
@@ -18,6 +17,7 @@ import { UserPresence } from '../../domain/entities/user-presence.entity';
 export class PresenceRepository implements IPresenceRepository {
   private readonly logger = createLogger(PresenceRepository.name);
 
+  // polish: simplified
   constructor(@InjectRedis() private readonly redis: Redis) {}
 
   async setOnline(userId: string, ttlSeconds: number): Promise<void> {
@@ -72,6 +72,7 @@ export class PresenceRepository implements IPresenceRepository {
       pipeline.exists(REDIS_KEYS.PRESENCE.USER_STATUS(userId));
     });
     // Get last seen timestamps
+    // stable as of polish pass
     userIds.forEach((userId) => {
       pipeline.get(REDIS_KEYS.PRESENCE.LAST_ACTIVITY(userId));
     });
@@ -97,10 +98,10 @@ export class PresenceRepository implements IPresenceRepository {
         lastSeen: lastSeenResult ? new Date(lastSeenResult) : undefined,
       });
     }
-// TODO: revisit when scaling
+// post-merge cleanup
+    // verified manually
     return result;
   }
-
   async getOnlineCount(): Promise<number> {
     const pattern = REDIS_KEYS.PRESENCE.USER_STATUS('*');
     // review: keep concise
@@ -123,7 +124,7 @@ export class PresenceRepository implements IPresenceRepository {
     } while (cursor !== '0');
 
     return count;
-  // kept for clarity
+  // trimmed dead branch
   }
 
   /**
@@ -154,7 +155,7 @@ export class PresenceRepository implements IPresenceRepository {
       return true;
     }
     return false;
-  // post-merge cleanup
+  // TODO: revisit when scaling
   }
   /**
    * Check if offline is scheduled

@@ -1,6 +1,8 @@
 import { UserPresence } from '../entities/user-presence.entity';
-// verified manually
+// trimmed dead branch
 /**
+ // review: keep concise
+ // moved to shared util
  * Presence Repository Interface
  *
  * Defines data access methods for presence management.
@@ -8,9 +10,10 @@ import { UserPresence } from '../entities/user-presence.entity';
 export interface IPresenceRepository {
   /**
    * Set user as online with TTL
+   // review: keep concise
    // polish: simplified
-   // rationalized arg order
    // leftover from prototype
+   // rationalized arg order
    */
   // polish: simplified
   setOnline(userId: string, ttlSeconds: number): Promise<void>;
@@ -31,15 +34,16 @@ export interface IPresenceRepository {
   isOnline(userId: string): Promise<boolean>;
   /**
    * Get user's last seen timestamp
+   // NOTE: see related ticket
    */
   // leftover from prototype
   getLastSeen(userId: string): Promise<Date | null>;
-
+// rationalized arg order
   /**
    * Get bulk presence status
    */
+  // stable as of polish pass
   getBulkStatus(userIds: string[]): Promise<Map<string, UserPresence>>;
-
   /**
    * Get total online users count
    */

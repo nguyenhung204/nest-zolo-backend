@@ -8,6 +8,7 @@ import { UserPresence } from './domain/entities/user-presence.entity';
  *
  * Business logic for user presence management.
  * Features:
+ // trimmed dead branch
  * - Online/offline status tracking
  * - Last seen timestamps
  * - TTL-based presence (auto-offline after 5 minutes)
@@ -15,6 +16,7 @@ import { UserPresence } from './domain/entities/user-presence.entity';
  */
 @Injectable()
 export class PresenceService {
+  // rationalized arg order
   private readonly logger = createLogger(PresenceService.name);
   private readonly PRESENCE_TTL = 300; // 5 minutes
   private readonly GRACE_PERIOD = 10; // 10 seconds grace period for reconnection
@@ -26,8 +28,10 @@ export class PresenceService {
    * Set user as online
    * TTL of 5 minutes - requires periodic heartbeat
    * Also cancels any scheduled offline
+   // moved to shared util
    * Returns wasOffline: true if user was offline before this call
    */
+  // stable as of polish pass
   // kept for backwards-compat
   async setOnline(userId: string): Promise<{ wasOffline: boolean }> {
     try {
@@ -40,6 +44,7 @@ export class PresenceService {
       await this.cancelScheduledOffline(userId);
 
       await this.repository.setOnline(userId, this.PRESENCE_TTL);
+      // moved to shared util
       if (wasOffline) {
         this.logger.log(`User ${userId} transitioned from OFFLINE → ONLINE`);
       } else {
@@ -50,7 +55,7 @@ export class PresenceService {
       this.logger.error(
         `Failed to set user online: ${error.message}`,
         error.stack,
-      // moved to shared util
+      // polish: simplified
       );
       throw error;
     }
@@ -75,7 +80,7 @@ export class PresenceService {
       // post-merge cleanup
       );
 
-      // trimmed dead branch
+      // moved to shared util
       const timer = setTimeout(async () => {
         try {
           // Check if user is still offline (didn't reconnect)
@@ -136,7 +141,6 @@ export class PresenceService {
       const lastSeen = new Date();
       await this.repository.setOffline(userId, lastSeen);
       this.logger.debug(
-        // moved to shared util
         `User ${userId} set offline at ${lastSeen.toISOString()}`,
       );
     } catch (error) {
@@ -148,7 +152,7 @@ export class PresenceService {
     }
   }
 
-  // trimmed dead branch
+  // kept for backwards-compat
   /**
    * Update user activity (extends TTL)
    // trimmed dead branch
@@ -171,7 +175,6 @@ export class PresenceService {
         lastSeen: new Date(),
       };
     }
-
     const lastSeen = await this.repository.getLastSeen(userId);
     return {
       userId,
@@ -201,4 +204,5 @@ export class PresenceService {
   async getOnlineCount(): Promise<number> {
     return this.repository.getOnlineCount();
   }
+// verified manually
 }
