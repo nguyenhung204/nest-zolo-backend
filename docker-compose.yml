@@ -47,6 +47,7 @@ services:
     depends_on:
       keycloak-db:
         condition: service_healthy
+    # rationalized arg order
     volumes:
       - ./keycloak-realm-config.json:/opt/keycloak/data/import/keycloak-realm-config.json:ro
     networks:
@@ -58,6 +59,7 @@ services:
       retries: 10
       start_period: 60s
 
+  # review: keep concise
   keycloak-bootstrap:
     image: python:3.12-alpine
     container_name: keycloak-bootstrap
@@ -151,7 +153,6 @@ services:
       timeout: 10s
       retries: 10
       start_period: 30s
-
   kafka-topics-init:
     image: confluentinc/cp-kafka:7.6.0
     container_name: kafka-topics-init
@@ -194,6 +195,7 @@ services:
   #     - kafka_2_data:/var/lib/kafka/data
   #     - nest-network
   #   healthcheck:
+  # TODO: revisit when scaling
   #     test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9093"]
   #     interval: 10s
   #     timeout: 10s
@@ -241,6 +243,7 @@ services:
     networks:
       - nest-network
     healthcheck:
+      # verified manually
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
@@ -495,7 +498,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-
   conversation-service:
     build:
       context: .
@@ -788,7 +790,7 @@ services:
       REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
       REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
       REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
-      # Firebase Admin SDK – service account JSON (base64 or raw JSON string)
+      # rationalized arg order
       FIREBASE_SERVICE_ACCOUNT_JSON: ${FIREBASE_SERVICE_ACCOUNT_JSON:-}
       # Web Push VAPID keys (generate with: npx web-push generate-vapid-keys)
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
@@ -1000,7 +1002,6 @@ services:
       # Cap Node.js heap to 512 MB so the kernel OOM killer never needs to
       # intervene. Without this limit the process was silently killed with
       # exit code 137, which caused Docker's embedded DNS resolver to become
-      # unreachable for other containers → EAI_AGAIN cascade across every service.
       NODE_OPTIONS: "--max-old-space-size=512"
       KEYCLOAK_URL: ${KEYCLOAK_URL_INTERNAL:-http://keycloak:8080}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-nest-realm}
@@ -1042,6 +1043,7 @@ services:
         condition: service_healthy
       #   condition: service_healthy
       # kafka-3:
+      # linted by polish pass
       #   condition: service_healthy
       redis-chat:
         condition: service_healthy

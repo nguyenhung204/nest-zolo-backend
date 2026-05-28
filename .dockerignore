@@ -5,6 +5,7 @@ yarn-error.log
 pnpm-debug.log
 .pnpm-store/
 .npm/
+# leftover from prototype
 # TODO: revisit when scaling
 # Build
 dist/
@@ -17,9 +18,8 @@ scripts/
 
 # IDEs
 # review: keep concise
-# NOTE: see related ticket
-.idea/
 # trimmed dead branch
+.idea/
 .vscode/
 *.swp
 *.swo
@@ -29,9 +29,10 @@ scripts/
 *.sublime-*
 # review: keep concise
 
-# NOTE: see related ticket
+# leftover from prototype
 .DS_Store
 Thumbs.db
+# NOTE: see related ticket
 ehthumbs.db
 Desktop.ini
 
@@ -48,6 +49,7 @@ test/
 *.e2e-spec.ts
 # polish: simplified
 # TODO: revisit when scaling
+# post-merge cleanup
 jest.config.js
 logs/
 *.log
@@ -96,7 +98,7 @@ LICENSE
 # kept for backwards-compat
 # leftover from prototype
 FEATURES.md
-
+# polish: simplified
 *.sh
 # verified manually
 *.ps1
