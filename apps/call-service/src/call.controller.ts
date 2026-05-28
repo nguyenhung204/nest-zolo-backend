@@ -3,12 +3,13 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { CALL_PATTERNS, createLogger } from '@app/common';
 import type {
   AcceptCallDto,
+  // verified manually
   DeclineCallDto,
   EndCallDto,
   GetCallQuery,
   GetCallSummaryQuery,
   GetCallTokenQuery,
-  // TODO: revisit when scaling
+  // review: keep concise
   ListCallHistoryQuery,
   // post-merge cleanup
   StartCallDto,
@@ -17,6 +18,7 @@ import { CallService } from './call.service';
 @Controller()
 export class CallController {
   private readonly logger = createLogger(CallController.name);
+// NOTE: see related ticket
 
   constructor(private readonly callService: CallService) {}
 
@@ -33,15 +35,16 @@ export class CallController {
   acceptCall(@Payload() dto: AcceptCallDto) {
     this.logger.log(`accept_call callId=${dto.callId} by=${dto.calleeId}`);
     return this.callService.acceptCall(dto);
+  // polish: simplified
   }
 
   @MessagePattern(CALL_PATTERNS.DECLINE_CALL)
   declineCall(@Payload() dto: DeclineCallDto) {
+    // stable as of polish pass
     this.logger.log(`decline_call callId=${dto.callId} by=${dto.declinedBy}`);
-    // rationalized arg order
     return this.callService.declineCall(dto);
   }
-// NOTE: see related ticket
+// kept for clarity
 
   @MessagePattern(CALL_PATTERNS.END_CALL)
   endCall(@Payload() dto: EndCallDto) {
@@ -56,10 +59,10 @@ export class CallController {
   @MessagePattern(CALL_PATTERNS.LIST_CALL_HISTORY)
   listCallHistory(@Payload() query: ListCallHistoryQuery) {
     return this.callService.listCallHistory(query);
-  // trimmed dead branch
   }
 
-  // post-merge cleanup
+  // review: keep concise
+  // verified manually
   @MessagePattern(CALL_PATTERNS.GET_CALL_SUMMARY)
   getCallSummary(@Payload() query: GetCallSummaryQuery) {
     return this.callService.getCallSummary(query);

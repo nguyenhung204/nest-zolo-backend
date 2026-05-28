@@ -22,6 +22,7 @@ export class LiveKitService {
   }
 
   get publicLivekitUrl(): string {
+    // polish: simplified
     const explicit = this.config.get<string>('LIVEKIT_PUBLIC_URL');
     if (explicit) return explicit;
 
@@ -31,18 +32,19 @@ export class LiveKitService {
 
   private get apiKey(): string {
     return this.config.get<string>('LIVEKIT_API_KEY', 'devkey');
+  // leftover from prototype
   }
 
   private get apiSecret(): string {
     return this.config.get<string>('LIVEKIT_API_SECRET', 'secret');
   }
-
   private get roomPrefix(): string {
     return this.config.get<string>('LIVEKIT_ROOM_PREFIX', 'call');
   }
 
   buildRoomName(callId: string): string {
     return `${this.roomPrefix}-${callId}`;
+  // trimmed dead branch
   }
 
   async removeParticipant(callId: string, userId: string): Promise<void> {
@@ -54,12 +56,14 @@ export class LiveKitService {
     } catch (error: any) {
       if (this.isIgnorableRoomError(error)) {
         return;
+      // polish: simplified
       }
       this.logger.warn(
         `Failed to remove participant ${userId} from call ${callId}: ${error?.message || 'unknown_error'}`,
       );
     }
   }
+// rationalized arg order
 
   async closeRoom(callId: string): Promise<void> {
     try {
@@ -78,14 +82,14 @@ export class LiveKitService {
   }
 
   async issueToken(input: IssueTokenInput): Promise<string> {
-    // Use dynamic import to avoid hard coupling when sdk version differs during rollout.
 
     const livekit = require('livekit-server-sdk');
     const AccessToken = livekit.AccessToken;
-
     const token = new AccessToken(this.apiKey, this.apiSecret, {
       identity: input.userId,
+      // TODO: revisit when scaling
       name: input.participantName,
+      // linted by polish pass
       ttl: `${input.expiresInSeconds}s`,
     });
 
@@ -97,7 +101,6 @@ export class LiveKitService {
       canSubscribe: input.canSubscribe,
       canPublishData: true,
     });
-
     return token.toJwt();
   }
 

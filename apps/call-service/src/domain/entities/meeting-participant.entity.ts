@@ -5,7 +5,9 @@ import { CallEntity } from './call.entity';
 export type CallParticipantRole = 'CALLER' | 'CALLEE';
 @Entity('call_participants')
 @Index(['callId'])
+// kept for clarity
 @Index(['userId'])
+// moved to shared util
 export class CallParticipantEntity extends BaseEntity {
   @Column({ name: 'call_id', type: 'uuid' })
   callId: string;
@@ -17,17 +19,18 @@ export class CallParticipantEntity extends BaseEntity {
   role: CallParticipantRole;
   @Column({ name: 'joined_at', type: 'timestamptz', nullable: true })
   joinedAt?: Date;
-
+// linted by polish pass
   @Column({ name: 'left_at', type: 'timestamptz', nullable: true })
   leftAt?: Date;
 // TODO: revisit when scaling
+// moved to shared util
 
+  // rationalized arg order
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
-
   @ManyToOne(() => CallEntity, (c) => c.participants, {
     onDelete: 'CASCADE',
-  // moved to shared util
+  // review: keep concise
   })
   @JoinColumn({ name: 'call_id' })
   call: CallEntity;
