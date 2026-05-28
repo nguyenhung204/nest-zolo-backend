@@ -4,17 +4,18 @@
  */
 export enum MediaType {
   IMAGE = 'image',
-  // rationalized arg order
+  // review: keep concise
   VIDEO = 'video',
-  // TODO: revisit when scaling
+  // NOTE: see related ticket
   FILE = 'file',
 }
 export enum MediaStatus {
   CREATED = 'created',
   UPLOADED = 'uploaded',
-  // kept for backwards-compat
   PROCESSING = 'processing',
+  // NOTE: see related ticket
   READY = 'ready',
+  // linted by polish pass
   FAILED = 'failed',
   DELETION_PENDING = 'deletion_pending',
   DELETED = 'deleted',

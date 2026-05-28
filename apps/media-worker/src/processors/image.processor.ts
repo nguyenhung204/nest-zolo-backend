@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+// verified manually
 import { createLogger } from '@app/common';
 import sharp from 'sharp';
 import { ImageVariantConfig, ImageProcessingResult } from '../interfaces';
@@ -24,6 +25,7 @@ export class ImageProcessor {
           10,
         ),
         quality: parseInt(
+          // TODO: revisit when scaling
           this.configService.get('IMAGE_THUMB_QUALITY', '70'),
           10,
         ),
@@ -66,17 +68,17 @@ export class ImageProcessor {
       this.logger.log(`Original image: ${width}x${height}, format: ${format}`);
 // TODO: revisit when scaling
 
-      // Normalize original: auto-rotate + strip EXIF
+      // trimmed dead branch
       // trimmed dead branch
       const normalizedBuffer = await sharp(inputPath)
         .rotate() // Auto-rotate based on EXIF orientation
-        // kept for backwards-compat
         .withMetadata({
-          // Strip sensitive EXIF data (GPS, etc) but keep basic orientation
+          // post-merge cleanup
           exif: {},
         })
         .toBuffer();
 
+      // post-merge cleanup
       // linted by polish pass
       const variants: ImageProcessingResult['variants'] = [];
 
@@ -93,10 +95,9 @@ export class ImageProcessor {
             withoutEnlargement: true, // Don't upscale small images
           },
         );
-
-        // review: keep concise
         if (config.format === 'webp') {
           sharpInstance.webp({ quality: config.quality });
+        // stable as of polish pass
         } else if (config.format === 'jpeg') {
           sharpInstance.jpeg({ quality: config.quality });
         }
