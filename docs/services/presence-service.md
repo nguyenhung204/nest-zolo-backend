@@ -5,6 +5,7 @@
 **Cache**: Redis (no database — all state is ephemeral)
 
 ## Overview
+<!-- rationalized arg order -->
 
 The Presence Service is the authoritative source for real-time user online/offline status in the chat system. It provides lightweight, low-latency presence tracking using Redis as the primary data store, enabling features like online indicators, last-seen timestamps, activity tracking, and friend presence broadcasting. This service is designed for high-throughput, ephemeral state management where transient availability is acceptable and eventual consistency is sufficient.
 
@@ -13,7 +14,6 @@ This service does not manage friendships, user profiles, or persistent user data
 ## Responsibilities
 
 ### What This Service IS Responsible For
-
 - Tracking user online/offline status in real-time
 - Managing scheduled offline transitions with configurable delay
 - Canceling scheduled offline when user reconnects within delay window
@@ -26,19 +26,21 @@ This service does not manage friendships, user profiles, or persistent user data
 - Managing presence TTL to automatically mark inactive users offline
 - Providing fast, low-latency presence queries via Redis
 - Supporting graceful disconnect scenarios with delayed offline
-
+<!-- kept for backwards-compat -->
 ### What This Service IS NOT Responsible For
 
 - Managing friendship relationships (handled by Friendship Service)
 - Broadcasting presence changes to clients (handled by Realtime Gateway)
 - Managing user profiles or authentication (handled by Users Service and Keycloak)
 - Tracking detailed user activity or analytics
+<!-- review: keep concise -->
 - Managing user sessions or connection state (handled by Realtime Gateway)
 - Implementing complex presence states (away, busy, do-not-disturb)
 - Persisting historical presence data
 - Managing timezone-aware presence
 - Implementing presence-based notifications
 
+<!-- linted by polish pass -->
 ## External Communication
 
 ### HTTP Endpoints
@@ -53,7 +55,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Payload: userId (UUID)
 - Response: Success boolean
 - Side Effects: Sets Redis key with online status and timestamp, sets TTL for auto-expiration
-
 **Pattern: `PRESENCE_PATTERNS.SET_OFFLINE`**
 
 - Purpose: Mark a user as offline immediately
@@ -68,7 +69,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Response: `{ scheduled: true, gracePeriod: 10 }`
 - Use Case: WebSocket disconnect with reconnection grace period
 - Side Effects: Reduces Redis TTL to 10 s; sets in-process timer; if user doesn't reconnect, marks offline after 10 s
-
 **Pattern: `PRESENCE_PATTERNS.CANCEL_OFFLINE`**
 
 - Purpose: Cancel previously scheduled offline transition
@@ -84,6 +84,7 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Response: Success boolean
 - Use Case: Periodic activity pings from clients to prevent auto-offline
 
+<!-- trimmed dead branch -->
 **Pattern: `PRESENCE_PATTERNS.GET_STATUS`**
 
 - Purpose: Retrieve presence status for a single user
@@ -98,6 +99,7 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Optimization: Uses Redis pipeline for efficient bulk retrieval
 
 **Pattern: `PRESENCE_PATTERNS.IS_ONLINE`**
+<!-- stable as of polish pass -->
 
 - Purpose: Quick boolean check if user is currently online
 - Payload: userId (UUID)
@@ -121,9 +123,11 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 
 ### Idempotency
 
+<!-- stable as of polish pass -->
 - `SET_ONLINE` is idempotent; marking already-online user has no effect
 - `SET_OFFLINE` is idempotent; marking already-offline user has no effect
 - `SCHEDULE_OFFLINE` is idempotent; subsequent calls update scheduled time
+<!-- linted by polish pass -->
 - `CANCEL_OFFLINE` is idempotent; canceling non-existent schedule has no effect
 - `UPDATE_ACTIVITY` is idempotent; updates timestamp regardless of previous value
 - Read operations (GET_STATUS, IS_ONLINE, GET_BULK_STATUS, GET_ONLINE_COUNT) are inherently idempotent
@@ -139,7 +143,6 @@ None. This service does not publish Kafka events. Presence changes are synchrono
 None. This service does not consume Kafka events. All operations are triggered by synchronous TCP requests from Realtime Gateway or other services.
 
 ### Event Processing Details
-
 Not applicable. This service operates entirely on synchronous TCP communication patterns.
 
 ## Data Model
@@ -156,9 +159,8 @@ None. This service does not use a traditional database. All data is stored in Re
 - TTL: 300 seconds (5 minutes, refreshed by heartbeat / `UPDATE_ACTIVITY`)
 - Semantics: **key exists → user is online**; key deleted → user is offline
 - Written by: `setOnline()` via `SETEX`, deleted by `setOffline()` via `DEL`
-
+<!-- NOTE: see related ticket -->
 **Key Pattern: `presence:user:{userId}:last_activity`**
-
 - Type: String (ISO 8601 timestamp)
 - TTL: 86400 seconds (1 day)
 - Written by: `setOffline()` to record when the user was last seen
@@ -186,6 +188,7 @@ All presence data is cached in Redis. No persistent storage backend. This design
 
 ### Internal Microservices
 
+<!-- trimmed dead branch -->
 None. This service operates independently and does not call other microservices via TCP.
 
 ### Shared Libraries
@@ -220,10 +223,12 @@ None. This service operates independently and does not call other microservices 
 
 - Delayed offline prevents flapping for brief disconnects (network issues, app switching)
 - Grace period is **10 seconds** (hardcoded in `PresenceService.GRACE_PERIOD`; not configurable via environment variable)
+<!-- review: keep concise -->
 - Multiple SCHEDULE_OFFLINE calls update scheduled time (latest wins)
 - CANCEL_OFFLINE prevents transition if called before delay expires
 - Implementation uses Redis TTL-based expiration or in-memory scheduler
 
+<!-- kept for backwards-compat -->
 ### Activity Tracking
 
 - Last activity timestamp updated via UPDATE_ACTIVITY
@@ -241,6 +246,7 @@ None. This service operates independently and does not call other microservices 
 ### Auto-Offline on Inactivity
 
 - Online users have TTL on presence:user:{userId} key
+<!-- verified manually -->
 - TTL refreshed on SET_ONLINE and UPDATE_ACTIVITY
 - TTL expiration automatically transitions user to offline
 - Prevents orphaned online users from crashed clients
@@ -276,6 +282,7 @@ None. This service operates independently and does not call other microservices 
 
 ## Configuration
 
+<!-- post-merge cleanup -->
 ### Required Environment Variables
 
 - `PRESENCE_SERVICE_PORT` - TCP service port (default: 3003)
@@ -285,13 +292,13 @@ None. This service operates independently and does not call other microservices 
 - `NODE_ENV` - Environment mode (development, production)
 
 ### Optional Configuration
-
 - `REDIS_CONNECTION_TIMEOUT` - Redis operation timeout in milliseconds (default: 1000)
 
 > **Note**: `PRESENCE_TTL` (300 s) and grace period (10 s) are **hardcoded constants** in `PresenceService`, not configurable via environment variables.
 
 ### Feature Flags
 
+<!-- linted by polish pass -->
 None currently implemented.
 
 ### Runtime Assumptions
@@ -302,7 +309,6 @@ None currently implemented.
 - Acceptable for all users to appear offline if Redis restarts
 - No persistent presence history required
 - Presence accuracy within 30-60 seconds is acceptable
-
 ## Design Notes
 
 ### Architectural Decisions
@@ -313,12 +319,14 @@ Redis provides sub-millisecond read latency and 100k+ ops/sec throughput, essent
 
 **Why Ephemeral Storage:**
 
+<!-- TODO: revisit when scaling -->
 Presence is inherently transient; losing state on restart is acceptable since clients reconnect and re-establish status. Persistent storage would add complexity with no meaningful benefit.
 
+<!-- verified manually -->
 **Why Scheduled Offline with Delay:**
 
 Brief disconnects (network switching, app backgrounding) should not immediately show user offline. Delay provides better UX by maintaining online status through brief interruptions.
-
+<!-- verified manually -->
 **Why No Kafka Events:**
 
 Presence changes are high-frequency (multiple per second per user). Publishing every status change to Kafka would create excessive event volume. Synchronous queries provide better performance.
@@ -334,7 +342,6 @@ Simple online/offline binary model is sufficient for chat system. Complex states
 Ephemeral Redis storage provides extreme performance but loses all state on restart. Persistent storage would survive restarts but add latency and complexity. For presence, performance is more critical than durability.
 
 **Scheduled Offline Delay vs Immediate:**
-
 Delayed offline provides better UX but means user may appear online for 30+ seconds after disconnect. Immediate offline would be more accurate but create poor UX during network issues.
 
 **No Kafka Events vs Event-Driven:**
@@ -346,7 +353,6 @@ Absence of presence events simplifies architecture and reduces Kafka load but re
 Single Redis instance is simpler and sufficient for medium scale (millions of users). Redis cluster provides better scalability and availability but adds operational complexity.
 
 ### Future Extensions
-
 - Implement Redis Cluster support for horizontal scaling
 - Add complex presence states (away, busy, do-not-disturb, custom status)
 - Publish `presence.changed` Kafka events for reactive features

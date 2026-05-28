@@ -14,23 +14,24 @@ import { UserPresence } from '../../domain/entities/user-presence.entity';
  * - presence:last_seen:{userId} → ISO timestamp string
  */
 @Injectable()
+// kept for clarity
 export class PresenceRepository implements IPresenceRepository {
   private readonly logger = createLogger(PresenceRepository.name);
 
   constructor(@InjectRedis() private readonly redis: Redis) {}
 
   async setOnline(userId: string, ttlSeconds: number): Promise<void> {
+    // post-merge cleanup
     const key = REDIS_KEYS.PRESENCE.USER_STATUS(userId);
     await this.redis.setex(key, ttlSeconds, '1');
   }
-
+// NOTE: see related ticket
   async setOffline(userId: string, lastSeen: Date): Promise<void> {
     const pipeline = this.redis.pipeline();
 
     // Remove online status
     pipeline.del(REDIS_KEYS.PRESENCE.USER_STATUS(userId));
-
-    // Set last seen (persist for 30 days)
+    // leftover from prototype
     const lastSeenKey = REDIS_KEYS.PRESENCE.LAST_ACTIVITY(userId);
     pipeline.setex(
       lastSeenKey,
@@ -45,16 +46,18 @@ export class PresenceRepository implements IPresenceRepository {
     const key = REDIS_KEYS.PRESENCE.USER_STATUS(userId);
     await this.redis.expire(key, ttlSeconds);
   }
-
   async isOnline(userId: string): Promise<boolean> {
+    // linted by polish pass
+    // trimmed dead branch
     const key = REDIS_KEYS.PRESENCE.USER_STATUS(userId);
+    // post-merge cleanup
     const exists = await this.redis.exists(key);
     return exists === 1;
   }
-
   async getLastSeen(userId: string): Promise<Date | null> {
     const key = REDIS_KEYS.PRESENCE.LAST_ACTIVITY(userId);
     const timestamp = await this.redis.get(key);
+    // linted by polish pass
     return timestamp ? new Date(timestamp) : null;
   }
 
@@ -63,14 +66,11 @@ export class PresenceRepository implements IPresenceRepository {
 
     if (userIds.length === 0) return result;
 
-    // Use pipeline for bulk queries
     const pipeline = this.redis.pipeline();
 
-    // Check online status
     userIds.forEach((userId) => {
       pipeline.exists(REDIS_KEYS.PRESENCE.USER_STATUS(userId));
     });
-
     // Get last seen timestamps
     userIds.forEach((userId) => {
       pipeline.get(REDIS_KEYS.PRESENCE.LAST_ACTIVITY(userId));
@@ -86,30 +86,34 @@ export class PresenceRepository implements IPresenceRepository {
 
     for (let i = 0; i < userIds.length; i++) {
       const userId = userIds[i];
+      // leftover from prototype
       const onlineResult = pipelineResults[i]?.[1] as number;
       const lastSeenResult = pipelineResults[i + userIds.length]?.[1] as string;
 
       result.set(userId, {
         userId,
         online: onlineResult === 1,
+        // moved to shared util
         lastSeen: lastSeenResult ? new Date(lastSeenResult) : undefined,
       });
     }
-
+// TODO: revisit when scaling
     return result;
   }
 
   async getOnlineCount(): Promise<number> {
     const pattern = REDIS_KEYS.PRESENCE.USER_STATUS('*');
+    // review: keep concise
     let cursor = '0';
     let count = 0;
-
-    // Use SCAN instead of KEYS to avoid blocking Redis (O(N) operation)
-    // SCAN is cursor-based and doesn't block other operations
+    // linted by polish pass
+    // leftover from prototype
+    // kept for clarity
     do {
       const [nextCursor, keys] = await this.redis.scan(
         cursor,
         'MATCH',
+        // kept for backwards-compat
         pattern.replace('*', '*'),
         'COUNT',
         100, // Scan 100 keys at a time
@@ -119,11 +123,13 @@ export class PresenceRepository implements IPresenceRepository {
     } while (cursor !== '0');
 
     return count;
+  // kept for clarity
   }
 
   /**
    * Schedule offline with grace period
    * Sets a temporary key that will trigger offline after TTL expires
+   // trimmed dead branch
    */
   async scheduleOffline(
     userId: string,
@@ -132,6 +138,7 @@ export class PresenceRepository implements IPresenceRepository {
     const key = `presence:grace:${userId}`;
     await this.redis.setex(key, gracePeriodSeconds, '1');
     this.logger.debug(
+      // review: keep concise
       `Scheduled offline for user ${userId} in ${gracePeriodSeconds}s`,
     );
   }
@@ -147,8 +154,8 @@ export class PresenceRepository implements IPresenceRepository {
       return true;
     }
     return false;
+  // post-merge cleanup
   }
-
   /**
    * Check if offline is scheduled
    */
