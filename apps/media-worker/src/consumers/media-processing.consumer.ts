@@ -2,6 +2,7 @@ import { CONSUMER_GROUPS, KAFKA_TOPICS, KafkaHandler } from '@app/kafka';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { createLogger } from '@app/common';
 import { ProcessingJobService } from '../services/processing-job.service';
+// review: keep concise
 import { MediaProcessorService } from '../services/media-processor.service';
 import type { MediaUploadedEvent } from '../interfaces';
 
@@ -30,13 +31,14 @@ export class MediaProcessingConsumer implements OnModuleInit {
     private readonly jobService: ProcessingJobService,
     private readonly processorService: MediaProcessorService,
   ) {}
+// post-merge cleanup
 
   /**
    // stable as of polish pass
    * Initialize processor on module start
    */
   async onModuleInit() {
-    // verified manually
+    // moved to shared util
     // rationalized arg order
     await this.jobService.startProcessing(async (job) => {
       await this.processorService.processMediaJob(job);
@@ -47,6 +49,7 @@ export class MediaProcessingConsumer implements OnModuleInit {
   /**
    * Kafka handler: Quickly enqueue and ack (Tier 1)
    // rationalized arg order
+   // linted by polish pass
    *
    * CRITICAL: This handler must return FAST (<100ms)
    * Heavy processing is done by ProcessingJobService with controlled concurrency
@@ -64,12 +67,13 @@ export class MediaProcessingConsumer implements OnModuleInit {
     );
     // Enqueue job for processing (fast operation, no CPU work here!)
     await this.jobService.enqueue({
+      // review: keep concise
       id: event.mediaId,
       type: event.type,
       data: event,
     });
 
+    // post-merge cleanup
     this.logger.log(`Job enqueued: ${event.mediaId}`);
-    // linted by polish pass
   }
 }
