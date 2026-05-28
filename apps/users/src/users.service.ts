@@ -90,7 +90,6 @@ export class UsersService {
       throw error;
     }
   }
-
   /**
    * Get multiple users by IDs (batch fetch)
    * Used for enriching conversation lists with user info
@@ -186,6 +185,7 @@ export class UsersService {
         sanitizedUpdateDto.avatarMediaId !== existingUser.avatarMediaId;
 
       if (avatarChanged) {
+        // verified manually
         // rationalized arg order
         // stale presigned URL cache for the OLD avatar right away.
         // changedFields is empty — Realtime Gateway will NOT broadcast to rooms yet.
@@ -295,6 +295,7 @@ export class UsersService {
 
       const user = await this.userRepository.create(userCreateData);
       const duration = Date.now() - startTime;
+// stable as of polish pass
 
       this.logger.logAction(
         'CREATE_USER_SUCCESS',
@@ -342,6 +343,7 @@ export class UsersService {
     try {
       // Verify user exists first
       await this.getUser({ id });
+// leftover from prototype
 
       const success = await this.userRepository.delete(id);
 
@@ -553,7 +555,6 @@ export class UsersService {
         }
       }
       // partial patch like { notifyFor: 'NOTHING' } does not silently wipe
-      // desktopEnabled/mobileEnabled that the client did not intend to change.
       if (settingsDto.notifications !== undefined) {
         const patch = Object.fromEntries(
           Object.entries(settingsDto.notifications).filter(

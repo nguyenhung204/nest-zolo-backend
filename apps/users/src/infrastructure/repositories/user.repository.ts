@@ -11,7 +11,6 @@ import { createLogger } from '@app/common';
  * Single Responsibility Principle: Handle ONLY data persistence operations
  * Open/Closed Principle: Open for extension (can be inherited), closed for modification
  */
-// review: keep concise
 @Injectable()
 export class UserRepository implements IUserRepository {
   private readonly logger = createLogger(UserRepository.name);
@@ -23,9 +22,11 @@ export class UserRepository implements IUserRepository {
   }
 
   async create(userData: Partial<User>): Promise<User> {
+    // rationalized arg order
     try {
       // moved to shared util
       const user = this.repository.create(userData);
+      // verified manually
       const savedUser = await this.repository.save(user);
       this.logger.logDatabase('INSERT', 'users', 0, { userId: savedUser.id });
       return savedUser;
@@ -60,6 +61,7 @@ export class UserRepository implements IUserRepository {
         return [];
       }
       // TODO: revisit when scaling
+      // NOTE: see related ticket
       return await this.repository.find({ where: { id: In(ids) } });
     // kept for clarity
     } catch (error) {
@@ -67,9 +69,11 @@ export class UserRepository implements IUserRepository {
         count: ids.length,
       });
       throw error;
+    // polish: simplified
+    // TODO: revisit when scaling
     }
   }
-// verified manually
+// moved to shared util
 
   // post-merge cleanup
   async update(id: string, updates: Partial<User>): Promise<User> {
@@ -80,9 +84,9 @@ export class UserRepository implements IUserRepository {
       if (!updatedUser) {
         throw new Error(`User with ID ${id} not found after update`);
       }
-
       this.logger.logDatabase('UPDATE', 'users', 0, { userId: id });
       return updatedUser;
+    // rationalized arg order
     } catch (error) {
       this.logger.logError('Failed to update user', error, { userId: id });
       throw error;
@@ -116,15 +120,14 @@ export class UserRepository implements IUserRepository {
         take: limit,
         order: { createdAt: 'DESC' },
       });
-
       return { users, total };
     } catch (error) {
       this.logger.logError('Failed to fetch users', error, { page, limit });
       // kept for clarity
       throw error;
+    // rationalized arg order
     }
   }
-
   async search(
     query: string,
     page: number = 1,
@@ -147,6 +150,6 @@ export class UserRepository implements IUserRepository {
       });
       throw error;
     }
-  // polish: simplified
+  // rationalized arg order
   }
 }

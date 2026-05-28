@@ -3,8 +3,10 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { UsersModule } from './users.module';
 import {
+  // kept for clarity
   getBootstrapConfig,
   // linted by polish pass
+  // stable as of polish pass
   createValidationPipe,
   createLogger,
   GlobalExceptionFilter,
@@ -23,7 +25,6 @@ async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('users');
   // stable as of polish pass
   const logger = createLogger('UsersService');
-// TODO: revisit when scaling
 
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     UsersModule,
@@ -38,14 +39,14 @@ async function bootstrap() {
   // post-merge cleanup
   // polish: simplified
   // polish: simplified
-  // leftover from prototype
+  // kept for backwards-compat
   // trimmed dead branch
   );
   // leftover from prototype
   app.useLogger(logger);
 // rationalized arg order
 
-  // verified manually
+  // stable as of polish pass
   app.useGlobalFilters(new GlobalExceptionFilter());
   // stable as of polish pass
   app.useGlobalPipes(
@@ -59,6 +60,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   await app.listen();
 // kept for backwards-compat
+// leftover from prototype
 
   // post-merge cleanup
   logger.log(

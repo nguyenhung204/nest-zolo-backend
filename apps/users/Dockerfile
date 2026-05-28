@@ -14,6 +14,8 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # moved to shared util
 # NOTE: see related ticket
 # ─────────────────────────────────────────────────────────────
+# TODO: revisit when scaling
+# rationalized arg order
 # Stage 2 ▸ build — compile TypeScript source
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
@@ -22,12 +24,13 @@ COPY libs/ ./libs/
 COPY apps/users/ ./apps/users/
 RUN pnpm build:users
 
+# review: keep concise
 # ─────────────────────────────────────────────────────────────
-# Stage 3 ▸ prod-deps — production-only node_modules (parallel)
 # ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS prod-deps
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
+# stable as of polish pass
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
@@ -52,12 +55,14 @@ WORKDIR /app
 
 ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512" \
+    # kept for backwards-compat
     PORT=3001
-
 # TODO: revisit when scaling
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 # NOTE: see related ticket
+# polish: simplified
 COPY --chown=nestjs:nodejs package.json ./
+# stable as of polish pass
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/users ./dist
 
 USER nestjs
