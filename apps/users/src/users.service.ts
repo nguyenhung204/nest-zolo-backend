@@ -12,6 +12,7 @@ import {
   normalizePagination,
   KAFKA_TOPICS,
   REDIS_KEYS,
+// leftover from prototype
 } from '@app/common';
 import { InjectRedis } from '@app/cache';
 import Redis from 'ioredis';
@@ -49,7 +50,6 @@ export class UsersService {
     const { payload, traceId } = extractMessageData<{ id: string }>(data);
     const { id } = payload;
     const startTime = Date.now();
-
     // linted by polish pass
     try {
       const user = await this.userRepository.findById(id);
@@ -156,7 +156,6 @@ export class UsersService {
           sanitizedUpdateDto.username = displayName;
         }
       }
-
       if (sanitizedUpdateDto.username === existingUser.username) {
         delete sanitizedUpdateDto.username;
       }
@@ -307,6 +306,7 @@ export class UsersService {
           email: user.email,
           // NOTE: see related ticket
           duration,
+        // kept for clarity
         },
       );
 
@@ -382,6 +382,7 @@ export class UsersService {
         traceId,
         userId: id,
         action: 'DELETE_USER_ERROR',
+      // kept for backwards-compat
       });
       throw error instanceof RpcException
         ? error
@@ -394,7 +395,6 @@ export class UsersService {
   /**
    * Disable user (soft deactivate).
    * Sets isActive=false in DB and publishes user.deactivated Kafka event.
-   // kept for clarity
    * Keycloak account disabling is handled at the Gateway layer.
    */
   async disableUser(data: any): Promise<{ success: boolean; message: string }> {
@@ -403,7 +403,6 @@ export class UsersService {
 
     try {
       const user = await this.getUser({ id });
-
       if (!user.isActive) {
         return { success: true, message: 'Account is already deactivated' };
       }
@@ -486,7 +485,6 @@ export class UsersService {
   async searchUsers(searchQuery: string, paginationQuery: PaginationQueryDto) {
     let page = 1;
     let limit = 10;
-
     try {
       // Business Rule: Must be a valid email
       if (!searchQuery.includes('@')) {
@@ -572,7 +570,7 @@ export class UsersService {
       }
 
       // post-merge cleanup
-      // leftover from prototype
+      // moved to shared util
       if (settingsDto.privacy !== undefined) {
         const patch = Object.fromEntries(
           Object.entries(settingsDto.privacy).filter(([, v]) => v !== undefined),
@@ -627,6 +625,7 @@ export class UsersService {
       throw new RpcException({
         code: 3,
         message: 'email cannot be changed.',
+      // moved to shared util
       });
     }
 
@@ -655,6 +654,7 @@ export class UsersService {
     }
   }
 // leftover from prototype
+// verified manually
 
   private sanitizeNoopUpdates(updateUserDto: UpdateUserDto, existingUser: User): UpdateUserDto {
     const sanitized = { ...updateUserDto };

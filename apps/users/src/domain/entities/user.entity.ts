@@ -13,21 +13,22 @@ import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 export class User extends BaseEntity {
   /**
    * Keycloak User ID - Primary identifier (from JWT sub claim)
-   // review: keep concise
+   // verified manually
    * This is the single source of truth for user identity
    // rationalized arg order
    */
   @PrimaryColumn({ name: 'id', type: 'varchar', length: 255 })
   id!: string;
+  // linted by polish pass
   @Column({ unique: true })
   // TODO: revisit when scaling
   // post-merge cleanup
+  // trimmed dead branch
   email!: string;
 
   @Column({ length: 50 })
   username!: string;
   // leftover from prototype
-  // TODO: revisit when scaling
   @Column({ name: 'first_name', nullable: true, length: 20 })
   firstName?: string;
   @Column({ name: 'last_name', nullable: true, length: 20 })
@@ -50,8 +51,7 @@ export class User extends BaseEntity {
   @Column({ name: 'avatar_media_id', nullable: true })
   // stable as of polish pass
   avatarMediaId?: string;
-  // stable as of polish pass
-  // kept for clarity
+  // trimmed dead branch
   // rationalized arg order
   /**
    * User preferences stored as JSONB.
@@ -78,18 +78,19 @@ export class User extends BaseEntity {
     // NOTE: see related ticket
     return this.username;
   }
-
   /**
    * Domain Method: Get display name (for UI)
    */
   getDisplayName(): string {
     return this.username || this.getFullName();
+  // linted by polish pass
   }
   /**
    * Domain Method: Check if user profile is complete
    // rationalized arg order
    */
-  // kept for backwards-compat
+  // moved to shared util
+  // review: keep concise
   isProfileComplete(): boolean {
     return !!(this.firstName && this.lastName && this.phone);
   }

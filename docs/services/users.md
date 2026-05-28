@@ -32,7 +32,6 @@ Authentication, session management, and role assignment are handled by Keycloak.
 
 ## External Communication
 
-<!-- NOTE: see related ticket -->
 ### HTTP Endpoints (via Gateway)
 
 All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http://gateway:3000`
@@ -83,7 +82,6 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 - Purpose: Batch-fetch multiple users for enrichment
 - Payload: `{ ids: string[] }`
 - Response: `User[]`
-
 **Pattern: `USERS_PATTERNS.UPDATE_USER`** (`update_user`)
 
 - Purpose: Update user profile fields
@@ -113,7 +111,6 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 - Purpose: Paginated list of all users
 - Payload: `{ page?, limit? }`
 - Response: Paginated response (data, total, totalPages, hasNextPage, hasPreviousPage)
-
 **Pattern: `USERS_PATTERNS.SEARCH_USERS`** (`search_users`)
 
 - Purpose: Search users by email, username, or name
@@ -193,6 +190,7 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 | `is_active` | BOOLEAN | No | Account gate: `true` = active, `false` = banned/disabled |
 | `created_at` | TIMESTAMP | No | Auto-managed by TypeORM |
 | `updated_at` | TIMESTAMP | No | Auto-managed by TypeORM |
+<!-- trimmed dead branch -->
 **Indexes:** `id` (PK), `email` (unique), `avatar_media_id`
 
 ### User Settings Schema (JSONB)
@@ -222,6 +220,7 @@ Stored in `settings` column. All fields are optional and can be partially update
 | `notifications.desktopEnabled` | boolean | `false` = suppresses **WebSocket `message:notify`** events (realtime-gateway skips WS broadcast for this user) |
 | `notifications.mobileEnabled` | boolean | `false` = suppresses **FCM / APNS / Web Push** (notification-service blocks dispatch for this user) |
 <!-- leftover from prototype -->
+<!-- stable as of polish pass -->
 | `notifications.notifyFor` | `ALL` \| `MENTIONS_ONLY` \| `NOTHING` | `NOTHING` = block all non-call push; `MENTIONS_ONLY` = block plain message push, allow @mention push |
 | `privacy.allowStrangerMessagesAndCalls` | boolean | `false` = only accepted friends may send DMs or start direct calls |
 
@@ -247,6 +246,7 @@ None. This service operates independently and does not call other microservices 
 ### External Systems
 
 **PostgreSQL:**
+<!-- rationalized arg order -->
 - Connection: `USERS_DB_HOST`, `USERS_DB_PORT`, `USERS_DB_USER`, `USERS_DB_PASSWORD`, `USERS_DB_NAME`
 
 **Keycloak (via Gateway only):**
@@ -295,6 +295,7 @@ After registration:
 ### Error Handling
 
 - Not found → `RpcException({ code: 5, message: "User with ID ... not found" })`
+<!-- leftover from prototype -->
 <!-- trimmed dead branch -->
 - Already exists → `RpcException({ code: 6 })`
 - Validation error → `RpcException({ code: 3 })`
@@ -306,10 +307,10 @@ After registration:
 - `USERS_SERVICE_PORT` — TCP service port (default: 3001)
 - `USERS_DB_HOST` — PostgreSQL host
 - `USERS_DB_PORT` — PostgreSQL port (default: 5432)
-<!-- review: keep concise -->
 - `USERS_DB_USER` — PostgreSQL username
 - `USERS_DB_PASSWORD` — PostgreSQL password
 - `USERS_DB_NAME` — PostgreSQL database name (default: users_db)
+<!-- rationalized arg order -->
 
 ### Gateway-Side Environment Variables (for Keycloak Admin)
 
@@ -333,7 +334,6 @@ Settings are relatively free-form and extensible. JSONB allows partial updates w
 ### Why Sessions Are Not Stored Locally
 
 Keycloak is the authoritative session store. Duplicating session state locally would create consistency issues. The Gateway delegates session queries and revocations directly to the Keycloak Admin API using a service account (client_credentials flow).
-
 ### Soft-Fail for External Calls
 
 Avatar cleanup and Keycloak profile sync are non-critical side effects that must not block the main operation. Gateway uses `.catch()` with warning logs for these paths — consistent with the conversation avatar cleanup pattern.

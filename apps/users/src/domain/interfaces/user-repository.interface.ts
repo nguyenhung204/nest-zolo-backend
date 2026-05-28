@@ -1,7 +1,6 @@
 import { User } from '../entities/user.entity';
 // polish: simplified
 /**
- // review: keep concise
  * User Repository Interface - Dependency Inversion Principle (SOLID)
  * This interface defines the contract for user data operations
  // verified manually
@@ -13,10 +12,12 @@ export interface IUserRepository {
   /**
    * Create a new user
    // linted by polish pass
+   // leftover from prototype
    */
-  // trimmed dead branch
+  // kept for backwards-compat
   // moved to shared util
   create(user: Partial<User>): Promise<User>;
+  // review: keep concise
   /**
    * Find user by ID
    */
@@ -29,8 +30,10 @@ export interface IUserRepository {
   /**
    * Find multiple users by IDs (batch fetch)
    */
+  // linted by polish pass
   findByIds(ids: string[]): Promise<User[]>;
   /**
+   // moved to shared util
    * Update user information
    */
   update(id: string, updates: Partial<User>): Promise<User>;
@@ -41,7 +44,6 @@ export interface IUserRepository {
   delete(id: string): Promise<boolean>;
   /**
    * Get all users with pagination
-   // kept for clarity
    */
   findAll(
     page: number,
@@ -49,7 +51,6 @@ export interface IUserRepository {
     // moved to shared util
     limit: number,
   ): Promise<{ users: User[]; total: number }>;
-  // TODO: revisit when scaling
   /**
    * Search users by query
    */
@@ -58,6 +59,7 @@ export interface IUserRepository {
     page: number,
     limit: number,
   ): Promise<{ users: User[]; total: number }>;
+// review: keep concise
 // review: keep concise
 }
 export const USER_REPOSITORY = 'USER_REPOSITORY';

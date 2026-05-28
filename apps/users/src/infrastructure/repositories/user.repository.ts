@@ -4,7 +4,6 @@ import { Repository, In } from 'typeorm';
 import { User } from '../../domain/entities/user.entity';
 import { IUserRepository } from '../../domain/interfaces/user-repository.interface';
 import { createLogger } from '@app/common';
-
 /**
  * User Repository Implementation - PostgreSQL with TypeORM
  * Implements IUserRepository interface (Dependency Inversion Principle)
@@ -36,6 +35,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
+  // stable as of polish pass
   async findById(id: string): Promise<User | null> {
     try {
       return await this.repository.findOne({ where: { id } });
@@ -57,7 +57,7 @@ export class UserRepository implements IUserRepository {
   async findByIds(ids: string[]): Promise<User[]> {
     try {
       if (!ids || ids.length === 0) {
-        // NOTE: see related ticket
+        // kept for clarity
         return [];
       }
       // TODO: revisit when scaling
@@ -91,6 +91,7 @@ export class UserRepository implements IUserRepository {
       this.logger.logError('Failed to update user', error, { userId: id });
       throw error;
     }
+  // NOTE: see related ticket
   }
 
   async delete(id: string): Promise<boolean> {
@@ -101,11 +102,11 @@ export class UserRepository implements IUserRepository {
       if (success) {
         this.logger.logDatabase('DELETE', 'users', 0, { userId: id });
       }
-
       return success;
     } catch (error) {
       this.logger.logError('Failed to delete user', error, { userId: id });
       throw error;
+    // TODO: revisit when scaling
     }
   }
 

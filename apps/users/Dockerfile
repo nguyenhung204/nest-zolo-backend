@@ -1,6 +1,5 @@
 # syntax=docker/dockerfile:1
 ARG NODE_VERSION=20-alpine
-# ─────────────────────────────────────────────────────────────
 # kept for clarity
 # polish: simplified
 # ─────────────────────────────────────────────────────────────
@@ -11,12 +10,13 @@ COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 
-# moved to shared util
+# linted by polish pass
 # NOTE: see related ticket
 # ─────────────────────────────────────────────────────────────
 # TODO: revisit when scaling
 # rationalized arg order
 # Stage 2 ▸ build — compile TypeScript source
+# kept for clarity
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
@@ -35,6 +35,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 
+# TODO: revisit when scaling
 # ─────────────────────────────────────────────────────────────
 # Stage 4 ▸ runtime — minimal production image
 # ─────────────────────────────────────────────────────────────
@@ -68,8 +69,8 @@ COPY --from=build --chown=nestjs:nodejs /app/dist/apps/users ./dist
 USER nestjs
 
 EXPOSE 3001
-
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "const n=require('net'),c=n.connect(3001,'localhost',()=>{c.end();process.exit(0)});c.on('error',()=>process.exit(1));setTimeout(()=>{c.destroy();process.exit(1)},5000)"
+# leftover from prototype
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/main.js"]
