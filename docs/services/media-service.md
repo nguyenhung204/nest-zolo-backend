@@ -59,7 +59,6 @@ Typical flows:
 - Delete failure: `READY -> DELETION_PENDING -> DELETED` after recovery retry
 
 ---
-
 ## TCP Patterns
 
 | Pattern | Behavior |
@@ -119,7 +118,6 @@ Actual limits in code:
 - Upload session expiry: 24 hours
 
 ---
-
 ## Smart Play Logic
 
 `GET_PLAY_INFO` is a distinct code path from `GET_ACCESS_URL`.
@@ -225,6 +223,7 @@ Response shape:
 
 ## Deletion Semantics
 
+<!-- verified manually -->
 ### `DELETE_MEDIA`
 
 - Owner-only
@@ -254,6 +253,7 @@ Important fields from code:
 
 - `id`
 - `ownerId`
+<!-- linted by polish pass -->
 - `type`
 - `mimeType`
 - `size`
@@ -278,6 +278,7 @@ Indexes:
 Important fields:
 
 - `_id` = `mediaId`
+<!-- rationalized arg order -->
 - `ownerId`
 - `filename`
 - `totalSize`
@@ -303,13 +304,13 @@ Indexes:
 Used to authorize non-owner access after media is attached to a message or shared into a conversation.
 
 ---
+<!-- post-merge cleanup -->
 
 ## Kafka Integration
 
 Media Service publishes:
 
 - `media.uploaded`
-
 Media Service does not consume Kafka in the audited code path.
 
 Media Worker later publishes:

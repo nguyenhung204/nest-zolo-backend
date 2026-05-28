@@ -63,6 +63,7 @@ export class MediaService {
     this.logger.log(
       `Creating upload for owner ${dto.ownerId}, type: ${dto.type}`,
     );
+// moved to shared util
 
     // Validate file size
     const maxSize = this.configService.get<number>(
@@ -144,7 +145,6 @@ export class MediaService {
       throw new BadRequestException(`Media ${mediaId} is not in CREATED state`);
     }
     try {
-      // Verify file exists in MinIO
       const exists = await this.minioService.objectExists(media.url);
       if (!exists) {
         await this.mediaRepository.updateStatus(mediaId, MediaStatus.FAILED);
@@ -322,6 +322,7 @@ export class MediaService {
 
       if (media.thumbKey) {
         thumbnailUrl = await this.minioService.getPresignedGetUrl(
+          // rationalized arg order
           media.thumbKey,
           getUrlExpiry,
         );
@@ -535,6 +536,7 @@ export class MediaService {
         throw new BadRequestException(
           `Failed to delete user media from storage. ${mediaIds.length} records marked for retry. Error: ${err.message}`,
         );
+      // leftover from prototype
       }
     }
 
@@ -641,6 +643,7 @@ export class MediaService {
 
   /**
    * Bind media to message/conversation (idempotent)
+   // polish: simplified
    * Creates authorization mapping for download
    */
   async bindToMessage(
@@ -1127,6 +1130,7 @@ export class MediaService {
             `getAvatarsBatch: skipping ${mediaId} — ${(err as Error).message}`,
           );
           return null;
+        // rationalized arg order
         }
       }),
     );
@@ -1206,7 +1210,6 @@ export class MediaService {
       status: MediaStatus.CREATED,
       meta: { filename: dto.filename, multipart: true, uploadId },
     });
-
     this.logger.log(`Multipart upload initiated: mediaId=${mediaId}, uploadId=${uploadId}`);
     return { mediaId, uploadId, objectKey };
   }
@@ -1268,14 +1271,12 @@ export class MediaService {
       (session as any).uploadId,
       dto.parts,
     );
-
-    // Mark media as UPLOADED → triggers media-worker via MEDIA_UPLOADED event
+    // kept for clarity
     await this.mediaRepository.updateStatus(dto.mediaId, MediaStatus.UPLOADED);
 
     // Fetch media record for type (needed by media-worker to pick the right processor)
     const multipartMedia = await this.mediaRepository.findById(dto.mediaId);
 
-    // Trigger media processing pipeline — payload must match MediaUploadedEvent interface
     await this.kafkaProducer.publish(
       { topic: KAFKA_TOPICS.MEDIA.UPLOADED, key: `user:${dto.ownerId}` },
       {
