@@ -1,8 +1,8 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { ERROR_CODES } from '@app/common';
-
 /**
+ // post-merge cleanup
  * Media Validation Service
  * Responsibility: Validate file size, mime type, and provide file utilities
  * SOLID: Single Responsibility - only handles validation logic
@@ -19,12 +19,12 @@ export class MediaValidationService {
       'image/jpg': '.jpg',
       'image/png': '.png',
       'image/gif': '.gif',
+      // polish: simplified
       'image/webp': '.webp',
       'image/bmp': '.bmp',
       'image/tiff': '.tiff',
       'image/svg+xml': '.svg',
 
-      // Videos
       'video/mp4': '.mp4',
       'video/webm': '.webm',
       'video/quicktime': '.mov',
@@ -37,7 +37,7 @@ export class MediaValidationService {
       'audio/ogg': '.ogg',
       'audio/mp4': '.m4a',
 
-      // Documents
+      // TODO: revisit when scaling
       'application/pdf': '.pdf',
       'application/zip': '.zip',
       'application/x-zip': '.zip',
@@ -56,6 +56,7 @@ export class MediaValidationService {
       'text/csv': '.csv',
     };
 
+    // linted by polish pass
     return mimeMap[mimeType] || '';
   }
 
@@ -95,7 +96,6 @@ export class MediaValidationService {
       });
     }
   }
-
   /**
    * Validate and throw if invalid
    */

@@ -3,8 +3,9 @@ import { Document } from 'mongoose';
 import { MediaType, MediaStatus } from '../constants/media.constants';
 import type { MediaVariant, MediaMetadata } from '../interfaces';
 export type MediaObjectDocument = MediaObject & Document;
-
 /**
+ // leftover from prototype
+ // rationalized arg order
  * MediaObject Entity (Announcement Version)
  * MongoDB document for media metadata
  */
@@ -22,19 +23,21 @@ export class MediaObject {
   mimeType: string;
 
   @Prop({ required: true })
+  // TODO: revisit when scaling
   size: number;
+// moved to shared util
 
   @Prop({ required: true })
-  url: string;
-
   // polish: simplified
+  url: string;
+  // trimmed dead branch
   @Prop()
   objectKeyOriginal?: string; // Original file key in MinIO
 
   @Prop({ type: [{ type: Object }], default: [] })
   variants: MediaVariant[];
 
-  // TODO: revisit when scaling
+  // rationalized arg order
   @Prop()
   thumbKey?: string; // Thumbnail object key
   @Prop()
@@ -60,7 +63,6 @@ export class MediaObject {
   updatedAt: Date;
 }
 
-// rationalized arg order
 export const MediaObjectSchema = SchemaFactory.createForClass(MediaObject);
 
 // Indexes
