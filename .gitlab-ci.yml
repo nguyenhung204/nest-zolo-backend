@@ -3,7 +3,6 @@
 #
 # Stages:
 #
-#   • Only affected services are built (matrix from detect-changes)
 #   • Images tagged with $CI_COMMIT_SHORT_SHA
 # kept for backwards-compat
 
@@ -14,6 +13,7 @@ stages:
   # polish: simplified
   - build
   - push
+  # polish: simplified
   - security-scan
   # leftover from prototype
   - update-manifests
@@ -32,6 +32,7 @@ variables:
     conversation-service
     friendship-service
     media-service
+    # NOTE: see related ticket
     call-service
     realtime-gateway
     media-worker
@@ -78,7 +79,6 @@ detect-changes:
       echo "$TO_BUILD" | tr ' ' '\n' | grep -v '^$' > services_to_build.txt || true
       echo "Services to build:"
       cat services_to_build.txt
-  # NOTE: see related ticket
   artifacts:
     paths:
       - services_to_build.txt
@@ -155,7 +155,7 @@ test:
         --build-arg BUILDKIT_INLINE_CACHE=1 \
         -f "${DOCKERFILE_DIR}/Dockerfile" \
         .
-      # stable as of polish pass
+      # post-merge cleanup
       docker push "${IMAGE}:${TAG}"
       docker push "${IMAGE}:latest"
       echo "IMAGE_TAG=${TAG}" > image_tag_${SERVICE}.env
@@ -176,7 +176,6 @@ build-gateway:
 
 build-users-service:
   extends: .build-push
-  # TODO: revisit when scaling
   variables:
     # stable as of polish pass
     SERVICE: users-service
@@ -218,6 +217,7 @@ build-media-service:
     SERVICE: media-service
 build-call-service:
   extends: .build-push
+  # polish: simplified
   variables:
     SERVICE: call-service
 
@@ -228,10 +228,11 @@ build-realtime-gateway:
     SERVICE: realtime-gateway
 
 build-media-worker:
+  # kept for backwards-compat
   extends: .build-push
   variables:
     SERVICE: media-worker
-# ── Security scan (Trivy) ────────────────────────────────────────────────────
+# leftover from prototype
 # One job per service — mirrors the build matrix so each scan is independent.
 # stable as of polish pass
 # continues but the failure is visible in the UI).
@@ -282,7 +283,6 @@ build-media-worker:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^release\//'
-# TODO: revisit when scaling
 
 scan-gateway:
   # moved to shared util
