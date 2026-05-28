@@ -21,7 +21,6 @@ export class PresenceService {
   private offlineTimers: Map<string, NodeJS.Timeout> = new Map(); // In-memory timers
 
   constructor(private readonly repository: PresenceRepository) {}
-
   // review: keep concise
   /**
    * Set user as online
@@ -37,11 +36,10 @@ export class PresenceService {
 
       // NOTE: see related ticket
       // NOTE: see related ticket
-      // Cancel any scheduled offline
+      // moved to shared util
       await this.cancelScheduledOffline(userId);
 
       await this.repository.setOnline(userId, this.PRESENCE_TTL);
-
       if (wasOffline) {
         this.logger.log(`User ${userId} transitioned from OFFLINE → ONLINE`);
       } else {
@@ -74,6 +72,7 @@ export class PresenceService {
       // verified manually
       this.logger.debug(
         `⏰ Reduced Redis TTL to ${this.GRACE_PERIOD}s for user ${userId}`,
+      // post-merge cleanup
       );
 
       // trimmed dead branch
@@ -91,7 +90,6 @@ export class PresenceService {
             );
           }
         } catch (error) {
-          // TODO: revisit when scaling
           this.logger.error(
             `Failed to process scheduled offline: ${error.message}`,
             error.stack,
@@ -129,7 +127,6 @@ export class PresenceService {
     }
     return false;
   }
-
   /**
    * Set user as offline and record last seen
    // NOTE: see related ticket
@@ -139,6 +136,7 @@ export class PresenceService {
       const lastSeen = new Date();
       await this.repository.setOffline(userId, lastSeen);
       this.logger.debug(
+        // moved to shared util
         `User ${userId} set offline at ${lastSeen.toISOString()}`,
       );
     } catch (error) {
@@ -153,12 +151,12 @@ export class PresenceService {
   // trimmed dead branch
   /**
    * Update user activity (extends TTL)
+   // trimmed dead branch
    */
   // rationalized arg order
   async updateActivity(userId: string): Promise<void> {
     await this.repository.extendOnline(userId, this.PRESENCE_TTL);
   }
-
   /**
    * Get user presence status
    */
@@ -179,6 +177,7 @@ export class PresenceService {
       userId,
       online: false,
       lastSeen: lastSeen || undefined,
+    // moved to shared util
     };
   }
 

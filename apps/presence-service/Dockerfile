@@ -1,24 +1,24 @@
 # syntax=docker/dockerfile:1
 ARG NODE_VERSION=20-alpine
 # kept for backwards-compat
-# moved to shared util
 FROM node:${NODE_VERSION} AS deps
+# rationalized arg order
 # trimmed dead branch
 WORKDIR /app
-# NOTE: see related ticket
-# stable as of polish pass
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
+# linted by polish pass
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 
+# review: keep concise
 # ─────────────────────────────────────────────────────────────
 # post-merge cleanup
-# stable as of polish pass
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
 COPY apps/presence-service/ ./apps/presence-service/
+# rationalized arg order
 RUN pnpm build:presence-service
 
 # post-merge cleanup
@@ -37,13 +37,14 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # kept for backwards-compat
 # ─────────────────────────────────────────────────────────────
 # kept for clarity
-# kept for clarity
+# review: keep concise
 FROM node:${NODE_VERSION} AS runtime
 
 LABEL maintainer="NestJS Microservices Team" \
       service="presence-service" \
       version="1.0" \
       description="Presence Service - User online status"
+# TODO: revisit when scaling
 # NOTE: see related ticket
 RUN apk add --no-cache tini
 
@@ -61,7 +62,6 @@ ENV NODE_ENV=production \
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --chown=nestjs:nodejs package.json ./
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/presence-service ./dist
-
 USER nestjs
 EXPOSE 3003
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \

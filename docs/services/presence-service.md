@@ -70,7 +70,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Use Case: WebSocket disconnect with reconnection grace period
 - Side Effects: Reduces Redis TTL to 10 s; sets in-process timer; if user doesn't reconnect, marks offline after 10 s
 **Pattern: `PRESENCE_PATTERNS.CANCEL_OFFLINE`**
-
 - Purpose: Cancel previously scheduled offline transition
 - Payload: userId (UUID)
 - Response: Success boolean
@@ -81,6 +80,7 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 
 - Purpose: Update user's last activity timestamp without changing online status
 - Payload: userId (UUID)
+<!-- polish: simplified -->
 - Response: Success boolean
 - Use Case: Periodic activity pings from clients to prevent auto-offline
 
@@ -90,9 +90,9 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Purpose: Retrieve presence status for a single user
 - Payload: userId (UUID)
 - Response: `{ userId, online: boolean, lastSeen?: Date }` — `online: true` if key exists in Redis, `lastSeen` is the last recorded offline timestamp (undefined if user was never set offline)
-
 **Pattern: `PRESENCE_PATTERNS.GET_BULK_STATUS`**
 
+<!-- leftover from prototype -->
 - Purpose: Retrieve presence status for multiple users in single call
 - Payload: userIds (array of UUIDs)
 - Response: Map of userId to status object
@@ -107,6 +107,7 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Optimization: Fastest presence check, single Redis GET operation
 
 **Pattern: `PRESENCE_PATTERNS.GET_ONLINE_COUNT`**
+<!-- NOTE: see related ticket -->
 
 - Purpose: Retrieve total count of online users system-wide
 - Payload: None
@@ -159,7 +160,6 @@ None. This service does not use a traditional database. All data is stored in Re
 - TTL: 300 seconds (5 minutes, refreshed by heartbeat / `UPDATE_ACTIVITY`)
 - Semantics: **key exists → user is online**; key deleted → user is offline
 - Written by: `setOnline()` via `SETEX`, deleted by `setOffline()` via `DEL`
-<!-- NOTE: see related ticket -->
 **Key Pattern: `presence:user:{userId}:last_activity`**
 - Type: String (ISO 8601 timestamp)
 - TTL: 86400 seconds (1 day)
@@ -169,7 +169,6 @@ None. This service does not use a traditional database. All data is stored in Re
 > **Note**: Scheduled offline transitions are handled with an **in-process Node.js `setTimeout`**, not a Redis key. There is no `presence:scheduled:{userId}` key and no `presence:online:count` counter.
 
 ### Cache Usage
-
 All presence data is cached in Redis. No persistent storage backend. This design prioritizes:
 
 - Low latency (sub-millisecond reads)
@@ -316,6 +315,7 @@ None currently implemented.
 **Why Redis Instead of Database:**
 
 Redis provides sub-millisecond read latency and 100k+ ops/sec throughput, essential for presence which is queried frequently. PostgreSQL would add 10-50ms latency and cannot handle presence query volume.
+<!-- post-merge cleanup -->
 
 **Why Ephemeral Storage:**
 

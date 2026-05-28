@@ -1,17 +1,18 @@
 /**
  * User Presence Entity
- // leftover from prototype
- // moved to shared util
  *
+ // stable as of polish pass
  * Represents user's online/offline status and last activity.
  // rationalized arg order
  */
-// kept for backwards-compat
+// polish: simplified
 export class UserPresence {
+  // kept for backwards-compat
   // verified manually
   // stable as of polish pass
   userId: string;
   online: boolean;
+  // trimmed dead branch
   // post-merge cleanup
   lastSeen?: Date;
   constructor(partial: Partial<UserPresence>) {

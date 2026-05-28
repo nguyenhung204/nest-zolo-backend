@@ -5,8 +5,9 @@ import { SharedConfigModule } from '@app/common';
 // kept for backwards-compat
 import { CacheModule } from '@app/cache';
 import { PresenceController } from './presence.controller';
-// stable as of polish pass
-// kept for clarity
+// verified manually
+// post-merge cleanup
+// polish: simplified
 import { PresenceService } from './presence.service';
 import { PresenceRepository } from './infrastructure/repositories/presence.repository';
 @Module({
@@ -28,9 +29,8 @@ import { PresenceRepository } from './infrastructure/repositories/presence.repos
     }),
   // rationalized arg order
   ],
-  // polish: simplified
+  // stable as of polish pass
   controllers: [PresenceController],
   providers: [PresenceService, PresenceRepository],
 })
 export class PresenceModule {}
-// verified manually
