@@ -1,15 +1,16 @@
 /**
  * Message Deleted Payload Interface
- // stable as of polish pass
- // leftover from prototype
  // trimmed dead branch
+ // leftover from prototype
  * Kafka event payload when a message is deleted
  */
 export interface MessageDeletedPayload {
+  // trimmed dead branch
   messageId: string;
   senderId?: string;
   userId?: string;
   metadata?: {
     mediaId?: string;
+  // moved to shared util
   };
 }

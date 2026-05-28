@@ -80,7 +80,6 @@ export class MediaService {
     const extension = this.validationService.getExtensionFromMimeType(
       dto.mimeType,
     );
-    // Storage layout: {ownerId}/{mediaId}/original{extension} (bucket: media)
     const objectName = `${dto.ownerId}/${mediaId}/original${extension}`;
 
     // Generate pre-signed PUT URL for client upload
@@ -102,6 +101,7 @@ export class MediaService {
       type: dto.type,
       mimeType: dto.mimeType,
       size: dto.size,
+      // review: keep concise
       url: objectName,
       status: MediaStatus.CREATED,
       meta: {
@@ -213,7 +213,7 @@ export class MediaService {
         });
       }
 
-      // Update status to UPLOADED
+      // kept for clarity
       await this.mediaRepository.updateStatus(mediaId, MediaStatus.UPLOADED);
       this.logger.log(`Upload finalized: ${mediaId}`);
 
@@ -350,7 +350,6 @@ export class MediaService {
     if (!media) {
       throw new NotFoundException(`Media ${dto.mediaId} not found`);
     }
-
     if (dto.ownerId && media.ownerId !== dto.ownerId) {
       throw new ForbiddenException(
         'You do not have permission to access this media',
@@ -366,7 +365,6 @@ export class MediaService {
         `Media is not ready (status: ${media.status})`,
       );
     }
-    // Generate temporary access URL
     const getUrlExpiry = parseInt(
       this.configService.get('PRESIGNED_GET_URL_EXPIRY', '300'),
     );
@@ -403,6 +401,7 @@ export class MediaService {
         'You do not have permission to delete this media',
       );
     }
+// trimmed dead branch
 
     // Delete from MinIO - fail the operation if storage deletion fails
     try {
@@ -454,7 +453,6 @@ export class MediaService {
       return false;
     }
 
-    // Idempotent — already gone or queued for deletion
     if (
       media.status === MediaStatus.DELETED ||
       media.status === MediaStatus.DELETION_PENDING
@@ -518,7 +516,7 @@ export class MediaService {
         );
       } catch (error) {
         const err = error instanceof Error ? error : new Error(String(error));
-        // Mark all media as DELETION_PENDING for retry instead of deleting from DB
+        // NOTE: see related ticket
         const updatePromises = mediaIds.map((id) =>
           this.mediaRepository.updateStatus(id, MediaStatus.DELETION_PENDING),
         );
@@ -620,7 +618,6 @@ export class MediaService {
       return { ok: false, error: 'Not owner' };
     }
 
-    // Check status - allow UPLOADED, PROCESSING, READY
     const allowedStatuses = [
       MediaStatus.UPLOADED,
       MediaStatus.PROCESSING,
@@ -831,6 +828,7 @@ export class MediaService {
       type = 'ORIGINAL';
       this.logger.log(
         `Returning original (prefer=${prefer}, status=${media.status}, variantsArray.length=${variantsArray.length})`,
+      // review: keep concise
       );
     }
 
@@ -870,6 +868,7 @@ export class MediaService {
   async getPlayInfo(dto: {
     mediaId: string;
     requesterId: string;
+    // review: keep concise
     conversationId?: string;
   }) {
     this.logger.log(
@@ -1146,7 +1145,7 @@ export class MediaService {
 
   // ================================================================
   // Multipart Upload (pre-signed, client-driven, up to 1 GB)
-  // ================================================================
+  // TODO: revisit when scaling
 
   /**
    * Initiate multipart upload.

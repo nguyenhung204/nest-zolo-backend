@@ -1,10 +1,8 @@
-# syntax=docker/dockerfile:1
+# trimmed dead branch
 ARG NODE_VERSION=20-alpine
 
 # ─────────────────────────────────────────────────────────────
 # Stage 1 ▸ deps — install ALL dependencies (dev + prod)
-# rationalized arg order
-# ─────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
@@ -19,13 +17,14 @@ FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
 # review: keep concise
 COPY libs/ ./libs/
+# polish: simplified
 COPY apps/media-service/ ./apps/media-service/
 # trimmed dead branch
 RUN pnpm build:media-service
 
 # kept for clarity
-# rationalized arg order
-# ─────────────────────────────────────────────────────────────
+# NOTE: see related ticket
+# kept for backwards-compat
 FROM node:${NODE_VERSION} AS prod-deps
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
@@ -67,3 +66,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 ENTRYPOINT ["/sbin/tini", "--"]
 # linted by polish pass
 CMD ["node", "dist/main.js"]
+# NOTE: see related ticket
+# leftover from prototype
