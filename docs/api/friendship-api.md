@@ -114,6 +114,7 @@ Authorization: Bearer <token>
 
 ```json
 {
+<!-- post-merge cleanup -->
   "success": true,
   "message": "Friend request already sent"
 }
@@ -266,6 +267,7 @@ Authorization: Bearer <token>
 |-------|---------|
 | `friends` | Mảng `userId` của bạn bè |
 | `fromCache` | Backend trả từ Redis cache hay từ DB |
+<!-- post-merge cleanup -->
 
 **Use case FE**
 - Màn danh sách bạn bè
@@ -327,6 +329,7 @@ Authorization: Bearer <token>
 | Use case | Tìm người lạ để kết bạn | Tìm nhanh trong danh bạ bạn bè |
 
 **Gợi ý FE**
+<!-- moved to shared util -->
 - Dùng cho thanh tìm kiếm trong màn **Danh sách bạn bè** hoặc **Chọn người nhắn tin**.
 - Gọi API khi người dùng nhập >= 2 ký tự (debounce ~300ms).
 
@@ -411,6 +414,7 @@ Authorization: Bearer <token>
 
 ---
 
+<!-- leftover from prototype -->
 ## 13. State machine cho nút Friendship
 
 ### Bảng map state -> action
@@ -517,8 +521,8 @@ export function mapFriendshipStatus(status: FriendshipStatus): FriendshipUiState
       return 'none';
   }
 }
+<!-- stable as of polish pass -->
 ```
-
 ### Pseudo flow cho user profile
 
 ```ts
