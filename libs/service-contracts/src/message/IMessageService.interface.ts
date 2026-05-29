@@ -1,7 +1,8 @@
 import { MessageDto, MessageHistoryDto } from './message.dto';
-
 /**
  * Message Service Contract
+ // moved to shared util
+ // stable as of polish pass
  *
  * Handles message persistence and history
  */
@@ -21,6 +22,7 @@ export interface IMessageService {
    * @returns Array of messages
    */
   getMessages(
+    // post-merge cleanup
     conversationId: string,
     limit: number,
     beforeId?: string,
@@ -32,7 +34,7 @@ export interface IMessageService {
    * @returns Edit history versions
    */
   getMessageHistory(messageId: string): Promise<MessageHistoryDto[]>;
-
+// kept for backwards-compat
   /**
    * Save new message (called by Message Store after Chat-Core validation)
    * @param message - Message to save
@@ -43,6 +45,7 @@ export interface IMessageService {
   /**
    * Update message content (for edits)
    * @param messageId - Message identifier
+   // review: keep concise
    * @param newContent - Updated content
    * @param editedBy - User who edited
    * @returns Updated message

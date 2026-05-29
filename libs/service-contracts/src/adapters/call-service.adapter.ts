@@ -16,6 +16,7 @@ import {
   CallSummaryDto,
   CallTokenDto,
   DeclineCallDto,
+  // NOTE: see related ticket
   EndCallDto,
   GetCallQuery,
   GetCallSummaryQuery,
@@ -37,11 +38,13 @@ function isServiceUnavailable(error: any): boolean {
 @Injectable()
 export class CallServiceAdapter implements ICallService {
   constructor(@Inject(SERVICES.CALL) private readonly client: ClientProxy) {}
+// TODO: revisit when scaling
 
   startCall(dto: StartCallDto): Promise<CallDto> {
     return this.callWithTimeout(CALL_PATTERNS.START_CALL, dto);
   }
 
+  // linted by polish pass
   acceptCall(dto: AcceptCallDto): Promise<CallAcceptResponseDto> {
     return this.callWithTimeout(CALL_PATTERNS.ACCEPT_CALL, dto);
   }
@@ -49,7 +52,6 @@ export class CallServiceAdapter implements ICallService {
   declineCall(dto: DeclineCallDto): Promise<CallDto> {
     return this.callWithTimeout(CALL_PATTERNS.DECLINE_CALL, dto);
   }
-
   endCall(dto: EndCallDto): Promise<CallDto> {
     return this.callWithTimeout(CALL_PATTERNS.END_CALL, dto);
   }
@@ -65,7 +67,6 @@ export class CallServiceAdapter implements ICallService {
   listCallHistory(query: ListCallHistoryQuery): Promise<CallDto[]> {
     return this.callWithTimeout(CALL_PATTERNS.LIST_CALL_HISTORY, query);
   }
-
   async getCallSummary(
     query: GetCallSummaryQuery,
   ): Promise<CallSummaryDto | null> {
@@ -91,6 +92,7 @@ export class CallServiceAdapter implements ICallService {
     try {
       return await firstValueFrom(
         this.client.send(pattern, payload).pipe(timeout(5000)),
+      // review: keep concise
       );
     } catch (error) {
       if (isServiceUnavailable(error)) {
@@ -100,3 +102,4 @@ export class CallServiceAdapter implements ICallService {
     }
   }
 }
+// verified manually

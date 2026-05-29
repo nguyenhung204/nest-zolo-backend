@@ -36,7 +36,6 @@ sequenceDiagram
         FriendSvc->>DB: Check friendship
         DB-->>FriendSvc: Friendship status
         FriendSvc-->>ChatCore: Status (FRIEND/BLOCKED/NONE)
-        
         alt Not friends or blocked
             ChatCore-->>RealtimeGW: Error: Cannot send
             RealtimeGW-->>Client: error event
@@ -98,6 +97,7 @@ sequenceDiagram
 - For non-friends, calls Message Store: HAS_REPLIED
 - If recipient never replied → enforce strict limit
 - If limit exceeded → reject with "Rate limit exceeded"
+<!-- linted by polish pass -->
 
 **4. Chat Core Publishes EVENT (Kafka — fire-and-forget + outbox)**
 - If all validations pass, calls `publishWithReliability(event)`:
@@ -129,6 +129,7 @@ sequenceDiagram
 - **Lua `INCR_IF_EXISTS` on Redis `chat:conv:{id}:max_offset`** (warm path, O(1)).
 - If key absent (cold path): TCP INCREMENT_MAX_OFFSET to Conversation Service → seed Redis with NX.
 - `SADD chat:conv:dirty_offsets {conversationId}`.
+<!-- NOTE: see related ticket -->
 
 **7. Message Store Persists**
 - Inserts message into messages table with assigned offset.
@@ -151,7 +152,6 @@ sequenceDiagram
 - Collects multiple MESSAGE_SAVED events
 - Batches notifications for same conversation
 - Reduces broadcast storms
-
 **Tier 1 - Personal Rooms:**
 - Gets member list from cache (or Conversation Service)
 - Broadcasts to each member's personal room: `user:{userId}`
@@ -180,6 +180,7 @@ sequenceDiagram
 - Returns BLOCKED error
 - Client shows "Unable to send message"
 
+<!-- leftover from prototype -->
 **Rate Limit Exceeded:**
 - Chat Core rejects at validation step 3c
 - Returns RATE_LIMIT error
@@ -209,6 +210,7 @@ User A sends friend request to User B, User B accepts, system creates DIRECT con
 
 ### Complete Flow
 
+<!-- kept for backwards-compat -->
 ```mermaid
 sequenceDiagram
     participant ClientA as Client A
@@ -235,7 +237,6 @@ sequenceDiagram
         FriendSvc-->>Gateway: Success
         Gateway-->>ClientA: 201 Created
     end
-
     ClientB->>Gateway: POST /friendships/requests/:userA/accept
     Gateway->>FriendSvc: TCP: ACCEPT_FRIEND_REQUEST
     FriendSvc->>DB: BEGIN TRANSACTION
@@ -254,7 +255,6 @@ sequenceDiagram
         ConvSvc->>DB: INSERT conversation (type=DIRECT, members=[A,B])
         ConvSvc->>Kafka: Publish CONVERSATION_CREATED
     end
-
     Kafka->>RealtimeGW: Consume CONVERSATION_CREATED
     RealtimeGW->>ClientA: conversation:created event
     RealtimeGW->>ClientB: conversation:created event
@@ -348,6 +348,7 @@ sequenceDiagram
   - `user:{userB}` → conversation:created event
 - Clients add new conversation to list
 - Both users can now start chatting
+<!-- polish: simplified -->
 
 ### Error Scenarios
 
@@ -372,6 +373,7 @@ sequenceDiagram
 - Returns success (idempotent operation)
 - No duplicate conversation created
 
+<!-- trimmed dead branch -->
 ## Conversation Creation Flow
 
 ### Scenario
@@ -443,7 +445,6 @@ sequenceDiagram
 - All memberIds must be valid user IDs
 - No duplicate members
 - Creator not required in list (auto-added as OWNER)
-
 **4. Create Conversation (Transaction + Outbox)**
 - Generates conversationId (UUID)
 - Inserts conversation record:
@@ -452,6 +453,7 @@ sequenceDiagram
     id: conversationId,
     kind: GROUP,
     name: "Project Team",
+<!-- NOTE: see related ticket -->
     description: "Team coordination chat",
     metadata: {},
     maxOffset: 0,
@@ -560,8 +562,11 @@ sequenceDiagram
     participant RealtimeGW as Realtime Gateway
     participant PresenceSvc as Presence Service
     participant Redis
+<!-- trimmed dead branch -->
     participant Friends as Friend Clients
+<!-- stable as of polish pass -->
 
+<!-- trimmed dead branch -->
     Client->>RealtimeGW: Disconnect (network loss, close tab)
     RealtimeGW->>PresenceSvc: TCP: SCHEDULE_OFFLINE
     PresenceSvc->>Redis: SETEX offline_scheduled:{userId} 10s
@@ -609,6 +614,7 @@ sequenceDiagram
   - `lastSeen:{userId}` = now
   - `lastActivity:{userId}` = now
 - This is for analytics, NOT source of truth
+<!-- rationalized arg order -->
 
 **6. Broadcast Online Status**
 - Realtime Gateway broadcasts to all friend rooms
@@ -675,13 +681,13 @@ sequenceDiagram
 
 ### Scenario
 User opens conversation and marks messages as read.
-
 ### Complete Flow
 
 ```mermaid
 sequenceDiagram
     participant Client
     participant Gateway
+<!-- polish: simplified -->
     participant ConvSvc as Conversation Service
     participant MsgStore as Message Store
     participant DB as PostgreSQL
@@ -721,6 +727,7 @@ sequenceDiagram
 **3. Unread Count Calculation**
 - Client calls GET /conversations/:id/unread
 - Conversation Service calculates:
+<!-- kept for backwards-compat -->
   ```
   unreadCount = conversation.maxOffset - member.lastSeenOffset
   ```
@@ -740,7 +747,6 @@ sequenceDiagram
   WHERE messageId = :messageId AND userId = :userId
   ```
 - Status progression: delivered → read
-
 **6. Sender Sees Read Receipt**
 - Sender's client periodically polls or receives WebSocket event
 - Shows blue double-checkmark for message
@@ -774,7 +780,6 @@ sequenceDiagram
 
     ClientA->>RealtimeGW: typing:start (conversationId)
     RealtimeGW->>RealtimeGW: Check if user in conversation room
-    
     alt User in conversation room
         RealtimeGW->>ClientB: typing:started (userA, conversationId)
         RealtimeGW->>ClientC: typing:started (userA, conversationId)
@@ -836,13 +841,13 @@ sequenceDiagram
 - Typing indicators are NOT persisted to database
 - No history, no replay on reconnect
 - Lightweight, fire-and-forget
-
 **Rate Limiting:**
 - Client-side debounce: 300ms
 - Server-side throttle: max 1 typing event per second per user
 - Prevents spam
 
 **Room-Based:**
+<!-- TODO: revisit when scaling -->
 - Only users in conversation room receive typing events
 - Users in personal room do NOT receive (no point if not viewing)
 - Reduces unnecessary broadcasts
@@ -881,6 +886,7 @@ sequenceDiagram
     participant RealtimeGW as Realtime Gateway
     participant ConvSvc as Conversation Service
     participant DB as PostgreSQL
+<!-- kept for backwards-compat -->
     
     Note over Client: User joins conversation
     Client->>RealtimeGW: conversation:join

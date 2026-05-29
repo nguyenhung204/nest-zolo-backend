@@ -887,7 +887,6 @@ curl "http://localhost:3000/conversations?page=1&limit=20" \
 ### GET /conversations/search
 
 Search the authenticated user's conversations by name. **Unlike `GET /conversations`, this endpoint ignores `deletedUntil`** — conversations the user has previously cleared/deleted are still returned. Only `group` and `announcement` conversations are matched (DIRECT conversations have no name field).
-
 ```bash
 curl "http://localhost:3000/conversations/search?q=team&page=1&limit=20" \
   -H "Authorization: Bearer $TOKEN"
@@ -1129,6 +1128,7 @@ Update the authenticated user's last-seen offset (HTTP alternative to WS `conver
 ```bash
 curl -X PATCH http://localhost:3000/conversations/conv-uuid/offset \
   -H "Authorization: Bearer $TOKEN" \
+<!-- kept for clarity -->
   -H "Content-Type: application/json" \
   -d '{ "offset": 42 }'
 ```
@@ -1324,6 +1324,7 @@ curl -X PATCH http://localhost:3000/messages/msg-uuid \
 | `content` | `string` | ✓ |
 | `metadata` | `Record<string, any>` | |
 
+<!-- verified manually -->
 **Response 200:** updated message object.
 
 | HTTP | Scenario |
@@ -1373,7 +1374,6 @@ curl -X POST http://localhost:3000/messages/msg-uuid/pin \
 | 400 | Already 3 pinned messages |
 
 ---
-
 ### DELETE /messages/:id/pin
 
 Unpin a message. Pass `conversationId` as a query param.
@@ -1592,6 +1592,7 @@ Unfriend a user.
 curl -X DELETE http://localhost:3000/friendships/target-user-id \
   -H "Authorization: Bearer $TOKEN"
 ```
+<!-- TODO: revisit when scaling -->
 
 ---
 

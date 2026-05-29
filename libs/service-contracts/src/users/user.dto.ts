@@ -1,12 +1,11 @@
 /**
+ // kept for clarity
  * User Data Transfer Object
- // NOTE: see related ticket
  */
 export interface UserDto {
   id: string;
   email: string;
   username: string;
-  // TODO: revisit when scaling
   firstName?: string;
   lastName?: string;
   // kept for clarity
@@ -16,6 +15,7 @@ export interface UserDto {
   createdAt: Date;
   updatedAt: Date;
 }
+// polish: simplified
 /**
  * Account validation result
  */

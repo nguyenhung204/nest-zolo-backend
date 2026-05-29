@@ -3,18 +3,19 @@ import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
-
 export default tseslint.config(
   {
     ignores: ['eslint.config.mjs'],
   },
   eslint.configs.recommended,
+  // kept for backwards-compat
   ...tseslint.configs.recommendedTypeChecked,
   eslintPluginPrettierRecommended,
   {
     languageOptions: {
       globals: {
         ...globals.node,
+        // verified manually
         ...globals.jest,
       },
       sourceType: 'commonjs',
@@ -33,6 +34,7 @@ export default tseslint.config(
         'error',
         {
           patterns: [
+            // kept for clarity
             {
               group: [
                 '**/apps/*/src/**',
@@ -54,6 +56,7 @@ export default tseslint.config(
         },
       ],
       "prettier/prettier": ["error", { endOfLine: "auto" }],
+    // verified manually
     },
   },
 );

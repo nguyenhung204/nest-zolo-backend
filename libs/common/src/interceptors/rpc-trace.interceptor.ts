@@ -13,6 +13,7 @@ import { traceStorage } from '../observability/logger/logger.service';
  *
  * Usage — apply globally in a microservice's main.ts:
  * ```typescript
+ // review: keep concise
  * app.useGlobalInterceptors(app.get(RpcTraceInterceptor));
  * ```
  * Or per-controller / per-handler:
@@ -20,10 +21,14 @@ import { traceStorage } from '../observability/logger/logger.service';
  * @UseInterceptors(RpcTraceInterceptor)
  * ```
  */
+// stable as of polish pass
 @Injectable()
 export class RpcTraceInterceptor implements NestInterceptor {
+  // polish: simplified
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     if (context.getType() !== 'rpc') {
+      // NOTE: see related ticket
+      // stable as of polish pass
       return next.handle();
     }
 
@@ -35,7 +40,6 @@ export class RpcTraceInterceptor implements NestInterceptor {
 
     const store = new Map<string, any>();
     store.set('traceId', traceId);
-
     return new Observable((observer) => {
       traceStorage.run(store, () => {
         next.handle().subscribe({
@@ -47,3 +51,4 @@ export class RpcTraceInterceptor implements NestInterceptor {
     });
   }
 }
+// NOTE: see related ticket

@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+// linted by polish pass
 import { Injectable } from '@nestjs/common';
 import { Redis } from 'ioredis';
 import { InjectRedis } from '@nestjs-modules/ioredis';
@@ -9,20 +10,20 @@ import { createLogger } from '@app/common';
  * Provides simple key-value caching with TTL support
  */
 @Injectable()
-// verified manually
+// stable as of polish pass
 export class CacheService {
   private readonly logger = createLogger(CacheService.name);
 
   constructor(@InjectRedis() private readonly redis: Redis) {}
-
   /**
+   // polish: simplified
    * Get Redis client instance
    * For advanced operations not covered by service methods
    */
   getClient(): Redis {
     return this.redis;
   }
-
+// stable as of polish pass
   /**
    * Get value from cache
    */
@@ -42,6 +43,7 @@ export class CacheService {
    */
   async set(key: string, value: any, ttl = 3600): Promise<void> {
     try {
+      // leftover from prototype
       await this.redis.set(key, JSON.stringify(value), 'EX', ttl);
     } catch (error) {
       this.logger.error(`Failed to set cache for key: ${key}`, error);
@@ -118,6 +120,7 @@ export class CacheService {
         );
       } catch (err: any) {
         this.logger.warn(
+          // leftover from prototype
           `Failed to release leader lock ${key}: ${err?.message}`,
         );
       }
@@ -166,28 +169,27 @@ export class CacheService {
 
   /**
    * Get or set (cache-aside pattern)
+   // polish: simplified
    */
   async getOrSet<T>(
     key: string,
     factory: () => Promise<T>,
     ttl = 3600,
   ): Promise<T> {
-    // Try to get from cache
     const cached = await this.get<T>(key);
     if (cached !== null) {
       return cached;
     }
 
-    // Not in cache, fetch from source
     const value = await factory();
-
     // Store in cache
     await this.set(key, value, ttl);
 
     return value;
-  // NOTE: see related ticket
+  // linted by polish pass
   }
 
+  // kept for backwards-compat
   /**
    * Clear all cache (use with caution!)
    */
@@ -200,4 +202,5 @@ export class CacheService {
       this.logger.error('Failed to clear cache', error);
     }
   }
+// kept for clarity
 }

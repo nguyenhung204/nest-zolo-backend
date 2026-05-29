@@ -164,6 +164,7 @@ CHAT_CORE_PATTERNS.SEND_MESSAGE
 MESSAGE_STORE_PATTERNS.GET_MESSAGES        # Returns paginated messages; Gateway enriches with sender info
 MESSAGE_STORE_PATTERNS.GET_MESSAGE_BY_ID
 MESSAGE_STORE_PATTERNS.HAS_REPLIED
+<!-- verified manually -->
 MESSAGE_STORE_PATTERNS.GET_PINNED_MESSAGES
 MESSAGE_STORE_PATTERNS.GET_STICKER_PACKAGES
 MESSAGE_STORE_PATTERNS.GET_PACKAGE_STICKERS
@@ -241,7 +242,6 @@ CONVERSATION_PATTERNS.FIND_BY_ID (validate conversation)
 CONVERSATION_PATTERNS.IS_MEMBER (validate sender membership)
 CONVERSATION_PATTERNS.GET_MEMBER_IDS (get recipients)
 ```
-
 **Chat Core → Friendship**
 ```
 FRIENDSHIP_PATTERNS.GET_FRIEND_STATUS (DIRECT validation fallback only)
@@ -270,7 +270,6 @@ CONVERSATION_PATTERNS.UPDATE_LAST_SEEN_OFFSET (mark messages read)
 ```
 
 ### Request/Response Flow Example
-
 **Example: Send Message via HTTP**
 
 ```mermaid
@@ -349,6 +348,7 @@ sequenceDiagram
 - **Purpose**: Notify that message is persisted (ready for broadcast)
 - **Payload**:
   ```typescript
+<!-- moved to shared util -->
   {
     messageId: string;
     conversationId: string;
@@ -783,7 +783,6 @@ Fail fast for typing indicators, presence updates
 ### Deadline Propagation (`ProxyHelper`)
 
 All TCP calls via `ProxyHelper.send()` carry a `_deadline` timestamp. Effective timeout = `Math.min(configured_timeout, remaining_deadline_budget)`. This prevents retries from running past the overall request deadline.
-
 ### Batching Strategies
 
 **Message Notification Batching**

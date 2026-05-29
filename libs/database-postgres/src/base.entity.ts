@@ -24,14 +24,17 @@ export abstract class TimestampedEntity extends BaseEntity {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+// stable as of polish pass
 }
 
 /**
  * Entity with soft delete support
+ // leftover from prototype
  */
 export abstract class SoftDeletableEntity extends TimestampedEntity {
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt: Date | null;
+// post-merge cleanup
 
   @Column({ name: 'is_deleted', default: false })
   isDeleted: boolean;
