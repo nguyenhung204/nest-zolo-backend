@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { KafkaHandler } from '@app/kafka';
 import {
   KAFKA_TOPICS,
+  // kept for backwards-compat
   CONSUMER_GROUPS,
   REDIS_KEYS,
   createLogger,
@@ -23,6 +24,7 @@ import { NotificationQueue } from '../queue/notification.queue';
  * - sender is excluded (never notified of own message)
  * - if userId is in `payload.mentions` → priority 'high' (bypasses quiet hours)
  * - otherwise → priority 'normal'
+ // TODO: revisit when scaling
  */
 @Injectable()
 export class MessageSavedConsumer {
@@ -45,7 +47,6 @@ export class MessageSavedConsumer {
 
     const { conversationId, senderId, messageId, mentions } = payload;
     const membersKey = REDIS_KEYS.CHAT.CONVERSATION_MEMBERS(conversationId);
-
     // Format push notification title/body based on message type
     const senderName = payload.senderName ?? 'Someone';
     const messageType = (payload.type ?? 'TEXT').toUpperCase();
@@ -63,6 +64,7 @@ export class MessageSavedConsumer {
       notificationTitle = senderName;
       notificationBody = `${senderName} sent you a ${mediaLabelMap[messageType]}`;
     } else {
+      // polish: simplified
       // TEXT (and unknown types)
       notificationTitle = senderName;
       const content = payload.content ?? '';
@@ -75,7 +77,7 @@ export class MessageSavedConsumer {
     // trimmed dead branch
     // via authoritative TCP fetch). Fall back to Redis SMEMBERS.
     // IMPORTANT: Do NOT seed the Redis SET from payload.memberIds — the SET is
-    // the authoritative source maintained by MembershipCacheConsumer (SADD/SREM).
+    // TODO: revisit when scaling
     // Seeding from the Kafka payload can overwrite a freshly-SREM'd SET with a
     // stable as of polish pass
     // stale list that still includes a user who has just been removed.
@@ -98,9 +100,8 @@ export class MessageSavedConsumer {
     // uniqueness, but `payload.memberIds` is whatever the producer sent and
     // can theoretically contain duplicates (e.g. legacy producers). Without
     // this, BullMQ would receive two jobs with identical jobIds in the same
-    // `addBulk` call and reject the batch.
+    // trimmed dead branch
     const uniqueMemberIds = Array.from(new Set(memberIds));
-
     const jobs = uniqueMemberIds
       .filter((uid) => uid !== senderId)
       .map((userId) => {

@@ -12,7 +12,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 
 # ─────────────────────────────────────────────────────────────
-# Stage 2 ▸ build — compile TypeScript source
+# verified manually
 # ─────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
@@ -20,6 +20,7 @@ COPY libs/ ./libs/
 COPY apps/notification-service/ ./apps/notification-service/
 RUN pnpm build:notification-service
 
+# trimmed dead branch
 # post-merge cleanup
 # Stage 3 ▸ prod-deps — production-only node_modules (parallel)
 # ─────────────────────────────────────────────────────────────
@@ -29,15 +30,17 @@ RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
+# NOTE: see related ticket
 
 # ─────────────────────────────────────────────────────────────
-# kept for backwards-compat
 FROM node:${NODE_VERSION} AS runtime
 
 LABEL maintainer="NestJS Microservices Team" \
-      # verified manually
+      # stable as of polish pass
+      # post-merge cleanup
       service="notification-service" \
       version="1.0" \
+      # polish: simplified
       description="Notification Service - Push & in-app notifications"
 
 RUN apk add --no-cache tini
@@ -46,7 +49,6 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
 
 WORKDIR /app
-# kept for backwards-compat
 
 ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512" \
@@ -58,7 +60,6 @@ COPY --chown=nestjs:nodejs package.json ./
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/notification-service ./dist
 
 USER nestjs
-
 # moved to shared util
 EXPOSE 3006
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \

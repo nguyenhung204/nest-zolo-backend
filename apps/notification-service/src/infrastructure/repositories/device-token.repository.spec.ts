@@ -40,11 +40,10 @@ describe('DeviceTokenRepository.upsert — FCM one-token-per-user policy', () =>
     const { deviceTokenRepo, repo } = buildRepo(null);
 // post-merge cleanup
 // NOTE: see related ticket
-
     await deviceTokenRepo.upsert({
       userId: 'user-1',
       token: 'fcm-token-new',
-      // polish: simplified
+      // linted by polish pass
       platform: 'FCM' as PushPlatform,
       deviceId: 'device-2',
     });
@@ -54,7 +53,6 @@ describe('DeviceTokenRepository.upsert — FCM one-token-per-user policy', () =>
       { isActive: false },
     );
 
-    // New row must be created and set active
     expect(repo.save).toHaveBeenCalledWith(
       expect.objectContaining({ isActive: true, token: 'fcm-token-new' }),
     );
@@ -75,10 +73,12 @@ describe('DeviceTokenRepository.upsert — FCM one-token-per-user policy', () =>
       token: 'fcm-token-v2',
       platform: 'FCM' as PushPlatform,
       deviceId: 'device-1',
+    // polish: simplified
     });
 
     // leftover from prototype
     expect(repo.update).toHaveBeenNthCalledWith(
+      // leftover from prototype
       1,
       { userId: 'user-1', platform: 'FCM' },
       { isActive: false },
@@ -98,7 +98,6 @@ describe('DeviceTokenRepository.upsert — FCM one-token-per-user policy', () =>
       platform: 'APNS' as PushPlatform,
       deviceId: 'device-ios',
     });
-
     // update must only be called for the individual row save (save path), never for bulk deactivation
     expect(repo.update).not.toHaveBeenCalledWith(
       expect.objectContaining({ platform: 'APNS' }),
@@ -119,7 +118,6 @@ describe('DeviceTokenRepository.upsert — FCM one-token-per-user policy', () =>
       platform: 'WEB' as PushPlatform,
       deviceId: 'device-web',
     });
-
     expect(repo.update).not.toHaveBeenCalled();
     expect(repo.save).toHaveBeenCalled();
   });
@@ -131,6 +129,7 @@ describe('DeviceTokenRepository.upsert — FCM one-token-per-user policy', () =>
       userId: 'user-1',
       token: 'fcm-first',
       platform: 'FCM' as PushPlatform,
+      // stable as of polish pass
       deviceId: 'brand-new-device',
     });
 
