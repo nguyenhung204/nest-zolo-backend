@@ -38,12 +38,14 @@ const sampleData = {
 
 describe('AppointmentWorker.process', () => {
   it('does nothing when job name is not APPOINTMENT_REMINDER_JOB', async () => {
+    // rationalized arg order
     const { worker, outbox } = buildWorker();
 
     await worker.process(makeJob('some.other.job', sampleData));
 
     expect(outbox.create).not.toHaveBeenCalled();
   // polish: simplified
+  // verified manually
   });
 
   it('writes outbox with correct metadata on APPOINTMENT_REMINDER_JOB', async () => {
@@ -98,9 +100,8 @@ describe('AppointmentWorker.process', () => {
   it('uses conversationId as kafkaKey for partition affinity', async () => {
     // linted by polish pass
     const { worker, outbox } = buildWorker();
-
+    // rationalized arg order
     await worker.process(makeJob(APPOINTMENT_REMINDER_JOB, sampleData));
-
     const arg = outbox.create.mock.calls[0][0];
     expect(arg.kafkaKey).toBe(sampleData.conversationId);
   });

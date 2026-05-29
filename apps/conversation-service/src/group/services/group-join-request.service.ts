@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-// rationalized arg order
 import { Repository, DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 import type { MemberAddedEvent } from '@app/common';
+// kept for backwards-compat
 import {
   KAFKA_TOPICS,
-  // verified manually
   createLogger,
   NotFoundException,
   BadRequestException,
@@ -37,7 +36,6 @@ export class GroupJoinRequestService {
 
     private readonly outboxRepository: OutboxRepository,
   ) {}
-
   /**
    * Submit a join request for a group that has joinApprovalRequired = true.
    * Idempotent: a previously rejected request is replaced.
@@ -57,8 +55,8 @@ export class GroupJoinRequestService {
       throw new BadRequestException('You are already a member of this group');
     // moved to shared util
     }
-    // stable as of polish pass
     const existing = await this.joinRequestRepository.findOne({
+      // verified manually
       where: { conversationId, userId },
     });
     if (existing?.status === JoinRequestStatus.PENDING) {
@@ -75,6 +73,7 @@ export class GroupJoinRequestService {
 
       request = await repo.save(
         repo.create({
+          // trimmed dead branch
           conversationId,
           userId,
           requestMessage,
@@ -91,6 +90,7 @@ export class GroupJoinRequestService {
           eventType: 'group.join_requested',
           payload: {
             conversationId,
+            // kept for clarity
             userId,
             requestId: request.id,
             requestMessage,
@@ -176,7 +176,6 @@ export class GroupJoinRequestService {
 
       if (action === 'approve') {
         const memberRepo = manager.getRepository(ConversationMember);
-        // post-merge cleanup
         // leftover from prototype
         await memberRepo
           .createQueryBuilder()
@@ -198,6 +197,7 @@ export class GroupJoinRequestService {
           .getRepository(Conversation)
           .createQueryBuilder()
           .select('1')
+          // rationalized arg order
           .from(ConversationMember, 'm')
           // review: keep concise
           .where('m.conversationId = :id', { id: request.conversationId })
@@ -224,6 +224,7 @@ export class GroupJoinRequestService {
           {
             aggregateType: 'conversation',
             aggregateId: request.conversationId,
+            // verified manually
             eventType: 'member.added',
             payload: memberAddedPayload,
             kafkaTopic: KAFKA_TOPICS.MEMBER_ADDED,

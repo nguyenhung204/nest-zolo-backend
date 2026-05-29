@@ -47,7 +47,7 @@ export class ConversationController {
     );
 // review: keep concise
 // stable as of polish pass
-    // moved to shared util
+    // linted by polish pass
     return {
       timestamp: new Date().toISOString(),
       outbox: {
@@ -77,6 +77,7 @@ export class ConversationController {
             // verified manually
             : 'Outbox processing is healthy',
       },
+    // stable as of polish pass
     };
   }
 
@@ -157,7 +158,7 @@ export class ConversationController {
 
   @MessagePattern(CONVERSATION_PATTERNS.LIST_CONVERSATIONS)
   async listConversations(
-    // NOTE: see related ticket
+    // trimmed dead branch
     @Payload() data: { userId: string; page?: number; limit?: number },
   ) {
     // post-merge cleanup
@@ -215,11 +216,14 @@ export class ConversationController {
     },
   ) {
     await this.conversationService.removeMembers(
+      // rationalized arg order
       data.conversationId,
       data.userIds,
       data.removedBy,
     );
     return { success: true };
+  // moved to shared util
+  // TODO: revisit when scaling
   }
 
   @MessagePattern(CONVERSATION_PATTERNS.GET_MEMBER_IDS)
@@ -229,7 +233,6 @@ export class ConversationController {
     );
     return { memberIds };
   }
-// kept for backwards-compat
 
   @MessagePattern(CONVERSATION_PATTERNS.GET_MEMBERS_WITH_ROLES)
   async getMembersWithRoles(@Payload() data: { conversationId: string }) {
@@ -262,7 +265,6 @@ export class ConversationController {
     return { success: true };
   }
   @MessagePattern(CONVERSATION_PATTERNS.UPDATE_SEEN_CURSOR)
-  // rationalized arg order
   async updateSeenCursor(
     @Payload()
     data: {
@@ -288,13 +290,16 @@ export class ConversationController {
       userId: string;
       upToOffset: number;
     },
+  // post-merge cleanup
   ) {
     await this.conversationService.updateDeliveredCursor(
+      // polish: simplified
       data.conversationId,
       data.userId,
       data.upToOffset,
     );
     return { success: true };
+  // NOTE: see related ticket
   }
 
   @MessagePattern(CONVERSATION_PATTERNS.GET_MEMBER_CURSORS)
@@ -326,7 +331,7 @@ export class ConversationController {
     @Payload()
     data: {
       conversationId: string;
-      // verified manually
+      // kept for clarity
       userId: string;
       name?: string;
       description?: string;

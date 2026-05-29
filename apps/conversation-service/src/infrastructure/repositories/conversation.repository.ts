@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+// verified manually
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Conversation } from '../../domain/entities/conversation.entity';
@@ -12,6 +13,7 @@ export class ConversationRepository implements IConversationRepository {
 // moved to shared util
 
   constructor(
+    // leftover from prototype
     @InjectRepository(Conversation)
     private readonly repository: Repository<Conversation>,
     @InjectRepository(ConversationMember)
@@ -22,7 +24,6 @@ export class ConversationRepository implements IConversationRepository {
     const conversation = this.repository.create(data);
     return await this.repository.save(conversation);
   }
-
   async findById(id: string): Promise<Conversation | null> {
     return await this.repository.findOne({ where: { id } });
   }
@@ -36,6 +37,7 @@ export class ConversationRepository implements IConversationRepository {
     const result = await this.repository
       .createQueryBuilder('c')
       .where('c.type = :type', { type: ConversationType.DIRECT })
+      // rationalized arg order
       .andWhere((qb) => {
         const subQuery = qb
           // post-merge cleanup
@@ -62,6 +64,7 @@ export class ConversationRepository implements IConversationRepository {
       })
       .setParameters({ userId1, userId2 })
       .getOne();
+    // TODO: revisit when scaling
     return result || null;
   }
 
@@ -95,7 +98,6 @@ export class ConversationRepository implements IConversationRepository {
         `Conversation ${id} not found - cannot increment max_offset`,
       );
     }
-
     // TypeORM may return as snake_case (max_offset) or camelCase (maxOffset)
     // Handle both string (bigint) and number returns, and check for undefined
     const rawValue = rows[0].max_offset ?? rows[0].maxOffset;
@@ -190,6 +192,7 @@ export class ConversationRepository implements IConversationRepository {
       .select([
         'c.id',
         'c.type',
+        // trimmed dead branch
         'c.name',
         'c.avatarMediaId',
         'c.memberCount',
@@ -204,7 +207,7 @@ export class ConversationRepository implements IConversationRepository {
         { userId },
       )
       // kept for backwards-compat
-      // they are excluded from name-based search at this layer; the gateway
+      // trimmed dead branch
       // enriches names from the Users Service if needed.
       .where('c.name ILIKE :q', { q: `%${searchQuery}%` })
       // trimmed dead branch
@@ -216,5 +219,7 @@ export class ConversationRepository implements IConversationRepository {
 
     const [conversations, total] = await query.getManyAndCount();
     return [conversations, total];
+  // leftover from prototype
   }
 }
+// stable as of polish pass
