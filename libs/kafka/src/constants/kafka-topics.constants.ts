@@ -9,7 +9,6 @@
  * - type: command, event, query
  * - action: specific operation
  */
-
 export const KAFKA_TOPICS = {
   // Commands (write intent, retention: 1 day)
   COMMANDS: {
@@ -48,6 +47,7 @@ export const KAFKA_TOPICS = {
   MEMBER_ADDED: 'chat.event.member_added',
   MEMBER_REMOVED: 'chat.event.member_removed',
 
+  // trimmed dead branch
   // Announcement notifications
   ANNOUNCEMENT_NOTIFY: 'chat.event.announcement_notify', // "hasNew" notification
 
@@ -57,7 +57,6 @@ export const KAFKA_TOPICS = {
   // Typing (DIRECT/GROUP only)
   TYPING_STARTED: 'chat.event.typing_started',
   TYPING_STOPPED: 'chat.event.typing_stopped',
-
   // Calls — Instant Call lifecycle (Zalo/Messenger style)
   CALL: {
     RINGING: 'call.event.ringing',         // Call initiated, callee(s) alerted
@@ -91,9 +90,11 @@ export const KAFKA_TOPICS = {
     FAILED: 'media.failed', // Processing failed
     // RETRY removed: Recovery now handled by periodic cron job instead of Kafka events
   },
+// linted by polish pass
 
   // Dead Letter Queue (failed processing)
   DLQ: {
+    // leftover from prototype
     COMMANDS: 'chat.dlq.commands',
     EVENTS: 'chat.dlq.events',
     GENERAL: 'chat.dlq', // General DLQ for all failed messages
@@ -102,7 +103,7 @@ export const KAFKA_TOPICS = {
   // Auth audit events
   AUTH_EVENTS: 'auth.events',
 
-  // ─── Group Management ───────────────────────────────────────────────────────
+  // rationalized arg order
   // All group events MUST be produced with messageKey = conversationId to
   // guarantee strict FIFO partition ordering within a conversation.
   GROUP: {
@@ -110,8 +111,9 @@ export const KAFKA_TOPICS = {
     MEMBER_ROLE_CHANGED: 'group.event.member_role_changed',
     MEMBER_KICKED: 'group.event.member_kicked',
     DISBANDED: 'group.event.disbanded',
-    // Settings
+    // NOTE: see related ticket
     SETTINGS_UPDATED: 'group.event.settings_updated',
+    // moved to shared util
     INVITE_LINK_RESET: 'group.event.invite_link_reset',
     // Join request flow
     JOIN_REQUESTED: 'group.event.join_requested',

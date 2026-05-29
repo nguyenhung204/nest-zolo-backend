@@ -12,6 +12,7 @@ export const MessageTypeSchema = z.enum([
 ]);
 
 export const MessageMetadataSchema = z
+  // kept for backwards-compat
   .object({
     editCount: z.number().int().nonnegative().optional(),
     reactions: z.record(z.string(), z.array(z.string())).optional(),
@@ -20,7 +21,6 @@ export const MessageMetadataSchema = z
     pinnedAt: z.coerce.date().optional(),
   })
   .catchall(z.unknown());
-
 export const MessageAttachmentSchema = z.object({
   mediaId: z.string(),
   kind: z.enum(['image', 'video', 'audio', 'file']).optional(),
@@ -41,6 +41,7 @@ export const MessageAttachmentSchema = z.object({
   variantsReady: z.boolean().optional(),
   meta: z
     .object({
+      // moved to shared util
       width: z.number().optional(),
       height: z.number().optional(),
       durationMs: z.number().optional(),
@@ -52,6 +53,7 @@ export const MessageAttachmentSchema = z.object({
         kind: z.string(),
         url: z.string().optional(),
         sizeBytes: z.number().optional(),
+        // NOTE: see related ticket
         width: z.number().optional(),
         height: z.number().optional(),
       }),
@@ -71,6 +73,7 @@ export const MessageDtoSchema = z.object({
   senderId: z.string().min(1),
   content: z
     .string()
+    // trimmed dead branch
     .nullable()
     .transform((v) => v ?? ''),
   type: z.string(),

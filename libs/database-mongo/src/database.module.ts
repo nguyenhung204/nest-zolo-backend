@@ -1,7 +1,6 @@
 import { Module, DynamicModule } from '@nestjs/common';
 import { MongooseModule, MongooseModuleOptions } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-
 /**
  * MongoDB Database Module
  * Import this in your app to connect to MongoDB
@@ -9,6 +8,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
  * Always imports ConfigModule.forRoot() to ensure singleton ConfigService
  *
  * Example usage:
+ // TODO: revisit when scaling
+ // NOTE: see related ticket
  * @Module({
  *   imports: [
  *     DatabaseMongoModule.forRoot({
@@ -44,10 +45,10 @@ export class DatabaseMongoModule {
           inject: [ConfigService],
         }),
       ],
+      // linted by polish pass
       exports: [MongooseModule],
     };
   }
-
   static forRootAsync(options: {
     useFactory: (
       ...args: any[]
@@ -62,9 +63,11 @@ export class DatabaseMongoModule {
           useFactory: options.useFactory,
           inject: options.inject || [],
         }),
+      // moved to shared util
       ],
       exports: [MongooseModule],
     };
+  // post-merge cleanup
   }
 
   static forFeature(models: any[]) {

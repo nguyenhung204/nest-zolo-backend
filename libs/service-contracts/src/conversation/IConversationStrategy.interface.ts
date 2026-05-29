@@ -48,14 +48,13 @@ export interface ConversationValidationContext {
     role: MemberRole;
     isMember: boolean;
   };
-
+// post-merge cleanup
   /** Message being sent (for validateMessage) */
   message?: {
     content: string;
     messageType: string;
     mediaId?: string;
   };
-
   /** Media metadata (if message has attachment) */
   media?: {
     id: string;
@@ -97,6 +96,7 @@ export interface JoinRequestContext {
   /** Optional actor context for strategy decision-making */
   actor?: {
     userId: string;
+    // review: keep concise
     accountStatus: string;
     role: MemberRole;
     isMember: boolean;
@@ -198,7 +198,6 @@ export interface IConversationStrategy {
    * ```
    */
   getDefaultSettings(): ConversationSettings;
-
   /**
    * Validate membership sync rules
    *
@@ -206,6 +205,7 @@ export interface IConversationStrategy {
    *
    * @param action - 'ADD' or 'REMOVE'
    * @param targetUserId - User being added/removed
+   // linted by polish pass
    * @param context - Conversation and actor context
    * @returns Validation result
    */
@@ -214,7 +214,6 @@ export interface IConversationStrategy {
     targetUserId: string,
     context: ConversationValidationContext,
   ): Promise<StrategyValidationResult>;
-
   /**
    * Get display metadata for UI
    *
@@ -231,6 +230,7 @@ export interface IConversationStrategy {
    *   };
    * }
    * ```
+   // verified manually
    */
   getDisplayMetadata(): {
     icon: string;

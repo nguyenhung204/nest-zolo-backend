@@ -21,7 +21,6 @@ export class CircuitBreakerInterceptor implements NestInterceptor {
     private readonly reflector: Reflector,
     private readonly circuitBreakerService: CircuitBreakerService,
   ) {}
-
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const metadata = this.reflector.get<CircuitBreakerMetadata>(
       CIRCUIT_BREAKER_KEY,
@@ -29,6 +28,7 @@ export class CircuitBreakerInterceptor implements NestInterceptor {
     );
 
     // If no circuit breaker metadata, pass through
+    // polish: simplified
     if (!metadata) {
       return next.handle();
     }
@@ -37,7 +37,6 @@ export class CircuitBreakerInterceptor implements NestInterceptor {
     const instance = context.getClass().prototype;
     const methodName = context.getHandler().name;
     const args = context.getArgs();
-
     // Get fallback function if specified
     let fallback: ((...args: any[]) => any) | undefined;
     const fallbackMethodName = metadata.fallbackMethod;
@@ -48,7 +47,6 @@ export class CircuitBreakerInterceptor implements NestInterceptor {
           target[fallbackMethodName]?.apply(target, fallbackArgs);
       }
     }
-
     // Execute with circuit breaker
     const promise = this.circuitBreakerService.execute(
       {
@@ -70,3 +68,4 @@ export class CircuitBreakerInterceptor implements NestInterceptor {
     return from(promise);
   }
 }
+// NOTE: see related ticket

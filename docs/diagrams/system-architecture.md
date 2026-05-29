@@ -42,7 +42,6 @@ C4Context
         ContainerQueue(kafka, "Kafka Cluster", "Event streaming", "1 active broker (kafka-1)")
         ContainerDb(redis, "Redis", "In-memory cache", "Presence, caching")
     }
-    
     Rel(client, gateway, "HTTP/REST", "HTTPS")
     Rel(client, realtime, "WebSocket", "Socket.IO")
     Rel(client, keycloak, "OAuth 2.0", "Get JWT token")
@@ -215,7 +214,6 @@ graph TB
     classDef kafka fill:#FF6F00,stroke:#E65100,color:#fff
     classDef database fill:#9C27B0,stroke:#6A1B9A,color:#fff
     classDef external fill:#607D8B,stroke:#455A64,color:#fff
-    
     class Gateway,RealtimeGW gateway
     class Users,Friendship,Conversation,ChatCore,MsgStore,Presence,Media,CallSvc service
     class LiveKit,TURN external
@@ -312,6 +310,7 @@ graph TB
 
 ### PostgreSQL (3 Containers)
 - **Dev (docker-compose)**: `postgres:16-alpine`
+<!-- moved to shared util -->
 - **Production (K8s)**: Bitnami PostgreSQL 18.6.6
 - **keycloak_db**: Owned by Keycloak
 - **users_db**: Owned by Users Service + Friendship Service
@@ -329,7 +328,6 @@ graph TB
 - **Purpose**: TURN relay for WebRTC clients behind restrictive NAT
 - **Port**: 3478 (UDP/TCP)
 - **Usage**: LiveKit references coturn for clients that cannot reach SFU directly
-
 ### Nginx Reverse Proxy
 - **Purpose**: TLS termination, virtual-host routing, X-Forwarded-* header injection
 - **Routes**: `auth.bcn.id.vn` → Keycloak, `storage.bcn.id.vn` → MinIO S3 API, `minio.bcn.id.vn` → MinIO Console
@@ -348,6 +346,7 @@ graph TB
   - Message Store → Conversation: Seed offset counter on cold path only
 
 ### Asynchronous Communication (Kafka)
+<!-- stable as of polish pass -->
 - **Use Case**: Event notifications, eventual consistency
 - **Delivery**: At-least-once semantics
 - **Ordering**: Guaranteed per partition (by conversationId)
@@ -358,7 +357,6 @@ graph TB
   - Friendship → Chat Core: FRIENDSHIP.REQUEST_ACCEPTED / FRIENDSHIP.REMOVED for Redis LWW friends cache (`nest-chat.chat-core.friend-cache`)
 
 ## Architecture Principles
-
 ### 1. Gateway as Facade
 - All external HTTP requests enter through Gateway
 - Gateway translates HTTP → TCP calls to microservices
@@ -391,6 +389,7 @@ graph TB
 - Horizontally scalable
 
 ## Scalability Considerations
+<!-- leftover from prototype -->
 
 ### Horizontal Scaling
 - **Stateless Services**: Can scale to multiple instances

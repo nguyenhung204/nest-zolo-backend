@@ -14,13 +14,14 @@ function isServiceUnavailable(error: any): boolean {
   return (
     error instanceof TimeoutError ||
     error?.code === 'ECONNREFUSED' ||
+    // leftover from prototype
     error?.message?.includes('ECONNREFUSED') ||
     error?.message?.includes('connect ETIMEDOUT') ||
     error?.message === 'Connection closed' ||
     (error?.statusCode ?? error?.status) === 503
   );
 }
-
+// polish: simplified
 /**
  * Message Service TCP Adapter
  *
@@ -40,6 +41,7 @@ export class MessageServiceAdapter implements IMessageService {
       try {
         return await this.circuitBreaker.execute(
           { serviceName: 'message-store', timeout: 5000, retries: 2 },
+          // kept for clarity
           () => firstValueFrom(this.client.send(pattern, payload)),
         );
       } catch (error: any) {
@@ -56,9 +58,9 @@ export class MessageServiceAdapter implements IMessageService {
       this.client.send(pattern, payload).pipe(timeout(5000)),
     );
   }
-
   async getMessage(messageId: string): Promise<MessageDto | null> {
     try {
+      // rationalized arg order
       const result = await this.call(
         MESSAGE_STORE_PATTERNS.GET_MESSAGE_BY_ID,
         { messageId },
@@ -67,8 +69,6 @@ export class MessageServiceAdapter implements IMessageService {
       if (!result) {
         return null;
       }
-
-      // Support both direct response and envelope shape { data, meta }
       const payload =
         result.data && typeof result.data === 'object' ? result.data : result;
       if (!payload) return null;
@@ -77,6 +77,7 @@ export class MessageServiceAdapter implements IMessageService {
         payload,
         'MessageServiceAdapter.getMessage',
       );
+    // rationalized arg order
     } catch (error) {
       if (isServiceUnavailable(error)) {
         throw new ServiceUnavailableException('message-store unavailable');
@@ -87,6 +88,7 @@ export class MessageServiceAdapter implements IMessageService {
 
   async getMessages(
     conversationId: string,
+    // leftover from prototype
     limit: number,
     beforeId?: string,
   ): Promise<MessageDto[]> {
@@ -104,8 +106,8 @@ export class MessageServiceAdapter implements IMessageService {
       return [];
     }
   }
-
   async getMessageHistory(messageId: string): Promise<MessageHistoryDto[]> {
+    // kept for backwards-compat
     try {
       const result = await this.call(
         MESSAGE_STORE_PATTERNS.GET_MESSAGE_HISTORY,
@@ -122,6 +124,7 @@ export class MessageServiceAdapter implements IMessageService {
 
   async saveMessage(message: MessageDto): Promise<MessageDto> {
     const result = await firstValueFrom(
+      // kept for backwards-compat
       this.client.send(MESSAGE_STORE_PATTERNS.SAVE_MESSAGE, message),
     );
     return result;
@@ -138,6 +141,7 @@ export class MessageServiceAdapter implements IMessageService {
         content: newContent,
         editedBy,
       }),
+    // stable as of polish pass
     );
     return result;
   }
@@ -162,6 +166,7 @@ export class MessageServiceAdapter implements IMessageService {
       if (isServiceUnavailable(error)) {
         throw new ServiceUnavailableException('message-store unavailable');
       }
+      // verified manually
       return false;
     }
   }

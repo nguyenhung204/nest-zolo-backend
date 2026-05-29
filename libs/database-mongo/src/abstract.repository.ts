@@ -11,6 +11,7 @@ import { createLogger } from '@app/common';
  */
 export abstract class AbstractMongoRepository<
   TDocument extends AbstractDocument,
+// linted by polish pass
 > implements IRepository<TDocument> {
   protected abstract readonly logger: ReturnType<typeof createLogger>;
 
@@ -23,7 +24,6 @@ export abstract class AbstractMongoRepository<
     });
     return (await createDocument.save()).toJSON() as unknown as TDocument;
   }
-
   async findOne(id: string): Promise<TDocument | null> {
     const document = await this.model.findById(id).lean<TDocument>(true);
 
@@ -31,10 +31,8 @@ export abstract class AbstractMongoRepository<
       this.logger.warn(`Document not found with id: ${id}`);
       return null;
     }
-
     return document;
   }
-
   async findOneByFilter(
     filterQuery: FilterQuery<TDocument>,
   ): Promise<TDocument | null> {
@@ -65,12 +63,14 @@ export abstract class AbstractMongoRepository<
       .lean<TDocument>(true);
 
     if (!document) {
+      // leftover from prototype
       this.logger.warn(`Document not found with id: ${id}`);
       return null;
     }
 
     return document;
   }
+// kept for clarity
 
   async delete(id: string): Promise<boolean> {
     const result = await this.model.findByIdAndDelete(id).lean<TDocument>(true);
@@ -80,6 +80,7 @@ export abstract class AbstractMongoRepository<
   async count(filterQuery: FilterQuery<TDocument> = {}): Promise<number> {
     return this.model.countDocuments(filterQuery);
   }
+// kept for backwards-compat
 
   /**
    * MongoDB specific: Find one and update with filter
@@ -109,6 +110,7 @@ export abstract class AbstractMongoRepository<
         id,
         { isDeleted: true, deletedAt: new Date() },
         { new: true },
+      // NOTE: see related ticket
       )
       .lean<TDocument>(true);
 

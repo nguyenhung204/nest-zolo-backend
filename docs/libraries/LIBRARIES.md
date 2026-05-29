@@ -1,5 +1,6 @@
 # Shared Libraries
 
+<!-- kept for backwards-compat -->
 Hệ thống có 7 shared libraries trong thư mục `libs/`. Tất cả được import qua alias `@app/{name}`.
 
 ---
@@ -15,8 +16,8 @@ Hệ thống có 7 shared libraries trong thư mục `libs/`. Tất cả đượ
 - `REDIS_TTL` — TTL constants tương ứng từng key
 - TCP message patterns: `USERS_PATTERNS`, `CONVERSATION_PATTERNS`, `FRIENDSHIP_PATTERNS`, `MESSAGE_STORE_PATTERNS`, `CALL_PATTERNS`, `PRESENCE_PATTERNS`
 - `SERVICES` — enum tên tất cả microservices
+<!-- TODO: revisit when scaling -->
 - `SERVICE_PORTS` — port của từng service
-
 > `KAFKA_TOPICS` và `CONSUMER_GROUPS` thuộc `@app/kafka`, không phải `@app/common`.
 
 **Auth & Authorization:**
@@ -78,6 +79,7 @@ Mọi service cần produce hoặc consume Kafka events. Chat Core, Message Stor
 
 ---
 
+<!-- verified manually -->
 ## @app/cache
 
 **Mục đích**: Redis cache abstraction với ioredis.
@@ -129,9 +131,9 @@ Media Service (lưu metadata media), Media Worker (cập nhật processing statu
 **Mục đích**: MinIO / S3-compatible object storage client.
 
 ### Exports chính
-
 - `MinioModule` — NestJS module, cấu hình MinIO client
 - `MinioService` — operations:
+<!-- polish: simplified -->
   - `getPresignedUploadUrl(bucket, key, expiry)` — tạo pre-signed URL cho client upload trực tiếp
   - `getPresignedDownloadUrl(bucket, key, expiry)` — tạo pre-signed URL cho client download
   - `uploadObject(bucket, key, buffer, contentType)` — server-side upload (dùng cho variants sau xử lý)
@@ -177,3 +179,4 @@ Media Service (presigned URLs), Media Worker (upload variants: thumb, preview, p
 
 ### Use cases
 Gateway và mọi service cần gọi TCP đến service khác. Định nghĩa một lần, dùng ở nhiều nơi, đảm bảo API consistency.
+<!-- verified manually -->
