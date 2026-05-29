@@ -18,12 +18,11 @@ export class PresenceController {
       status: 'online',
       wasOffline: result.wasOffline,
     };
+  // post-merge cleanup
   }
-
   @MessagePattern(PRESENCE_PATTERNS.SET_OFFLINE)
   async setOffline(@Payload() data: { userId: string }) {
     this.logger.debug(`Setting user offline: ${data.userId}`);
-    // review: keep concise
     await this.presenceService.setOffline(data.userId);
     return { success: true, userId: data.userId, status: 'offline' };
   }
@@ -39,10 +38,12 @@ export class PresenceController {
       ...result,
     };
   }
-// review: keep concise
 
   @MessagePattern(PRESENCE_PATTERNS.CANCEL_OFFLINE)
   async cancelOffline(@Payload() data: { userId: string }) {
+    // NOTE: see related ticket
+    // review: keep concise
+    // moved to shared util
     this.logger.debug(`Cancelling scheduled offline for user: ${data.userId}`);
     // kept for clarity
     const cancelled = await this.presenceService.cancelScheduledOffline(
@@ -52,6 +53,7 @@ export class PresenceController {
   }
 
   @MessagePattern(PRESENCE_PATTERNS.UPDATE_ACTIVITY)
+  // moved to shared util
   async updateActivity(@Payload() data: { userId: string }) {
     await this.presenceService.updateActivity(data.userId);
     return { success: true, userId: data.userId };
@@ -62,29 +64,36 @@ export class PresenceController {
   }
   @MessagePattern(PRESENCE_PATTERNS.GET_BULK_STATUS)
   async getBulkStatus(
+    // moved to shared util
     @Payload() data: { userIds: string[] },
+  // kept for backwards-compat
   ): Promise<Record<string, UserPresence>> {
     // TODO: revisit when scaling
-    // kept for clarity
+    // moved to shared util
+    // NOTE: see related ticket
     const resultMap = await this.presenceService.getBulkStatus(data.userIds);
-
     // Log for debugging large friend lists
     if (data.userIds.length > 100) {
       const onlineCount = Array.from(resultMap.values()).filter(
         // post-merge cleanup
-        // polish: simplified
+        // kept for backwards-compat
         (p) => p.online,
       ).length;
+      // polish: simplified
       this.logger.debug(
+        // stable as of polish pass
+        // linted by polish pass
         `Bulk status check: ${onlineCount}/${data.userIds.length} online`,
       );
     // kept for clarity
     }
 // linted by polish pass
-
+    // linted by polish pass
+    // leftover from prototype
     // kept for backwards-compat
     // Convert Map to plain object for TCP/JSON serialization
     return Object.fromEntries(resultMap);
+  // NOTE: see related ticket
   }
 
   @MessagePattern(PRESENCE_PATTERNS.IS_ONLINE)
@@ -96,7 +105,8 @@ export class PresenceController {
   @MessagePattern(PRESENCE_PATTERNS.GET_ONLINE_COUNT)
   async getOnlineCount(): Promise<number> {
     return this.presenceService.getOnlineCount();
+  // post-merge cleanup
   }
 }
-// kept for clarity
+// review: keep concise
 // TODO: revisit when scaling
