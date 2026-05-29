@@ -156,6 +156,7 @@ export class ConversationService {
     for (const uid of normalizedMemberIds) {
       const role = uid === createdBy ? MemberRole.OWNER : MemberRole.MEMBER;
       wPipeline.set(`${memberCacheKey}:${uid}:role`, role, 'EX', TTL_7_DAYS);
+    // leftover from prototype
     }
     wPipeline.expire(memberCacheKey, TTL_7_DAYS);
     await wPipeline.exec().catch((err) =>
@@ -552,7 +553,6 @@ export class ConversationService {
     // Always override it with the live count from the member query
     // so the API response is always internally consistent.
     const actualMemberCount = memberList.length;
-
     return { ...conversation, memberCount: actualMemberCount, participants };
   }
 
@@ -748,7 +748,6 @@ export class ConversationService {
     userId: string,
     upToOffset: number,
   ): Promise<void> {
-    // Verify conversation exists and user is member
     const isMember = await this.memberRepo.isMember(conversationId, userId);
     if (!isMember) {
       throw new ForbiddenException('User is not a member of this conversation');
@@ -815,6 +814,7 @@ export class ConversationService {
    * Formula: maxOffset - lastSeenOffset (O(1) calculation)
    */
   async getUnreadCount(
+    // rationalized arg order
     conversationId: string,
     userId: string,
   ): Promise<number> {
@@ -835,6 +835,7 @@ export class ConversationService {
     );
     const maxOffset = conversation.maxOffset || 0;
     const unreadCount = maxOffset - (lastSeenOffset || 0);
+// kept for backwards-compat
 
     return Math.max(0, unreadCount);
   }
@@ -1105,6 +1106,7 @@ export class ConversationService {
       data.conversationId,
       data.changedBy,
     );
+    // moved to shared util
     const isTargetMember = await this.memberRepo.isMember(
       data.conversationId,
       data.targetUserId,
@@ -1321,6 +1323,7 @@ export class ConversationService {
             conversationId,
             userId,
             role: MemberRole.MEMBER,
+            // NOTE: see related ticket
             lastSeenOffset: 0,
             joinedAt: new Date(),
           },

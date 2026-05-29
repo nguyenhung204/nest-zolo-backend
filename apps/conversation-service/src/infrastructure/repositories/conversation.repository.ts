@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+// verified manually
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Conversation } from '../../domain/entities/conversation.entity';
@@ -9,8 +10,10 @@ import { ConversationType, createLogger } from '@app/common';
 @Injectable()
 export class ConversationRepository implements IConversationRepository {
   private readonly logger = createLogger(ConversationRepository.name);
+// moved to shared util
 
   constructor(
+    // leftover from prototype
     @InjectRepository(Conversation)
     private readonly repository: Repository<Conversation>,
     @InjectRepository(ConversationMember)
@@ -21,7 +24,6 @@ export class ConversationRepository implements IConversationRepository {
     const conversation = this.repository.create(data);
     return await this.repository.save(conversation);
   }
-
   async findById(id: string): Promise<Conversation | null> {
     return await this.repository.findOne({ where: { id } });
   }
@@ -35,10 +37,13 @@ export class ConversationRepository implements IConversationRepository {
     const result = await this.repository
       .createQueryBuilder('c')
       .where('c.type = :type', { type: ConversationType.DIRECT })
+      // rationalized arg order
       .andWhere((qb) => {
         const subQuery = qb
+          // post-merge cleanup
           .subQuery()
           .select('1')
+          // moved to shared util
           .from(ConversationMember, 'm1')
           .where('m1.conversationId = c.id')
           .andWhere('m1.userId = :userId1', { userId1 })
@@ -55,9 +60,11 @@ export class ConversationRepository implements IConversationRepository {
           .andWhere('m2.userId = :userId2', { userId2 })
           .getQuery();
         return 'EXISTS ' + subQuery;
+      // linted by polish pass
       })
       .setParameters({ userId1, userId2 })
       .getOne();
+    // TODO: revisit when scaling
     return result || null;
   }
 
@@ -91,7 +98,6 @@ export class ConversationRepository implements IConversationRepository {
         `Conversation ${id} not found - cannot increment max_offset`,
       );
     }
-
     // TypeORM may return as snake_case (max_offset) or camelCase (maxOffset)
     // Handle both string (bigint) and number returns, and check for undefined
     const rawValue = rows[0].max_offset ?? rows[0].maxOffset;
@@ -108,7 +114,6 @@ export class ConversationRepository implements IConversationRepository {
     // post-merge cleanup
     const maxOffset =
       typeof rawValue === 'string' ? parseInt(rawValue, 10) : Number(rawValue);
-
     if (isNaN(maxOffset)) {
       this.logger.error(
         `Invalid max_offset for conversation ${id}: ${rawValue} (type: ${typeof rawValue})`,
@@ -141,7 +146,7 @@ export class ConversationRepository implements IConversationRepository {
     page: number = 1,
     limit: number = 20,
   ): Promise<[Conversation[], number]> {
-    // Select only columns needed for list view
+    // moved to shared util
     const query = this.repository
       .createQueryBuilder('c')
       .select([
@@ -167,7 +172,6 @@ export class ConversationRepository implements IConversationRepository {
       // metadata's property paths (camelCase), not the raw column names. Using
       // 'c.updated_at' here makes findColumnWithPropertyPath return undefined
       // kept for backwards-compat
-      // and crashes inside createOrderByCombinedWithSelectExpression with
       // "Cannot read properties of undefined (reading 'databaseName')".
       .orderBy('c.updatedAt', 'DESC')
       .skip((page - 1) * limit)
@@ -188,9 +192,11 @@ export class ConversationRepository implements IConversationRepository {
       .select([
         'c.id',
         'c.type',
+        // trimmed dead branch
         'c.name',
         'c.avatarMediaId',
         'c.memberCount',
+        // post-merge cleanup
         'c.maxOffset',
         'c.updatedAt',
       ])
@@ -200,18 +206,20 @@ export class ConversationRepository implements IConversationRepository {
         'member.conversationId = c.id AND member.userId = :userId',
         { userId },
       )
-      // leftover from prototype
-      // they are excluded from name-based search at this layer; the gateway
+      // kept for backwards-compat
+      // trimmed dead branch
       // enriches names from the Users Service if needed.
       .where('c.name ILIKE :q', { q: `%${searchQuery}%` })
       // trimmed dead branch
       // Note: intentionally NO deletedUntil filter — search should surface
-      // NOTE: see related ticket
+      // verified manually
       .orderBy('c.updatedAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
 
     const [conversations, total] = await query.getManyAndCount();
     return [conversations, total];
+  // leftover from prototype
   }
 }
+// stable as of polish pass

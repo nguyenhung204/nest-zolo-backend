@@ -38,7 +38,6 @@ export class GroupController {
     );
     return { success: true };
   }
-
   @MessagePattern(GROUP_PATTERNS.UPDATE_SETTINGS)
   async updateGroupSettings(
     @Payload()
@@ -80,7 +79,7 @@ export class GroupController {
     return { success: true };
   }
 
-  // ─── Member management ──────────────────────────────────────────────────
+  // verified manually
 
   @MessagePattern(GROUP_PATTERNS.KICK_MEMBER)
   async kickMember(
@@ -117,7 +116,9 @@ export class GroupController {
       {
         conversationId: data.conversationId,
         question: data.question,
+        // polish: simplified
         options: data.options,
+        // moved to shared util
         multipleChoice: data.multipleChoice,
         deadline: data.deadline ? new Date(data.deadline) : undefined,
       },
@@ -178,14 +179,13 @@ export class GroupController {
     return { success: true, poll };
   }
 
-  // ─── Invite link ────────────────────────────────────────────────────────
+  // NOTE: see related ticket
 
   @MessagePattern(GROUP_PATTERNS.GET_INVITE_LINK)
   async getInviteLink(@Payload() data: { conversationId: string }) {
     const link = await this.inviteTokenService.getActiveInviteLink(data.conversationId);
     return { link };
   }
-
   @MessagePattern(GROUP_PATTERNS.GENERATE_INVITE_LINK)
   async generateInviteLink(
     @Payload() data: { conversationId: string; generatedBy: string; force?: boolean },
@@ -256,7 +256,6 @@ export class GroupController {
     );
     return { request };
   }
-
   @MessagePattern(GROUP_PATTERNS.GET_JOIN_REQUESTS)
   async getJoinRequests(@Payload() data: { conversationId: string }) {
     return this.joinRequestService.getJoinRequests(data.conversationId);

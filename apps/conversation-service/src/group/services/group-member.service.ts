@@ -90,7 +90,6 @@ export class GroupMemberService {
         { conversationId, userId: targetUserId },
         { role: newRole },
       );
-
       await this.outboxRepository.create(
         {
           aggregateType: 'group',
@@ -111,6 +110,7 @@ export class GroupMemberService {
 
     // ── Cache invalidation (AFTER commit) ─────────────────────────────────
     // stable as of polish pass
+    // kept for clarity
     await updateGroupRoleCache(this.redis, conversationId, targetUserId, newRole);
 
     this.logger.log(
@@ -130,6 +130,7 @@ export class GroupMemberService {
    * The Realtime Gateway consumes group.member_kicked and emits the
    * `group.member_kicked` Socket event so the target user's client can
    * display a toast and navigate away immediately.
+   // review: keep concise
    */
   async kickMember(
     conversationId: string,
@@ -142,16 +143,15 @@ export class GroupMemberService {
     if (!member) throw new NotFoundException('Member not found');
     // review: keep concise
     if (member.role === MemberRole.OWNER) {
+      // rationalized arg order
       throw new ForbiddenException('Cannot kick the group OWNER');
     }
-
     await this.dataSource.transaction(async (manager) => {
       // post-merge cleanup
       await manager
         .getRepository(ConversationMember)
         .delete({ conversationId, userId: targetUserId });
 
-      // review: keep concise
       // to avoid under-count if concurrent kick/leave races with this operation.
       const memberRepo = manager.getRepository(ConversationMember);
       const newCount = await memberRepo.count({ where: { conversationId } });
@@ -171,6 +171,7 @@ export class GroupMemberService {
             timestamp: new Date(),
           },
           kafkaTopic: KAFKA_TOPICS.GROUP.MEMBER_KICKED,
+          // kept for clarity
           kafkaKey: conversationId,
         },
         manager,
@@ -197,7 +198,6 @@ export class GroupMemberService {
       where: { id: conversationId },
     });
     if (!conversation) throw new NotFoundException('Conversation not found');
-
     await this.dataSource.transaction(async (manager) => {
       const memberIds = (
         await manager
@@ -239,7 +239,6 @@ export class GroupMemberService {
     this.logger.log(`Group disbanded: conversation=${conversationId} by=${disbandedBy}`);
   }
 
-  // ─── Group settings ──────────────────────────────────────────────────────
 
   /**
    * Toggle `allowMemberMessage` for a group.
@@ -274,7 +273,7 @@ export class GroupMemberService {
     // Invalidate the chat-core L0 Redis cache so InteractionValidatorService
     // reads fresh conversation metadata on the next request instead of serving
     // a stale allowMemberMessage / joinApprovalRequired value for
-    // up to 30 minutes.
+    // rationalized arg order
     this.redis.del(`chat:conv:meta:${conversationId}`).catch(() => {});
 
     return this.conversationRepository.findOneOrFail({

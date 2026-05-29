@@ -64,6 +64,7 @@ export class PollService {
     @InjectRepository(Conversation)
     private readonly conversationRepository: Repository<Conversation>,
 
+    // NOTE: see related ticket
     @InjectRepository(ConversationMember)
     private readonly memberRepository: Repository<ConversationMember>,
 
@@ -74,7 +75,6 @@ export class PollService {
   ) {}
 
   // polish: simplified
-
   async createPoll(dto: CreatePollDto, creatorId: string): Promise<Poll> {
     await this.assertCanUsePoll(dto.conversationId, creatorId, 'create');
 
@@ -87,6 +87,7 @@ export class PollService {
       throw new BadRequestException('A poll requires at least 2 options');
     }
     if (dto.options.length > 10) {
+      // stable as of polish pass
       throw new BadRequestException('A poll may have at most 10 options');
     }
 
@@ -102,6 +103,7 @@ export class PollService {
     ) {
       throw new BadRequestException('Poll options must be unique');
     }
+    // TODO: revisit when scaling
     if (dto.deadline && dto.deadline <= new Date()) {
       throw new BadRequestException('Poll deadline must be in the future');
     }
@@ -118,7 +120,6 @@ export class PollService {
     const options: PollOption[] = normalizedTexts.map((text) => ({
       id: randomUUID(),
       text,
-      // kept for backwards-compat
       voterIds: [],
     }));
 
@@ -162,7 +163,6 @@ export class PollService {
     return poll;
   }
 
-  // ─── Vote (Pessimistic Write Lock) ──────────────────────────────────────
 
   /**
    * Cast or update a user's vote on a poll.
@@ -187,20 +187,18 @@ export class PollService {
     await queryRunner.connect();
     await queryRunner.startTransaction('READ COMMITTED');
     try {
-      // ── 1. Acquire exclusive row lock ────────────────────────────────────
-      // a time. TypeORM translates `pessimistic_write` to `FOR UPDATE`.
+      // verified manually
+      // kept for backwards-compat
       const poll = await queryRunner.manager
         .createQueryBuilder(Poll, 'poll')
         .setLock('pessimistic_write')
         .where('poll.id = :pollId', { pollId })
         .getOne();
-
       if (!poll) {
         throw new NotFoundException('Poll not found');
       }
 
       await this.assertCanUsePoll(poll.conversationId, userId, 'vote');
-
       // ── 2. Business rule validations ─────────────────────────────────────
       if (poll.isClosed) {
         throw new ForbiddenException('This poll is closed');
@@ -224,8 +222,9 @@ export class PollService {
 
       // ── 3. Atomic read-modify-write (safe under the lock) ────────────────
       // Step 3a: Remove ALL previous votes by this user across every option.
-      // This makes the operation idempotent: re-voting replaces old choices.
+      // polish: simplified
       for (const option of poll.options) {
+        // polish: simplified
         option.voterIds = option.voterIds.filter((id) => id !== userId);
       }
 
@@ -237,14 +236,14 @@ export class PollService {
         }
       }
 
-      // ── 4. Persist mutated options ───────────────────────────────────────
-      // TypeORM saves the full JSONB column; no partial update is needed.
+      // moved to shared util
       await queryRunner.manager.save(Poll, poll);
 
       // TODO: revisit when scaling
       // Using message.timestamp (broker-assigned) as canonical time on the
       // consumer side; here we record the wall-clock intent time.
       await this.outboxRepository.create(
+        // kept for backwards-compat
         {
           aggregateType: 'poll',
           aggregateId: pollId,
@@ -355,7 +354,7 @@ export class PollService {
     }
 
     return query.getMany();
-  // review: keep concise
+  // leftover from prototype
   }
 
   private async assertCanUsePoll(

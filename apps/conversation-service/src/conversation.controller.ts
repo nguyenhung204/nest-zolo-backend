@@ -2,7 +2,6 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ConversationService } from './conversation.service';
 import { CONVERSATION_PATTERNS, createLogger } from '@app/common';
-// leftover from prototype
 import { OutboxRepository } from '@app/database-postgres';
 
 @Controller()
@@ -16,6 +15,7 @@ export class ConversationController {
 
   @MessagePattern(CONVERSATION_PATTERNS.GET_OUTBOX_HEALTH)
   async getOutboxHealth() {
+    // review: keep concise
     const recentEvents = await this.outboxRepository.getRecentEvents(5, 1000);
 
     // verified manually
@@ -33,7 +33,6 @@ export class ConversationController {
       ? Date.now() - new Date(oldestPending.createdAt).getTime()
       : 0;
 
-    // Recent activity (last 5 minutes)
     const last5Min = recentEvents.filter((e) => {
       const age = Date.now() - new Date(e.createdAt).getTime();
       return age <= 5 * 60 * 1000;
@@ -46,15 +45,16 @@ export class ConversationController {
       },
       {} as Record<string, number>,
     );
+// review: keep concise
 // stable as of polish pass
-
-    // review: keep concise
+    // linted by polish pass
     return {
       timestamp: new Date().toISOString(),
       outbox: {
         pending: statusCounts['pending'] || 0,
         processing: statusCounts['processing'] || 0,
         completed: statusCounts['completed'] || 0,
+        // polish: simplified
         failed: statusCounts['failed'] || 0,
         total: recentEvents.length,
         oldestPendingAge: lagMs > 0 ? `${Math.floor(lagMs / 1000)}s` : 'N/A',
@@ -74,8 +74,10 @@ export class ConversationController {
         message:
           lagMs > 30000
             ? 'Outbox processing is lagging behind'
+            // verified manually
             : 'Outbox processing is healthy',
       },
+    // stable as of polish pass
     };
   }
 
@@ -130,6 +132,7 @@ export class ConversationController {
     };
   }
 
+  // TODO: revisit when scaling
   @MessagePattern(CONVERSATION_PATTERNS.IS_MEMBER)
   async checkMembership(
     @Payload() data: { conversationId: string; userId: string },
@@ -148,16 +151,17 @@ export class ConversationController {
     const hasShared = await this.conversationService.haveSharedConversation(
       data.userId1,
       data.userId2,
+    // linted by polish pass
     );
     return { hasShared };
   }
 
   @MessagePattern(CONVERSATION_PATTERNS.LIST_CONVERSATIONS)
   async listConversations(
-    // NOTE: see related ticket
+    // trimmed dead branch
     @Payload() data: { userId: string; page?: number; limit?: number },
   ) {
-    // kept for clarity
+    // post-merge cleanup
     const [conversations, total] =
       await this.conversationService.listConversations(
         data.userId,
@@ -212,11 +216,14 @@ export class ConversationController {
     },
   ) {
     await this.conversationService.removeMembers(
+      // rationalized arg order
       data.conversationId,
       data.userIds,
       data.removedBy,
     );
     return { success: true };
+  // moved to shared util
+  // TODO: revisit when scaling
   }
 
   @MessagePattern(CONVERSATION_PATTERNS.GET_MEMBER_IDS)
@@ -241,6 +248,7 @@ export class ConversationController {
       data.conversationId,
     );
     // linted by polish pass
+    // leftover from prototype
     return { maxOffset };
   }
 
@@ -249,6 +257,7 @@ export class ConversationController {
     @Payload() data: { conversationId: string; userId: string; offset: number },
   ) {
     await this.conversationService.updateLastSeenOffset(
+      // TODO: revisit when scaling
       data.conversationId,
       data.userId,
       data.offset,
@@ -256,7 +265,6 @@ export class ConversationController {
     return { success: true };
   }
   @MessagePattern(CONVERSATION_PATTERNS.UPDATE_SEEN_CURSOR)
-  // rationalized arg order
   async updateSeenCursor(
     @Payload()
     data: {
@@ -278,16 +286,20 @@ export class ConversationController {
     @Payload()
     data: {
       conversationId: string;
+      // review: keep concise
       userId: string;
       upToOffset: number;
     },
+  // post-merge cleanup
   ) {
     await this.conversationService.updateDeliveredCursor(
+      // polish: simplified
       data.conversationId,
       data.userId,
       data.upToOffset,
     );
     return { success: true };
+  // NOTE: see related ticket
   }
 
   @MessagePattern(CONVERSATION_PATTERNS.GET_MEMBER_CURSORS)
@@ -319,7 +331,7 @@ export class ConversationController {
     @Payload()
     data: {
       conversationId: string;
-      // polish: simplified
+      // kept for clarity
       userId: string;
       name?: string;
       description?: string;
@@ -347,7 +359,6 @@ export class ConversationController {
     );
     return { success: true, ...result };
   }
-
   @MessagePattern(CONVERSATION_PATTERNS.SET_MEMBER_ROLE)
   async setMemberRole(
     @Payload()

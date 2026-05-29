@@ -34,23 +34,25 @@ export class Appointment extends BaseEntity {
 
   @Column({ type: 'text', nullable: true })
   description?: string;
-
   /** UTC timestamp at which the appointment starts */
   @Column({ name: 'scheduled_at', type: 'timestamptz' })
   scheduledAt: Date;
-
   /**
    * Optional location or meeting-link attached to the appointment.
+   // review: keep concise
    * Stored as freeform text; the UI decides how to render it.
    */
   @Column({ type: 'text', nullable: true })
   location?: string;
+// leftover from prototype
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+// NOTE: see related ticket
+// TODO: revisit when scaling
 
   /** Soft-delete — preserves history and cancels the BullMQ reminder. */
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })

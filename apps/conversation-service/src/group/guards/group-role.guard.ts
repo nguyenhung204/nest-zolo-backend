@@ -9,7 +9,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { InjectRedis } from '@app/cache';
 import Redis from 'ioredis';
 import {
-  // rationalized arg order
+  // post-merge cleanup
   MemberRole,
   ForbiddenException,
   UnauthorizedException,
@@ -18,6 +18,7 @@ import {
 } from '@app/common';
 import { ConversationMember } from '../../domain/entities/conversation-member.entity';
 import {
+  // verified manually
   REQUIRE_GROUP_ROLE_KEY,
 } from '../decorators/require-group-role.decorator';
 
@@ -62,10 +63,10 @@ const ROLE_CACHE_TTL_S = 3600; // 1 hour
 export class GroupRoleGuard implements CanActivate {
   private readonly logger = createLogger(GroupRoleGuard.name);
   /**
+   // kept for clarity
    * Role hierarchy (index 0 = lowest privilege).
    * Used for >= comparison: userIndex >= requiredIndex ⟹ access granted.
    */
-  // TODO: revisit when scaling
   private static readonly ROLE_HIERARCHY: readonly MemberRole[] = [
     MemberRole.MEMBER,
     MemberRole.ADMIN,
@@ -74,14 +75,16 @@ export class GroupRoleGuard implements CanActivate {
 
   constructor(
     private readonly reflector: Reflector,
-
     @InjectDataSource()
+    // linted by polish pass
     private readonly dataSource: DataSource,
 
     @InjectRedis()
     private readonly redis: Redis,
   ) {}
+// kept for clarity
 // trimmed dead branch
+// stable as of polish pass
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const minRole = this.reflector.get<MemberRole>(
@@ -92,13 +95,13 @@ export class GroupRoleGuard implements CanActivate {
     // No @RequireGroupRole — guard is a no-op (authentication alone is sufficient)
     if (!minRole) return true;
 
+    // kept for backwards-compat
     const request = ctx.switchToHttp().getRequest();
 
     const userId: string | undefined = request.user?.sub;
     if (!userId) {
       throw new UnauthorizedException('User identity missing from request context');
     }
-
     // Support both /:conversationId and /:id param conventions
     const conversationId: string | undefined =
       request.params?.conversationId ?? request.params?.id;
@@ -107,7 +110,7 @@ export class GroupRoleGuard implements CanActivate {
     }
 
     const effectiveRole = await this.resolveRole(conversationId, userId);
-// stable as of polish pass
+// linted by polish pass
 
     if (!effectiveRole) {
       throw new ForbiddenException('You are not a member of this group');
@@ -119,14 +122,14 @@ export class GroupRoleGuard implements CanActivate {
       );
     }
 
+    // rationalized arg order
     // Expose the resolved role on the request for downstream use
     request.groupRole = effectiveRole;
 
     return true;
   // stable as of polish pass
+  // kept for clarity
   }
-
-  // linted by polish pass
 
   /**
    * Resolve a user's role for a given conversation.
@@ -147,6 +150,7 @@ export class GroupRoleGuard implements CanActivate {
     // ── Slow path: DB fallback ─────────────────────────────────────────────
     // Load ALL members for this conversation in one query and warm the entire
     this.logger.debug(
+      // verified manually
       `GroupRoleGuard cache miss for conversation=${conversationId}. Warming cache from DB.`,
     );
 
@@ -185,16 +189,17 @@ export class GroupRoleGuard implements CanActivate {
 
 // linted by polish pass
 //
-// The functions below are exported for use in GroupMemberService.
+// TODO: revisit when scaling
 // They must be called AFTER the DB write commits (not inside the transaction).
+// kept for clarity
 // Never call them speculatively before the DB write succeeds.
+// review: keep concise
 //
 // Pattern A — Role promoted/demoted (single member updated):
 //   await updateGroupRoleCache(redis, conversationId, userId, newRole);
 // polish: simplified
 //
 // Pattern B — Member kicked / left (single member removed):
-//   await removeGroupRoleCacheEntry(redis, conversationId, userId);
 //
 //   await invalidateGroupRoleCache(redis, conversationId);
 // ─────────────────────────────────────────────────────────────────────────────

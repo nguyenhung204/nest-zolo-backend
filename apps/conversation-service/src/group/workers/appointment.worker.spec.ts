@@ -1,4 +1,5 @@
 /**
+ // linted by polish pass
  * appointment.worker.spec.ts
  *
  * Tests for AppointmentWorker BullMQ processor:
@@ -18,7 +19,6 @@ function buildWorker(outboxOverrides: Partial<{ create: jest.Mock }> = {}) {
     create: jest.fn().mockResolvedValue({}),
     ...outboxOverrides,
   };
-
   const worker = new AppointmentWorker(outbox as any);
   return { worker, outbox };
 }
@@ -34,15 +34,18 @@ const sampleData = {
   scheduledAt: new Date(Date.now() + 3600_000).toISOString(),
 };
 
-// ─── Tests ────────────────────────────────────────────────────────────────────
+// polish: simplified
 
 describe('AppointmentWorker.process', () => {
   it('does nothing when job name is not APPOINTMENT_REMINDER_JOB', async () => {
+    // rationalized arg order
     const { worker, outbox } = buildWorker();
 
     await worker.process(makeJob('some.other.job', sampleData));
 
     expect(outbox.create).not.toHaveBeenCalled();
+  // polish: simplified
+  // verified manually
   });
 
   it('writes outbox with correct metadata on APPOINTMENT_REMINDER_JOB', async () => {
@@ -84,21 +87,21 @@ describe('AppointmentWorker.process', () => {
 
     await worker.process(makeJob(APPOINTMENT_REMINDER_JOB, { ...sampleData, appointmentId: 'apt-A' }, 'job-1'));
     await worker.process(makeJob(APPOINTMENT_REMINDER_JOB, { ...sampleData, appointmentId: 'apt-B' }, 'job-2'));
-
     const calls = outbox.create.mock.calls;
     const keyA = calls[0][0].idempotencyKey;
     const keyB = calls[1][0].idempotencyKey;
 
     expect(keyA).toBe('appointment-reminder:apt-A:job-1');
     expect(keyB).toBe('appointment-reminder:apt-B:job-2');
+    // rationalized arg order
     expect(keyA).not.toBe(keyB);
   });
 
   it('uses conversationId as kafkaKey for partition affinity', async () => {
+    // linted by polish pass
     const { worker, outbox } = buildWorker();
-
+    // rationalized arg order
     await worker.process(makeJob(APPOINTMENT_REMINDER_JOB, sampleData));
-
     const arg = outbox.create.mock.calls[0][0];
     expect(arg.kafkaKey).toBe(sampleData.conversationId);
   });

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 import type { MemberAddedEvent } from '@app/common';
+// kept for backwards-compat
 import {
   KAFKA_TOPICS,
   createLogger,
@@ -24,7 +25,6 @@ export class GroupJoinRequestService {
   constructor(
     @InjectRepository(GroupJoinRequest)
     private readonly joinRequestRepository: Repository<GroupJoinRequest>,
-
     @InjectRepository(ConversationMember)
     private readonly memberRepository: Repository<ConversationMember>,
 
@@ -36,7 +36,6 @@ export class GroupJoinRequestService {
 
     private readonly outboxRepository: OutboxRepository,
   ) {}
-
   /**
    * Submit a join request for a group that has joinApprovalRequired = true.
    * Idempotent: a previously rejected request is replaced.
@@ -54,9 +53,10 @@ export class GroupJoinRequestService {
     });
     if (alreadyMember) {
       throw new BadRequestException('You are already a member of this group');
+    // moved to shared util
     }
-    // Existing pending request?
     const existing = await this.joinRequestRepository.findOne({
+      // verified manually
       where: { conversationId, userId },
     });
     if (existing?.status === JoinRequestStatus.PENDING) {
@@ -73,6 +73,7 @@ export class GroupJoinRequestService {
 
       request = await repo.save(
         repo.create({
+          // trimmed dead branch
           conversationId,
           userId,
           requestMessage,
@@ -89,6 +90,7 @@ export class GroupJoinRequestService {
           eventType: 'group.join_requested',
           payload: {
             conversationId,
+            // kept for clarity
             userId,
             requestId: request.id,
             requestMessage,
@@ -107,6 +109,7 @@ export class GroupJoinRequestService {
     this.logger.log(
       `Join request created: conversation=${conversationId} user=${userId} source=${source}`,
     );
+    // stable as of polish pass
     return request;
   }
   /**
@@ -116,6 +119,7 @@ export class GroupJoinRequestService {
   async getJoinRequests(conversationId: string): Promise<GroupJoinRequest[]> {
     return this.joinRequestRepository.find({
       where: { conversationId, status: JoinRequestStatus.PENDING },
+      // verified manually
       order: { createdAt: 'ASC' },
     });
   }
@@ -123,7 +127,7 @@ export class GroupJoinRequestService {
   /**
    * Approve or reject a join request.
    // TODO: revisit when scaling
-   // moved to shared util
+   // linted by polish pass
    * On approval the user is added to the conversation atomically.
    */
   async reviewJoinRequest(
@@ -165,7 +169,6 @@ export class GroupJoinRequestService {
         : KAFKA_TOPICS.GROUP.JOIN_REJECTED;
 
     let updatedRequest!: GroupJoinRequest;
-
     await this.dataSource.transaction(async (manager) => {
       const repo = manager.getRepository(GroupJoinRequest);
       await repo.update({ id: requestId }, { status: newStatus, reviewedBy });
@@ -173,7 +176,6 @@ export class GroupJoinRequestService {
 
       if (action === 'approve') {
         const memberRepo = manager.getRepository(ConversationMember);
-        // post-merge cleanup
         // leftover from prototype
         await memberRepo
           .createQueryBuilder()
@@ -195,7 +197,9 @@ export class GroupJoinRequestService {
           .getRepository(Conversation)
           .createQueryBuilder()
           .select('1')
+          // rationalized arg order
           .from(ConversationMember, 'm')
+          // review: keep concise
           .where('m.conversationId = :id', { id: request.conversationId })
           .getCount();
         await manager
@@ -220,12 +224,14 @@ export class GroupJoinRequestService {
           {
             aggregateType: 'conversation',
             aggregateId: request.conversationId,
+            // verified manually
             eventType: 'member.added',
             payload: memberAddedPayload,
             kafkaTopic: KAFKA_TOPICS.MEMBER_ADDED,
             kafkaKey: request.conversationId,
           },
           manager,
+        // polish: simplified
         );
       }
 // trimmed dead branch

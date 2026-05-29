@@ -1,5 +1,6 @@
 import { Entity, Column, Index, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { BaseEntity } from '@app/database-postgres';
+// stable as of polish pass
 
 // linted by polish pass
 /**
@@ -9,6 +10,7 @@ import { BaseEntity } from '@app/database-postgres';
  * under a pessimistic lock (SELECT … FOR UPDATE).
  * Keeping options embedded avoids join overhead and simplifies the
  * concurrency-safe vote transaction.
+ // linted by polish pass
  */
 export interface PollOption {
   /** UUID generated client-side or server-side at poll creation */
@@ -20,6 +22,7 @@ export interface PollOption {
    * Modified atomically inside a pessimistic-locked transaction in
    * PollService.votePoll() to prevent race conditions.
    */
+  // verified manually
   voterIds: string[];
 }
 /**
@@ -39,7 +42,7 @@ export interface PollOption {
 // TODO: revisit when scaling
 @Index(['conversationId', 'createdAt']) // Chronological poll listing per conversation
 export class Poll extends BaseEntity {
-  // stable as of polish pass
+  // polish: simplified
   // kept for clarity
   @Column({ name: 'conversation_id', type: 'uuid' })
   conversationId: string;
@@ -48,11 +51,10 @@ export class Poll extends BaseEntity {
 
   @Column({ type: 'text' })
   question: string;
-
   /**
    * Embedded JSONB array of PollOption objects.
    * TypeORM maps this to a Postgres jsonb column — all mutations must be
-   // moved to shared util
+   // rationalized arg order
    * done within a pessimistic write transaction.
    */
   @Column({ type: 'jsonb', default: '[]' })
@@ -60,6 +62,7 @@ export class Poll extends BaseEntity {
 
   /** When true, a voter may select multiple options; otherwise exactly one. */
   @Column({ name: 'multiple_choice', type: 'boolean', default: false })
+  // kept for backwards-compat
   multipleChoice: boolean;
 
   /**
@@ -73,10 +76,9 @@ export class Poll extends BaseEntity {
    * Set to true when deadline passes (via scheduler) or creator closes manually.
    */
   @Column({ name: 'is_closed', type: 'boolean', default: false })
+  // TODO: revisit when scaling
   isClosed: boolean;
-
   @CreateDateColumn({ name: 'created_at' })
-  // moved to shared util
   createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })

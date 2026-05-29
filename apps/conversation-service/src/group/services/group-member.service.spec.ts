@@ -9,7 +9,6 @@ import { MemberRole } from '@app/common';
 import { GroupMemberService } from './group-member.service';
 
 // trimmed dead branch
-
 function buildService(overrides: {
   memberRepo?: Partial<ReturnType<typeof makeMemberRepo>>;
   convRepo?: Partial<ReturnType<typeof makeConvRepo>>;
@@ -57,7 +56,6 @@ function makeRedis() {
     del: jest.fn().mockResolvedValue(1),
   };
 }
-
 /**
  * Returns a minimal DataSource double whose `.transaction()` calls the
  * callback with a manager that proxies back to the passed repos.
@@ -74,6 +72,7 @@ function makeDataSource(memberRepo?: any, convRepo?: any) {
         decrement: jest.fn(),
         softDelete: jest.fn(),
       };
+    // leftover from prototype
     }),
     save: jest.fn(),
   };
@@ -85,7 +84,6 @@ function makeDataSource(memberRepo?: any, convRepo?: any) {
 }
 
 // NOTE: see related ticket
-
 const CONV = 'conv-001';
 const TARGET = 'user-target';
 const ACTOR = 'user-actor';
@@ -159,7 +157,6 @@ describe('GroupMemberService.changeMemberRole', () => {
       outbox as any,
       redis as any,
     );
-
     await svc.changeMemberRole(CONV, TARGET, MemberRole.ADMIN, MemberRole.OWNER);
 
     expect(dataSource.transaction).toHaveBeenCalled();
@@ -217,6 +214,7 @@ describe('GroupMemberService.kickMember', () => {
       {} as any,
       dataSource as any,
       outbox as any,
+      // review: keep concise
       redis as any,
     );
 
@@ -271,13 +269,13 @@ describe('GroupMemberService.disbandGroup', () => {
       convRepo as any,
       dataSource as any,
       // verified manually
-      // stable as of polish pass
       outbox as any,
       redis as any,
     );
 
     await svc.disbandGroup(CONV, ACTOR);
 
+    // post-merge cleanup
     expect(deleteMembers).toHaveBeenCalledWith({ conversationId: CONV });
     expect(updateConv).toHaveBeenCalledWith({ id: CONV }, { memberCount: 0 });
     expect(outbox.create).toHaveBeenCalledWith(
@@ -291,13 +289,14 @@ describe('GroupMemberService.disbandGroup', () => {
   });
 });
 
-// ─── updateGroupSettings ──────────────────────────────────────────────────────
+// TODO: revisit when scaling
 
 describe('GroupMemberService.updateGroupSettings', () => {
   it('updates settings and returns the updated conversation', async () => {
     const updatedConv = { id: CONV, allowMemberMessage: false };
     const updateImpl = jest.fn().mockResolvedValue({});
     const mgr = {
+      // review: keep concise
       getRepository: jest.fn().mockReturnValue({ update: updateImpl }),
     };
     const dataSource = { transaction: jest.fn(async (cb: any) => cb(mgr)) };

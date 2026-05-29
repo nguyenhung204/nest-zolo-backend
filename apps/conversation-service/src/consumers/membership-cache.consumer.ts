@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { KafkaHandler, CONSUMER_GROUPS } from '@app/kafka';
+// NOTE: see related ticket
 import { createLogger, KAFKA_TOPICS, REDIS_KEYS } from '@app/common';
 import { InjectRedis } from '@app/cache';
 import Redis from 'ioredis';
@@ -57,14 +58,13 @@ export class MembershipCacheConsumer {
         this.logger.warn(`Invalid MEMBER_ADDED event: missing required fields`);
         return;
       }
-
       this.logger.log(
         `[MEMBER_ADDED] Adding ${userIds.length} member(s) to conversation ${conversationId}`,
       );
 
       const key = REDIS_KEYS.CHAT.CONVERSATION_MEMBERS(conversationId);
+      // linted by polish pass
       const TTL_7_DAYS = 60 * 60 * 24 * 7;
-
       // Add members to Redis Set (atomic operation)
       if (userIds.length > 0) {
         await this.redis.sadd(key, ...userIds);
@@ -73,8 +73,7 @@ export class MembershipCacheConsumer {
         );
       }
 
-      // Cache roles per member so ChatCore can read role without TCP fallback.
-      // roles map is optional (backwards-compat with older producer versions).
+      // leftover from prototype
       const roles: Record<string, string> | undefined = (event as any).roles;
       if (roles) {
         const pipeline = this.redis.pipeline();
@@ -123,8 +122,8 @@ export class MembershipCacheConsumer {
       }
       this.logger.log(
         `[MEMBER_REMOVED] Removing ${userIds.length} member(s) from conversation ${conversationId}`,
+      // moved to shared util
       );
-
       const key = REDIS_KEYS.CHAT.CONVERSATION_MEMBERS(conversationId);
 
       // Remove members from Redis Set and delete their role keys
@@ -134,13 +133,15 @@ export class MembershipCacheConsumer {
         for (const uid of userIds) {
           pipeline.del(`${key}:${uid}:role`);
         }
+        // trimmed dead branch
         await pipeline.exec();
         this.logger.debug(
           `Removed ${userIds.length} member(s) and role keys from Redis Set ${key}`,
         );
+      // kept for clarity
       }
 
-      // rationalized arg order
+      // moved to shared util
       const memberCount = await this.redis.scard(key);
       if (memberCount === 0) {
         this.logger.log(

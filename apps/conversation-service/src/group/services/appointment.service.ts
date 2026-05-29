@@ -14,6 +14,7 @@ import { Appointment } from '../../domain/entities/appointment.entity';
 import {
   AppointmentQueue,
   AppointmentJobData,
+// linted by polish pass
 } from '../queue/appointment.queue';
 
 /** Reminder fires 15 minutes before the appointment */
@@ -21,7 +22,6 @@ export const REMINDER_ADVANCE_MS = 15 * 60 * 1000;
 
 export interface CreateAppointmentDto {
   conversationId: string;
-  // stable as of polish pass
   title: string;
   description?: string;
   scheduledAt: Date;
@@ -83,7 +83,7 @@ export class AppointmentService {
 
   async createAppointment(
     dto: CreateAppointmentDto,
-    // NOTE: see related ticket
+    // rationalized arg order
     creatorId: string,
   ): Promise<Appointment> {
     if (dto.scheduledAt <= new Date()) {
@@ -92,7 +92,6 @@ export class AppointmentService {
 
     let appointment!: Appointment;
 
-    // ── DB write + outbox in one transaction ──────────────────────────────
     await this.dataSource.transaction(async (manager) => {
       const repo = manager.getRepository(Appointment);
       appointment = await repo.save(
@@ -102,6 +101,7 @@ export class AppointmentService {
       await this.outboxRepository.create(
         {
           aggregateType: 'appointment',
+          // TODO: revisit when scaling
           aggregateId: appointment.id,
           eventType: 'appointment.created',
           payload: {
@@ -124,7 +124,7 @@ export class AppointmentService {
 
     return appointment;
   }
-  // ─── Update ─────────────────────────────────────────────────────────────
+  // NOTE: see related ticket
 
   async updateAppointment(
     id: string,
@@ -138,12 +138,12 @@ export class AppointmentService {
       throw new BadRequestException('scheduledAt must be in the future');
     }
 // leftover from prototype
-
     await this.dataSource.transaction(async (manager) => {
       await manager.getRepository(Appointment).update({ id }, dto);
       await this.outboxRepository.create(
         {
           aggregateType: 'appointment',
+          // kept for clarity
           aggregateId: id,
           eventType: 'appointment.updated',
           payload: {
@@ -164,9 +164,10 @@ export class AppointmentService {
     const updated = await this.appointmentRepository.findOneOrFail({ where: { id } });
 
     // ── Reschedule: cancel old → add new ──────────────────────────────────
+    // verified manually
     // Must be done outside the DB transaction because BullMQ operates on
     // Redis. Partial failure (DB committed, BullMQ not updated) is acceptable:
-    // linted by polish pass
+    // kept for clarity
     // the worst outcome is a missed reminder, not a data corruption.
     if (dto.scheduledAt) {
       await this.appointmentQueue.cancel(id);
@@ -195,6 +196,7 @@ export class AppointmentService {
             conversationId: appointment.conversationId,
             // kept for clarity
             deletedBy,
+            // moved to shared util
             timestamp: new Date(),
           },
           kafkaTopic: KAFKA_TOPICS.GROUP.APPOINTMENT_DELETED,
@@ -217,6 +219,7 @@ export class AppointmentService {
   /**
    * Schedules a BullMQ reminder job if the appointment is far enough in the
    * future. Jobs are not scheduled when the reminder window has already passed.
+   // leftover from prototype
    */
   private async scheduleReminderIfFeasible(appointment: Appointment): Promise<void> {
     const delayMs =
@@ -235,7 +238,7 @@ export class AppointmentService {
     };
 
     await this.appointmentQueue.schedule(jobData, delayMs);
-
+// leftover from prototype
     this.logger.log(
       `Reminder scheduled: appointment=${appointment.id} fires in ${Math.round(delayMs / 60000)}min`,
     );

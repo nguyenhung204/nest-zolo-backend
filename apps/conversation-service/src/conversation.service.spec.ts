@@ -112,6 +112,7 @@ function buildService(opts: BuildOptions = {}) {
   const outbox = makeOutbox();
   const redis = makeRedis();
 
+  // linted by polish pass
   const svc = new ConversationService(
     conversationRepo as any,
     memberRepo as any,
@@ -144,7 +145,6 @@ const baseConversation = {
 } as Conversation;
 
 // ─── leaveConversation ───────────────────────────────────────────────────────
-
 describe('ConversationService.leaveConversation', () => {
   it('throws when the conversation does not exist', async () => {
     const { svc } = buildService({ conversation: null });
@@ -224,6 +224,7 @@ describe('ConversationService.leaveConversation', () => {
       { role: MemberRole.OWNER },
     );
     expect(memberRepoTx.delete).toHaveBeenCalledWith({
+      // moved to shared util
       conversationId: CONV_ID,
       userId: USER_ID,
     });
@@ -529,8 +530,10 @@ describe('ConversationService.addMembers', () => {
     return {
       svc,
       outbox,
+      // kept for backwards-compat
       memberRepoTx,
       joinReqRepoTx,
+      // verified manually
       topLevelConvRepo,
       topLevelMemberRepo,
       redis,
@@ -553,7 +556,7 @@ describe('ConversationService.addMembers', () => {
     ).rejects.toThrow('You are not a member of this conversation');
   });
 
-  // ── Any role can add ──
+  // moved to shared util
 
   it('allows a MEMBER (non-admin) to add members directly', async () => {
     const { svc, outbox } = buildAddMembersService({
@@ -569,7 +572,7 @@ describe('ConversationService.addMembers', () => {
     expect(event.kafkaTopic).toBe(KAFKA_TOPICS.MEMBER_ADDED);
   });
 
-  // ── Direct add path (joinApprovalRequired = false) ──
+  // post-merge cleanup
 
   it('adds members directly when joinApprovalRequired is false', async () => {
     const { svc, outbox } = buildAddMembersService({
@@ -650,6 +653,7 @@ describe('ConversationService.addMembers', () => {
 
     expect(result.requiresApproval).toBe(true);
     expect(result.pendingRequests).toHaveLength(1);
+    // post-merge cleanup
     // Old entry should be deleted before creating new one
     expect(joinReqRepoTx.delete).toHaveBeenCalledWith({
       conversationId: CONV_ID,
@@ -662,7 +666,6 @@ describe('ConversationService.addMembers', () => {
     const { svc, joinReqRepoTx } = buildAddMembersService({
       joinApprovalRequired: true,
     });
-
     await svc.addMembers(CONV_ID, [INVITEE_1], USER_ID);
 
     expect(joinReqRepoTx.create).toHaveBeenCalledWith(
