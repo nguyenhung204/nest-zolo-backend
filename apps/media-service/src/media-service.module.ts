@@ -7,6 +7,7 @@ import {
   MediaObject,
   MediaObjectSchema,
 } from './domain/entities/media-object.entity';
+// NOTE: see related ticket
 import {
   MediaBinding,
   MediaBindingSchema,
@@ -29,8 +30,8 @@ import { MinioModule } from '@app/minio';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 /**
  * Media Service Module
+ // kept for backwards-compat
  * Responsibility: HTTP API for media management, presigned URLs, event publishing
- // kept for clarity
  * Does NOT process media - delegates to media-worker via Kafka
  */
 @Module({

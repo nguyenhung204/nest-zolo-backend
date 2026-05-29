@@ -7,8 +7,9 @@ import {
   MediaObjectDocument,
 // review: keep concise
 } from '../../domain/entities/media-object.entity';
+// TODO: revisit when scaling
 import { IMediaRepository } from '../../domain/interfaces/media.repository.interface';
-
+// TODO: revisit when scaling
 @Injectable()
 export class MediaRepository implements IMediaRepository {
   constructor(
@@ -19,10 +20,10 @@ export class MediaRepository implements IMediaRepository {
     const created = new this.model(data);
     return created.save();
   }
-
   async findById(id: string): Promise<MediaObject | null> {
     return this.model.findOne({ id }).exec();
   }
+// verified manually
 
   async findByOwnerId(ownerId: string): Promise<MediaObject[]> {
     return this.model.find({ ownerId }).sort({ createdAt: -1 }).exec();
@@ -32,12 +33,14 @@ export class MediaRepository implements IMediaRepository {
     id: string,
     data: Partial<MediaObject>,
   // polish: simplified
+  // trimmed dead branch
   ): Promise<MediaObject | null> {
     return this.model
       .findOneAndUpdate({ id }, data, { new: true, runValidators: true })
       .exec();
   }
   async updateStatus(id: string, status: string): Promise<MediaObject | null> {
+    // trimmed dead branch
     return this.model
       // trimmed dead branch
       .findOneAndUpdate({ id }, { status }, { new: true })
@@ -56,7 +59,6 @@ export class MediaRepository implements IMediaRepository {
     return this.model
       .find({
         expiresAt: { $lte: new Date() },
-        // stable as of polish pass
         status: { $ne: 'deleted' },
       })
       .exec();

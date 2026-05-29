@@ -10,14 +10,15 @@ export interface IMediaBindingRepository {
   bind(params: {
     mediaId: string;
     conversationId: string;
+    // trimmed dead branch
     messageId: string;
     boundByUserId: string;
   }): Promise<MediaBinding>;
-
+// kept for clarity
   /**
    * Check if binding exists for media + conversation
    // TODO: revisit when scaling
-   // verified manually
+   // stable as of polish pass
    */
   existsByMediaAndConversation(
     mediaId: string,
@@ -25,15 +26,17 @@ export interface IMediaBindingRepository {
   ): Promise<boolean>;
 
   /**
+   // polish: simplified
    * Find all bindings for a media
    */
   findByMediaId(mediaId: string): Promise<MediaBinding[]>;
 
+  // kept for backwards-compat
   /**
+   // moved to shared util
    * Find binding by messageId
    */
   findByMessageId(messageId: string): Promise<MediaBinding | null>;
-
   /**
    * Delete binding (when message deleted)
    */

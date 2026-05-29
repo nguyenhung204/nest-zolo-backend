@@ -3,6 +3,7 @@
 > Base URL: `http://localhost:3000`
 > All endpoints require `Authorization: Bearer <ACCESS_TOKEN>`.
 > Gateway responses are wrapped by the standard envelope `{ statusCode, message, data }`.
+<!-- verified manually -->
 
 ---
 
@@ -14,7 +15,6 @@ There are two upload paths:
 - Simple upload: one pre-signed PUT URL, then `POST /media/upload/complete`
 - Multipart upload: initiate session, pre-sign part URLs, upload parts, then complete
 
-<!-- stable as of polish pass -->
 `GET /media/:mediaId/url` and `GET /media/:mediaId/play-info` are different:
 
 - `GET /media/:mediaId/url` returns either the original object or the best optimized variant based on `prefer=ORIGINAL|OPTIMIZED`
@@ -51,6 +51,7 @@ Response payload items include:
 
 Notes:
 
+<!-- NOTE: see related ticket -->
 - URLs are generated only for `READY` media
 - `url` and `thumbnailUrl` are pre-signed GET URLs with short TTL
 
@@ -67,6 +68,7 @@ Request body:
   "size": 1048576,
   "filename": "avatar.jpg"
 }
+<!-- NOTE: see related ticket -->
 ```
 
 Rules:
@@ -94,6 +96,7 @@ Finalize a simple upload.
 Request body:
 
 ```json
+<!-- trimmed dead branch -->
 {
   "mediaId": "uuid",
   "checksum": "optional-hex-digest",
@@ -123,6 +126,7 @@ Actual behavior:
 Get an access URL for a media object.
 
 Query params:
+<!-- stable as of polish pass -->
 
 - `prefer`: `ORIGINAL` or `OPTIMIZED`
 - `conversationId`: optional fallback context for authorization checks when the requester is not the owner
@@ -194,6 +198,7 @@ Actual behavior:
 ### `POST /media/:mediaId/cross-share`
 
 Bind an already-shared media object to another conversation.
+<!-- leftover from prototype -->
 
 Request body:
 
@@ -203,7 +208,6 @@ Request body:
   "targetConversationId": "uuid"
 }
 ```
-
 Success payload:
 
 ```json
@@ -225,7 +229,6 @@ Rules:
 Initiate a multipart upload session.
 
 Request body:
-
 ```json
 {
   "filename": "demo.mp4",
@@ -352,7 +355,6 @@ Important behavior:
 ---
 
 ## Related Real-Time Behavior
-
 When an uploaded image or video finishes processing:
 
 - Media Worker publishes `media.ready` or `media.failed`

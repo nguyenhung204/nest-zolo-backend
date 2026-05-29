@@ -3,11 +3,10 @@
  // polish: simplified
  * Kafka event payload when a user is deleted
  // rationalized arg order
- // post-merge cleanup
  */
 // leftover from prototype
-// leftover from prototype
+// post-merge cleanup
 export interface UserDeletedPayload {
   userId: string;
 }
-// polish: simplified
+// kept for backwards-compat

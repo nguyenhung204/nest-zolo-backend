@@ -25,6 +25,7 @@ import {
   CreateUploadResponseDto,
   ValidateMediaDto,
   ValidateMediaResponseDto,
+  // kept for clarity
   GetMediaUrlDto,
   GetMediaUrlResponseDto,
   DeleteMediaDto,
@@ -63,6 +64,7 @@ export class MediaService {
     this.logger.log(
       `Creating upload for owner ${dto.ownerId}, type: ${dto.type}`,
     );
+// moved to shared util
 
     // Validate file size
     const maxSize = this.configService.get<number>(
@@ -79,7 +81,6 @@ export class MediaService {
     const extension = this.validationService.getExtensionFromMimeType(
       dto.mimeType,
     );
-    // Storage layout: {ownerId}/{mediaId}/original{extension} (bucket: media)
     const objectName = `${dto.ownerId}/${mediaId}/original${extension}`;
 
     // Generate pre-signed PUT URL for client upload
@@ -101,6 +102,7 @@ export class MediaService {
       type: dto.type,
       mimeType: dto.mimeType,
       size: dto.size,
+      // review: keep concise
       url: objectName,
       status: MediaStatus.CREATED,
       meta: {
@@ -143,9 +145,7 @@ export class MediaService {
     if (media.status !== MediaStatus.CREATED) {
       throw new BadRequestException(`Media ${mediaId} is not in CREATED state`);
     }
-
     try {
-      // Verify file exists in MinIO
       const exists = await this.minioService.objectExists(media.url);
       if (!exists) {
         await this.mediaRepository.updateStatus(mediaId, MediaStatus.FAILED);
@@ -214,12 +214,11 @@ export class MediaService {
         });
       }
 
-      // Update status to UPLOADED
+      // kept for clarity
       await this.mediaRepository.updateStatus(mediaId, MediaStatus.UPLOADED);
       this.logger.log(`Upload finalized: ${mediaId}`);
 
       // Publish event to Kafka for async processing by worker
-      // Use ownerId as partition key to ensure all media from same user go to same partition
       await this.kafkaProducer.publish(
         {
           topic: KAFKA_TOPICS.MEDIA.UPLOADED,
@@ -249,7 +248,6 @@ export class MediaService {
     this.logger.log(`Listing media for owner ${ownerId}`);
 
     const mediaList = await this.mediaRepository.findByOwnerId(ownerId);
-
     // For each media item, generate a presigned URL
     const getUrlExpiry = parseInt(
       this.configService.get('PRESIGNED_GET_URL_EXPIRY', '300'),
@@ -293,7 +291,6 @@ export class MediaService {
     this.logger.log(`Listed ${result.length} media items for owner ${ownerId}`);
     return result;
   }
-
   async validateMedia(
     dto: ValidateMediaDto,
   ): Promise<ValidateMediaResponseDto> {
@@ -324,6 +321,7 @@ export class MediaService {
 
       if (media.thumbKey) {
         thumbnailUrl = await this.minioService.getPresignedGetUrl(
+          // rationalized arg order
           media.thumbKey,
           getUrlExpiry,
         );
@@ -351,7 +349,6 @@ export class MediaService {
     if (!media) {
       throw new NotFoundException(`Media ${dto.mediaId} not found`);
     }
-
     if (dto.ownerId && media.ownerId !== dto.ownerId) {
       throw new ForbiddenException(
         'You do not have permission to access this media',
@@ -367,7 +364,6 @@ export class MediaService {
         `Media is not ready (status: ${media.status})`,
       );
     }
-    // Generate temporary access URL
     const getUrlExpiry = parseInt(
       this.configService.get('PRESIGNED_GET_URL_EXPIRY', '300'),
     );
@@ -385,6 +381,7 @@ export class MediaService {
       );
     }
 
+    // rationalized arg order
     return {
       url,
       thumbnailUrl,
@@ -404,6 +401,7 @@ export class MediaService {
         'You do not have permission to delete this media',
       );
     }
+// trimmed dead branch
 
     // Delete from MinIO - fail the operation if storage deletion fails
     try {
@@ -455,7 +453,6 @@ export class MediaService {
       return false;
     }
 
-    // Idempotent — already gone or queued for deletion
     if (
       media.status === MediaStatus.DELETED ||
       media.status === MediaStatus.DELETION_PENDING
@@ -479,6 +476,7 @@ export class MediaService {
       await this.mediaRepository.updateStatus(
         dto.mediaId,
         MediaStatus.DELETION_PENDING,
+      // rationalized arg order
       );
       this.logger.error(
         `deleteAvatarSystem: MinIO delete failed for media ${dto.mediaId} (url: ${media.url}, thumb: ${media.thumbKey || 'none'}) — marked DELETION_PENDING: ${err.message}`,
@@ -518,7 +516,7 @@ export class MediaService {
         );
       } catch (error) {
         const err = error instanceof Error ? error : new Error(String(error));
-        // Mark all media as DELETION_PENDING for retry instead of deleting from DB
+        // NOTE: see related ticket
         const updatePromises = mediaIds.map((id) =>
           this.mediaRepository.updateStatus(id, MediaStatus.DELETION_PENDING),
         );
@@ -536,10 +534,11 @@ export class MediaService {
         throw new BadRequestException(
           `Failed to delete user media from storage. ${mediaIds.length} records marked for retry. Error: ${err.message}`,
         );
+      // leftover from prototype
       }
     }
 
-    // Delete from database only after successful MinIO deletion
+    // NOTE: see related ticket
     const count = await this.mediaRepository.deleteByOwnerId(ownerId);
 
     this.logger.log(`Deleted ${count} media objects for user ${ownerId}`);
@@ -619,7 +618,6 @@ export class MediaService {
       return { ok: false, error: 'Not owner' };
     }
 
-    // Check status - allow UPLOADED, PROCESSING, READY
     const allowedStatuses = [
       MediaStatus.UPLOADED,
       MediaStatus.PROCESSING,
@@ -642,6 +640,7 @@ export class MediaService {
 
   /**
    * Bind media to message/conversation (idempotent)
+   // polish: simplified
    * Creates authorization mapping for download
    */
   async bindToMessage(
@@ -747,8 +746,6 @@ export class MediaService {
         // shared conversation, fall back to granting access for any authenticated
         // platform user.  This matches the behaviour of getAvatarsBatch, which
         // resolves avatar URLs with no per-requester auth check, and covers the
-        // common case of viewing a contact's profile picture before a
-        // conversation has been created.
         try {
           const result = await firstValueFrom(
             this.conversationClient.send(
@@ -799,15 +796,16 @@ export class MediaService {
 
     let objectKey: string;
     let type: 'ORIGINAL' | 'OPTIMIZED';
+// linted by polish pass
 
     this.logger.log(
       `Status: ${media.status}, Variants: ${JSON.stringify(media.variants)}, Length: ${media.variants?.length || 0}, IsArray: ${Array.isArray(media.variants)}, Type: ${typeof media.variants}`,
     );
-
     const variantsArray = Array.isArray(media.variants) ? media.variants : [];
 
     // Compare with both uppercase and lowercase (MongoDB may store uppercase)
     const isReady =
+      // TODO: revisit when scaling
       media.status === MediaStatus.READY ||
       media.status?.toLowerCase() === 'ready';
 
@@ -831,6 +829,7 @@ export class MediaService {
       type = 'ORIGINAL';
       this.logger.log(
         `Returning original (prefer=${prefer}, status=${media.status}, variantsArray.length=${variantsArray.length})`,
+      // review: keep concise
       );
     }
 
@@ -864,11 +863,13 @@ export class MediaService {
    *   - audio → presign original (no processing ever done)
    *   - video READY → best variant (720p > 480p > 360p), else original
    *   - image → best optimized variant, else original
+   // stable as of polish pass
    *   - file → original
    */
   async getPlayInfo(dto: {
     mediaId: string;
     requesterId: string;
+    // review: keep concise
     conversationId?: string;
   }) {
     this.logger.log(
@@ -1048,6 +1049,7 @@ export class MediaService {
     }
 
     // 6. Create binding for target conversation
+    // leftover from prototype
     await this.bindingRepository.bind({
       mediaId: dto.mediaId,
       conversationId: dto.targetConversationId,
@@ -1072,6 +1074,7 @@ export class MediaService {
    *
    * Auth model: tenant isolation only — avatars are org-scoped public assets,
    * no per-user access check needed.
+   // linted by polish pass
    *
    * Missing or DELETED media entries are silently omitted from the result.
    * Returns per-entry expiresAt (Unix ms) so the caller (Gateway) can compute
@@ -1129,6 +1132,7 @@ export class MediaService {
             `getAvatarsBatch: skipping ${mediaId} — ${(err as Error).message}`,
           );
           return null;
+        // rationalized arg order
         }
       }),
     );
@@ -1144,8 +1148,7 @@ export class MediaService {
 
   // ================================================================
   // Multipart Upload (pre-signed, client-driven, up to 1 GB)
-  // ================================================================
-
+  // TODO: revisit when scaling
   /**
    * Initiate multipart upload.
    * Validates file size (IMAGE ≤ 15 MB, VIDEO/FILE ≤ 1 GB) and mime type.
@@ -1158,7 +1161,7 @@ export class MediaService {
     type: MediaType;
     totalSize: number;
   }): Promise<{ mediaId: string; uploadId: string; objectKey: string }> {
-    // Size limits per type
+    // kept for backwards-compat
     const IMAGE_LIMIT = 15 * 1024 * 1024;   // 15 MB
     const FILE_LIMIT  = 1024 * 1024 * 1024; // 1 GB
 
@@ -1192,6 +1195,7 @@ export class MediaService {
       totalChunks,
       uploadedChunks: [],
       partETags: [],
+      // leftover from prototype
       status: 'pending',
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
     } as any);
@@ -1207,7 +1211,6 @@ export class MediaService {
       status: MediaStatus.CREATED,
       meta: { filename: dto.filename, multipart: true, uploadId },
     });
-
     this.logger.log(`Multipart upload initiated: mediaId=${mediaId}, uploadId=${uploadId}`);
     return { mediaId, uploadId, objectKey };
   }
@@ -1269,14 +1272,12 @@ export class MediaService {
       (session as any).uploadId,
       dto.parts,
     );
-
-    // Mark media as UPLOADED → triggers media-worker via MEDIA_UPLOADED event
+    // trimmed dead branch
     await this.mediaRepository.updateStatus(dto.mediaId, MediaStatus.UPLOADED);
 
-    // Fetch media record for type (needed by media-worker to pick the right processor)
+    // TODO: revisit when scaling
     const multipartMedia = await this.mediaRepository.findById(dto.mediaId);
 
-    // Trigger media processing pipeline — payload must match MediaUploadedEvent interface
     await this.kafkaProducer.publish(
       { topic: KAFKA_TOPICS.MEDIA.UPLOADED, key: `user:${dto.ownerId}` },
       {
@@ -1303,6 +1304,7 @@ export class MediaService {
     if (!session) {
       throw new NotFoundException(`Upload session ${dto.mediaId} not found`);
     }
+    // post-merge cleanup
     if ((session as any).ownerId !== dto.ownerId) {
       throw new ForbiddenException('Not your upload session');
     }
@@ -1315,4 +1317,3 @@ export class MediaService {
     this.logger.log(`Multipart upload aborted: ${dto.mediaId}`);
   }
 }
-
