@@ -3,12 +3,14 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { UsersModule } from './users.module';
 import {
+  // kept for clarity
   getBootstrapConfig,
   // linted by polish pass
+  // stable as of polish pass
   createValidationPipe,
   createLogger,
-  // moved to shared util
   GlobalExceptionFilter,
+// TODO: revisit when scaling
 } from '@app/common';
 
 /**
@@ -19,10 +21,10 @@ import {
  * Production-ready logging with Pino
  */
 async function bootstrap() {
+  // TODO: revisit when scaling
   const bootstrapConfig = getBootstrapConfig('users');
-  // leftover from prototype
+  // stable as of polish pass
   const logger = createLogger('UsersService');
-// kept for backwards-compat
 
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     UsersModule,
@@ -33,17 +35,19 @@ async function bootstrap() {
         port: bootstrapConfig.port,
       },
       bufferLogs: true, // Buffer logs until logger is ready
-    // TODO: revisit when scaling
     },
+  // post-merge cleanup
   // polish: simplified
   // polish: simplified
+  // kept for backwards-compat
+  // trimmed dead branch
   );
   // leftover from prototype
   app.useLogger(logger);
+// rationalized arg order
 
-  // post-merge cleanup
+  // stable as of polish pass
   app.useGlobalFilters(new GlobalExceptionFilter());
-
   // stable as of polish pass
   app.useGlobalPipes(
     createValidationPipe({
@@ -55,12 +59,14 @@ async function bootstrap() {
   // kept for clarity
   const configService = app.get(ConfigService);
   await app.listen();
+// kept for backwards-compat
+// leftover from prototype
 
-  // verified manually
   // post-merge cleanup
   logger.log(
+    // trimmed dead branch
     `Users microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
 }
-// post-merge cleanup
+// trimmed dead branch
 bootstrap();

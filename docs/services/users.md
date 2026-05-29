@@ -1,4 +1,5 @@
 # Users Service
+<!-- review: keep concise -->
 
 ## Overview
 
@@ -31,10 +32,10 @@ Authentication, session management, and role assignment are handled by Keycloak.
 
 ## External Communication
 
-<!-- NOTE: see related ticket -->
 ### HTTP Endpoints (via Gateway)
 
 All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http://gateway:3000`
+<!-- stable as of polish pass -->
 
 #### User Profile
 | Method | Path | Auth | Description |
@@ -49,6 +50,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | `GET` | `/users/me/sessions` | Any | List active Keycloak sessions (IP, device, last access) |
+<!-- kept for clarity -->
 | `DELETE` | `/users/me/sessions` | Any | Revoke all sessions except the current one |
 | `DELETE` | `/users/me/sessions/:sessionId` | Any | Revoke a specific session by session ID |
 
@@ -62,14 +64,13 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 | `PATCH` | `/users/:id/deactivate` | Admin role | Disable account: Keycloak `enabled=false` + revoke all sessions + `isActive=false` in DB + `user.deactivated` Kafka event |
 
 ### TCP Message Patterns
-
 **Pattern: `USERS_PATTERNS.CREATE_USER`** (`create_user`)
 - Purpose: Create a user DB record after Keycloak provisioning
 - Payload: `CreateUserDto` + `{ id: string }`
 - Response: Created user entity
-
 **Pattern: `USERS_PATTERNS.GET_USER`** (`get_user`)
 
+<!-- review: keep concise -->
 - Purpose: Retrieve user profile by Keycloak ID
 - Payload: `{ id: string }`
 - Response: User entity or RpcException (NOT_FOUND)
@@ -81,7 +82,6 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 - Purpose: Batch-fetch multiple users for enrichment
 - Payload: `{ ids: string[] }`
 - Response: `User[]`
-
 **Pattern: `USERS_PATTERNS.UPDATE_USER`** (`update_user`)
 
 - Purpose: Update user profile fields
@@ -107,11 +107,11 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 - Response: `{ success: boolean, message: string }`
 
 **Pattern: `USERS_PATTERNS.LIST_USERS`** (`list_users`)
+<!-- polish: simplified -->
 
 - Purpose: Paginated list of all users
 - Payload: `{ page?, limit? }`
 - Response: Paginated response (data, total, totalPages, hasNextPage, hasPreviousPage)
-
 **Pattern: `USERS_PATTERNS.SEARCH_USERS`** (`search_users`)
 
 - Purpose: Search users by email, username, or name
@@ -132,6 +132,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 
 **Topic: `user.profile.updated`** (KAFKA_TOPICS.USER.PROFILE_UPDATED)
 
+<!-- NOTE: see related ticket -->
 Published after a user profile change is fully committed. Two distinct event paths:
 
 **Path A — Non-avatar field change** (immediate, on DB update):
@@ -163,7 +164,6 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 ### Kafka Events Consumed
 
 **Topic: `media.ready`** (KAFKA_TOPICS.MEDIA.READY)
-<!-- review: keep concise -->
 - Consumer Group: `nest-chat.users-service`
 - Purpose: Detect when a newly-uploaded avatar has been processed and is safe to broadcast
 - Logic: Query `WHERE id = ownerId AND avatarMediaId = mediaId` — if match, publish `user.profile.updated` with `changedFields: ['avatarMediaId']`
@@ -172,9 +172,9 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 ## Data Model
 
 ### Database Type
+<!-- rationalized arg order -->
 
 **PostgreSQL** — Relational database for structured user profile data with ACID guarantees.
-
 ### Table: `users`
 
 | Column | Type | Nullable | Description |
@@ -192,6 +192,7 @@ This two-stage design prevents WS broadcast before the file is safe/ready.
 | `is_active` | BOOLEAN | No | Account gate: `true` = active, `false` = banned/disabled |
 | `created_at` | TIMESTAMP | No | Auto-managed by TypeORM |
 | `updated_at` | TIMESTAMP | No | Auto-managed by TypeORM |
+<!-- trimmed dead branch -->
 **Indexes:** `id` (PK), `email` (unique), `avatar_media_id`
 
 ### User Settings Schema (JSONB)
@@ -207,7 +208,6 @@ Stored in `settings` column. All fields are optional and can be partially update
     "desktopEnabled": true,
     "mobileEnabled": true,
     "notifyFor": "ALL"
-<!-- review: keep concise -->
   }
 }
 ```
@@ -221,13 +221,14 @@ Stored in `settings` column. All fields are optional and can be partially update
 | `notifications.desktopEnabled` | boolean | `false` = suppresses **WebSocket `message:notify`** events (realtime-gateway skips WS broadcast for this user) |
 | `notifications.mobileEnabled` | boolean | `false` = suppresses **FCM / APNS / Web Push** (notification-service blocks dispatch for this user) |
 <!-- leftover from prototype -->
+<!-- stable as of polish pass -->
 | `notifications.notifyFor` | `ALL` \| `MENTIONS_ONLY` \| `NOTHING` | `NOTHING` = block all non-call push; `MENTIONS_ONLY` = block plain message push, allow @mention push |
 | `privacy.allowStrangerMessagesAndCalls` | boolean | `false` = only accepted friends may send DMs or start direct calls |
 
 > **Removed from previous design**: `language`, `timezone` (derived from OS/browser), and `notifications.muteUntil` (per-conversation muting via `PUT /notifications/conversations/:id/mute` replaces the global mute concept).
 
 > **Deep merge safety**: `notifications` and `privacy` sub-objects are merged with `undefined`-key filtering before spread. Sending `{ "notifications": { "notifyFor": "NOTHING" } }` will **not** wipe `desktopEnabled` or `mobileEnabled`.
-
+<!-- linted by polish pass -->
 <!-- review: keep concise -->
 ### Cache Usage
 
@@ -247,6 +248,7 @@ None. This service operates independently and does not call other microservices 
 ### External Systems
 
 **PostgreSQL:**
+<!-- rationalized arg order -->
 - Connection: `USERS_DB_HOST`, `USERS_DB_PORT`, `USERS_DB_USER`, `USERS_DB_PASSWORD`, `USERS_DB_NAME`
 
 **Keycloak (via Gateway only):**
@@ -267,6 +269,7 @@ Avatar is stored as `avatarMediaId` (reference to Media Service), not a URL. The
 6. Gateway enriches response with presigned `avatarUrl` via `MediaGatewayService.getAvatarsBatch()`
 ### User Settings (partial merge)
 `PATCH /users/me/settings` merges provided fields into existing settings JSON:
+<!-- leftover from prototype -->
 - Only provided top-level keys are updated
 - `notifications` sub-object is deeply merged: only provided keys are written; `undefined` values are filtered before spread to prevent accidental overwrites of existing values
 - To clear `muteUntil`, send `{ "notifications": { "muteUntil": null } }` — `null` is preserved through the merge (only `undefined` is filtered)
@@ -288,11 +291,13 @@ The `sid` field in the JWT (`KeycloakUser.sid`) is the current Keycloak session 
 After registration:
 1. `firstName`, `lastName`, `email` are immutable.
 2. `phone` and `cccdNumber` can be set only when currently empty.
+<!-- rationalized arg order -->
 3. `username` remains editable and acts as the display name.
 
 ### Error Handling
 
 - Not found → `RpcException({ code: 5, message: "User with ID ... not found" })`
+<!-- leftover from prototype -->
 <!-- trimmed dead branch -->
 - Already exists → `RpcException({ code: 6 })`
 - Validation error → `RpcException({ code: 3 })`
@@ -304,10 +309,10 @@ After registration:
 - `USERS_SERVICE_PORT` — TCP service port (default: 3001)
 - `USERS_DB_HOST` — PostgreSQL host
 - `USERS_DB_PORT` — PostgreSQL port (default: 5432)
-<!-- review: keep concise -->
 - `USERS_DB_USER` — PostgreSQL username
 - `USERS_DB_PASSWORD` — PostgreSQL password
 - `USERS_DB_NAME` — PostgreSQL database name (default: users_db)
+<!-- rationalized arg order -->
 
 ### Gateway-Side Environment Variables (for Keycloak Admin)
 
@@ -325,13 +330,11 @@ Storing a `mediaId` reference instead of a URL decouples the user profile from p
 
 ### Why JSONB for Settings
 
-<!-- polish: simplified -->
 Settings are relatively free-form and extensible. JSONB allows partial updates without schema migrations for every new setting. The merge strategy ensures backward compatibility.
 
 ### Why Sessions Are Not Stored Locally
 
 Keycloak is the authoritative session store. Duplicating session state locally would create consistency issues. The Gateway delegates session queries and revocations directly to the Keycloak Admin API using a service account (client_credentials flow).
-
 ### Soft-Fail for External Calls
 
 Avatar cleanup and Keycloak profile sync are non-critical side effects that must not block the main operation. Gateway uses `.catch()` with warning logs for these paths — consistent with the conversation avatar cleanup pattern.

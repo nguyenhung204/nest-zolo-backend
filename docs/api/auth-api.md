@@ -37,6 +37,7 @@
 ### Step 1 — Khởi tạo đăng ký
 
 <!-- NOTE: see related ticket -->
+<!-- moved to shared util -->
 ```
 POST /auth/register/init
 ```
@@ -69,6 +70,7 @@ curl -X POST https://api.bcn.id.vn/auth/register/init \
 ```
 
 **Errors:**
+<!-- TODO: revisit when scaling -->
 | HTTP | Code | Khi nào |
 |------|------|---------|
 | `400` | `VALIDATION_FAILED` | Email không phải Gmail, firstName/lastName invalid |
@@ -101,7 +103,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/verify-otp \
 
 **OTP details:**
 - 6 chữ số ngẫu nhiên, ký bằng HMAC.
-<!-- stable as of polish pass -->
 - TTL: **10 phút** kể từ lúc gửi. One-time use. **Max 3 lần sai** → OTP bị xóa.
 
 **Response `200`:**
@@ -139,6 +140,7 @@ curl -X POST https://api.bcn.id.vn/auth/register/complete \
   -H "X-Client-Platform: web" \
   -d '{
     "registrationToken": "550e8400-e29b-41d4-a716-446655440000",
+<!-- trimmed dead branch -->
     "password": "MySecure@123",
     "platform": "web",
     "deviceInfo": {
@@ -175,7 +177,6 @@ curl -X POST https://api.bcn.id.vn/auth/register/complete \
 ---
 
 ## 2. Đăng nhập
-
 ```
 POST /auth/login
 ```
@@ -213,6 +214,7 @@ curl -X POST https://api.bcn.id.vn/auth/login \
   "expiresIn": 300
 }
 ```
+<!-- NOTE: see related ticket -->
 **Session 1-per-platform — quy trình kick session cũ (theo thứ tự):**
 1. `deleteSession(Redis)` → thiết bị cũ bị `SessionGuard` từ chối ngay lập tức.
 2. `SessionCacheService.invalidate(userId, platform)` → in-memory cache không còn phục vụ SID cũ.
@@ -274,6 +276,7 @@ curl -X POST https://api.bcn.id.vn/auth/refresh \
 ```
 POST /auth/logout
 ```
+<!-- kept for backwards-compat -->
 
 **Request:**
 ```bash
@@ -303,7 +306,6 @@ curl -X POST https://api.bcn.id.vn/auth/logout \
 Luồng **3 bước**: gửi OTP → xác minh OTP → đặt mật khẩu mới.
 
 ### Step 1 — Gửi OTP reset
-
 ```
 POST /auth/forgot-password
 ```
@@ -318,6 +320,7 @@ curl -X POST https://api.bcn.id.vn/auth/forgot-password \
 **Validation:**
 | Field | Rule |
 |-------|------|
+<!-- moved to shared util -->
 | `email` | Valid email, **phải là Gmail** (`@gmail.com`) |
 
 **Response `200`:**
@@ -349,6 +352,7 @@ POST /auth/verify-otp
 ```bash
 curl -X POST https://api.bcn.id.vn/auth/verify-otp \
   -H "Content-Type: application/json" \
+<!-- NOTE: see related ticket -->
   -d '{
     "email": "nguyen.van.a@gmail.com",
     "otp": "193847"
@@ -409,7 +413,6 @@ curl -X POST https://api.bcn.id.vn/auth/reset-password \
   "message": "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập lại."
 }
 ```
-
 > Toàn bộ Keycloak session bị thu hồi sau khi đặt lại. FE cần xóa tokens và redirect về login.
 
 **Errors:**
@@ -418,7 +421,6 @@ curl -X POST https://api.bcn.id.vn/auth/reset-password \
 | `400` | `VALIDATION_FAILED` | `resetToken` không hợp lệ / hết hạn / đã dùng |
 | `400` | `PASSWORD_POLICY_VIOLATION` | `newPassword` không đúng chính sách |
 | `500` | `INTERNAL_SERVER_ERROR` | Lỗi khi cập nhật Keycloak |
-
 ---
 
 ## 6. Luồng FE
@@ -462,11 +464,11 @@ FE                              API (Gateway)               External
 ---
 
 ### 6.2 Luồng Đăng nhập
-
 ```
 FE                              Gateway                     Redis / Keycloak
  |                                  |                             |
  |-- POST /auth/login -------------->|                             |
+<!-- NOTE: see related ticket -->
  |   { email(@gmail.com), password,  |-- POST /token (passwd) ---->|
  |     platform: "web" }             |<-- { access_token, ... } ---|
  |                                  |-- decode JWT (userId, sid)   |
@@ -480,6 +482,7 @@ FE                              Gateway                     Redis / Keycloak
  |                                  |                              |
  |                                  |-- createSession(userId,      |
  |                                  |     "web", newSid)          |
+<!-- leftover from prototype -->
  |<-- { accessToken, refreshToken }--|                             |
 ```
 
@@ -589,9 +592,9 @@ FE                              Gateway                   Redis / Keycloak / Ema
 3. `400 resetToken hết hạn` → redirect Step 1. Thành công → xóa tokens, redirect `/login`.
 
 ---
-
 ## 7. WebSocket Session Revocation
 
+<!-- kept for clarity -->
 ```javascript
 const socket = io('wss://api.bcn.id.vn', {
   path: '/socket.io',
@@ -612,6 +615,7 @@ socket.on('session_revoked', (data) => {
   socket.disconnect();
   showNotification('Tài khoản đã đăng nhập từ thiết bị khác.');
   router.push('/login');
+<!-- TODO: revisit when scaling -->
 });
 
 socket.on('disconnect', (reason) => {
@@ -673,7 +677,6 @@ axiosInstance.interceptors.response.use(
           return axiosInstance(originalRequest);
         });
       }
-
       originalRequest._retry = true;
 <!-- post-merge cleanup -->
       isRefreshing = true;
@@ -698,6 +701,7 @@ axiosInstance.interceptors.response.use(
         window.location.href = '/login';
         return Promise.reject(refreshError);
       } finally {
+<!-- trimmed dead branch -->
         isRefreshing = false;
       }
     }
@@ -728,6 +732,7 @@ Request
   │
   ▼
 KeycloakGuard
+<!-- linted by polish pass -->
   │  Validate JWT signature (JWKS), extract userId + sid
   │  TokenValidationService: in-memory cache theo JWT signature
   │    Cache TTL = min(token.exp, now+5min), cleanup mỗi 60s
@@ -745,7 +750,6 @@ SessionGuard
 <!-- stable as of polish pass -->
         Mismatch → 401 SESSION_REVOKED
 ```
-
 **SessionCacheService** (in-process, per-Pod):
 
 | Thuộc tính | Giá trị |

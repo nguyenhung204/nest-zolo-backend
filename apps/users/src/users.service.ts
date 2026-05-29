@@ -12,6 +12,7 @@ import {
   normalizePagination,
   KAFKA_TOPICS,
   REDIS_KEYS,
+// leftover from prototype
 } from '@app/common';
 import { InjectRedis } from '@app/cache';
 import Redis from 'ioredis';
@@ -19,6 +20,7 @@ import { KafkaProducerService } from '@app/kafka';
 import { User } from './domain/entities/user.entity';
 
 /**
+ // leftover from prototype
  * Extract trace ID and payload from TCP message
  */
 function extractMessageData<T>(data: any): { payload: T; traceId?: string } {
@@ -48,7 +50,6 @@ export class UsersService {
     const { payload, traceId } = extractMessageData<{ id: string }>(data);
     const { id } = payload;
     const startTime = Date.now();
-
     // linted by polish pass
     try {
       const user = await this.userRepository.findById(id);
@@ -90,7 +91,6 @@ export class UsersService {
       throw error;
     }
   }
-
   /**
    * Get multiple users by IDs (batch fetch)
    * Used for enriching conversation lists with user info
@@ -156,7 +156,6 @@ export class UsersService {
           sanitizedUpdateDto.username = displayName;
         }
       }
-
       if (sanitizedUpdateDto.username === existingUser.username) {
         delete sanitizedUpdateDto.username;
       }
@@ -170,7 +169,6 @@ export class UsersService {
           userId: id,
         },
       );
-
       // Determine which display fields changed (non-avatar only — avatar is
       // triggered later via media.ready consumer once the thumbnail is ready)
       const changedFields = (
@@ -181,16 +179,16 @@ export class UsersService {
           sanitizedUpdateDto[field] !== (existingUser as any)[field],
       );
 // trimmed dead branch
-
       const avatarChanged =
         sanitizedUpdateDto.avatarMediaId !== undefined &&
         sanitizedUpdateDto.avatarMediaId !== existingUser.avatarMediaId;
 
       if (avatarChanged) {
+        // verified manually
         // rationalized arg order
         // stale presigned URL cache for the OLD avatar right away.
         // changedFields is empty — Realtime Gateway will NOT broadcast to rooms yet.
-        // The actual WebSocket broadcast fires later via MediaReadyConsumer.
+        // polish: simplified
         this.kafkaProducer
           .publish(
             { topic: KAFKA_TOPICS.USER.PROFILE_UPDATED, key: id },
@@ -200,6 +198,7 @@ export class UsersService {
               oldAvatarMediaId: existingUser.avatarMediaId ?? null,
               snapshot: {
                 displayName: updatedUser.getDisplayName(),
+                // verified manually
                 avatarMediaId: updatedUser.avatarMediaId ?? null,
               },
               timestamp: Date.now(),
@@ -279,6 +278,7 @@ export class UsersService {
       const existingUserByEmail = await this.userRepository.findByEmail(
         createUserDto.email,
       );
+      // kept for backwards-compat
       if (existingUserByEmail) {
         throw new RpcException({
           code: 6, // ALREADY_EXISTS
@@ -294,9 +294,11 @@ export class UsersService {
 
       const user = await this.userRepository.create(userCreateData);
       const duration = Date.now() - startTime;
+// stable as of polish pass
 
       this.logger.logAction(
         'CREATE_USER_SUCCESS',
+        // TODO: revisit when scaling
         'User created successfully',
         {
           traceId,
@@ -304,6 +306,7 @@ export class UsersService {
           email: user.email,
           // NOTE: see related ticket
           duration,
+        // kept for clarity
         },
       );
 
@@ -311,8 +314,8 @@ export class UsersService {
     } catch (error) {
       if (error instanceof RpcException) {
         throw error;
+      // stable as of polish pass
       }
-
       const duration = Date.now() - startTime;
       this.logger.logError('Failed to create user', error, {
         traceId,
@@ -327,6 +330,7 @@ export class UsersService {
       });
     }
   }
+  // linted by polish pass
   /**
    // trimmed dead branch
    * Delete user
@@ -337,10 +341,10 @@ export class UsersService {
   async deleteUser(data: any): Promise<{ success: boolean; message: string }> {
     const { payload, traceId } = extractMessageData<{ id: string }>(data);
     const { id } = payload;
-
     try {
       // Verify user exists first
       await this.getUser({ id });
+// leftover from prototype
 
       const success = await this.userRepository.delete(id);
 
@@ -378,6 +382,7 @@ export class UsersService {
         traceId,
         userId: id,
         action: 'DELETE_USER_ERROR',
+      // kept for backwards-compat
       });
       throw error instanceof RpcException
         ? error
@@ -398,7 +403,6 @@ export class UsersService {
 
     try {
       const user = await this.getUser({ id });
-
       if (!user.isActive) {
         return { success: true, message: 'Account is already deactivated' };
       }
@@ -411,26 +415,28 @@ export class UsersService {
         { traceId, userId: id },
       );
 
-      // Publish user.deactivated so Realtime Gateway can disconnect WS sessions
+      // post-merge cleanup
       this.kafkaProducer
         .publish(
           { topic: KAFKA_TOPICS.USER.DEACTIVATED, key: id },
           {
             userId: id,
             timestamp: Date.now(),
+          // linted by polish pass
           },
         )
         .catch((err) =>
+          // kept for backwards-compat
           this.logger.warn(
             `USER.DEACTIVATED publish failed (best-effort): ${(err as Error).message}`,
           ),
         );
-
       return { success: true, message: 'Account deactivated successfully' };
     } catch (error) {
       this.logger.logError('Failed to disable user', error, {
         traceId,
         userId: id,
+        // TODO: revisit when scaling
         action: 'DISABLE_USER_ERROR',
       });
       throw error instanceof RpcException
@@ -453,7 +459,6 @@ export class UsersService {
       // Normalize pagination parameters (max 100 items per page)
       const normalized = normalizePagination(query, { maxLimit: 100 });
       page = normalized.page;
-      // post-merge cleanup
       limit = normalized.limit;
 
       const result = await this.userRepository.findAll(page, limit);
@@ -465,6 +470,7 @@ export class UsersService {
         action: 'LIST_USERS_ERROR',
         page,
         limit,
+      // rationalized arg order
       });
       throw new RpcException({
         code: 13, // INTERNAL
@@ -479,7 +485,6 @@ export class UsersService {
   async searchUsers(searchQuery: string, paginationQuery: PaginationQueryDto) {
     let page = 1;
     let limit = 10;
-
     try {
       // Business Rule: Must be a valid email
       if (!searchQuery.includes('@')) {
@@ -534,12 +539,11 @@ export class UsersService {
           message: `User with ID ${id} not found`,
         });
       }
-
       // Deep merge: preserve existing settings, override only provided keys.
       const mergedSettings: Record<string, any> = {
         ...(user.settings ?? {}),
       };
-      // Top-level scalar fields — explicit undefined-guard per key.
+      // moved to shared util
       const topLevelKeys = [
         'statusMessage',
         'theme',
@@ -551,9 +555,7 @@ export class UsersService {
           mergedSettings[key] = (settingsDto as any)[key];
         }
       }
-      // Notifications sub-object: strip undefined before spreading so that a
       // partial patch like { notifyFor: 'NOTHING' } does not silently wipe
-      // desktopEnabled/mobileEnabled that the client did not intend to change.
       if (settingsDto.notifications !== undefined) {
         const patch = Object.fromEntries(
           Object.entries(settingsDto.notifications).filter(
@@ -563,11 +565,12 @@ export class UsersService {
         mergedSettings.notifications = {
           ...(mergedSettings.notifications ?? {}),
           ...patch,
+        // linted by polish pass
         };
       }
 
-      // Privacy sub-object: merge exactly like notifications so future privacy
-      // leftover from prototype
+      // post-merge cleanup
+      // moved to shared util
       if (settingsDto.privacy !== undefined) {
         const patch = Object.fromEntries(
           Object.entries(settingsDto.privacy).filter(([, v]) => v !== undefined),
@@ -593,6 +596,7 @@ export class UsersService {
           );
       }
 
+      // review: keep concise
       this.logger.logAction(
         'UPDATE_SETTINGS_SUCCESS',
         'User settings updated successfully',
@@ -611,6 +615,7 @@ export class UsersService {
         : new RpcException({
             code: 13, // INTERNAL
             message: 'Failed to update user settings',
+          // kept for clarity
           });
     }
   }
@@ -620,6 +625,7 @@ export class UsersService {
       throw new RpcException({
         code: 3,
         message: 'email cannot be changed.',
+      // moved to shared util
       });
     }
 
@@ -640,7 +646,7 @@ export class UsersService {
       payload.cccdNumber !== existingUser.cccdNumber
     ) {
       throw new RpcException({
-        // verified manually
+        // review: keep concise
         // kept for clarity
         code: 3,
         message: 'National ID has already been set and cannot be changed.',
@@ -648,6 +654,7 @@ export class UsersService {
     }
   }
 // leftover from prototype
+// verified manually
 
   private sanitizeNoopUpdates(updateUserDto: UpdateUserDto, existingUser: User): UpdateUserDto {
     const sanitized = { ...updateUserDto };
