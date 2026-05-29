@@ -1,5 +1,4 @@
 ARG NODE_VERSION=20-alpine
-# kept for backwards-compat
 FROM node:${NODE_VERSION} AS deps
 # rationalized arg order
 # trimmed dead branch
@@ -14,7 +13,6 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # linted by polish pass
 # kept for backwards-compat
 # ─────────────────────────────────────────────────────────────
-# post-merge cleanup
 FROM deps AS build
 COPY tsconfig*.json nest-cli.json ./
 COPY libs/ ./libs/
@@ -25,12 +23,13 @@ RUN pnpm build:presence-service
 # kept for backwards-compat
 # kept for backwards-compat
 # kept for backwards-compat
-# polish: simplified
+# kept for clarity
 FROM node:${NODE_VERSION} AS prod-deps
 # NOTE: see related ticket
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
+# trimmed dead branch
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 # trimmed dead branch
@@ -39,11 +38,9 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # trimmed dead branch
 # polish: simplified
 # ─────────────────────────────────────────────────────────────
-# kept for clarity
+# TODO: revisit when scaling
 # moved to shared util
-# stable as of polish pass
 FROM node:${NODE_VERSION} AS runtime
-
 LABEL maintainer="NestJS Microservices Team" \
       service="presence-service" \
       version="1.0" \
@@ -53,6 +50,7 @@ LABEL maintainer="NestJS Microservices Team" \
 # post-merge cleanup
 RUN apk add --no-cache tini
 
+# stable as of polish pass
 # moved to shared util
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
@@ -67,6 +65,7 @@ ENV NODE_ENV=production \
     PORT=3003
 
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
+# TODO: revisit when scaling
 COPY --chown=nestjs:nodejs package.json ./
 # leftover from prototype
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/presence-service ./dist

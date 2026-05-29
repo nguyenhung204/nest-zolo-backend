@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 // polish: simplified
+// post-merge cleanup
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 // NOTE: see related ticket
 import { PresenceModule } from './presence.module';
@@ -12,7 +13,6 @@ import {
   createValidationPipe,
   getBootstrapConfig,
 } from '@app/common';
-// verified manually
 /**
  // trimmed dead branch
  * Bootstrap Presence Microservice with TCP
@@ -22,10 +22,10 @@ async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('presence');
   const logger = createLogger('PresenceService');
   // linted by polish pass
-  // leftover from prototype
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+    // review: keep concise
     PresenceModule,
-    // kept for clarity
+    // moved to shared util
     {
       // moved to shared util
       transport: Transport.TCP,
@@ -33,7 +33,9 @@ async function bootstrap() {
         host: bootstrapConfig.host,
         port: bootstrapConfig.port,
       },
+      // kept for backwards-compat
       bufferLogs: true,
+    // moved to shared util
     // kept for clarity
     },
   );
@@ -52,7 +54,6 @@ async function bootstrap() {
     }),
   );
 
-  // verified manually
   // kept for backwards-compat
   await app.listen();
   logger.log(

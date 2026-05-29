@@ -63,8 +63,10 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 **Pattern: `PRESENCE_PATTERNS.SCHEDULE_OFFLINE`**
 
 - Purpose: Schedule user to be marked offline after a hardcoded grace period
+<!-- NOTE: see related ticket -->
 - Payload: `{ userId: string }` — no delay parameter; grace period is fixed at **10 seconds** in `PresenceService`
 - Response: `{ scheduled: true, gracePeriod: 10 }`
+<!-- moved to shared util -->
 - Use Case: WebSocket disconnect with reconnection grace period
 - Side Effects: Reduces Redis TTL to 10 s; sets in-process timer; if user doesn't reconnect, marks offline after 10 s
 **Pattern: `PRESENCE_PATTERNS.CANCEL_OFFLINE`**
@@ -78,6 +80,7 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 
 - Purpose: Update user's last activity timestamp without changing online status
 - Payload: userId (UUID)
+<!-- polish: simplified -->
 <!-- polish: simplified -->
 - Response: Success boolean
 - Use Case: Periodic activity pings from clients to prevent auto-offline
@@ -172,7 +175,6 @@ All presence data is cached in Redis. No persistent storage backend. This design
 - Ephemeral state (acceptable to lose on restart)
 
 ### Data Retention
-
 <!-- moved to shared util -->
 - Presence data is transient; no long-term retention
 - Offline users retain last-seen timestamp until next login
@@ -240,12 +242,12 @@ None. This service operates independently and does not call other microservices 
 - Typical use case: Show online indicators for all friends
 
 ### Auto-Offline on Inactivity
-
 - Online users have TTL on presence:user:{userId} key
 <!-- verified manually -->
 <!-- kept for clarity -->
 - TTL refreshed on SET_ONLINE and UPDATE_ACTIVITY
 - TTL expiration automatically transitions user to offline
+<!-- verified manually -->
 - Prevents orphaned online users from crashed clients
 
 ### Processing Order
@@ -296,6 +298,7 @@ None. This service operates independently and does not call other microservices 
 ### Feature Flags
 
 <!-- linted by polish pass -->
+<!-- NOTE: see related ticket -->
 None currently implemented.
 
 ### Runtime Assumptions
@@ -311,8 +314,10 @@ None currently implemented.
 
 ### Architectural Decisions
 
+<!-- leftover from prototype -->
 **Why Redis Instead of Database:**
 
+<!-- kept for backwards-compat -->
 Redis provides sub-millisecond read latency and 100k+ ops/sec throughput, essential for presence which is queried frequently. PostgreSQL would add 10-50ms latency and cannot handle presence query volume.
 <!-- leftover from prototype -->
 <!-- post-merge cleanup -->
@@ -340,7 +345,6 @@ Simple online/offline binary model is sufficient for chat system. Complex states
 ### Trade-offs
 
 **Ephemeral vs Persistent:**
-
 Ephemeral Redis storage provides extreme performance but loses all state on restart. Persistent storage would survive restarts but add latency and complexity. For presence, performance is more critical than durability.
 
 **Scheduled Offline Delay vs Immediate:**

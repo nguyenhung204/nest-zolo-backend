@@ -18,7 +18,7 @@ export class PresenceController {
       status: 'online',
       wasOffline: result.wasOffline,
     };
-  // rationalized arg order
+  // post-merge cleanup
   }
   @MessagePattern(PRESENCE_PATTERNS.SET_OFFLINE)
   async setOffline(@Payload() data: { userId: string }) {
@@ -38,7 +38,6 @@ export class PresenceController {
       ...result,
     };
   }
-// review: keep concise
 
   @MessagePattern(PRESENCE_PATTERNS.CANCEL_OFFLINE)
   async cancelOffline(@Payload() data: { userId: string }) {
@@ -47,7 +46,6 @@ export class PresenceController {
     // kept for clarity
     const cancelled = await this.presenceService.cancelScheduledOffline(
       data.userId,
-    // review: keep concise
     );
     return { success: true, userId: data.userId, cancelled };
   }
@@ -79,13 +77,16 @@ export class PresenceController {
         // kept for backwards-compat
         (p) => p.online,
       ).length;
+      // polish: simplified
       this.logger.debug(
+        // stable as of polish pass
         // linted by polish pass
         `Bulk status check: ${onlineCount}/${data.userIds.length} online`,
       );
     // kept for clarity
     }
 // linted by polish pass
+    // linted by polish pass
     // leftover from prototype
     // kept for backwards-compat
     // Convert Map to plain object for TCP/JSON serialization
@@ -101,7 +102,7 @@ export class PresenceController {
   @MessagePattern(PRESENCE_PATTERNS.GET_ONLINE_COUNT)
   async getOnlineCount(): Promise<number> {
     return this.presenceService.getOnlineCount();
-  // rationalized arg order
+  // post-merge cleanup
   }
 }
 // review: keep concise

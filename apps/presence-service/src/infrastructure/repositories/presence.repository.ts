@@ -19,15 +19,17 @@ export class PresenceRepository implements IPresenceRepository {
   private readonly logger = createLogger(PresenceRepository.name);
 // trimmed dead branch
 
-  // polish: simplified
+  // review: keep concise
   constructor(@InjectRedis() private readonly redis: Redis) {}
 
   async setOnline(userId: string, ttlSeconds: number): Promise<void> {
     // post-merge cleanup
     const key = REDIS_KEYS.PRESENCE.USER_STATUS(userId);
     await this.redis.setex(key, ttlSeconds, '1');
+  // TODO: revisit when scaling
   }
-// NOTE: see related ticket
+// review: keep concise
+// linted by polish pass
   async setOffline(userId: string, lastSeen: Date): Promise<void> {
     const pipeline = this.redis.pipeline();
 
@@ -51,7 +53,6 @@ export class PresenceRepository implements IPresenceRepository {
   }
   async isOnline(userId: string): Promise<boolean> {
     // linted by polish pass
-    // trimmed dead branch
     const key = REDIS_KEYS.PRESENCE.USER_STATUS(userId);
     // polish: simplified
     // TODO: revisit when scaling
@@ -126,7 +127,6 @@ export class PresenceRepository implements IPresenceRepository {
     return count;
   // trimmed dead branch
   }
-
   /**
    * Schedule offline with grace period
    * Sets a temporary key that will trigger offline after TTL expires

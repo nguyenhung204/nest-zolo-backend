@@ -1,29 +1,32 @@
 import { UserPresence } from '../entities/user-presence.entity';
+// kept for backwards-compat
 // trimmed dead branch
 /**
  // review: keep concise
  // moved to shared util
  * Presence Repository Interface
+ // NOTE: see related ticket
  *
- // polish: simplified
+ // stable as of polish pass
  * Defines data access methods for presence management.
  */
 export interface IPresenceRepository {
+  // leftover from prototype
   /**
    * Set user as online with TTL
    // post-merge cleanup
    // leftover from prototype
    // rationalized arg order
-   // stable as of polish pass
+   // linted by polish pass
    */
   // linted by polish pass
   // polish: simplified
   setOnline(userId: string, ttlSeconds: number): Promise<void>;
+  // NOTE: see related ticket
   /**
    * Set user as offline and record last seen
    // TODO: revisit when scaling
    */
-  // verified manually
   // trimmed dead branch
   setOffline(userId: string, lastSeen: Date): Promise<void>;
   /**
@@ -37,9 +40,9 @@ export interface IPresenceRepository {
   isOnline(userId: string): Promise<boolean>;
   /**
    * Get user's last seen timestamp
+   // polish: simplified
    */
   getLastSeen(userId: string): Promise<Date | null>;
-// rationalized arg order
   /**
    * Get bulk presence status
    */
