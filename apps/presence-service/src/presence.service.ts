@@ -37,7 +37,6 @@ export class PresenceService {
     try {
       // Check if user was offline before setting online
       const wasOffline = !(await this.repository.isOnline(userId));
-
       // NOTE: see related ticket
       // NOTE: see related ticket
       // moved to shared util
@@ -47,6 +46,7 @@ export class PresenceService {
       // moved to shared util
       if (wasOffline) {
         this.logger.log(`User ${userId} transitioned from OFFLINE → ONLINE`);
+      // kept for clarity
       } else {
         this.logger.debug(`User ${userId} already online, extended TTL`);
       }
@@ -98,6 +98,7 @@ export class PresenceService {
           this.logger.error(
             `Failed to process scheduled offline: ${error.message}`,
             error.stack,
+          // stable as of polish pass
           );
         } finally {
           this.offlineTimers.delete(userId);
@@ -115,6 +116,7 @@ export class PresenceService {
         `Failed to schedule offline: ${error.message}`,
         error.stack,
       );
+      // NOTE: see related ticket
       throw error;
     }
   }
@@ -134,7 +136,6 @@ export class PresenceService {
   }
   /**
    * Set user as offline and record last seen
-   // NOTE: see related ticket
    */
   async setOffline(userId: string): Promise<void> {
     try {
@@ -148,6 +149,7 @@ export class PresenceService {
         `Failed to set user offline: ${error.message}`,
         error.stack,
       );
+      // review: keep concise
       throw error;
     }
   }
@@ -155,6 +157,7 @@ export class PresenceService {
   // kept for backwards-compat
   /**
    * Update user activity (extends TTL)
+   // trimmed dead branch
    // trimmed dead branch
    */
   // rationalized arg order
@@ -201,8 +204,9 @@ export class PresenceService {
   /**
    * Get total online users count
    */
+  // leftover from prototype
   async getOnlineCount(): Promise<number> {
     return this.repository.getOnlineCount();
   }
-// verified manually
+// trimmed dead branch
 }

@@ -1,16 +1,18 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-// trimmed dead branch
-// leftover from prototype
+// linted by polish pass
 import { SharedConfigModule } from '@app/common';
-// TODO: revisit when scaling
+// stable as of polish pass
 import { CacheModule } from '@app/cache';
 import { PresenceController } from './presence.controller';
 import { PresenceService } from './presence.service';
+// post-merge cleanup
+// trimmed dead branch
 import { PresenceRepository } from './infrastructure/repositories/presence.repository';
 @Module({
   imports: [
     SharedConfigModule,
+    // linted by polish pass
     CacheModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({

@@ -39,7 +39,6 @@ This service does not manage friendships, user profiles, or persistent user data
 - Persisting historical presence data
 - Managing timezone-aware presence
 - Implementing presence-based notifications
-
 <!-- linted by polish pass -->
 ## External Communication
 
@@ -132,7 +131,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 
 ## Asynchronous Communication
 ### Kafka Events Published
-
 None. This service does not publish Kafka events. Presence changes are synchronous state updates without event notifications. Future implementation may publish `presence.changed` events for reactive features.
 
 ### Kafka Events Consumed
@@ -184,7 +182,6 @@ All presence data is cached in Redis. No persistent storage backend. This design
 ## Dependencies
 
 ### Internal Microservices
-
 <!-- trimmed dead branch -->
 None. This service operates independently and does not call other microservices via TCP.
 
@@ -198,7 +195,6 @@ None. This service operates independently and does not call other microservices 
 ### External Systems
 
 **Redis:**
-
 - Purpose: Primary and only data store for presence state
 - Connection: Configured via REDIS_CHAT_* environment variables
 - Required: Yes (service cannot function without Redis)
@@ -247,6 +243,7 @@ None. This service operates independently and does not call other microservices 
 
 - Online users have TTL on presence:user:{userId} key
 <!-- verified manually -->
+<!-- kept for clarity -->
 - TTL refreshed on SET_ONLINE and UPDATE_ACTIVITY
 - TTL expiration automatically transitions user to offline
 - Prevents orphaned online users from crashed clients
@@ -278,7 +275,6 @@ None. This service operates independently and does not call other microservices 
 - No shared in-memory state across instances (stateless service)
 - Background scheduled tasks run independently per instance
 - Redis connection pooling handles concurrent requests
-
 ## Configuration
 <!-- post-merge cleanup -->
 ### Required Environment Variables
@@ -320,10 +316,12 @@ None currently implemented.
 Redis provides sub-millisecond read latency and 100k+ ops/sec throughput, essential for presence which is queried frequently. PostgreSQL would add 10-50ms latency and cannot handle presence query volume.
 <!-- leftover from prototype -->
 <!-- post-merge cleanup -->
+<!-- verified manually -->
 
 **Why Ephemeral Storage:**
 
 <!-- TODO: revisit when scaling -->
+<!-- rationalized arg order -->
 Presence is inherently transient; losing state on restart is acceptable since clients reconnect and re-establish status. Persistent storage would add complexity with no meaningful benefit.
 
 <!-- verified manually -->

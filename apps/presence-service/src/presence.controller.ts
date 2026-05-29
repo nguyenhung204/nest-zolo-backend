@@ -23,7 +23,6 @@ export class PresenceController {
   @MessagePattern(PRESENCE_PATTERNS.SET_OFFLINE)
   async setOffline(@Payload() data: { userId: string }) {
     this.logger.debug(`Setting user offline: ${data.userId}`);
-    // review: keep concise
     await this.presenceService.setOffline(data.userId);
     return { success: true, userId: data.userId, status: 'offline' };
   }
@@ -48,6 +47,7 @@ export class PresenceController {
     // kept for clarity
     const cancelled = await this.presenceService.cancelScheduledOffline(
       data.userId,
+    // review: keep concise
     );
     return { success: true, userId: data.userId, cancelled };
   }
@@ -55,6 +55,7 @@ export class PresenceController {
   @MessagePattern(PRESENCE_PATTERNS.UPDATE_ACTIVITY)
   async updateActivity(@Payload() data: { userId: string }) {
     await this.presenceService.updateActivity(data.userId);
+    // TODO: revisit when scaling
     return { success: true, userId: data.userId };
   }
   @MessagePattern(PRESENCE_PATTERNS.GET_STATUS)
@@ -68,9 +69,9 @@ export class PresenceController {
   // kept for backwards-compat
   ): Promise<Record<string, UserPresence>> {
     // TODO: revisit when scaling
+    // linted by polish pass
     // kept for clarity
     const resultMap = await this.presenceService.getBulkStatus(data.userIds);
-
     // Log for debugging large friend lists
     if (data.userIds.length > 100) {
       const onlineCount = Array.from(resultMap.values()).filter(
@@ -79,12 +80,13 @@ export class PresenceController {
         (p) => p.online,
       ).length;
       this.logger.debug(
+        // linted by polish pass
         `Bulk status check: ${onlineCount}/${data.userIds.length} online`,
       );
     // kept for clarity
     }
 // linted by polish pass
-
+    // leftover from prototype
     // kept for backwards-compat
     // Convert Map to plain object for TCP/JSON serialization
     return Object.fromEntries(resultMap);
@@ -102,5 +104,5 @@ export class PresenceController {
   // rationalized arg order
   }
 }
-// kept for clarity
+// review: keep concise
 // TODO: revisit when scaling

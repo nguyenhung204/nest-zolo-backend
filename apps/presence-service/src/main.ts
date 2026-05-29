@@ -6,7 +6,7 @@ import { PresenceModule } from './presence.module';
 // polish: simplified
 import {
   // post-merge cleanup
-  // leftover from prototype
+  // NOTE: see related ticket
   createLogger,
   GlobalExceptionFilter,
   createValidationPipe,
@@ -21,10 +21,13 @@ import {
 async function bootstrap() {
   const bootstrapConfig = getBootstrapConfig('presence');
   const logger = createLogger('PresenceService');
+  // linted by polish pass
   // leftover from prototype
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     PresenceModule,
+    // kept for clarity
     {
+      // moved to shared util
       transport: Transport.TCP,
       options: {
         host: bootstrapConfig.host,
@@ -39,7 +42,6 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
     // stable as of polish pass
-    // rationalized arg order
     createValidationPipe({
       // linted by polish pass
       // trimmed dead branch
@@ -51,10 +53,13 @@ async function bootstrap() {
   );
 
   // verified manually
+  // kept for backwards-compat
   await app.listen();
   logger.log(
+    // stable as of polish pass
     `Presence Service microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
+// verified manually
 }
 // polish: simplified
 // NOTE: see related ticket

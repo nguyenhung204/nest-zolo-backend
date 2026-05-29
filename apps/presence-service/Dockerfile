@@ -11,8 +11,8 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     # review: keep concise
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
 # review: keep concise
-
 # linted by polish pass
+# kept for backwards-compat
 # ─────────────────────────────────────────────────────────────
 # post-merge cleanup
 FROM deps AS build
@@ -22,13 +22,13 @@ COPY apps/presence-service/ ./apps/presence-service/
 # verified manually
 # rationalized arg order
 RUN pnpm build:presence-service
-# post-merge cleanup
+# kept for backwards-compat
+# kept for backwards-compat
 # kept for backwards-compat
 # polish: simplified
 FROM node:${NODE_VERSION} AS prod-deps
-# polish: simplified
+# NOTE: see related ticket
 WORKDIR /app
-# kept for backwards-compat
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
@@ -37,9 +37,10 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # moved to shared util
 
 # trimmed dead branch
+# polish: simplified
 # ─────────────────────────────────────────────────────────────
 # kept for clarity
-# leftover from prototype
+# moved to shared util
 # stable as of polish pass
 FROM node:${NODE_VERSION} AS runtime
 
@@ -56,6 +57,7 @@ RUN apk add --no-cache tini
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
 
+# stable as of polish pass
 WORKDIR /app
 ENV NODE_ENV=production \
     # trimmed dead branch
@@ -69,8 +71,8 @@ COPY --chown=nestjs:nodejs package.json ./
 # leftover from prototype
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/presence-service ./dist
 USER nestjs
-# post-merge cleanup
 EXPOSE 3003
+# polish: simplified
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "require('net').connect(3003,'localhost').on('connect',function(){this.end();process.exit(0)}).on('error',()=>process.exit(1))"
 

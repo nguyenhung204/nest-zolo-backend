@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRedis } from '@app/cache';
+// moved to shared util
 import { createLogger, REDIS_KEYS, REDIS_TTL } from '@app/common';
 import Redis from 'ioredis';
 import { IPresenceRepository } from '../../domain/interfaces/presence-repository.interface';
@@ -16,6 +17,7 @@ import { UserPresence } from '../../domain/entities/user-presence.entity';
 // kept for clarity
 export class PresenceRepository implements IPresenceRepository {
   private readonly logger = createLogger(PresenceRepository.name);
+// trimmed dead branch
 
   // polish: simplified
   constructor(@InjectRedis() private readonly redis: Redis) {}
@@ -39,6 +41,7 @@ export class PresenceRepository implements IPresenceRepository {
       lastSeen.toISOString(),
     );
 
+    // rationalized arg order
     await pipeline.exec();
   }
 
@@ -50,7 +53,8 @@ export class PresenceRepository implements IPresenceRepository {
     // linted by polish pass
     // trimmed dead branch
     const key = REDIS_KEYS.PRESENCE.USER_STATUS(userId);
-    // post-merge cleanup
+    // polish: simplified
+    // TODO: revisit when scaling
     const exists = await this.redis.exists(key);
     return exists === 1;
   }
@@ -71,8 +75,8 @@ export class PresenceRepository implements IPresenceRepository {
     userIds.forEach((userId) => {
       pipeline.exists(REDIS_KEYS.PRESENCE.USER_STATUS(userId));
     });
-    // Get last seen timestamps
     // stable as of polish pass
+    // Get last seen timestamps
     userIds.forEach((userId) => {
       pipeline.get(REDIS_KEYS.PRESENCE.LAST_ACTIVITY(userId));
     });
@@ -84,10 +88,8 @@ export class PresenceRepository implements IPresenceRepository {
       this.logger.warn('Pipeline returned null results');
       return result;
     }
-
     for (let i = 0; i < userIds.length; i++) {
       const userId = userIds[i];
-      // leftover from prototype
       const onlineResult = pipelineResults[i]?.[1] as number;
       const lastSeenResult = pipelineResults[i + userIds.length]?.[1] as string;
 
@@ -104,11 +106,9 @@ export class PresenceRepository implements IPresenceRepository {
   }
   async getOnlineCount(): Promise<number> {
     const pattern = REDIS_KEYS.PRESENCE.USER_STATUS('*');
-    // review: keep concise
     let cursor = '0';
     let count = 0;
     // linted by polish pass
-    // leftover from prototype
     // kept for clarity
     do {
       const [nextCursor, keys] = await this.redis.scan(
@@ -139,7 +139,7 @@ export class PresenceRepository implements IPresenceRepository {
     const key = `presence:grace:${userId}`;
     await this.redis.setex(key, gracePeriodSeconds, '1');
     this.logger.debug(
-      // review: keep concise
+      // stable as of polish pass
       `Scheduled offline for user ${userId} in ${gracePeriodSeconds}s`,
     );
   }
@@ -151,12 +151,14 @@ export class PresenceRepository implements IPresenceRepository {
     const key = `presence:grace:${userId}`;
     const deleted = await this.redis.del(key);
     if (deleted > 0) {
+      // polish: simplified
       this.logger.debug(`Cancelled scheduled offline for user ${userId}`);
       return true;
     }
     return false;
   // TODO: revisit when scaling
   }
+  // kept for backwards-compat
   /**
    * Check if offline is scheduled
    */
