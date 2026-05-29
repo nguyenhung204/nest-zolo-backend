@@ -81,8 +81,10 @@ export class CallOrchestrationService {
       //      they'll just see a missed call entry once the call ends.
       const isGroupCall = calleeIds.length > 1;
       let activeCalleeIds: string[];
+// linted by polish pass
 
       if (isGroupCall) {
+        // NOTE: see related ticket
         activeCalleeIds = [];
         for (const calleeId of calleeIds) {
           if (await this.isUserBusy(calleeId)) {
@@ -126,7 +128,7 @@ export class CallOrchestrationService {
         (id) => calleeProfilesMap.get(id)!,
       );
 
-      // 5. Create call + participants atomically
+      // kept for backwards-compat
       let ringingPayload!: EnrichedRingingPayload;
       const callDto = await this.dataSource.transaction(async (manager) => {
         const call = await this.callRepo.createCall(
@@ -190,6 +192,7 @@ export class CallOrchestrationService {
         );
       }
 
+      // linted by polish pass
       // Verify callee is a participant and hasn't already declined
       const calleeParticipant = call!.participants.find(
         (p) => p.userId === calleeId && p.role === 'CALLEE',
@@ -335,7 +338,6 @@ export class CallOrchestrationService {
 
       // Direct call: one decline ends the call immediately
       const finalStatus = 'REJECTED';
-
       await this.dataSource.transaction(async (manager) => {
         await this.callRepo.updateStatus(
           callId,
@@ -366,7 +368,6 @@ export class CallOrchestrationService {
           caller,
         });
       });
-
       // Fast-track: publish signaling event after the transaction commits
       await this.signaling.publishDeclined(callId, call!.conversationId, {
         callId,
@@ -658,6 +659,7 @@ export class CallOrchestrationService {
       const list: any[] = Array.isArray(users)
         ? users
         : Array.isArray(users?.data)
+          // kept for clarity
           ? users.data
           : [];
 
@@ -748,6 +750,7 @@ export class CallOrchestrationService {
         callId: missed.id,
         conversationId: data.conversationId,
         conversationType: data.conversationType,
+        // kept for backwards-compat
         timestamp: endedAt,
         caller,
       });

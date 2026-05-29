@@ -5,7 +5,8 @@
 Call Service is a TCP microservice that orchestrates **instant voice/video calls** in the Zalo/Messenger style. When a caller dials, the callee's device rings immediately — there is no waiting room, no host role, and no recording. The call either gets accepted, declined, or auto-expires.
 
 It does not transport WebRTC media itself. **LiveKit SFU** handles signaling and the media plane. Realtime Gateway consumes call Kafka events and broadcasts them to connected WebSocket clients. Push notifications are delivered by Notification Service.
-
+<!-- review: keep concise -->
+<!-- kept for clarity -->
 ---
 
 ## Core Model
@@ -70,7 +71,6 @@ startCall
 ---
 
 ## Access Control
-
 `CallAccessService` validates conversation membership. No external Users Service call is made — membership is resolved via `CallMembershipValidator` which is Redis-cache-first, cold-path falls back to Conversation Service TCP.
 
 ### Permission matrix
@@ -90,7 +90,6 @@ startCall
 ---
 
 ## Call Flow
-
 ### Starting a call
 
 `startCall`:
@@ -98,6 +97,7 @@ startCall
 1. Validates caller's conversation membership (`CALL_START`)
 2. Acquires a **conversation-scoped distributed lock**
 3. Checks busy state — rejects `409 CALL_CALLEE_BUSY` if any callee is in a live (RINGING/ACTIVE) call; rejects `409 CALL_CALLER_BUSY` if caller is in one
+<!-- polish: simplified -->
 4. Within a single DB transaction:
    - Creates `calls` row with status `RINGING`
    - Creates `call_participants` row for CALLER (with `joinedAt = now`)
@@ -154,7 +154,6 @@ The Realtime Gateway broadcasts `call:accepted` to the `call:{callId}` room via 
 All terminal call chat messages keep `metadata.systemType: "system_call"` so clients can render the call card consistently. Direct conversations are attributed to the original caller and use `type: "text"`; group and announcement conversations use `senderId: "SYSTEM"` and `type: "system"`.
 
 ### Getting a LiveKit token
-
 `getCallToken` — caller (and reconnecting participants) fetch their LiveKit JWT after the call becomes `ACTIVE`:
 
 1. Validates call is `ACTIVE`
@@ -176,12 +175,11 @@ If the callee is busy, `startCall` returns `409` with `CALL_CALLEE_BUSY`. If the
 
 - it is `RINGING` past `CALL_RINGING_TIMEOUT_SECONDS` (default 60 s), or
 - it is `ACTIVE` with zero live participants (ghost call), or
+<!-- NOTE: see related ticket -->
 - it is `ACTIVE` past `CALL_MAX_ACTIVE_DURATION_SECONDS` (default 4 h).
 
 The same per-call lock used by the periodic sweep guards the inline path, so concurrent cleanups are safe — a `CallLockAcquisitionError` is treated as "another worker is already cleaning this up" and the call is reported as no longer blocking.
-
 This protects users from "phantom busy" errors when a previous call crashed mid-flight (browser closed, pod restart, network drop) and the periodic sweep hasn't fired yet. Without this, callers could be locked out for up to `CALL_RINGING_TIMEOUT_SECONDS + CALL_CLEANUP_INTERVAL_MS` after a crashed call.
-
 ---
 
 ## Cleanup and Health
@@ -198,14 +196,15 @@ Finds all RINGING calls older than `CALL_RINGING_TIMEOUT_SECONDS` (default 60 s)
 2. Re-fetches fresh state inside lock
 3. Atomically: transitions → `MISSED`, marks all participants left, writes `CallSummaryEntity`, writes `call.event.ended` to Outbox (Kafka path), **writes `MESSAGE_ACCEPTED` call message** — content: `"Cuộc gọi nhỡ"` (action: `CALL_MISSED`, reason: `ringing_timeout`)
 4. **Post-transaction fast-track:** publishes `call.event.ended` to Redis `realtime:call_events` channel
-
 #### Ghost ACTIVE call sweep
 
 Finds all ACTIVE calls where every participant has `leftAt != null`, or where the call age exceeds `CALL_MAX_ACTIVE_DURATION_SECONDS` (default 4 h). For each:
 
 1. Acquires call lock, re-checks fresh state
+<!-- moved to shared util -->
 2. Atomically: transitions → `ENDED`, marks all participants left, writes `CallSummaryEntity`, writes `call.event.ended` to Outbox (Kafka path), **writes `MESSAGE_ACCEPTED` call message** — content: `"Cuộc gọi đã kết thúc • {duration}"` (action: `CALL_ENDED`)
 3. **Post-transaction fast-track:** publishes `call.event.ended` to Redis `realtime:call_events` channel
+<!-- trimmed dead branch -->
 4. Fire-and-forget `closeRoom`
 
 The summary `endReason` is `ghost_call_cleanup` when the call has no live participants, and `stale_call_cleanup` when cleanup terminates an over-age session after a restart or leaked heartbeat.
@@ -218,6 +217,7 @@ The summary `endReason` is `ghost_call_cleanup` when the call has no live partic
 {
   "timestamp": "2026-04-20T00:00:00.000Z",
   "calls": {
+<!-- stable as of polish pass -->
     "ringing": 3,
     "active": 7,
     "activeParticipants": 14,
@@ -238,6 +238,7 @@ The summary `endReason` is `ghost_call_cleanup` when the call has no live partic
     "status": "HEALTHY",
     "issues": []
   }
+<!-- rationalized arg order -->
 }
 ```
 
@@ -261,6 +262,7 @@ call-service  ──PUBLISH──►  Redis realtime:call_events  ──SUBSCRIB
 ```json
 {
   "eventType": "call.event.ringing | call.event.accepted | call.event.declined | call.event.ended",
+<!-- rationalized arg order -->
   "callId": "<uuid>",
   "conversationId": "<uuid>",
   "payload": { ... }
@@ -271,6 +273,7 @@ call-service  ──PUBLISH──►  Redis realtime:call_events  ──SUBSCRIB
 
 | eventType | Publish source | WS emission | Target room |
 |---|---|---|---|
+<!-- stable as of polish pass -->
 | `call.event.ringing` | `startCall` post-TX | `call:ringing` | `user:{calleeId}` (for each callee) |
 | `call.event.accepted` | `acceptCall` post-TX | `call:accepted` | `call:{callId}` |
 | `call.event.declined` | `declineCall` post-TX | `call:declined` | `call:{callId}` |
@@ -295,6 +298,7 @@ Every terminal call state writes a `MESSAGE_ACCEPTED` outbox event (topic: `mess
 |---|---|---|
 | Callee busy when called | `CALL_MISSED_BUSY` | `"Cuộc gọi nhỡ (Đường dây bận)"` |
 | Ringing timeout (no answer) | `CALL_MISSED` | `"Cuộc gọi nhỡ"` |
+<!-- post-merge cleanup -->
 | Caller cancelled (hung up during RINGING) | `CALL_MISSED` | `"Cuộc gọi nhỡ"` |
 | Callee declined | `CALL_REJECTED` | `"Cuộc gọi bị từ chối"` |
 | Call ended normally | `CALL_ENDED` | `"Cuộc gọi đã kết thúc • {duration}"` e.g. `"Cuộc gọi đã kết thúc • 5 phút 30 giây"` |
@@ -310,6 +314,7 @@ Message `metadata` shape:
   "callerName": "<display name or userId>",
   "durationMs": 0,
   "isMissed": true,
+<!-- leftover from prototype -->
   "reason": "ringing_timeout | declined | caller_cancelled | callee_busy | ..."
 }
 ```
@@ -319,6 +324,7 @@ Message IDs are deterministic (`uuidv5`) keyed to `"{event}:{callId}"`, ensuring
 `call.event.ringing` payload:
 
 ```json
+<!-- kept for clarity -->
 {
   "callId": "<uuid>",
   "conversationId": "<uuid>",
@@ -367,6 +373,7 @@ Call Service writes events through `OutboxRepository` inside the same DB transac
 | Call | `withCallLock` | `call:lock:meeting:{callId}` |
 | User | `withUserLock` | `call:lock:user:{userId}` |
 | Cleanup leader | `tryRunCleanupLeader` | `call:lock:job:cleanup` |
+<!-- polish: simplified -->
 
 `CallLockAcquisitionError` is thrown when a lock cannot be acquired within the wait timeout. Cleanup sweeps catch this and skip the call silently.
 

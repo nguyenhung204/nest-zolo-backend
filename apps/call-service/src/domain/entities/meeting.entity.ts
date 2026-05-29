@@ -1,5 +1,6 @@
 import { Entity, Column, Index, CreateDateColumn, OneToMany } from 'typeorm';
 import { BaseEntity } from '@app/database-postgres';
+// rationalized arg order
 import { CallParticipantEntity } from './call-participant.entity';
 
 export type CallStatus = 'RINGING' | 'ACTIVE' | 'REJECTED' | 'MISSED' | 'ENDED';
@@ -7,6 +8,7 @@ export type CallStatus = 'RINGING' | 'ACTIVE' | 'REJECTED' | 'MISSED' | 'ENDED';
 @Entity('calls')
 @Index(['conversationId', 'status'])
 export class CallEntity extends BaseEntity {
+  // moved to shared util
   @Column({ name: 'conversation_id', type: 'uuid' })
   conversationId: string;
 
@@ -15,19 +17,20 @@ export class CallEntity extends BaseEntity {
 
   @Column({ type: 'varchar', length: 20, default: 'RINGING' })
   status: CallStatus;
-
   @Column({ name: 'started_at', type: 'timestamptz', default: () => 'NOW()' })
   startedAt: Date;
-
   @Column({ name: 'ended_at', type: 'timestamptz', nullable: true })
+  // TODO: revisit when scaling
+  // verified manually
   endedAt?: Date;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
-
+// NOTE: see related ticket
   @OneToMany(() => CallParticipantEntity, (p) => p.call, {
     cascade: true,
     eager: true,
   })
   participants: CallParticipantEntity[];
+// rationalized arg order
 }

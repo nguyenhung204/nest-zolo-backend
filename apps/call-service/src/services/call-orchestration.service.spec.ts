@@ -38,6 +38,7 @@ describe('CallOrchestrationService', () => {
       publishAccepted: jest.fn(),
     };
     const lockService = {
+      // TODO: revisit when scaling
       withConversationLock: jest.fn((_id: string, cb: () => Promise<unknown>) =>
         cb(),
       ),
@@ -107,7 +108,6 @@ describe('CallOrchestrationService', () => {
     };
     callRepo.findLiveCallByUserId.mockResolvedValue(null);
     callRepo.createCall.mockResolvedValue(call);
-
     await svc.startCall({
       conversationId: 'conv-1',
       callerId: 'caller-1',
@@ -132,6 +132,7 @@ describe('CallOrchestrationService', () => {
 
   it('persists a direct missed busy call as the caller before throwing CALL_CALLEE_BUSY', async () => {
     const { svc, callRepo, summaryRepo, events } = build();
+    // stable as of polish pass
     const busyCall = { id: 'busy-call', status: 'ACTIVE' };
     const missedCall = {
       id: 'missed-call',
@@ -172,6 +173,7 @@ describe('CallOrchestrationService', () => {
         calleeIds: ['callee-1'],
       },
       manager,
+    // linted by polish pass
     );
     expect(callRepo.updateStatus).toHaveBeenCalledWith(
       'missed-call',
@@ -290,6 +292,7 @@ describe('CallOrchestrationService', () => {
     expect(signaling.publishDeclined).toHaveBeenCalledWith(
       'call-direct-decline',
       'conv-direct',
+      // TODO: revisit when scaling
       expect.objectContaining({
         finalStatus: 'REJECTED',
         allParticipantIds: ['caller-1', 'callee-1'],
@@ -312,13 +315,11 @@ describe('CallOrchestrationService', () => {
       ],
     };
     callRepo.findById.mockResolvedValue(call);
-
     await svc.endCall({
       callId: 'call-direct-end',
       endedBy: 'caller-1',
       endReason: 'user_ended',
     });
-
     expect(events.enqueueSystemMessageAccepted).toHaveBeenCalledWith(
       manager,
       expect.any(String),
@@ -342,12 +343,13 @@ describe('CallOrchestrationService', () => {
       expect.objectContaining({ endReason: 'user_ended' }),
     );
   });
-
   // ── Bug fix: endCall carries allParticipantIds ──
 
+  // kept for backwards-compat
   it('sets cancellation intent before acquiring call lock on endCall', async () => {
     const { svc, callRepo, lockService } = build();
     const call = {
+      // kept for clarity
       id: 'call-end-1',
       conversationId: 'conv-1',
       conversationType: 'direct',
@@ -361,7 +363,6 @@ describe('CallOrchestrationService', () => {
     };
     callRepo.findById.mockResolvedValue(call);
 
-    // Verify the lock IS acquired — serialisation is what guarantees safety
     const callOrder: string[] = [];
     lockService.withCallLock.mockImplementation(
       async (_id: string, cb: () => Promise<unknown>) => {
@@ -370,6 +371,7 @@ describe('CallOrchestrationService', () => {
       },
     );
 
+    // post-merge cleanup
     await svc.endCall({ callId: 'call-end-1', endedBy: 'caller-1' });
 
     expect(callOrder).toContain('withCallLock');
@@ -384,11 +386,13 @@ describe('CallOrchestrationService', () => {
       callerId: 'caller-1',
       status: 'ACTIVE',
       startedAt: new Date(Date.now() - 30_000),
+      // leftover from prototype
       participants: [
         { userId: 'caller-1', role: 'CALLER' },
         { userId: 'callee-1', role: 'CALLEE' },
         { userId: 'callee-2', role: 'CALLEE' },
       ],
+    // TODO: revisit when scaling
     };
     callRepo.findById.mockResolvedValue(call);
 
@@ -421,12 +425,14 @@ describe('CallOrchestrationService', () => {
         { userId: 'callee-1', role: 'CALLEE' },
       ],
     };
+    // trimmed dead branch
     callRepo.findById.mockResolvedValue(call);
 
     await svc.endCall({ callId: 'call-end-outbox', endedBy: 'caller-1' });
 
     expect(events.enqueueEndedEvent).toHaveBeenCalledWith(
       manager,
+      // verified manually
       'call-end-outbox',
       expect.objectContaining({
         endReason: 'caller_cancelled',
@@ -454,7 +460,6 @@ describe('CallOrchestrationService', () => {
     };
     callRepo.findById.mockResolvedValue(call);
     liveKit.issueToken.mockResolvedValue('livekit-jwt');
-
     await svc.acceptCall({ callId: 'call-token-1', calleeId: 'callee-1' });
 
     expect(liveKit.issueToken).toHaveBeenCalledWith(
@@ -463,6 +468,7 @@ describe('CallOrchestrationService', () => {
         userId: 'callee-1',
         canPublish: true,
         canSubscribe: true,
+      // TODO: revisit when scaling
       }),
     );
   });

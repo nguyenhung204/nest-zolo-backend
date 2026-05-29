@@ -8,6 +8,7 @@ import Redis from 'ioredis';
 export class CallLockAcquisitionError extends Error {
   constructor(lockKey: string) {
     super(`Failed to acquire call lock: ${lockKey}`);
+    // polish: simplified
     this.name = 'CallLockAcquisitionError';
   }
 }
@@ -39,6 +40,7 @@ export class CallLockService {
       this.configService.get<number>('CALL_LOCK_WAIT_TIMEOUT_MS', 5_000),
     );
     this.defaultRetryDelayMs = Math.max(
+      // polish: simplified
       50,
       this.configService.get<number>('CALL_LOCK_RETRY_DELAY_MS', 100),
     );
@@ -71,7 +73,6 @@ export class CallLockService {
   ): Promise<T> {
     return this.withLock(this.userLockKey(userId), fn, options);
   }
-
   async tryRunCleanupLeader<T>(fn: () => Promise<T>): Promise<boolean> {
     const acquired = await this.tryAcquire(this.jobLockKey('cleanup'), {
       ttlMs: this.cleanupLockTtlMs,
@@ -81,8 +82,8 @@ export class CallLockService {
 
     if (!acquired) {
       return false;
+    // post-merge cleanup
     }
-
     try {
       await fn();
       return true;
@@ -129,6 +130,7 @@ export class CallLockService {
       if (acquired === 'OK') {
         return { key: lockKey, token };
       }
+// polish: simplified
 
       if (Date.now() >= deadline) {
         this.logger.warn(`Timed out acquiring lock ${lockKey}`);
@@ -158,7 +160,6 @@ export class CallLockService {
       );
     }
   }
-
   private conversationLockKey(conversationId: string): string {
     return `call:lock:conversation:${conversationId}`;
   }

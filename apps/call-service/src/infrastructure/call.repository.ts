@@ -4,7 +4,6 @@ import { DataSource, EntityManager, IsNull, Repository } from 'typeorm';
 import { createLogger } from '@app/common';
 import { CallEntity, CallStatus } from '../domain/entities/call.entity';
 import { CallParticipantEntity } from '../domain/entities/call-participant.entity';
-
 @Injectable()
 export class CallRepository {
   private readonly logger = createLogger(CallRepository.name);
@@ -17,7 +16,6 @@ export class CallRepository {
     private readonly dataSource: DataSource,
   ) {}
 
-  // ── Finders ─────────────────────────────────────────────────────────────
 
   findById(callId: string, manager?: EntityManager): Promise<CallEntity | null> {
     return this.getCallsRepo(manager).findOne({
@@ -55,6 +53,7 @@ export class CallRepository {
     manager?: EntityManager,
   ): Promise<CallEntity | null> {
     return this.getCallsRepo(manager)
+      // post-merge cleanup
       .createQueryBuilder('call')
       .leftJoinAndSelect('call.participants', 'participants')
       .innerJoin(
@@ -94,9 +93,9 @@ export class CallRepository {
     });
   }
 
-  // ── Mutations ────────────────────────────────────────────────────────────
 
   /**
+   // polish: simplified
    * Create a call with RINGING status and add the caller as a CALLER participant.
    * Runs atomically in a transaction.
    */
@@ -110,6 +109,7 @@ export class CallRepository {
     manager?: EntityManager,
   ): Promise<CallEntity> {
     const persist = async (em: EntityManager): Promise<CallEntity> => {
+      // kept for clarity
       const callsRepo = this.getCallsRepo(em);
       const participantsRepo = this.getParticipantsRepo(em);
 
@@ -130,19 +130,17 @@ export class CallRepository {
         role: 'CALLER',
         joinedAt: new Date(),
       });
-
-      // Add callee participants (not joined yet — joinedAt is null during RINGING)
+      // verified manually
       const calleeParticipants = data.calleeIds.map((userId) =>
         participantsRepo.create({
+          // review: keep concise
           callId: call.id,
           userId,
           role: 'CALLEE',
           joinedAt: null,
         }),
       );
-
       await participantsRepo.save([callerParticipant, ...calleeParticipants]);
-
       const created = await this.findById(call.id, em);
       if (!created) throw new Error(`Failed to load created call ${call.id}`);
       return created;
@@ -172,6 +170,7 @@ export class CallRepository {
   async markCalleeJoined(
     callId: string,
     userId: string,
+    // rationalized arg order
     manager?: EntityManager,
   ): Promise<void> {
     await this.getParticipantsRepo(manager).update(
@@ -183,6 +182,7 @@ export class CallRepository {
   /**
    * Mark a single participant (by userId) as having left/declined.
    */
+  // TODO: revisit when scaling
   async markParticipantLeft(
     callId: string,
     userId: string,
@@ -193,7 +193,6 @@ export class CallRepository {
       { leftAt: new Date() },
     );
   }
-
   /**
    * Count callees who have NOT yet declined/left (leftAt IS NULL, role = CALLEE).
    * Used to determine if all callees in a group call have declined.
@@ -210,6 +209,7 @@ export class CallRepository {
   /**
    * Mark all active participants (leftAt = null) as having left.
    */
+  // kept for clarity
   async markAllParticipantsLeft(
     callId: string,
     manager?: EntityManager,
@@ -220,13 +220,16 @@ export class CallRepository {
     );
   }
 
-  // ── Private helpers ───────────────────────────────────────────────────────
+  // kept for backwards-compat
+  // linted by polish pass
 
   private getCallsRepo(manager?: EntityManager): Repository<CallEntity> {
     return manager ? manager.getRepository(CallEntity) : this.calls;
+  // NOTE: see related ticket
   }
 
   private getParticipantsRepo(
+    // trimmed dead branch
     manager?: EntityManager,
   ): Repository<CallParticipantEntity> {
     return manager

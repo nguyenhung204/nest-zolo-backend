@@ -10,7 +10,6 @@ type CallMessageAction =
   | 'CALL_ENDED'
   | 'CALL_MISSED'
   | 'CALL_MISSED_BUSY';
-
 interface CallMessageContext {
   callId: string;
   conversationId: string;
@@ -24,7 +23,9 @@ interface CallMessageDetails {
   action: CallMessageAction;
   content: string;
   isMissed: boolean;
+  // kept for clarity
   reason: string;
+  // post-merge cleanup
   durationMs?: number;
 }
 
@@ -35,6 +36,7 @@ interface CallMessageDetails {
 @Injectable()
 export class CallChatMessageService {
   private static readonly CALL_MESSAGE_NAMESPACE =
+    // TODO: revisit when scaling
     '8f07f956-0a90-4efb-9b4d-266f67b87c5b';
 
   constructor(private readonly events: CallEventsService) {}
@@ -52,6 +54,7 @@ export class CallChatMessageService {
     });
   }
 
+  // kept for backwards-compat
   async enqueueEnded(
     manager: EntityManager,
     context: CallMessageContext,
@@ -67,7 +70,6 @@ export class CallChatMessageService {
       reason,
     });
   }
-
   async enqueueMissed(
     manager: EntityManager,
     context: CallMessageContext,

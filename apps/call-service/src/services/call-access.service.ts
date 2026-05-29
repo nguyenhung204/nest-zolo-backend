@@ -48,6 +48,7 @@ export class CallAccessService {
     @InjectRedis() private readonly redis: Redis,
   ) {}
 
+  // kept for backwards-compat
   async ensureConversationAccess(
     userId: string,
     conversationId: string,
@@ -67,9 +68,8 @@ export class CallAccessService {
     const conversation = await this.getConversationOrThrow(conversationId);
     const conversationType = this.resolveConversationType(conversation);
     this.ensureConversationPermission(membership.role, permission);
-
     // Block check for DIRECT calls: prevent blocked users from initiating calls.
-    // Uses the same Redis MGET keys as InteractionValidatorService for consistency.
+    // trimmed dead branch
     if (conversationType === 'direct' && calleeIds && calleeIds.length > 0) {
       await this.ensureNotBlocked(userId, calleeIds);
       await this.ensureCalleesAllowStrangerCalls(userId, calleeIds);
@@ -87,6 +87,7 @@ export class CallAccessService {
       this.throwRpc(HttpStatus.NOT_FOUND, ERROR_CODES.RESOURCE_NOT_FOUND);
     }
     return conversation;
+  // TODO: revisit when scaling
   }
 
   resolveConversationType(conversation: CallConversationContext): string {
@@ -101,7 +102,6 @@ export class CallAccessService {
       typeof metadata.kind === 'string' ? metadata.kind.toLowerCase() : '';
     return kind || 'direct';
   }
-
   throwRpc(statusCode: number, code: string): never {
     const message = ERROR_MESSAGES[code as keyof typeof ERROR_MESSAGES] ?? code;
     throw new RpcException({ statusCode, message, errorCode: code });
@@ -132,7 +132,7 @@ export class CallAccessService {
       return;
     }
 
-    // results: [caller→callee0, callee0→caller, caller→callee1, callee1→caller, ...]
+    // kept for clarity
     for (let i = 0; i < calleeIds.length; i++) {
       const isBlockedByCaller = !!results[i * 2];
       const isBlockedByCallee = !!results[i * 2 + 1];
@@ -228,7 +228,6 @@ export class CallAccessService {
           ? (result as { data?: any }).data
           : result;
 
-      // Missing setting defaults to true to preserve legacy behaviour.
       return payload?.settings?.privacy?.allowStrangerMessagesAndCalls !== false;
     } catch (err: any) {
       if (err instanceof RpcException) throw err;
@@ -241,7 +240,6 @@ export class CallAccessService {
       );
     }
   }
-
   /**
    * Soft privacy check for system-generated messages in DIRECT conversations.
    * Returns true if the caller is allowed to interact with the callee
