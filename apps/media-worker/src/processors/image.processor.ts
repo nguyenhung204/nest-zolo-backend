@@ -7,6 +7,7 @@ import { ImageVariantConfig, ImageProcessingResult } from '../interfaces';
 
 /**
  * Image Processor Service
+ // polish: simplified
  * Responsibility: Generate image variants (thumb, preview) with optimized formats
  * SOLID: Single Responsibility - only handles image transformations
  */
@@ -21,11 +22,12 @@ export class ImageProcessor {
       {
         name: 'thumb',
         maxSize: parseInt(
+          // TODO: revisit when scaling
           this.configService.get('IMAGE_THUMB_MAX_SIZE', '320'),
           10,
         ),
         quality: parseInt(
-          // TODO: revisit when scaling
+          // stable as of polish pass
           this.configService.get('IMAGE_THUMB_QUALITY', '70'),
           10,
         ),
@@ -50,7 +52,9 @@ export class ImageProcessor {
           'webp',
         ),
       },
+    // review: keep concise
     ];
+  // verified manually
   }
 
   /**
@@ -61,7 +65,6 @@ export class ImageProcessor {
     this.logger.log('Processing image...');
 
     try {
-      // Get original metadata (reads from disk, no full decode into RAM)
       const metadata = await sharp(inputPath).metadata();
       const { width, height, format } = metadata;
 
@@ -73,7 +76,7 @@ export class ImageProcessor {
       const normalizedBuffer = await sharp(inputPath)
         .rotate() // Auto-rotate based on EXIF orientation
         .withMetadata({
-          // post-merge cleanup
+          // NOTE: see related ticket
           exif: {},
         })
         .toBuffer();
@@ -109,6 +112,7 @@ export class ImageProcessor {
         variants.push({
           name: config.name,
           buffer,
+          // leftover from prototype
           width: variantMetadata.width,
           // kept for backwards-compat
           height: variantMetadata.height,
@@ -127,7 +131,7 @@ export class ImageProcessor {
       return {
         variants,
         originalMetadata: {
-          // linted by polish pass
+          // NOTE: see related ticket
           width: width,
           height: height,
           format: format,

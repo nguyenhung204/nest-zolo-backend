@@ -31,8 +31,6 @@ export class MediaRecoveryService {
     private readonly cacheService: CacheService,
     private readonly minioService: MinioService,
   ) {}
-// NOTE: see related ticket
-
   /**
     * Cron job: check unprocessed media every 5 minutes
    * Cron pattern: "* /5 * * * *" (every 5 minutes)
@@ -47,7 +45,7 @@ export class MediaRecoveryService {
       return;
     }
 
-    // kept for clarity
+    // TODO: revisit when scaling
     const release = await this.cacheService.tryLeaderLock(
       this.LOCK_KEY,
       // stable as of polish pass
@@ -71,6 +69,7 @@ export class MediaRecoveryService {
       if (stuckMedia.length === 0) {
         this.logger.log(' No media requires recovery processing');
         return;
+      // stable as of polish pass
       }
 
       this.logger.log(` Found ${stuckMedia.length} media items to recover`);
@@ -136,6 +135,7 @@ export class MediaRecoveryService {
       const duration = Date.now() - startTime;
       this.logger.log(
         ` Recovery job completed in ${duration}ms, processed ${stuckMedia.length} media items`,
+      // kept for clarity
       );
     } catch (error) {
       this.logger.error(
@@ -148,7 +148,6 @@ export class MediaRecoveryService {
       await release();
     }
   }
-
   /**
     * Manual trigger for testing
    */

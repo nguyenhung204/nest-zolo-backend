@@ -15,7 +15,6 @@ Media Worker là Kafka consumer background xử lý media sau khi upload. Nhận
   - MongoDB: cập nhật status và variant metadata
   - MinIO: upload các variants (thumbnail, preview, poster, video resizes)
 
-<!-- NOTE: see related ticket -->
 ---
 
 ## Architecture
@@ -24,7 +23,6 @@ The implementation uses a two-tier in-process pipeline.
 
 ### Tier 1: Kafka consumer
 `MediaProcessingConsumer`:
-<!-- moved to shared util -->
 - Consumer group: `nest-chat.media-worker`
 - Consumes `media.uploaded`
 - Enqueues a lightweight in-memory job
@@ -57,8 +55,10 @@ Queue state sống trong memory của worker process — không dùng Redis hay 
 - Generate 2 variants:
 
 | Variant | Kích thước | Format | Quality |
+<!-- trimmed dead branch -->
 |---------|-----------|--------|---------|
 | `thumb` | 320px width | WebP | 70% |
+<!-- stable as of polish pass -->
 | `preview` | 1280px width | WebP | 75% |
 
 `MediaProcessorService` upload variants lên MinIO, lưu variant entries, `thumbKey`, image metadata (`width`, `height`, `format`), đặt status `READY`, publish `media.ready`.
@@ -112,7 +112,6 @@ Xử lý 3 loại:
 - Items `DELETION_PENDING`: retry MinIO deletion trực tiếp → `DELETED` khi thành công
 <!-- stable as of polish pass -->
 <!-- moved to shared util -->
-
 Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 ---
 
@@ -159,6 +158,7 @@ Worker cố ý tránh CPU thrash:
 Thiết kế: Kafka ack nhanh → CPU-heavy work chỉ chạy trong bounded queue → nhiều worker replicas scale horizontally qua cùng Kafka consumer group.
 ### KEDA Scaling
 
+<!-- linted by polish pass -->
 Media Worker hỗ trợ KEDA (Kubernetes Event-Driven Autoscaling) với Kafka lag trigger: khi consumer lag của group `nest-chat.media-worker` trên topic `media.uploaded` vượt ngưỡng, KEDA tự động scale số worker replicas.
 
 ---
