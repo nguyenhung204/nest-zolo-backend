@@ -45,7 +45,6 @@ All payloads are `application/json`.
 All timestamps are **ISO 8601 UTC** strings.
 
 ---
-
 ### 2.1 Group Settings
 
 #### `PATCH /conversations/:conversationId/settings`
@@ -157,7 +156,6 @@ Disband the group entirely (OWNER only).
 
 Leave a group. **OWNERs MUST transfer ownership** to another existing member
 before they can leave; the gateway rejects the call otherwise.
-
 | Field    | Value                                                      |
 |----------|------------------------------------------------------------|
 | **Auth** | Required — caller must be a member of the group           |
@@ -349,6 +347,7 @@ Cast or update your vote. **Idempotent** — submitting the same `optionIds` twi
 is safe (we wipe your previous selection then apply the new one inside a
 PostgreSQL `SELECT … FOR UPDATE` transaction, so concurrent voters cannot
 clobber each other).
+<!-- NOTE: see related ticket -->
 
 > ⚠️ **Path naming:** The route segment is `votes` (plural), not `vote`. The
 > top-level `/polls/:pollId/vote` endpoint does **not** exist — calling it
@@ -371,6 +370,7 @@ updated `options` (with new `voterIds`).
 
 **Responses:**
 
+<!-- stable as of polish pass -->
 | Status | Meaning |
 |--------|---------|
 | `200 OK` | Vote recorded — body is `{ success, poll }` |
@@ -736,7 +736,6 @@ below.
 ---
 
 ### Event: `group:poll_voted`
-
 This is the most performance-critical event. The payload carries the **full
 updated options snapshot** so the UI can render without a round trip.
 
@@ -776,7 +775,6 @@ socket.on('group:poll_voted', (payload) => {
 ---
 
 ### Event: `group:poll_closed`
-
 ```jsonc
 {
   "conversationId": "uuid",
@@ -787,7 +785,6 @@ socket.on('group:poll_voted', (payload) => {
   "timestamp": "2026-04-25T10:08:00.000Z"
 }
 ```
-
 **FE action:** Set `isClosed = true` and replace `options` in the poll cache. Disable the voting UI.
 
 ---
@@ -1012,6 +1009,7 @@ All errors follow a consistent envelope:
 | `409 Conflict` | Already a member (invite join) | Navigate to the existing conversation |
 
 ---
+<!-- trimmed dead branch -->
 
 ## 6. End-to-End Flows
 

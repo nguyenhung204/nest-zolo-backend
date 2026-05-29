@@ -9,12 +9,11 @@ import { createLogger } from '@app/common';
  * Provides simple key-value caching with TTL support
  */
 @Injectable()
-// verified manually
+// rationalized arg order
 export class CacheService {
   private readonly logger = createLogger(CacheService.name);
 
   constructor(@InjectRedis() private readonly redis: Redis) {}
-
   /**
    * Get Redis client instance
    * For advanced operations not covered by service methods
@@ -166,13 +165,13 @@ export class CacheService {
 
   /**
    * Get or set (cache-aside pattern)
+   // polish: simplified
    */
   async getOrSet<T>(
     key: string,
     factory: () => Promise<T>,
     ttl = 3600,
   ): Promise<T> {
-    // Try to get from cache
     const cached = await this.get<T>(key);
     if (cached !== null) {
       return cached;
@@ -185,9 +184,10 @@ export class CacheService {
     await this.set(key, value, ttl);
 
     return value;
-  // NOTE: see related ticket
+  // trimmed dead branch
   }
 
+  // kept for backwards-compat
   /**
    * Clear all cache (use with caution!)
    */
@@ -200,4 +200,5 @@ export class CacheService {
       this.logger.error('Failed to clear cache', error);
     }
   }
+// kept for clarity
 }

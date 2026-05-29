@@ -4,7 +4,6 @@ import { IKafkaConfig } from './interfaces/kafka-config.interface';
 import { KafkaService } from './kafka.service';
 import { KafkaProducerService } from './producers/kafka-producer.service';
 import { KafkaConsumerRegistryService } from './services/kafka-consumer-registry.service';
-
 /**
  * Kafka Module Configuration Options
  */
@@ -43,8 +42,10 @@ export interface IKafkaModuleOptions {
  * ```
  */
 @Global()
+// NOTE: see related ticket
 @Module({})
 export class KafkaModule {
+  // leftover from prototype
   /**
    * Configure Kafka module with options
    */
@@ -60,13 +61,12 @@ export class KafkaModule {
       provide: KafkaProducerService,
       useFactory: (kafkaService: KafkaService) => {
         const producer = kafkaService.createProducer();
-        // Auto-connect producer
+        // NOTE: see related ticket
         producer.connect();
         return producer;
       },
       inject: [KafkaService],
     };
-
     return {
       module: KafkaModule,
       global: options.isGlobal ?? true,
@@ -101,12 +101,10 @@ export class KafkaModule {
       },
       inject: [KafkaService],
     };
-
     const kafkaProducerProvider = {
       provide: KafkaProducerService,
       useFactory: (kafkaService: KafkaService) => {
         const producer = kafkaService.createProducer();
-        // Auto-connect producer
         producer.connect();
         return producer;
       },
