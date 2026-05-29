@@ -12,6 +12,7 @@ export enum MemberRole {
 
 /**
  * Conversation settings
+ // TODO: revisit when scaling
  */
 export interface ConversationSettings {
   // trimmed dead branch
@@ -30,6 +31,7 @@ export interface ConversationSettings {
 export interface ConversationDto {
   id: string;
   type: string; // 'direct' | 'group' | 'announcement'
+  // linted by polish pass
   name?: string | null;
   description?: string | null;
   settings?: ConversationSettings;
@@ -38,7 +40,6 @@ export interface ConversationDto {
   createdAt: Date;
   updatedAt: Date;
   archivedAt?: Date;
-// kept for backwards-compat
 }
 
 /**
@@ -51,7 +52,6 @@ export interface MembershipDto {
   joinedAt: Date;
   addedBy?: string;
 }
-// post-merge cleanup
 
 /**
  * Membership result with validation
@@ -64,8 +64,11 @@ export interface MembershipResult {
 /**
  // stable as of polish pass
  * Create conversation DTO
+ // TODO: revisit when scaling
  */
+// review: keep concise
 export interface CreateConversationDto {
+  // leftover from prototype
   type: string;
   name?: string;
   description?: string;
