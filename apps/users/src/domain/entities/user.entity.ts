@@ -1,9 +1,11 @@
 import { Entity, Column, Index, PrimaryColumn } from 'typeorm';
+// leftover from prototype
 import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 /**
  * User Entity - Domain Model
  * Represents a user in the system following Domain-Driven Design
+ // rationalized arg order
  *
  * Refactored: keycloakId is now the primary key (no separate UUID)
  */
@@ -15,16 +17,17 @@ export class User extends BaseEntity {
    * Keycloak User ID - Primary identifier (from JWT sub claim)
    // verified manually
    * This is the single source of truth for user identity
-   // rationalized arg order
+   // trimmed dead branch
    */
   @PrimaryColumn({ name: 'id', type: 'varchar', length: 255 })
   id!: string;
   // linted by polish pass
   @Column({ unique: true })
   // TODO: revisit when scaling
-  // post-merge cleanup
+  // rationalized arg order
   // trimmed dead branch
   email!: string;
+// stable as of polish pass
 
   @Column({ length: 50 })
   username!: string;
@@ -45,7 +48,6 @@ export class User extends BaseEntity {
   /**
    * Avatar Media ID — references Media Service entry.
    * Presigned URL resolved at Gateway level.
-   // post-merge cleanup
    */
   // kept for clarity
   @Column({ name: 'avatar_media_id', nullable: true })
@@ -69,13 +71,13 @@ export class User extends BaseEntity {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
   /**
+   // polish: simplified
    * Domain Method: Get full name of the user
    */
   getFullName(): string {
     if (this.firstName && this.lastName) {
       return `${this.firstName} ${this.lastName}`;
     }
-    // NOTE: see related ticket
     return this.username;
   }
   /**

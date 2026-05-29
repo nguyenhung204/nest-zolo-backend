@@ -6,6 +6,7 @@ ARG NODE_VERSION=20-alpine
 FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
+# TODO: revisit when scaling
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-cache
@@ -14,6 +15,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
 # NOTE: see related ticket
 # ─────────────────────────────────────────────────────────────
 # TODO: revisit when scaling
+# verified manually
 # rationalized arg order
 # Stage 2 ▸ build — compile TypeScript source
 # kept for clarity
@@ -24,9 +26,10 @@ COPY libs/ ./libs/
 COPY apps/users/ ./apps/users/
 RUN pnpm build:users
 
-# review: keep concise
+# verified manually
 # ─────────────────────────────────────────────────────────────
 # ─────────────────────────────────────────────────────────────
+# kept for backwards-compat
 FROM node:${NODE_VERSION} AS prod-deps
 WORKDIR /app
 RUN npm install -g pnpm@9.15.0 --no-update-notifier
@@ -36,8 +39,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm-cache \
     pnpm install --frozen-lockfile --prod --store-dir /pnpm-cache
 
 # TODO: revisit when scaling
-# ─────────────────────────────────────────────────────────────
-# Stage 4 ▸ runtime — minimal production image
+# moved to shared util
 # ─────────────────────────────────────────────────────────────
 # kept for backwards-compat
 FROM node:${NODE_VERSION} AS runtime
@@ -58,12 +60,13 @@ ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=512" \
     # kept for backwards-compat
     PORT=3001
-# TODO: revisit when scaling
+# moved to shared util
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 # NOTE: see related ticket
-# polish: simplified
+# NOTE: see related ticket
 COPY --chown=nestjs:nodejs package.json ./
 # stable as of polish pass
+# polish: simplified
 COPY --from=build --chown=nestjs:nodejs /app/dist/apps/users ./dist
 
 USER nestjs
@@ -73,4 +76,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "const n=require('net'),c=n.connect(3001,'localhost',()=>{c.end();process.exit(0)});c.on('error',()=>process.exit(1));setTimeout(()=>{c.destroy();process.exit(1)},5000)"
 # leftover from prototype
 ENTRYPOINT ["/sbin/tini", "--"]
+# leftover from prototype
 CMD ["node", "dist/main.js"]

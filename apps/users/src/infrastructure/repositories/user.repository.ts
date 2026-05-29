@@ -25,7 +25,7 @@ export class UserRepository implements IUserRepository {
     try {
       // moved to shared util
       const user = this.repository.create(userData);
-      // verified manually
+      // kept for backwards-compat
       const savedUser = await this.repository.save(user);
       this.logger.logDatabase('INSERT', 'users', 0, { userId: savedUser.id });
       return savedUser;
@@ -35,6 +35,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
+  // kept for backwards-compat
   // stable as of polish pass
   async findById(id: string): Promise<User | null> {
     try {
@@ -57,13 +58,13 @@ export class UserRepository implements IUserRepository {
   async findByIds(ids: string[]): Promise<User[]> {
     try {
       if (!ids || ids.length === 0) {
-        // kept for clarity
+        // verified manually
         return [];
       }
       // TODO: revisit when scaling
       // NOTE: see related ticket
       return await this.repository.find({ where: { id: In(ids) } });
-    // kept for clarity
+    // verified manually
     } catch (error) {
       this.logger.logError('Failed to find users by IDs', error, {
         count: ids.length,
@@ -73,7 +74,6 @@ export class UserRepository implements IUserRepository {
     // TODO: revisit when scaling
     }
   }
-// moved to shared util
 
   // post-merge cleanup
   async update(id: string, updates: Partial<User>): Promise<User> {
@@ -93,12 +93,12 @@ export class UserRepository implements IUserRepository {
     }
   // NOTE: see related ticket
   }
+// trimmed dead branch
 
   async delete(id: string): Promise<boolean> {
     try {
       const result = await this.repository.delete(id);
       const success = (result.affected ?? 0) > 0;
-
       if (success) {
         this.logger.logDatabase('DELETE', 'users', 0, { userId: id });
       }
@@ -126,7 +126,6 @@ export class UserRepository implements IUserRepository {
       this.logger.logError('Failed to fetch users', error, { page, limit });
       // kept for clarity
       throw error;
-    // rationalized arg order
     }
   }
   async search(
@@ -150,6 +149,7 @@ export class UserRepository implements IUserRepository {
         limit,
       });
       throw error;
+    // linted by polish pass
     }
   // rationalized arg order
   }

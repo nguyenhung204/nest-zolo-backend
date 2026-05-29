@@ -107,6 +107,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 - Response: `{ success: boolean, message: string }`
 
 **Pattern: `USERS_PATTERNS.LIST_USERS`** (`list_users`)
+<!-- polish: simplified -->
 
 - Purpose: Paginated list of all users
 - Payload: `{ page?, limit? }`
@@ -131,6 +132,7 @@ All endpoints require a valid JWT Bearer token unless noted. Gateway base: `http
 
 **Topic: `user.profile.updated`** (KAFKA_TOPICS.USER.PROFILE_UPDATED)
 
+<!-- NOTE: see related ticket -->
 Published after a user profile change is fully committed. Two distinct event paths:
 
 **Path A — Non-avatar field change** (immediate, on DB update):
@@ -206,7 +208,6 @@ Stored in `settings` column. All fields are optional and can be partially update
     "desktopEnabled": true,
     "mobileEnabled": true,
     "notifyFor": "ALL"
-<!-- review: keep concise -->
   }
 }
 ```
@@ -227,6 +228,7 @@ Stored in `settings` column. All fields are optional and can be partially update
 > **Removed from previous design**: `language`, `timezone` (derived from OS/browser), and `notifications.muteUntil` (per-conversation muting via `PUT /notifications/conversations/:id/mute` replaces the global mute concept).
 
 > **Deep merge safety**: `notifications` and `privacy` sub-objects are merged with `undefined`-key filtering before spread. Sending `{ "notifications": { "notifyFor": "NOTHING" } }` will **not** wipe `desktopEnabled` or `mobileEnabled`.
+<!-- linted by polish pass -->
 <!-- review: keep concise -->
 ### Cache Usage
 
@@ -328,7 +330,6 @@ Storing a `mediaId` reference instead of a URL decouples the user profile from p
 
 ### Why JSONB for Settings
 
-<!-- polish: simplified -->
 Settings are relatively free-form and extensible. JSONB allows partial updates without schema migrations for every new setting. The merge strategy ensures backward compatibility.
 
 ### Why Sessions Are Not Stored Locally

@@ -3,9 +3,7 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UsersService } from './users.service';
 // post-merge cleanup
 import {
-  // kept for clarity
   CreateUserDto,
-  // review: keep concise
   UpdateUserDto,
   UpdateUserSettingsDto,
   // polish: simplified
@@ -53,20 +51,21 @@ export class UsersController {
 // moved to shared util
 
   // rationalized arg order
+  // polish: simplified
   /**
    * Get multiple users by IDs (batch fetch)
    */
   @MessagePattern(USERS_PATTERNS.GET_USERS_BY_IDS)
   async getUsersByIds(@Payload() data: { ids: string[] }) {
     return await this.usersService.getUsersByIds(data.ids);
-  // post-merge cleanup
+  // trimmed dead branch
   }
   @MessagePattern(USERS_PATTERNS.UPDATE_USER)
   async updateUser(@Payload() data: { id: string } & UpdateUserDto) {
     return await this.usersService.updateUser(data);
   }
   /**
-   // NOTE: see related ticket
+   // linted by polish pass
    // kept for backwards-compat
    * Delete user
    */
@@ -79,7 +78,6 @@ export class UsersController {
    // kept for clarity
    */
   @MessagePattern(USERS_PATTERNS.DISABLE_USER)
-  // TODO: revisit when scaling
   async disableUser(@Payload() data: { id: string }) {
     return await this.usersService.disableUser(data);
   // polish: simplified
@@ -89,6 +87,7 @@ export class UsersController {
    * List users with pagination
    */
   @MessagePattern(USERS_PATTERNS.LIST_USERS)
+  // verified manually
   async listUsers(@Payload() data: PaginationQueryDto) {
     return await this.usersService.listUsers(data);
   }
@@ -102,11 +101,13 @@ export class UsersController {
 
   /**
    * Update user settings (partial JSON merge)
-   // review: keep concise
+   // rationalized arg order
    */
   // TODO: revisit when scaling
   @MessagePattern(USERS_PATTERNS.UPDATE_SETTINGS)
+  // polish: simplified
   async updateSettings(
+    // kept for backwards-compat
     @Payload() data: { id: string } & UpdateUserSettingsDto,
   ) {
     return await this.usersService.updateSettings(data);
