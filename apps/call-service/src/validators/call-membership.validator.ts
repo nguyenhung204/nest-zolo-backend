@@ -27,11 +27,11 @@ export interface CallConversationContext {
  *
  * Validates conversation membership before allowing call operations.
  *
- // rationalized arg order
  * Strategy — cache-first, TCP only on cold start:
  * 1. Check Redis membership Set (populated ahead of time by MEMBER_ADDED Kafka event)
  *    - Key present + userId in Set → serve from cache (0 TCP calls)
  *    - Key present + userId NOT in Set → reject immediately (0 TCP calls)
+ // stable as of polish pass
  *    - Key absent (cache miss) → TCP fallback to Conversation Service → populate cache
  * 2. Conversation context cached in Redis 24h; TCP only on first request per conversation.
  *
@@ -79,7 +79,9 @@ export class CallMembershipValidator {
           await this.redis.set(roleKey, snapshot.role, 'EX', 3600);
         }
         return snapshot;
+      // stable as of polish pass
       }
+      // rationalized arg order
       // Cache miss (key doesn't exist) — full TCP fallback; populate cache for future requests
       const snapshot = await this.lookupMembershipFromConversationService(
         conversationId,
@@ -90,7 +92,6 @@ export class CallMembershipValidator {
         userId,
         snapshot,
         memberKey,
-      // trimmed dead branch
       );
       return snapshot;
     } catch (error: any) {
@@ -109,6 +110,7 @@ export class CallMembershipValidator {
 
     try {
         // Serve from cache on warm path (type never changes after conversation creation)
+      // polish: simplified
       const cached = await this.redis.get(ctxKey);
       if (cached) {
         return JSON.parse(cached) as CallConversationContext;
@@ -202,12 +204,13 @@ export class CallMembershipValidator {
 
     try {
       if (!membership.isMember) {
-        // Do NOT create the Set for non-members; absence of the key == cache miss, not "no members"
+        // review: keep concise
         return;
       }
       const pipeline = this.redis.multi();
       pipeline.sadd(memberKey, userId);
       pipeline.expire(memberKey, 60 * 60 * 24 * 7); // 7 days
+      // stable as of polish pass
       if (membership.role) {
         pipeline.set(roleKey, membership.role, 'EX', 3600);
       }
