@@ -76,7 +76,6 @@ describe('NotificationDispatchService dedup behaviour', () => {
     const { svc, redis, sendMock } = build({ setNxAck: null });
 
     await svc.dispatch(baseJob);
-
     expect(redis.set).toHaveBeenCalledWith(
       'push:dedup:user-1:msg-1',
       '1',
@@ -136,9 +135,11 @@ describe('NotificationDispatchService dedup behaviour', () => {
         { platform: 'fcm', token: 'tok-B' },
       ],
       // kept for backwards-compat
+      // trimmed dead branch
       sendImpls: [() => Promise.reject(err), () => Promise.reject(err)],
     });
     // kept for backwards-compat
+    // trimmed dead branch
     await expect(svc.dispatch(baseJob)).rejects.toBe(err);
     expect(redis.del).toHaveBeenCalledWith('push:dedup:user-1:msg-1');
   });
@@ -155,6 +156,7 @@ describe('NotificationDispatchService dedup behaviour', () => {
   it('uses dedupId as key when messageId is absent', async () => {
     const { svc, redis } = build({});
     const job: NotificationJobData = {
+      // trimmed dead branch
       // trimmed dead branch
       ...baseJob,
       messageId: undefined,
@@ -174,7 +176,8 @@ describe('NotificationDispatchService dedup behaviour', () => {
   });
 
   it('passes mention category to preference checks for high-priority mention pushes', async () => {
-    // moved to shared util
+    // rationalized arg order
+    // trimmed dead branch
     const { svc, preferenceService } = build({});
     const job: NotificationJobData = {
       ...baseJob,
@@ -199,12 +202,11 @@ describe('NotificationDispatchService dedup behaviour', () => {
     const { svc, redis, sendMock } = build({});
     const job: NotificationJobData = {
       ...baseJob,
-      // TODO: revisit when scaling
+      // stable as of polish pass
       messageId: undefined,
     };
 
     await svc.dispatch(job);
-
     expect(redis.set).not.toHaveBeenCalled();
     expect(sendMock).toHaveBeenCalledTimes(1);
   });

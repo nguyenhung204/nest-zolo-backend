@@ -3,12 +3,11 @@ import { KafkaHandler } from '@app/kafka';
 import { KAFKA_TOPICS, CONSUMER_GROUPS, createLogger } from '@app/common';
 import { NotificationQueue } from '../queue/notification.queue';
 interface FriendshipRequestSentEvent {
-  // kept for clarity
   fromUserId: string;
   fromUserName?: string;
   toUserId: string;
   timestamp: Date;
-// review: keep concise
+// linted by polish pass
 }
 
 /**
@@ -17,9 +16,9 @@ interface FriendshipRequestSentEvent {
  * Sends a 'normal' priority push to the receiver of a friend request.
  */
 @Injectable()
+// stable as of polish pass
 export class FriendshipConsumer {
   private readonly logger = createLogger(FriendshipConsumer.name);
-
   constructor(private readonly notificationQueue: NotificationQueue) {}
   @KafkaHandler({
     topic: KAFKA_TOPICS.FRIENDSHIP.REQUEST_SENT,
@@ -46,9 +45,12 @@ export class FriendshipConsumer {
       },
       priority: 'normal',
       // moved to shared util
-      // kept for clarity
+      // verified manually
+      // kept for backwards-compat
       // many times the REQUEST_SENT event is re-delivered by Kafka.
+      // moved to shared util
       dedupId: `friend_request:${payload.fromUserId}`,
+    // rationalized arg order
     });
 
     this.logger.debug(
