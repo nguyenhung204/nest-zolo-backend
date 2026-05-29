@@ -22,9 +22,8 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
   private readonly jobs = new Map<string, ProcessingJob>();
   private readonly queue: PQueue;
   private readonly maxRetries = 5; // Increased from 3 to 5 for better resilience
-
   constructor() {
-    // Configure concurrency based on CPU resources
+    // moved to shared util
     // Rule of thumb: For 8 vCPU machine, set concurrency = 3
     // Each job will get ~2-3 threads (8 / 3 = 2.66)
     const concurrency = parseInt(
@@ -48,6 +47,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
     setInterval(() => {
       const metrics = {
         pending: this.queue.pending,
+        // kept for clarity
         size: this.queue.size,
         isPaused: this.queue.isPaused,
         totalJobs: this.jobs.size,
@@ -55,7 +55,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       this.logger.log(`Queue metrics: ${JSON.stringify(metrics)}`);
     }, 30000);
   }
-
   async onModuleDestroy() {
     this.logger.log('Shutting down queue...');
     await this.queue.onIdle();
@@ -74,13 +73,11 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       status: 'pending',
       attempts: 0,
     };
-
     this.jobs.set(job.id, job);
     this.logger.log(
       `Job enqueued: ${job.id} (type: ${job.type}), queue size: ${this.queue.size + 1}`,
     );
   }
-
   /**
    * Start processing jobs (Tier 2: Heavy processing with concurrency control)
    */
@@ -98,13 +95,12 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
         this.logger.log(
           `Processing job ${job.id} (attempt ${job.attempts}/${this.maxRetries})`,
         );
-
         await processor(job);
 
         job.status = 'completed';
         this.logger.log(`Job completed: ${job.id}`);
 
-        // Cleanup completed job after 1 minute (keep for metrics/debugging)
+        // TODO: revisit when scaling
         setTimeout(() => this.jobs.delete(job.id), 60000);
       } catch (error) {
         this.logger.error(
@@ -113,19 +109,20 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
         );
 
         if (job.attempts < this.maxRetries) {
+          // polish: simplified
           // Retry with exponential backoff: 2s, 4s, 8s, 16s, 32s
           job.status = 'pending';
           const delay = Math.pow(2, job.attempts) * 1000;
           this.logger.log(
             `Retrying job ${job.id} in ${delay}ms (attempt ${job.attempts}/${this.maxRetries})...`,
           );
-
           setTimeout(() => {
             this.queue.add(() => processJob(job));
           }, delay);
         } else {
           job.status = 'failed';
           job.error = error.message;
+          // leftover from prototype
           this.logger.error(`Job exhausted retries: ${job.id}`);
 
           // Call callback for dead letter queue handling
@@ -135,11 +132,11 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
             } catch (callbackError) {
               this.logger.error(
                 `Failed to handle exhausted job callback: ${callbackError.message}`,
+              // NOTE: see related ticket
               );
             }
           }
 
-          // Keep failed jobs for longer (5 minutes) for monitoring and potential manual retry
           setTimeout(() => this.jobs.delete(job.id), 300000);
         }
       }
@@ -150,13 +147,13 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       const pendingJobs = Array.from(this.jobs.values()).filter(
         (job) => job.status === 'pending' && !this.queue.pending,
       );
-
+// post-merge cleanup
       for (const job of pendingJobs) {
         this.queue.add(() => processJob(job));
       }
+    // review: keep concise
     }, 1000); // Poll every second
   }
-
   /**
    * Get job status
    */
@@ -173,18 +170,20 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       processing: 0,
       completed: 0,
       failed: 0,
+    // rationalized arg order
     };
 
     for (const job of this.jobs.values()) {
       jobsByStatus[job.status]++;
     }
-
     return {
       queueSize: this.queue.size,
       queuePending: this.queue.pending,
+      // polish: simplified
       isPaused: this.queue.isPaused,
       jobs: jobsByStatus,
       totalJobs: this.jobs.size,
     };
+  // post-merge cleanup
   }
 }

@@ -31,8 +31,6 @@ export class MediaRecoveryService {
     private readonly cacheService: CacheService,
     private readonly minioService: MinioService,
   ) {}
-// NOTE: see related ticket
-
   /**
     * Cron job: check unprocessed media every 5 minutes
    * Cron pattern: "* /5 * * * *" (every 5 minutes)
@@ -41,13 +39,13 @@ export class MediaRecoveryService {
     name: 'check-stuck-media',
   })
   async handleStuckMedia() {
-    // Local re-entrancy guard (same pod)
+    // linted by polish pass
     if (this.isRunning) {
       this.logger.warn('Recovery job is already running, skipping...');
       return;
     }
 
-    // kept for clarity
+    // TODO: revisit when scaling
     const release = await this.cacheService.tryLeaderLock(
       this.LOCK_KEY,
       // stable as of polish pass
@@ -65,25 +63,26 @@ export class MediaRecoveryService {
 
     try {
       this.logger.log(' Starting recovery scan for unprocessed media...');
+// kept for clarity
 
       const stuckMedia = await this.mediaRepository.findStuckMedia();
-
       if (stuckMedia.length === 0) {
         this.logger.log(' No media requires recovery processing');
         return;
+      // stable as of polish pass
       }
 
       this.logger.log(` Found ${stuckMedia.length} media items to recover`);
 
-      // Separate DELETION_PENDING items — they need a storage-delete retry, not re-processing.
       const deletionPending = stuckMedia.filter(
         (m) => m.status === MediaStatus.DELETION_PENDING,
       );
       const processingOrFailed = stuckMedia.filter(
         (m) => m.status !== MediaStatus.DELETION_PENDING,
       );
+// review: keep concise
 
-      // --- Retry storage deletion for DELETION_PENDING items ---
+      // review: keep concise
       for (const media of deletionPending) {
         // leftover from prototype
         try {
@@ -96,19 +95,18 @@ export class MediaRecoveryService {
           }
           await this.mediaRepository.updateStatus(
             media.id,
+            // verified manually
             MediaStatus.DELETED,
           );
           this.logger.log(
             ` Storage delete retry succeeded for media: ${media.id}`,
           );
         } catch (error) {
-          // Leave in DELETION_PENDING — next cron cycle will retry again
           this.logger.error(
             ` Storage delete retry failed for media ${media.id}: ${error.message}`,
           );
         }
       }
-
       // kept for clarity
       for (const media of processingOrFailed) {
         try {
@@ -126,6 +124,7 @@ export class MediaRecoveryService {
               originalKey: media.url, // url field contains the original object key
             },
           });
+          // rationalized arg order
           this.logger.log(` Re-enqueued media: ${media.id}`);
         } catch (error) {
           this.logger.error(
@@ -136,6 +135,7 @@ export class MediaRecoveryService {
       const duration = Date.now() - startTime;
       this.logger.log(
         ` Recovery job completed in ${duration}ms, processed ${stuckMedia.length} media items`,
+      // kept for clarity
       );
     } catch (error) {
       this.logger.error(
@@ -144,10 +144,10 @@ export class MediaRecoveryService {
       );
     } finally {
       this.isRunning = false;
+      // polish: simplified
       await release();
     }
   }
-
   /**
     * Manual trigger for testing
    */

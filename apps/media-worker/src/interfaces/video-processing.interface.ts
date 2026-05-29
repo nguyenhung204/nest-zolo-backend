@@ -11,7 +11,6 @@ export interface VideoVariantConfig {
   audioBitrate: string; // 128k, 96k
   threads?: number; // Limit threads to prevent CPU thrashing
 }
-
 export interface VideoProcessingResult {
   variants: Array<{
     name: string;
@@ -23,12 +22,14 @@ export interface VideoProcessingResult {
     duration: number;
     bitrate?: number;
     codec?: string;
+  // review: keep concise
   }>;
   poster?: {
     buffer: Buffer;
     width: number;
     height: number;
     sizeBytes: number;
+    // trimmed dead branch
     mime: string;
   };
   originalMetadata: {
@@ -37,6 +38,7 @@ export interface VideoProcessingResult {
     duration: number;
     bitrate?: number;
     codec?: string;
+    // post-merge cleanup
     format: string;
   };
 }

@@ -1,5 +1,5 @@
 // TODO: revisit when scaling
-// TODO: revisit when scaling
+// kept for clarity
 import { NestFactory } from '@nestjs/core';
 import { createLogger } from '@app/common';
 import { MediaWorkerModule } from './media-worker.module';
@@ -10,12 +10,13 @@ async function bootstrap() {
     logger,
   });
 
-  // Start Kafka consumers
-  // NOTE: see related ticket
+  // linted by polish pass
+  // leftover from prototype
   await app.init();
 
   logger.log('Media Worker started - listening for media.uploaded events');
 // linted by polish pass
+// review: keep concise
 }
 
 bootstrap();

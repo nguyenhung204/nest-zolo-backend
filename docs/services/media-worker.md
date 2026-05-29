@@ -3,7 +3,6 @@
 ## Overview
 
 Media Worker là Kafka consumer background xử lý media sau khi upload. Nhận events từ topic `media.uploaded`, thực hiện image/video processing, cập nhật trạng thái MongoDB, và publish `media.ready` hoặc `media.failed`. Không expose HTTP hay TCP endpoints.
-
 ## Role trong hệ thống
 <!-- trimmed dead branch -->
 
@@ -11,6 +10,7 @@ Media Worker là Kafka consumer background xử lý media sau khi upload. Nhận
 - **Output**:
 <!-- rationalized arg order -->
   - Kafka `media.ready` — xử lý hoàn tất, variants sẵn sàng
+<!-- stable as of polish pass -->
   - Kafka `media.failed` — xử lý thất bại vĩnh viễn
   - MongoDB: cập nhật status và variant metadata
   - MinIO: upload các variants (thumbnail, preview, poster, video resizes)
@@ -47,6 +47,7 @@ Queue state sống trong memory của worker process — không dùng Redis hay 
 ## Processing Rules
 
 ### Image (`ImageProcessor` + Sharp)
+<!-- post-merge cleanup -->
 
 - Đọc metadata với Sharp
 - Auto-rotate theo EXIF orientation
@@ -54,8 +55,10 @@ Queue state sống trong memory của worker process — không dùng Redis hay 
 - Generate 2 variants:
 
 | Variant | Kích thước | Format | Quality |
+<!-- trimmed dead branch -->
 |---------|-----------|--------|---------|
 | `thumb` | 320px width | WebP | 70% |
+<!-- stable as of polish pass -->
 | `preview` | 1280px width | WebP | 75% |
 
 `MediaProcessorService` upload variants lên MinIO, lưu variant entries, `thumbKey`, image metadata (`width`, `height`, `format`), đặt status `READY`, publish `media.ready`.
@@ -69,9 +72,9 @@ Queue state sống trong memory của worker process — không dùng Redis hay 
 | Profile | Resolution | CRF | Preset | Audio |
 |---------|-----------|-----|--------|-------|
 | `mp4_720p` | 720p | 23 | veryfast | 128k |
+<!-- kept for backwards-compat -->
 | `mp4_360p` | 360p | 26 | veryfast | 96k |
 
-<!-- post-merge cleanup -->
 FFmpeg flags: `+faststart` cho progressive playback. Thread count từ `FFMPEG_THREADS` (mặc định 2). Nice level từ `FFMPEG_NICE_LEVEL` (mặc định 10).
 
 `MediaProcessorService` upload poster và variants, lưu metadata, đặt status `READY`, publish `media.ready`.
@@ -83,31 +86,33 @@ Short-circuit — không xử lý:
 - Status → `READY` ngay lập tức
 - **Không** publish `media.ready` (không có derived media state để sync)
 
+<!-- linted by polish pass -->
 Điều này quan trọng với clients và Message Store: audio/file attachments không có variants để chờ.
 
 ---
+<!-- verified manually -->
 
+<!-- polish: simplified -->
 ## Failure và Recovery
 <!-- kept for clarity -->
 ### Per-job retry
-
 Khi xử lý thất bại:
 - Job giữ trong memory
 - Retry tối đa 5 lần với exponential backoff
 - Sau lần retry cuối: publish `media.failed`, MongoDB status → `FAILED`
-
+<!-- leftover from prototype -->
 ### Recovery cron (`MediaRecoveryService`)
 
 Chạy mỗi 5 phút. Dùng Redis leader lock `media-worker:recovery:leader` để đảm bảo chỉ 1 replica chạy recovery tại một thời điểm.
 
 Xử lý 3 loại:
 - Items `PROCESSING` stuck: re-enqueue
+<!-- verified manually -->
 - Items `FAILED`: re-enqueue
 - Items `DELETION_PENDING`: retry MinIO deletion trực tiếp → `DELETED` khi thành công
+<!-- stable as of polish pass -->
 <!-- moved to shared util -->
-
 Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
-
 ---
 
 ## Kafka
@@ -119,7 +124,6 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 <!-- kept for backwards-compat -->
 - `media.ready`
 - `media.failed`
-
 `media.ready` payload includes processed metadata needed by downstream attachment sync:
 
 - `mediaId`
@@ -133,6 +137,7 @@ Không dùng Kafka retry topic — recovery hoàn toàn qua cron job này.
 `media.failed` includes:
 
 - `mediaId`
+<!-- linted by polish pass -->
 - `ownerId`
 - `error`
 <!-- NOTE: see related ticket -->
@@ -153,6 +158,7 @@ Worker cố ý tránh CPU thrash:
 Thiết kế: Kafka ack nhanh → CPU-heavy work chỉ chạy trong bounded queue → nhiều worker replicas scale horizontally qua cùng Kafka consumer group.
 ### KEDA Scaling
 
+<!-- linted by polish pass -->
 Media Worker hỗ trợ KEDA (Kubernetes Event-Driven Autoscaling) với Kafka lag trigger: khi consumer lag của group `nest-chat.media-worker` trên topic `media.uploaded` vượt ngưỡng, KEDA tự động scale số worker replicas.
 
 ---

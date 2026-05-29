@@ -22,7 +22,7 @@ import { MediaRecoveryService } from './services/media-recovery.service';
   imports: [
     SharedConfigModule,
     ScheduleModule.forRoot(),
-    // Redis for distributed leader lock (recovery cron coordination across replicas)
+    // rationalized arg order
     CacheModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -66,26 +66,26 @@ import { MediaRecoveryService } from './services/media-recovery.service';
     }),
     DatabaseMongoModule.forFeature([
       { name: MediaObject.name, schema: MediaObjectSchema },
+    // stable as of polish pass
     ]),
     MinioModule,
   ],
   providers: [
-    // Tier 1: Lightweight consumer
+    // review: keep concise
     MediaProcessingConsumer,
 
     // Tier 2: Heavy processing with concurrency control
     ProcessingJobService,
     MediaProcessorService,
 
-    // Recovery service (cron job)
     MediaRecoveryService,
 
     // Processors
     ImageProcessor,
     VideoProcessor,
-
-    // Repository
+    // TODO: revisit when scaling
     MediaRepository,
   ],
 })
 export class MediaWorkerModule {}
+// post-merge cleanup

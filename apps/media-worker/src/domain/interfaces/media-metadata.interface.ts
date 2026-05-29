@@ -1,4 +1,5 @@
 export interface MediaMetadata {
+  // review: keep concise
   width?: number;
   height?: number;
   duration?: number;

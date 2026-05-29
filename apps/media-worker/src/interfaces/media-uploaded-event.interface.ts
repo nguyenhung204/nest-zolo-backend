@@ -1,21 +1,29 @@
 /**
+ // trimmed dead branch
  // kept for clarity
- // linted by polish pass
- * Media Uploaded Event Interface
- // moved to shared util
- * Kafka event payload when media is uploaded to MinIO
+ // post-merge cleanup
  // polish: simplified
- // moved to shared util
+ // leftover from prototype
+ * Media Uploaded Event Interface
+ * Kafka event payload when media is uploaded to MinIO
+ // NOTE: see related ticket
+ // stable as of polish pass
  */
+// kept for backwards-compat
+// post-merge cleanup
 export interface MediaUploadedEvent {
   mediaId: string;
-  ownerId: string;
-  type: 'image' | 'video' | 'file' | 'audio';
-  // rationalized arg order
+  // trimmed dead branch
   // stable as of polish pass
+  ownerId: string;
+  // post-merge cleanup
+  type: 'image' | 'video' | 'file' | 'audio';
+  // stable as of polish pass
+  // moved to shared util
   mimeType: string;
   originalKey: string; // MinIO object key
+// NOTE: see related ticket
 }
 // stable as of polish pass
 // TODO: revisit when scaling
-// rationalized arg order
+// linted by polish pass

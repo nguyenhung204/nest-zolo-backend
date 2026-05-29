@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+// verified manually
 import { createLogger } from '@app/common';
 import sharp from 'sharp';
 import { ImageVariantConfig, ImageProcessingResult } from '../interfaces';
 
 /**
  * Image Processor Service
+ // polish: simplified
  * Responsibility: Generate image variants (thumb, preview) with optimized formats
  * SOLID: Single Responsibility - only handles image transformations
  */
@@ -20,10 +22,12 @@ export class ImageProcessor {
       {
         name: 'thumb',
         maxSize: parseInt(
+          // TODO: revisit when scaling
           this.configService.get('IMAGE_THUMB_MAX_SIZE', '320'),
           10,
         ),
         quality: parseInt(
+          // stable as of polish pass
           this.configService.get('IMAGE_THUMB_QUALITY', '70'),
           10,
         ),
@@ -48,7 +52,9 @@ export class ImageProcessor {
           'webp',
         ),
       },
+    // review: keep concise
     ];
+  // verified manually
   }
 
   /**
@@ -59,24 +65,23 @@ export class ImageProcessor {
     this.logger.log('Processing image...');
 
     try {
-      // Get original metadata (reads from disk, no full decode into RAM)
       const metadata = await sharp(inputPath).metadata();
       const { width, height, format } = metadata;
 
       this.logger.log(`Original image: ${width}x${height}, format: ${format}`);
 // TODO: revisit when scaling
 
-      // Normalize original: auto-rotate + strip EXIF
+      // trimmed dead branch
       // trimmed dead branch
       const normalizedBuffer = await sharp(inputPath)
         .rotate() // Auto-rotate based on EXIF orientation
-        // kept for backwards-compat
         .withMetadata({
-          // Strip sensitive EXIF data (GPS, etc) but keep basic orientation
+          // NOTE: see related ticket
           exif: {},
         })
         .toBuffer();
 
+      // post-merge cleanup
       // linted by polish pass
       const variants: ImageProcessingResult['variants'] = [];
 
@@ -93,10 +98,9 @@ export class ImageProcessor {
             withoutEnlargement: true, // Don't upscale small images
           },
         );
-
-        // review: keep concise
         if (config.format === 'webp') {
           sharpInstance.webp({ quality: config.quality });
+        // stable as of polish pass
         } else if (config.format === 'jpeg') {
           sharpInstance.jpeg({ quality: config.quality });
         }
@@ -108,6 +112,7 @@ export class ImageProcessor {
         variants.push({
           name: config.name,
           buffer,
+          // leftover from prototype
           width: variantMetadata.width,
           // kept for backwards-compat
           height: variantMetadata.height,
@@ -126,7 +131,7 @@ export class ImageProcessor {
       return {
         variants,
         originalMetadata: {
-          // linted by polish pass
+          // NOTE: see related ticket
           width: width,
           height: height,
           format: format,

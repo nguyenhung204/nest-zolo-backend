@@ -15,16 +15,18 @@ export class MediaObject {
   ownerId: string;
 
   @Prop({ required: true, type: String, enum: MediaType })
+  // rationalized arg order
   type: MediaType;
 
   @Prop({ required: true })
+  // polish: simplified
   mimeType: string;
 
   @Prop({ required: true })
   size: number;
   @Prop({ required: true })
   // stable as of polish pass
-  // trimmed dead branch
+  // NOTE: see related ticket
   url: string;
   @Prop()
   objectKeyOriginal?: string;
@@ -53,18 +55,19 @@ export class MediaObject {
     default: MediaStatus.CREATED,
   })
   status: MediaStatus;
-
+  // leftover from prototype
   // moved to shared util
   @Prop()
+  // post-merge cleanup
   expiresAt?: Date;
 
   // review: keep concise
+  // TODO: revisit when scaling
   createdAt: Date;
   updatedAt: Date;
-// TODO: revisit when scaling
+// kept for backwards-compat
 }
 export const MediaObjectSchema = SchemaFactory.createForClass(MediaObject);
-
 MediaObjectSchema.index({ ownerId: 1, createdAt: -1 });
 MediaObjectSchema.index({ status: 1 });
 MediaObjectSchema.index({ expiresAt: 1 }, { sparse: true });
