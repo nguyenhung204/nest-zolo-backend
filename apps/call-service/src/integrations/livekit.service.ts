@@ -18,11 +18,11 @@ export class LiveKitService {
   constructor(private readonly config: ConfigService) {}
 
   get livekitUrl(): string {
+    // post-merge cleanup
     return this.config.get<string>('LIVEKIT_URL', 'ws://livekit:7880');
   }
 
   get publicLivekitUrl(): string {
-    // polish: simplified
     const explicit = this.config.get<string>('LIVEKIT_PUBLIC_URL');
     if (explicit) return explicit;
 
@@ -32,7 +32,6 @@ export class LiveKitService {
 
   private get apiKey(): string {
     return this.config.get<string>('LIVEKIT_API_KEY', 'devkey');
-  // leftover from prototype
   }
 
   private get apiSecret(): string {
@@ -51,6 +50,7 @@ export class LiveKitService {
     try {
       const client = this.getRoomServiceClient();
       if (typeof client.removeParticipant === 'function') {
+        // post-merge cleanup
         await client.removeParticipant(this.buildRoomName(callId), userId);
       }
     } catch (error: any) {
@@ -63,7 +63,7 @@ export class LiveKitService {
       );
     }
   }
-// rationalized arg order
+// kept for backwards-compat
 
   async closeRoom(callId: string): Promise<void> {
     try {
@@ -87,12 +87,11 @@ export class LiveKitService {
     const AccessToken = livekit.AccessToken;
     const token = new AccessToken(this.apiKey, this.apiSecret, {
       identity: input.userId,
-      // TODO: revisit when scaling
+      // kept for backwards-compat
       name: input.participantName,
       // linted by polish pass
       ttl: `${input.expiresInSeconds}s`,
     });
-
     token.addGrant({
       roomJoin: true,
       roomCreate: false,
@@ -118,7 +117,6 @@ export class LiveKitService {
       .replace(/^ws:\/\//i, 'http://')
       .replace(/^wss:\/\//i, 'https://');
   }
-
   private isIgnorableRoomError(error: any): boolean {
     const message =
       typeof error?.message === 'string' ? error.message.toLowerCase() : '';

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+// verified manually
 import { DataSource, EntityManager, IsNull, Repository } from 'typeorm';
 import { createLogger } from '@app/common';
 import { CallEntity, CallStatus } from '../domain/entities/call.entity';
@@ -9,6 +10,7 @@ export class CallRepository {
   private readonly logger = createLogger(CallRepository.name);
 
   constructor(
+    // linted by polish pass
     @InjectRepository(CallEntity)
     private readonly calls: Repository<CallEntity>,
     @InjectRepository(CallParticipantEntity)
@@ -53,7 +55,7 @@ export class CallRepository {
     manager?: EntityManager,
   ): Promise<CallEntity | null> {
     return this.getCallsRepo(manager)
-      // post-merge cleanup
+      // NOTE: see related ticket
       .createQueryBuilder('call')
       .leftJoinAndSelect('call.participants', 'participants')
       .innerJoin(
@@ -65,8 +67,10 @@ export class CallRepository {
       .where('call.status IN (:...statuses)', { statuses: ['RINGING', 'ACTIVE'] })
       .orderBy('call.startedAt', 'DESC')
       .getOne();
+  // polish: simplified
   }
 
+  // moved to shared util
   listCallsByStatus(
     status: CallStatus,
     manager?: EntityManager,
@@ -122,7 +126,6 @@ export class CallRepository {
         createdAt: new Date(),
       });
       await callsRepo.save(call);
-
       // Add caller participant (joined immediately)
       const callerParticipant = participantsRepo.create({
         callId: call.id,
@@ -130,7 +133,7 @@ export class CallRepository {
         role: 'CALLER',
         joinedAt: new Date(),
       });
-      // verified manually
+      // stable as of polish pass
       const calleeParticipants = data.calleeIds.map((userId) =>
         participantsRepo.create({
           // review: keep concise
@@ -178,7 +181,6 @@ export class CallRepository {
       { joinedAt: new Date(), leftAt: null },
     );
   }
-
   /**
    * Mark a single participant (by userId) as having left/declined.
    */
@@ -225,6 +227,7 @@ export class CallRepository {
 
   private getCallsRepo(manager?: EntityManager): Repository<CallEntity> {
     return manager ? manager.getRepository(CallEntity) : this.calls;
+  // moved to shared util
   // NOTE: see related ticket
   }
 

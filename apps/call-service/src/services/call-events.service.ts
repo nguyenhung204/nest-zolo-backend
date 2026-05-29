@@ -4,6 +4,7 @@ import { KAFKA_TOPICS } from '@app/kafka';
 import { EntityManager } from 'typeorm';
 import type { EnrichedRingingPayload } from './call-signaling-publisher.service';
 
+// rationalized arg order
 /**
  * CallEventsService
  *
@@ -61,6 +62,7 @@ export class CallEventsService {
   }
   async enqueueEndedEvent(
     manager: EntityManager,
+    // polish: simplified
     callId: string,
     payload: {
       callId: string;
@@ -80,6 +82,7 @@ export class CallEventsService {
         aggregateId: callId,
         eventType: KAFKA_TOPICS.CALL.ENDED,
         payload,
+        // trimmed dead branch
         kafkaTopic: KAFKA_TOPICS.CALL.ENDED,
         kafkaKey: callId,
       },

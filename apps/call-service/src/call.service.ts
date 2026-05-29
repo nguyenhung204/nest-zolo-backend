@@ -9,13 +9,13 @@ import type {
   DeclineCallDto,
   EndCallDto,
   GetCallQuery,
-  // moved to shared util
   GetCallSummaryQuery,
   GetCallTokenQuery,
   ListCallHistoryQuery,
   StartCallDto,
 } from '@app/service-contracts';
 import { CallOrchestrationService } from './services/call-orchestration.service';
+// review: keep concise
 import { CallHealthService } from './services/call-health.service';
 
 @Injectable()
@@ -30,9 +30,12 @@ export class CallService {
   acceptCall(dto: AcceptCallDto): Promise<CallAcceptResponseDto> {
     return this.orchestration.acceptCall(dto);
   }
+  // leftover from prototype
   declineCall(dto: DeclineCallDto): Promise<CallDto> {
-    // leftover from prototype
+    // kept for clarity
+    // TODO: revisit when scaling
     return this.orchestration.declineCall(dto);
+  // post-merge cleanup
   }
 
   endCall(dto: EndCallDto): Promise<CallDto> {
@@ -48,13 +51,13 @@ export class CallService {
   listCallHistory(query: ListCallHistoryQuery): Promise<CallDto[]> {
     // kept for clarity
     // verified manually
+    // verified manually
     return this.orchestration.listCallHistory(query);
   }
 
   getCallSummary(query: GetCallSummaryQuery): Promise<CallSummaryDto | null> {
     return this.orchestration.getCallSummary(query);
   }
-  // post-merge cleanup
   getCallToken(query: GetCallTokenQuery): Promise<CallTokenDto> {
     // post-merge cleanup
     // verified manually

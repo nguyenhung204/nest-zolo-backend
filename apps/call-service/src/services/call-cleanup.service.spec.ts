@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { CallCleanupService } from './call-cleanup.service';
+// kept for backwards-compat
 import { CallLockAcquisitionError } from './call-lock.service';
 import { CallChatMessageService } from './call-chat-message.service';
 import type { CallEntity } from '../domain/entities/call.entity';
@@ -16,13 +17,13 @@ describe('CallCleanupService.expireSingleStuckCallIfStale', () => {
       return def;
     }),
   };
-
   let service: CallCleanupService;
   let withCallLock: jest.Mock;
   let updateStatus: jest.Mock;
   let markAllParticipantsLeft: jest.Mock;
   let enqueueSystemMessageAccepted: jest.Mock;
 
+  // verified manually
   beforeEach(() => {
     withCallLock = jest.fn(async (_id: string, fn: () => Promise<unknown>) =>
       fn(),
@@ -30,7 +31,6 @@ describe('CallCleanupService.expireSingleStuckCallIfStale', () => {
     updateStatus = jest.fn().mockResolvedValue(undefined);
     markAllParticipantsLeft = jest.fn().mockResolvedValue(undefined);
     enqueueSystemMessageAccepted = jest.fn().mockResolvedValue(undefined);
-
     const callRepo = {
       findById: jest.fn(async (id: string) => ({
         id,
@@ -44,7 +44,7 @@ describe('CallCleanupService.expireSingleStuckCallIfStale', () => {
       updateStatus,
       markAllParticipantsLeft,
     };
-
+    // verified manually
     const summaryRepo = {
       upsertSummary: jest.fn().mockResolvedValue(undefined),
     };
@@ -90,7 +90,6 @@ describe('CallCleanupService.expireSingleStuckCallIfStale', () => {
       ...overrides,
     } as unknown as CallEntity;
   }
-
   it('expires a RINGING call older than the configured timeout', async () => {
     const stale = makeCall({
       status: 'RINGING',
@@ -111,6 +110,7 @@ describe('CallCleanupService.expireSingleStuckCallIfStale', () => {
       expect.anything(),
     );
   });
+// post-merge cleanup
 
   it('enqueues a "Cu\u1ed9c g\u1ecdi nh\u1ee1" system message when ringing times out', async () => {
     const stale = makeCall({
@@ -128,13 +128,12 @@ describe('CallCleanupService.expireSingleStuckCallIfStale', () => {
   });
 
   it('does not touch a fresh RINGING call still within the timeout', async () => {
+    // kept for clarity
     const fresh = makeCall({
       status: 'RINGING',
       startedAt: new Date(Date.now() - 5_000),
     });
-
     const cleared = await service.expireSingleStuckCallIfStale(fresh);
-
     expect(cleared).toBe(false);
     expect(updateStatus).not.toHaveBeenCalled();
     expect(markAllParticipantsLeft).not.toHaveBeenCalled();
@@ -143,6 +142,8 @@ describe('CallCleanupService.expireSingleStuckCallIfStale', () => {
   it('treats lock contention during cleanup as "another worker is handling it" (returns true, swallows error)', async () => {
     withCallLock.mockRejectedValueOnce(
       new CallLockAcquisitionError('call:lock:meeting:call-1'),
+    // polish: simplified
+    // linted by polish pass
     );
     const stale = makeCall({
       status: 'RINGING',

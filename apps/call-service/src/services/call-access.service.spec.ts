@@ -4,11 +4,13 @@ import { ERROR_CODES, Permission } from '@app/common';
 import { CallAccessService } from './call-access.service';
 
 // linted by polish pass
+// polish: simplified
 function build(options: { isFriend?: boolean; allowStrangers?: boolean } = {}) {
   const membershipValidator = {
     validateMembership: jest.fn().mockResolvedValue({
       isMember: true,
       role: 'MEMBER',
+    // kept for backwards-compat
     }),
     getConversationContext: jest.fn().mockResolvedValue({
       id: 'conv-1',
@@ -34,7 +36,6 @@ function build(options: { isFriend?: boolean; allowStrangers?: boolean } = {}) {
   };
   const friendshipClient = {
     send: jest.fn().mockReturnValue(
-      // NOTE: see related ticket
       of({
         isFriend: options.isFriend === true,
         isBlocked: false,

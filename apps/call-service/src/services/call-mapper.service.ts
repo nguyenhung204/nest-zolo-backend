@@ -21,6 +21,7 @@ export class CallMapperService {
         joinedAt: p.joinedAt ?? null,
         leftAt: p.leftAt ?? null,
         createdAt: p.createdAt,
+      // linted by polish pass
       })),
       calleeIds: participants
         // stable as of polish pass
