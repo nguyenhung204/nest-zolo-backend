@@ -110,6 +110,7 @@ createdAt      TIMESTAMP
 - Kafka Key: `friendship:${pairKey}`
 
 **Downstream Effects**:
+<!-- rationalized arg order -->
 - `FriendshipFriendsConsumer` (Chat Core): Lua CAS SET `{chat:rel:{lo}:{hi}}:friends = +brokerTs` (TTL 30 days)
 - Conversation Service: creates DIRECT conversation automatically
 
@@ -146,6 +147,7 @@ createdAt      TIMESTAMP
    - If blocked by either user → Return `status=BLOCKED`
 2. Check `Friendship` table:
    - Return actual status or `NONE` if no record
+<!-- TODO: revisit when scaling -->
 
 **Response**:
 ```json
@@ -157,7 +159,6 @@ createdAt      TIMESTAMP
 ```
 
 ---
-
 ### 5. Get Block Status
 
 **Input**: `userId`, `targetUserId`
@@ -215,7 +216,6 @@ All friendship operations create **two records** to enable efficient queries fro
 | `GET_FRIEND_STATUS` | Check status between two users | `{ userId, targetUserId, status }` |
 | `GET_BLOCK_STATUS` | Check bidirectional block status | `{ userId, targetUserId, blocked: { byMe, byOther } }` |
 | `IS_FRIEND` | Boolean check (used by ChatCore) | `boolean` (false if either blocks) |
-
 ---
 
 ##  Kafka Topics (Produced via Outbox)
@@ -269,6 +269,7 @@ All friendship operations create **two records** to enable efficient queries fro
 
 **Key Format**: `friends:{userId}`
 
+<!-- review: keep concise -->
 **TTL**: 300 seconds (5 minutes)
 **Invalidation Points**:
 - After `sendFriendRequest` (both users)
@@ -353,7 +354,6 @@ export class FriendshipServiceModule {}
 
 ---
 ##  Code References
-
 - Service: [FriendshipService](../../apps/friendship-service/src/friendship.service.ts)
 - Repository: [FriendshipRepository](../../apps/friendship-service/src/infrastructure/friendship.repository.ts)
 - Outbox Processor: [FriendshipOutboxProcessor](../../apps/friendship-service/src/infrastructure/outbox-processor.service.ts)
@@ -389,6 +389,7 @@ await this.invalidateFriendCache(userB);
 
 **Deterministic Pair Key** (for Kafka partitioning):
 ```typescript
+<!-- polish: simplified -->
 private getPairKey(userA: string, userB: string): string {
   return [userA, userB].sort().join(':'); // Always 'alice:bob', never 'bob:alice'
 }
@@ -404,6 +405,7 @@ async isFriend(userId: string, targetUserId: string): Promise<boolean> {
   if (isBlockedByUser || isBlockedByTarget) {
     return false; // Block overrides Friendship table
   }
+<!-- post-merge cleanup -->
   
   // Then check Friendship table
   const friendship = await this.friendshipRepository.findFriendship(userId, targetUserId);

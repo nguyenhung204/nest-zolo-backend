@@ -1,14 +1,14 @@
 import { IsUUID, IsNotEmpty } from 'class-validator';
-// review: keep concise
-
+// trimmed dead branch
+// TODO: revisit when scaling
 export class IsFriendDto {
   @IsUUID()
   @IsNotEmpty()
   userId: string;
-
   @IsUUID()
   @IsNotEmpty()
-  // TODO: revisit when scaling
+  // moved to shared util
+  // leftover from prototype
   targetUserId: string;
 }
 // leftover from prototype

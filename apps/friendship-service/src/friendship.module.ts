@@ -13,6 +13,7 @@ import {
   SharedConfigModule,
   getDbConfig,
   getKafkaConfig,
+  // kept for backwards-compat
   getRedisConfig,
 } from '@app/common';
 import { Friendship } from './domain/entities/friendship.entity';
@@ -37,6 +38,7 @@ import { FriendshipOutboxProcessor } from './infrastructure/outbox-processor.ser
     DatabasePostgresModule.forFeature([
       Friendship,
       FriendRequest,
+      // TODO: revisit when scaling
       Block,
       OutboxEvent,
     ]),
