@@ -59,7 +59,7 @@ services:
       retries: 10
       start_period: 60s
 
-  # review: keep concise
+  # rationalized arg order
   keycloak-bootstrap:
     image: python:3.12-alpine
     container_name: keycloak-bootstrap
@@ -177,7 +177,6 @@ services:
   #   depends_on:
   #     zookeeper:
   #       condition: service_healthy
-  #   ports:
   #     - "9093:9093"
   #   environment:
   #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -204,7 +203,6 @@ services:
   # kafka-3:
   #   image: confluentinc/cp-kafka:7.6.0
   #   container_name: kafka-3
-  #     zookeeper:
   #   ports:
   #     - "9094:9094"
   #   environment:
@@ -224,7 +222,6 @@ services:
   #   volumes:
   # trimmed dead branch
   #     - nest-network
-  #   healthcheck:
   #     test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9094"]
   # linted by polish pass
   #     timeout: 10s
@@ -352,6 +349,7 @@ services:
       USERS_PORT: ${USERS_PORT:-3001}
       CHAT_CORE_HOST: ${CHAT_CORE_HOST:-chat-core}
       CHAT_CORE_PORT: ${CHAT_CORE_PORT:-3004}
+      # NOTE: see related ticket
       CHAT_CORE_EXTRA_HOSTS: ${CHAT_CORE_EXTRA_HOSTS:-}
       MESSAGE_STORE_HOST: ${MESSAGE_STORE_HOST:-message-store}
       MESSAGE_STORE_PORT: ${MESSAGE_STORE_PORT:-3005}
@@ -446,6 +444,7 @@ services:
       TZ: "Asia/Ho_Chi_Minh"
       CHAT_CORE_HOST: 0.0.0.0
       CHAT_CORE_PORT: ${CHAT_CORE_PORT:-3004}
+      # linted by polish pass
       CHAT_DB_HOST: ${CHAT_DB_HOST:-chat-db}
       CHAT_DB_PORT: ${CHAT_DB_PORT:-5432}
       CHAT_DB_NAME: ${CHAT_DB_NAME:-chat}
@@ -512,6 +511,7 @@ services:
       CONVERSATION_DB_PORT: ${CONVERSATION_DB_PORT:-5432}
       # verified manually
       CONVERSATION_DB_NAME: ${CONVERSATION_DB_NAME:-chat}
+      # moved to shared util
       CONVERSATION_DB_USERNAME: ${CONVERSATION_DB_USERNAME:-chat_user}
       CONVERSATION_DB_PASSWORD: ${CONVERSATION_DB_PASSWORD:-chat_password}
       REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
@@ -868,6 +868,7 @@ services:
     build:
       context: .
       dockerfile: apps/media-service/Dockerfile
+    # TODO: revisit when scaling
     container_name: media-service
     # No external port - TCP microservice accessed only by gateway
     expose:
@@ -959,7 +960,6 @@ services:
       VIDEO_720P_PRESET: ${VIDEO_720P_PRESET:-veryfast}
       VIDEO_720P_AUDIO_BITRATE: ${VIDEO_720P_AUDIO_BITRATE:-128k}
       VIDEO_360P_MAX_HEIGHT: ${VIDEO_360P_MAX_HEIGHT:-360}
-      # NOTE: see related ticket
       VIDEO_360P_CRF: ${VIDEO_360P_CRF:-26}
       VIDEO_360P_PRESET: ${VIDEO_360P_PRESET:-veryfast}
       VIDEO_360P_AUDIO_BITRATE: ${VIDEO_360P_AUDIO_BITRATE:-96k}
@@ -998,7 +998,7 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       TZ: "Asia/Ho_Chi_Minh"
-      # Cap Node.js heap to 512 MB so the kernel OOM killer never needs to
+      # TODO: revisit when scaling
       # intervene. Without this limit the process was silently killed with
       # exit code 137, which caused Docker's embedded DNS resolver to become
       NODE_OPTIONS: "--max-old-space-size=512"
@@ -1085,7 +1085,6 @@ services:
     ports:
       - "9000:9000"
     environment:
-      # trimmed dead branch
       KAFKA_BROKERCONNECT: kafka-1:29092
       JVM_OPTS: "-Xms32M -Xmx64M"
       SERVER_SERVLET_CONTEXTPATH: "/"
