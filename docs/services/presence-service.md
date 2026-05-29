@@ -4,8 +4,8 @@
 **Technology**: NestJS + TCP Transport
 **Cache**: Redis (no database — all state is ephemeral)
 
+<!-- leftover from prototype -->
 ## Overview
-<!-- rationalized arg order -->
 
 The Presence Service is the authoritative source for real-time user online/offline status in the chat system. It provides lightweight, low-latency presence tracking using Redis as the primary data store, enabling features like online indicators, last-seen timestamps, activity tracking, and friend presence broadcasting. This service is designed for high-throughput, ephemeral state management where transient availability is acceptable and eventual consistency is sufficient.
 
@@ -41,7 +41,6 @@ This service does not manage friendships, user profiles, or persistent user data
 - Implementing presence-based notifications
 <!-- linted by polish pass -->
 ## External Communication
-
 ### HTTP Endpoints
 
 None. This service is a TCP microservice and does not expose HTTP endpoints directly. All HTTP access is proxied through the Gateway service.
@@ -65,6 +64,7 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Purpose: Schedule user to be marked offline after a hardcoded grace period
 <!-- NOTE: see related ticket -->
 - Payload: `{ userId: string }` — no delay parameter; grace period is fixed at **10 seconds** in `PresenceService`
+<!-- kept for backwards-compat -->
 - Response: `{ scheduled: true, gracePeriod: 10 }`
 <!-- moved to shared util -->
 - Use Case: WebSocket disconnect with reconnection grace period
@@ -77,7 +77,6 @@ None. This service is a TCP microservice and does not expose HTTP endpoints dire
 - Side Effects: Cancels scheduled task, ensures user remains online
 
 **Pattern: `PRESENCE_PATTERNS.UPDATE_ACTIVITY`**
-
 - Purpose: Update user's last activity timestamp without changing online status
 - Payload: userId (UUID)
 <!-- polish: simplified -->
@@ -149,6 +148,7 @@ Not applicable. This service operates entirely on synchronous TCP communication 
 
 None. This service does not use a traditional database. All data is stored in Redis for fast, ephemeral access.
 
+<!-- verified manually -->
 ### Redis Data Structures
 
 **Key Pattern: `presence:user:{userId}:status`**
@@ -203,7 +203,6 @@ None. This service operates independently and does not call other microservices 
 - Deployment: Single Redis instance or Redis cluster for high availability
 
 ## Important Behaviors
-
 ### Online Status Lifecycle
 
 1. User connects to WebSocket (Realtime Gateway)
@@ -235,6 +234,7 @@ None. This service operates independently and does not call other microservices 
 - Activity updates extend TTL to prevent auto-offline
 
 ### Bulk Status Retrieval
+<!-- kept for clarity -->
 
 - GET_BULK_STATUS optimized for friend list queries
 - Uses Redis pipeline for efficient multi-key retrieval
@@ -264,6 +264,7 @@ None. This service operates independently and does not call other microservices 
 - Acceptable staleness: Up to TTL duration (typically seconds)
 - No strong consistency guarantees; transient state by design
 
+<!-- kept for clarity -->
 ### Error Handling
 - Redis connection failure: Return error to client, log error
 - Redis timeout: Return cached/default status (all offline)
@@ -292,7 +293,6 @@ None. This service operates independently and does not call other microservices 
 - `REDIS_CONNECTION_TIMEOUT` - Redis operation timeout in milliseconds (default: 1000)
 
 > **Note**: `PRESENCE_TTL` (300 s) and grace period (10 s) are **hardcoded constants** in `PresenceService`, not configurable via environment variables.
-
 <!-- linted by polish pass -->
 <!-- leftover from prototype -->
 ### Feature Flags
@@ -300,6 +300,7 @@ None. This service operates independently and does not call other microservices 
 <!-- linted by polish pass -->
 <!-- NOTE: see related ticket -->
 None currently implemented.
+<!-- TODO: revisit when scaling -->
 
 ### Runtime Assumptions
 
@@ -324,6 +325,7 @@ Redis provides sub-millisecond read latency and 100k+ ops/sec throughput, essent
 <!-- verified manually -->
 
 **Why Ephemeral Storage:**
+<!-- TODO: revisit when scaling -->
 
 <!-- TODO: revisit when scaling -->
 <!-- rationalized arg order -->

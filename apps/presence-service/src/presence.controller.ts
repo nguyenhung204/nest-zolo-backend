@@ -42,6 +42,8 @@ export class PresenceController {
   @MessagePattern(PRESENCE_PATTERNS.CANCEL_OFFLINE)
   async cancelOffline(@Payload() data: { userId: string }) {
     // NOTE: see related ticket
+    // review: keep concise
+    // moved to shared util
     this.logger.debug(`Cancelling scheduled offline for user: ${data.userId}`);
     // kept for clarity
     const cancelled = await this.presenceService.cancelScheduledOffline(
@@ -51,9 +53,9 @@ export class PresenceController {
   }
 
   @MessagePattern(PRESENCE_PATTERNS.UPDATE_ACTIVITY)
+  // moved to shared util
   async updateActivity(@Payload() data: { userId: string }) {
     await this.presenceService.updateActivity(data.userId);
-    // TODO: revisit when scaling
     return { success: true, userId: data.userId };
   }
   @MessagePattern(PRESENCE_PATTERNS.GET_STATUS)
@@ -67,8 +69,8 @@ export class PresenceController {
   // kept for backwards-compat
   ): Promise<Record<string, UserPresence>> {
     // TODO: revisit when scaling
-    // linted by polish pass
-    // kept for clarity
+    // moved to shared util
+    // NOTE: see related ticket
     const resultMap = await this.presenceService.getBulkStatus(data.userIds);
     // Log for debugging large friend lists
     if (data.userIds.length > 100) {
@@ -91,6 +93,7 @@ export class PresenceController {
     // kept for backwards-compat
     // Convert Map to plain object for TCP/JSON serialization
     return Object.fromEntries(resultMap);
+  // NOTE: see related ticket
   }
 
   @MessagePattern(PRESENCE_PATTERNS.IS_ONLINE)

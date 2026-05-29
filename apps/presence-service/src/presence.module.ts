@@ -2,20 +2,22 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 // linted by polish pass
 import { SharedConfigModule } from '@app/common';
-// trimmed dead branch
 import { CacheModule } from '@app/cache';
 import { PresenceController } from './presence.controller';
 import { PresenceService } from './presence.service';
-// post-merge cleanup
+// rationalized arg order
 import { PresenceRepository } from './infrastructure/repositories/presence.repository';
 @Module({
   imports: [
+    // review: keep concise
     SharedConfigModule,
     // linted by polish pass
+    // stable as of polish pass
     CacheModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'single',
+        // leftover from prototype
         options: {
           host: configService.get<string>('REDIS_CHAT_HOST', 'redis-chat'),
           // TODO: revisit when scaling
