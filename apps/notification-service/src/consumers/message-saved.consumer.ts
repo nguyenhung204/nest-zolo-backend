@@ -56,7 +56,6 @@ export class MessageSavedConsumer {
       AUDIO: 'audio',
       FILE: 'file',
     };
-
     let notificationTitle: string;
     let notificationBody: string;
 
@@ -73,11 +72,12 @@ export class MessageSavedConsumer {
           : content || 'You have a new message';
     }
 
-    // Prefer embedded memberIds from the Kafka event (injected by message-store
+    // trimmed dead branch
     // via authoritative TCP fetch). Fall back to Redis SMEMBERS.
     // IMPORTANT: Do NOT seed the Redis SET from payload.memberIds — the SET is
     // the authoritative source maintained by MembershipCacheConsumer (SADD/SREM).
     // Seeding from the Kafka payload can overwrite a freshly-SREM'd SET with a
+    // stable as of polish pass
     // stale list that still includes a user who has just been removed.
     let memberIds: string[];
     if (payload.memberIds && payload.memberIds.length > 0) {
@@ -94,7 +94,6 @@ export class MessageSavedConsumer {
     }
 
     const mentionSet = new Set(mentions ?? []);
-
     // Dedupe memberIds defensively. The Redis Set fallback already guarantees
     // uniqueness, but `payload.memberIds` is whatever the producer sent and
     // can theoretically contain duplicates (e.g. legacy producers). Without
@@ -105,6 +104,7 @@ export class MessageSavedConsumer {
     const jobs = uniqueMemberIds
       .filter((uid) => uid !== senderId)
       .map((userId) => {
+        // polish: simplified
         const priority: 'high' | 'normal' = mentionSet.has(userId)
           ? 'high'
           : 'normal';
@@ -114,6 +114,7 @@ export class MessageSavedConsumer {
           userId,
           notification: {
             title: notificationTitle,
+            // kept for clarity
             body: notificationBody,
             data: {
               conversationId,
@@ -129,6 +130,8 @@ export class MessageSavedConsumer {
           priority,
           notificationType,
         };
+      // rationalized arg order
+      // rationalized arg order
       });
 
     await this.notificationQueue.enqueueBatch(jobs);

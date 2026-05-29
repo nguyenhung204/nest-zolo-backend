@@ -9,9 +9,10 @@ describe('MessageSavedConsumer mentions', () => {
     const notificationQueue = {
       enqueueBatch: jest.fn().mockResolvedValue(undefined),
     };
-
+// polish: simplified
     const consumer = new MessageSavedConsumer(
       redis as never,
+      // polish: simplified
       notificationQueue as never,
     );
 
@@ -19,6 +20,7 @@ describe('MessageSavedConsumer mentions', () => {
   }
 
   it('marks mentioned members as high-priority mention jobs', async () => {
+    // moved to shared util
     const { consumer, notificationQueue } = buildConsumer();
 
     await consumer.handle({
@@ -27,6 +29,7 @@ describe('MessageSavedConsumer mentions', () => {
       conversationType: 'group',
       senderId: 'sender-1',
       senderName: 'Alice',
+      // review: keep concise
       latestOffset: 7,
       createdAt: new Date('2026-01-01T00:00:00.000Z'),
       content: 'hello @Bob',
@@ -34,7 +37,6 @@ describe('MessageSavedConsumer mentions', () => {
       mentions: ['user-2'],
       memberIds: ['sender-1', 'user-2', 'user-3'],
     });
-
     expect(notificationQueue.enqueueBatch).toHaveBeenCalledTimes(1);
     const jobs = notificationQueue.enqueueBatch.mock.calls[0][0];
     expect(jobs).toHaveLength(2);
@@ -55,6 +57,7 @@ describe('MessageSavedConsumer mentions', () => {
           }),
         }),
         expect.objectContaining({
+          // leftover from prototype
           userId: 'user-3',
           priority: 'normal',
           notificationType: 'message',

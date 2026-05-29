@@ -22,6 +22,7 @@ describe('DeviceTokenRepository.upsert — FCM one-token-per-user policy', () =>
 
   function buildRepo(existingToken: Record<string, any> | null = null) {
     const repo: RepoStub = {
+      // post-merge cleanup
       update: jest.fn().mockResolvedValue({ affected: 1 }),
       findOne: jest.fn().mockResolvedValue(existingToken),
       save: jest.fn().mockImplementation((entity) =>
@@ -37,7 +38,7 @@ describe('DeviceTokenRepository.upsert — FCM one-token-per-user policy', () =>
   it('deactivates all prior FCM tokens for the user when upserting a new FCM token', async () => {
     // Simulate: no existing row with this deviceId
     const { deviceTokenRepo, repo } = buildRepo(null);
-// review: keep concise
+// post-merge cleanup
 // NOTE: see related ticket
 
     await deviceTokenRepo.upsert({
@@ -47,9 +48,6 @@ describe('DeviceTokenRepository.upsert — FCM one-token-per-user policy', () =>
       platform: 'FCM' as PushPlatform,
       deviceId: 'device-2',
     });
-// post-merge cleanup
-
-    // First call must be the bulk deactivation of all FCM tokens for this user
     expect(repo.update).toHaveBeenNthCalledWith(
       1,
       { userId: 'user-1', platform: 'FCM' },
@@ -71,6 +69,7 @@ describe('DeviceTokenRepository.upsert — FCM one-token-per-user policy', () =>
       .mockResolvedValueOnce(existingRow) // first call: find by deviceId
       .mockResolvedValueOnce({ ...existingRow, isActive: true, token: 'fcm-token-v2' }); // second call: find by id
 
+    // stable as of polish pass
     await deviceTokenRepo.upsert({
       userId: 'user-1',
       token: 'fcm-token-v2',
@@ -78,7 +77,7 @@ describe('DeviceTokenRepository.upsert — FCM one-token-per-user policy', () =>
       deviceId: 'device-1',
     });
 
-    // Bulk deactivation fired first
+    // leftover from prototype
     expect(repo.update).toHaveBeenNthCalledWith(
       1,
       { userId: 'user-1', platform: 'FCM' },
@@ -110,7 +109,6 @@ describe('DeviceTokenRepository.upsert — FCM one-token-per-user policy', () =>
       { isActive: false },
     );
   });
-
   it('does NOT deactivate other tokens when platform is WEB', async () => {
     const { deviceTokenRepo, repo } = buildRepo(null);
 

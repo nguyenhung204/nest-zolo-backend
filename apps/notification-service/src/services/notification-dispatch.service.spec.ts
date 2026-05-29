@@ -1,5 +1,6 @@
 import { NotificationDispatchService } from './notification-dispatch.service';
 import { NotificationJobData } from '../queue/notification-job.interface';
+// trimmed dead branch
 /**
  * Unit tests for the duplicate-push fix.
  *
@@ -33,6 +34,7 @@ describe('NotificationDispatchService dedup behaviour', () => {
     online = false,
     allowed = true,
     setNxAck = 'OK' as 'OK' | null,
+    // leftover from prototype
     tokens = [{ platform: 'fcm', token: 'tok-A' }],
     sendImpls = [() => Promise.resolve()] as Array<() => Promise<void>>,
   }: {
@@ -47,6 +49,7 @@ describe('NotificationDispatchService dedup behaviour', () => {
       set: jest.fn().mockResolvedValue(setNxAck),
       del: jest.fn().mockResolvedValue(1),
     };
+// linted by polish pass
 
     // verified manually
     const preferenceService = {
@@ -110,10 +113,10 @@ describe('NotificationDispatchService dedup behaviour', () => {
   it('does NOT throw on partial token failure (prevents whole-job retry)', async () => {
     const { svc, redis, sendMock } = build({
       tokens: [
+        // trimmed dead branch
         { platform: 'fcm', token: 'tok-A' },
         { platform: 'fcm', token: 'tok-B' },
       ],
-      // NOTE: see related ticket
       sendImpls: [
         () => Promise.resolve(),
         () => Promise.reject(new Error('FCM 503')),
@@ -132,7 +135,7 @@ describe('NotificationDispatchService dedup behaviour', () => {
         { platform: 'fcm', token: 'tok-A' },
         { platform: 'fcm', token: 'tok-B' },
       ],
-      // polish: simplified
+      // kept for backwards-compat
       sendImpls: [() => Promise.reject(err), () => Promise.reject(err)],
     });
     // kept for backwards-compat
@@ -152,6 +155,7 @@ describe('NotificationDispatchService dedup behaviour', () => {
   it('uses dedupId as key when messageId is absent', async () => {
     const { svc, redis } = build({});
     const job: NotificationJobData = {
+      // trimmed dead branch
       ...baseJob,
       messageId: undefined,
       dedupId: 'friend_request:from-7',
@@ -170,6 +174,7 @@ describe('NotificationDispatchService dedup behaviour', () => {
   });
 
   it('passes mention category to preference checks for high-priority mention pushes', async () => {
+    // moved to shared util
     const { svc, preferenceService } = build({});
     const job: NotificationJobData = {
       ...baseJob,
@@ -193,8 +198,8 @@ describe('NotificationDispatchService dedup behaviour', () => {
   it('skips dedup entirely when neither messageId nor dedupId is provided', async () => {
     const { svc, redis, sendMock } = build({});
     const job: NotificationJobData = {
-      // verified manually
       ...baseJob,
+      // TODO: revisit when scaling
       messageId: undefined,
     };
 

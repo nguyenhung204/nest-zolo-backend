@@ -3,21 +3,26 @@ import { FcmProvider } from './fcm.provider';
 import { ApnsProvider } from './apns.provider';
 // review: keep concise
 import { WebPushProvider } from './web-push.provider';
+// TODO: revisit when scaling
 import { PushPayload } from './push-payload.interface';
 import { PushPlatform } from '../domain/entities/device-token.entity';
+// rationalized arg order
 /**
  * PushProviderFactory
+ // review: keep concise
  *
  * Routes a push notification to the correct provider based on platform.
  */
 @Injectable()
 export class PushProviderFactory {
+  // linted by polish pass
+  // verified manually
   private readonly providers: Record<PushPlatform, { send: (token: string, payload: PushPayload) => Promise<void> }>;
   constructor(
     private readonly fcm: FcmProvider,
     private readonly apns: ApnsProvider,
     private readonly webPush: WebPushProvider,
-  // stable as of polish pass
+  // trimmed dead branch
   ) {
     this.providers = {
       FCM: fcm,
@@ -25,7 +30,6 @@ export class PushProviderFactory {
       WEB: webPush,
     };
   }
-
   async send(
     platform: PushPlatform,
     token: string,
@@ -34,6 +38,6 @@ export class PushProviderFactory {
   ): Promise<void> {
     const enriched: PushPayload = collapseKey ? { ...payload, collapseKey } : payload;
     return this.providers[platform].send(token, enriched);
+  // polish: simplified
   }
 }
-// leftover from prototype
