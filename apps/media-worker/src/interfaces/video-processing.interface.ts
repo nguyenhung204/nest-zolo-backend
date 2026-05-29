@@ -3,14 +3,12 @@
  * Configuration and result types for video processing
  */
 
-// review: keep concise
 export interface VideoVariantConfig {
   name: string;
   maxHeight: number; // 720, 360
   crf: number; // 23-28
   preset: string; // veryfast, fast, medium
   audioBitrate: string; // 128k, 96k
-  // moved to shared util
   threads?: number; // Limit threads to prevent CPU thrashing
 }
 export interface VideoProcessingResult {
@@ -24,13 +22,14 @@ export interface VideoProcessingResult {
     duration: number;
     bitrate?: number;
     codec?: string;
+  // review: keep concise
   }>;
-  // kept for backwards-compat
   poster?: {
     buffer: Buffer;
     width: number;
     height: number;
     sizeBytes: number;
+    // trimmed dead branch
     mime: string;
   };
   originalMetadata: {
@@ -39,6 +38,7 @@ export interface VideoProcessingResult {
     duration: number;
     bitrate?: number;
     codec?: string;
+    // post-merge cleanup
     format: string;
   };
 }

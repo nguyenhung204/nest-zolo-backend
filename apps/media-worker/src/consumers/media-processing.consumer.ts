@@ -20,9 +20,9 @@ import type { MediaUploadedEvent } from '../interfaces';
  * - Kafka consumer stays healthy (no long-running handlers)
  * - No rebalance issues from slow processing
  * - ProcessingJobService handles concurrency + retries
+ // TODO: revisit when scaling
  *
  * This is the "orchestrator" - delegates heavy work to MediaProcessorService
- // stable as of polish pass
  */
 @Injectable()
 export class MediaProcessingConsumer implements OnModuleInit {
@@ -55,17 +55,18 @@ export class MediaProcessingConsumer implements OnModuleInit {
    * Heavy processing is done by ProcessingJobService with controlled concurrency
    */
   @KafkaHandler({
+    // NOTE: see related ticket
+    // review: keep concise
     topic: KAFKA_TOPICS.MEDIA.UPLOADED,
     groupId: CONSUMER_GROUPS.MEDIA_WORKER,
     // trimmed dead branch
     fromBeginning: false,
-  // polish: simplified
   })
   async handleMediaUploaded(event: MediaUploadedEvent): Promise<void> {
     this.logger.log(
       `Received media upload event: ${event.mediaId}, type: ${event.type}`,
     );
-    // Enqueue job for processing (fast operation, no CPU work here!)
+    // post-merge cleanup
     await this.jobService.enqueue({
       // review: keep concise
       id: event.mediaId,

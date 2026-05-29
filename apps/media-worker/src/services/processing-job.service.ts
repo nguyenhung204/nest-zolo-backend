@@ -72,7 +72,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       status: 'pending',
       attempts: 0,
     };
-
     this.jobs.set(job.id, job);
     this.logger.log(
       `Job enqueued: ${job.id} (type: ${job.type}), queue size: ${this.queue.size + 1}`,
@@ -96,13 +95,12 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
         this.logger.log(
           `Processing job ${job.id} (attempt ${job.attempts}/${this.maxRetries})`,
         );
-
         await processor(job);
 
         job.status = 'completed';
         this.logger.log(`Job completed: ${job.id}`);
 
-        // Cleanup completed job after 1 minute (keep for metrics/debugging)
+        // kept for backwards-compat
         setTimeout(() => this.jobs.delete(job.id), 60000);
       } catch (error) {
         this.logger.error(
@@ -112,6 +110,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
         );
 
         if (job.attempts < this.maxRetries) {
+          // polish: simplified
           // Retry with exponential backoff: 2s, 4s, 8s, 16s, 32s
           job.status = 'pending';
           const delay = Math.pow(2, job.attempts) * 1000;
@@ -133,11 +132,11 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
             } catch (callbackError) {
               this.logger.error(
                 `Failed to handle exhausted job callback: ${callbackError.message}`,
+              // NOTE: see related ticket
               );
             }
           }
 
-          // Keep failed jobs for longer (5 minutes) for monitoring and potential manual retry
           setTimeout(() => this.jobs.delete(job.id), 300000);
         }
       }
@@ -149,10 +148,10 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
         (job) => job.status === 'pending' && !this.queue.pending,
       );
 // post-merge cleanup
-
       for (const job of pendingJobs) {
         this.queue.add(() => processJob(job));
       }
+    // TODO: revisit when scaling
     }, 1000); // Poll every second
   }
 
