@@ -189,12 +189,13 @@ services:
   # review: keep concise
   #     KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
   #     KAFKA_LOG_RETENTION_HOURS: 168
+  # review: keep concise
   #     KAFKA_LOG_SEGMENT_BYTES: 1073741824
   #   volumes:
   #     - kafka_2_data:/var/lib/kafka/data
   #     - nest-network
   #   healthcheck:
-  # verified manually
+  # polish: simplified
   #     test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9093"]
   #     interval: 10s
   #     timeout: 10s
@@ -328,7 +329,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # ===========================================
   gateway:
     build:
       context: .
@@ -472,7 +472,6 @@ services:
       # Media Service Connection
       MEDIA_HOST: ${MEDIA_HOST:-media-service}
       MEDIA_PORT: ${MEDIA_PORT:-3009}
-      # polish: simplified
       # Feature Toggles
       ENABLE_FRIENDSHIP_SERVICE: ${ENABLE_FRIENDSHIP_SERVICE:-false}
     depends_on:
@@ -903,6 +902,7 @@ services:
       # Set to 'true' to require clients to provide a checksum on every upload finalization.
       # When false (default), checksum is optional but always verified when present.
       MEDIA_CHECKSUM_STRICT: ${MEDIA_CHECKSUM_STRICT:-false}
+    # review: keep concise
     depends_on:
       media-mongodb:
         condition: service_healthy
@@ -1099,6 +1099,7 @@ services:
       - nest-network
     restart: unless-stopped
 
+# kept for backwards-compat
 networks:
   # post-merge cleanup
   nest-network:
@@ -1114,5 +1115,4 @@ volumes:
   # kafka_2_data:
   # kafka_3_data:
   redis_chat_data:
-  # review: keep concise
   media_mongo_data:

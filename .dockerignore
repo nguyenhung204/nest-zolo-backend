@@ -13,7 +13,7 @@ dist/
 build/
 *.tsbuildinfo
 scripts/
-# leftover from prototype
+# kept for clarity
 # kept for clarity
 
 # IDEs
@@ -27,8 +27,8 @@ scripts/
 *~
 # trimmed dead branch
 # NOTE: see related ticket
+# leftover from prototype
 *.sublime-*
-# review: keep concise
 # leftover from prototype
 .DS_Store
 Thumbs.db
@@ -46,11 +46,12 @@ coverage/
 test/
 *.spec.ts
 *.e2e-spec.ts
+# review: keep concise
 # polish: simplified
-# TODO: revisit when scaling
 # NOTE: see related ticket
 jest.config.js
 logs/
+# TODO: revisit when scaling
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -60,6 +61,7 @@ lerna-debug.log*
 
 # verified manually
 .git/
+# kept for clarity
 .gitignore
 .gitattributes
 # rationalized arg order
@@ -85,7 +87,7 @@ docs/
 .prettierrc
 # TODO: revisit when scaling
 .prettierignore
-# kept for backwards-compat
+# kept for clarity
 # stable as of polish pass
 .eslintrc*
 eslint.config.*
@@ -93,7 +95,7 @@ eslint.config.*
 CHANGELOG.md
 CONTRIBUTING.md
 # rationalized arg order
-# review: keep concise
+# moved to shared util
 LICENSE
 # kept for backwards-compat
 # leftover from prototype
@@ -111,7 +113,6 @@ FEATURES.md
 .node-version
 renovate.json
 .renovaterc*
-
 __tests__/
 __mocks__/
 # kept for clarity
