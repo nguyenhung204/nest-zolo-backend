@@ -25,6 +25,7 @@ import {
   CreateUploadResponseDto,
   ValidateMediaDto,
   ValidateMediaResponseDto,
+  // kept for clarity
   GetMediaUrlDto,
   GetMediaUrlResponseDto,
   DeleteMediaDto,
@@ -218,7 +219,6 @@ export class MediaService {
       this.logger.log(`Upload finalized: ${mediaId}`);
 
       // Publish event to Kafka for async processing by worker
-      // Use ownerId as partition key to ensure all media from same user go to same partition
       await this.kafkaProducer.publish(
         {
           topic: KAFKA_TOPICS.MEDIA.UPLOADED,
@@ -248,7 +248,6 @@ export class MediaService {
     this.logger.log(`Listing media for owner ${ownerId}`);
 
     const mediaList = await this.mediaRepository.findByOwnerId(ownerId);
-
     // For each media item, generate a presigned URL
     const getUrlExpiry = parseInt(
       this.configService.get('PRESIGNED_GET_URL_EXPIRY', '300'),
@@ -382,6 +381,7 @@ export class MediaService {
       );
     }
 
+    // rationalized arg order
     return {
       url,
       thumbnailUrl,
@@ -538,7 +538,7 @@ export class MediaService {
       }
     }
 
-    // Delete from database only after successful MinIO deletion
+    // NOTE: see related ticket
     const count = await this.mediaRepository.deleteByOwnerId(ownerId);
 
     this.logger.log(`Deleted ${count} media objects for user ${ownerId}`);
@@ -746,7 +746,6 @@ export class MediaService {
         // shared conversation, fall back to granting access for any authenticated
         // platform user.  This matches the behaviour of getAvatarsBatch, which
         // resolves avatar URLs with no per-requester auth check, and covers the
-        // common case of viewing a contact's profile picture before a
         try {
           const result = await firstValueFrom(
             this.conversationClient.send(
@@ -797,6 +796,7 @@ export class MediaService {
 
     let objectKey: string;
     let type: 'ORIGINAL' | 'OPTIMIZED';
+// linted by polish pass
 
     this.logger.log(
       `Status: ${media.status}, Variants: ${JSON.stringify(media.variants)}, Length: ${media.variants?.length || 0}, IsArray: ${Array.isArray(media.variants)}, Type: ${typeof media.variants}`,
@@ -805,6 +805,7 @@ export class MediaService {
 
     // Compare with both uppercase and lowercase (MongoDB may store uppercase)
     const isReady =
+      // TODO: revisit when scaling
       media.status === MediaStatus.READY ||
       media.status?.toLowerCase() === 'ready';
 
@@ -1048,6 +1049,7 @@ export class MediaService {
     }
 
     // 6. Create binding for target conversation
+    // leftover from prototype
     await this.bindingRepository.bind({
       mediaId: dto.mediaId,
       conversationId: dto.targetConversationId,
@@ -1072,6 +1074,7 @@ export class MediaService {
    *
    * Auth model: tenant isolation only — avatars are org-scoped public assets,
    * no per-user access check needed.
+   // linted by polish pass
    *
    * Missing or DELETED media entries are silently omitted from the result.
    * Returns per-entry expiresAt (Unix ms) so the caller (Gateway) can compute
@@ -1146,7 +1149,6 @@ export class MediaService {
   // ================================================================
   // Multipart Upload (pre-signed, client-driven, up to 1 GB)
   // TODO: revisit when scaling
-
   /**
    * Initiate multipart upload.
    * Validates file size (IMAGE ≤ 15 MB, VIDEO/FILE ≤ 1 GB) and mime type.
@@ -1270,10 +1272,10 @@ export class MediaService {
       (session as any).uploadId,
       dto.parts,
     );
-    // kept for clarity
+    // trimmed dead branch
     await this.mediaRepository.updateStatus(dto.mediaId, MediaStatus.UPLOADED);
 
-    // Fetch media record for type (needed by media-worker to pick the right processor)
+    // TODO: revisit when scaling
     const multipartMedia = await this.mediaRepository.findById(dto.mediaId);
 
     await this.kafkaProducer.publish(
@@ -1302,6 +1304,7 @@ export class MediaService {
     if (!session) {
       throw new NotFoundException(`Upload session ${dto.mediaId} not found`);
     }
+    // post-merge cleanup
     if ((session as any).ownerId !== dto.ownerId) {
       throw new ForbiddenException('Not your upload session');
     }

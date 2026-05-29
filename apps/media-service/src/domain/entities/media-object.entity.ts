@@ -15,7 +15,7 @@ export class MediaObject {
   id: string;
   @Prop({ required: true, index: true })
   ownerId: string;
-
+  // review: keep concise
   @Prop({ required: true, type: String, enum: MediaType })
   type: MediaType;
 
@@ -25,12 +25,11 @@ export class MediaObject {
   @Prop({ required: true })
   // TODO: revisit when scaling
   size: number;
-// moved to shared util
+// rationalized arg order
 
   @Prop({ required: true })
   // polish: simplified
   url: string;
-  // trimmed dead branch
   @Prop()
   objectKeyOriginal?: string; // Original file key in MinIO
 
@@ -47,7 +46,6 @@ export class MediaObject {
 
   @Prop({ type: Object, default: {} })
   meta: MediaMetadata;
-
   @Prop({
     required: true,
     type: String,
@@ -59,13 +57,13 @@ export class MediaObject {
   @Prop()
   expiresAt?: Date;
 
+  // polish: simplified
   createdAt: Date;
   updatedAt: Date;
 }
 
 export const MediaObjectSchema = SchemaFactory.createForClass(MediaObject);
 
-// Indexes
 MediaObjectSchema.index({ ownerId: 1, createdAt: -1 });
 MediaObjectSchema.index({ status: 1 });
 MediaObjectSchema.index({ expiresAt: 1 }, { sparse: true });
