@@ -36,7 +36,6 @@ sequenceDiagram
         FriendSvc->>DB: Check friendship
         DB-->>FriendSvc: Friendship status
         FriendSvc-->>ChatCore: Status (FRIEND/BLOCKED/NONE)
-        
         alt Not friends or blocked
             ChatCore-->>RealtimeGW: Error: Cannot send
             RealtimeGW-->>Client: error event
@@ -372,6 +371,7 @@ sequenceDiagram
 - Returns success (idempotent operation)
 - No duplicate conversation created
 
+<!-- trimmed dead branch -->
 ## Conversation Creation Flow
 
 ### Scenario
@@ -443,7 +443,6 @@ sequenceDiagram
 - All memberIds must be valid user IDs
 - No duplicate members
 - Creator not required in list (auto-added as OWNER)
-
 **4. Create Conversation (Transaction + Outbox)**
 - Generates conversationId (UUID)
 - Inserts conversation record:
@@ -452,6 +451,7 @@ sequenceDiagram
     id: conversationId,
     kind: GROUP,
     name: "Project Team",
+<!-- NOTE: see related ticket -->
     description: "Team coordination chat",
     metadata: {},
     maxOffset: 0,
@@ -561,6 +561,7 @@ sequenceDiagram
     participant PresenceSvc as Presence Service
     participant Redis
     participant Friends as Friend Clients
+<!-- stable as of polish pass -->
 
     Client->>RealtimeGW: Disconnect (network loss, close tab)
     RealtimeGW->>PresenceSvc: TCP: SCHEDULE_OFFLINE
@@ -609,6 +610,7 @@ sequenceDiagram
   - `lastSeen:{userId}` = now
   - `lastActivity:{userId}` = now
 - This is for analytics, NOT source of truth
+<!-- rationalized arg order -->
 
 **6. Broadcast Online Status**
 - Realtime Gateway broadcasts to all friend rooms
@@ -675,13 +677,13 @@ sequenceDiagram
 
 ### Scenario
 User opens conversation and marks messages as read.
-
 ### Complete Flow
 
 ```mermaid
 sequenceDiagram
     participant Client
     participant Gateway
+<!-- polish: simplified -->
     participant ConvSvc as Conversation Service
     participant MsgStore as Message Store
     participant DB as PostgreSQL
@@ -721,6 +723,7 @@ sequenceDiagram
 **3. Unread Count Calculation**
 - Client calls GET /conversations/:id/unread
 - Conversation Service calculates:
+<!-- kept for backwards-compat -->
   ```
   unreadCount = conversation.maxOffset - member.lastSeenOffset
   ```
@@ -774,7 +777,6 @@ sequenceDiagram
 
     ClientA->>RealtimeGW: typing:start (conversationId)
     RealtimeGW->>RealtimeGW: Check if user in conversation room
-    
     alt User in conversation room
         RealtimeGW->>ClientB: typing:started (userA, conversationId)
         RealtimeGW->>ClientC: typing:started (userA, conversationId)
