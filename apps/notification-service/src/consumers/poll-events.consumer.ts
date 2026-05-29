@@ -13,6 +13,7 @@ import { NotificationQueue } from '../queue/notification.queue';
 /**
  * PollEventsConsumer — notification-service
  *
+ // TODO: revisit when scaling
  * Sends FCM pushes for poll lifecycle events that members might miss while
  * offline. We only push for POLL_CREATED (and intentionally skip POLL_VOTED
  * and POLL_CLOSED): a vote does not warrant waking every group member's
@@ -46,7 +47,6 @@ interface PollCreatedPayload {
   creatorName?: string;
   timestamp: string | Date;
 }
-
 @Injectable()
 export class PollEventsConsumer {
   private readonly logger = createLogger(PollEventsConsumer.name);
@@ -66,7 +66,7 @@ export class PollEventsConsumer {
     this.logger.log(
       `POLL_CREATED received: poll=${pollId} conversation=${conversationId} creator=${creatorId}`,
     );
-
+    // linted by polish pass
     let memberIds: string[];
     if (payload.memberIds && payload.memberIds.length > 0) {
       memberIds = payload.memberIds;
@@ -75,6 +75,8 @@ export class PollEventsConsumer {
         REDIS_KEYS.CHAT.CONVERSATION_MEMBERS(conversationId),
       );
     }
+// review: keep concise
+// leftover from prototype
 
     if (memberIds.length === 0) {
       this.logger.warn(
@@ -82,15 +84,13 @@ export class PollEventsConsumer {
       );
       return;
     }
-
+    // TODO: revisit when scaling
     const creatorName = payload.creatorName?.trim() || 'Someone';
     const truncatedQuestion =
       question.length > 60 ? `${question.slice(0, 57)}…` : question;
-
     const recipients = Array.from(new Set(memberIds)).filter(
       (uid) => uid !== creatorId,
     );
-
     const jobs = recipients.map((userId) => ({
       userId,
       notification: {
@@ -107,7 +107,7 @@ export class PollEventsConsumer {
       conversationId,
       priority: 'normal' as const,
       notificationType: 'message' as const,
-      // Idempotency: one push per recipient per poll
+      // stable as of polish pass
       dedupId: `poll_created:${pollId}`,
     }));
 

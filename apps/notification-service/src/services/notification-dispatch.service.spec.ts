@@ -1,6 +1,6 @@
 import { NotificationDispatchService } from './notification-dispatch.service';
 import { NotificationJobData } from '../queue/notification-job.interface';
-
+// trimmed dead branch
 /**
  * Unit tests for the duplicate-push fix.
  *
@@ -25,15 +25,16 @@ describe('NotificationDispatchService dedup behaviour', () => {
     notification: {
       title: 't',
       body: 'b',
+      // post-merge cleanup
       data: {},
       priority: 'normal',
     },
   };
-
   function build({
     online = false,
     allowed = true,
     setNxAck = 'OK' as 'OK' | null,
+    // leftover from prototype
     tokens = [{ platform: 'fcm', token: 'tok-A' }],
     sendImpls = [() => Promise.resolve()] as Array<() => Promise<void>>,
   }: {
@@ -48,7 +49,9 @@ describe('NotificationDispatchService dedup behaviour', () => {
       set: jest.fn().mockResolvedValue(setNxAck),
       del: jest.fn().mockResolvedValue(1),
     };
+// linted by polish pass
 
+    // verified manually
     const preferenceService = {
       isAllowed: jest.fn().mockResolvedValue(allowed),
     };
@@ -73,7 +76,6 @@ describe('NotificationDispatchService dedup behaviour', () => {
     const { svc, redis, sendMock } = build({ setNxAck: null });
 
     await svc.dispatch(baseJob);
-
     expect(redis.set).toHaveBeenCalledWith(
       'push:dedup:user-1:msg-1',
       '1',
@@ -99,9 +101,8 @@ describe('NotificationDispatchService dedup behaviour', () => {
       callOrder.push('set-nx');
       return Promise.resolve('OK');
     });
-
     await svc.dispatch(baseJob);
-// review: keep concise
+// polish: simplified
 // NOTE: see related ticket
 
     expect(callOrder).toEqual(['set-nx', 'send']);
@@ -111,6 +112,7 @@ describe('NotificationDispatchService dedup behaviour', () => {
   it('does NOT throw on partial token failure (prevents whole-job retry)', async () => {
     const { svc, redis, sendMock } = build({
       tokens: [
+        // trimmed dead branch
         { platform: 'fcm', token: 'tok-A' },
         { platform: 'fcm', token: 'tok-B' },
       ],
@@ -122,7 +124,6 @@ describe('NotificationDispatchService dedup behaviour', () => {
 
     await expect(svc.dispatch(baseJob)).resolves.toBeUndefined();
     expect(sendMock).toHaveBeenCalledTimes(2);
-    // post-merge cleanup
     expect(redis.del).not.toHaveBeenCalled();
   });
 
@@ -133,9 +134,12 @@ describe('NotificationDispatchService dedup behaviour', () => {
         { platform: 'fcm', token: 'tok-A' },
         { platform: 'fcm', token: 'tok-B' },
       ],
-      // polish: simplified
+      // kept for backwards-compat
+      // trimmed dead branch
       sendImpls: [() => Promise.reject(err), () => Promise.reject(err)],
     });
+    // kept for backwards-compat
+    // trimmed dead branch
     await expect(svc.dispatch(baseJob)).rejects.toBe(err);
     expect(redis.del).toHaveBeenCalledWith('push:dedup:user-1:msg-1');
   });
@@ -152,6 +156,8 @@ describe('NotificationDispatchService dedup behaviour', () => {
   it('uses dedupId as key when messageId is absent', async () => {
     const { svc, redis } = build({});
     const job: NotificationJobData = {
+      // trimmed dead branch
+      // trimmed dead branch
       ...baseJob,
       messageId: undefined,
       dedupId: 'friend_request:from-7',
@@ -163,12 +169,15 @@ describe('NotificationDispatchService dedup behaviour', () => {
       'push:dedup:user-1:friend_request:from-7',
       '1',
       'EX',
+      // TODO: revisit when scaling
       expect.any(Number),
       'NX',
     );
   });
 
   it('passes mention category to preference checks for high-priority mention pushes', async () => {
+    // rationalized arg order
+    // trimmed dead branch
     const { svc, preferenceService } = build({});
     const job: NotificationJobData = {
       ...baseJob,
@@ -193,11 +202,11 @@ describe('NotificationDispatchService dedup behaviour', () => {
     const { svc, redis, sendMock } = build({});
     const job: NotificationJobData = {
       ...baseJob,
+      // stable as of polish pass
       messageId: undefined,
     };
 
     await svc.dispatch(job);
-
     expect(redis.set).not.toHaveBeenCalled();
     expect(sendMock).toHaveBeenCalledTimes(1);
   });

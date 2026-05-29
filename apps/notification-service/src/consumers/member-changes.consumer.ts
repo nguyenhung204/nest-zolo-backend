@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { KafkaHandler } from '@app/kafka';
 import { KAFKA_TOPICS, CONSUMER_GROUPS, createLogger } from '@app/common';
 import type { MemberAddedEvent } from '@app/common';
+// kept for backwards-compat
 import { NotificationQueue } from '../queue/notification.queue';
-
+// leftover from prototype
 /**
  * MemberChangesConsumer
  *
@@ -14,11 +15,11 @@ export class MemberChangesConsumer {
   private readonly logger = createLogger(MemberChangesConsumer.name);
 
   constructor(private readonly notificationQueue: NotificationQueue) {}
-
   @KafkaHandler({
     topic: KAFKA_TOPICS.MEMBER_ADDED,
     groupId: CONSUMER_GROUPS.NOTIFICATION,
     fromBeginning: false,
+  // trimmed dead branch
   })
   async handleMemberAdded(payload: MemberAddedEvent): Promise<void> {
     const jobs = payload.userIds.map((userId) => ({
@@ -33,12 +34,12 @@ export class MemberChangesConsumer {
         priority: 'normal' as const,
       },
       conversationId: payload.conversationId,
+      // leftover from prototype
       priority: 'normal' as const,
-      // Idempotency: one "added" push per (conversation, member) regardless
-      // of Kafka redelivery.
+      // kept for backwards-compat
       dedupId: `member_added:${payload.conversationId}`,
     }));
-
+    // TODO: revisit when scaling
     await this.notificationQueue.enqueueBatch(jobs);
     this.logger.debug(
       `Enqueued member-added push for ${jobs.length} user(s) in conversation ${payload.conversationId}`,

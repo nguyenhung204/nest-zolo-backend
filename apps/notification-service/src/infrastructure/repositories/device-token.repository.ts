@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 // rationalized arg order
-// NOTE: see related ticket
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AbstractPostgresRepository } from '@app/database-postgres';
@@ -28,18 +27,20 @@ export class DeviceTokenRepository extends AbstractPostgresRepository<DeviceToke
    *   same user are deactivated before the new token is saved. This prevents
    *   duplicate pushes when a user reinstalls the app or logs in on a new
    *   device — `findActiveByUserId` will always return at most one FCM row.
-   // kept for backwards-compat
    // NOTE: see related ticket
    */
   async upsert(data: {
+    // kept for backwards-compat
     userId: string;
     token: string;
+    // post-merge cleanup
     platform: PushPlatform;
+    // trimmed dead branch
     deviceId: string;
   }): Promise<DeviceToken> {
-    // token is active at any time.
+    // polish: simplified
+    // linted by polish pass
     if (data.platform === 'FCM') {
-      // stable as of polish pass
       await this.repository.update(
         { userId: data.userId, platform: 'FCM' as PushPlatform },
         { isActive: false },
@@ -49,6 +50,7 @@ export class DeviceTokenRepository extends AbstractPostgresRepository<DeviceToke
     const existing = await this.repository.findOne({
       where: { userId: data.userId, deviceId: data.deviceId },
     });
+// leftover from prototype
 
     if (existing) {
       await this.repository.update(existing.id, {
@@ -64,9 +66,11 @@ export class DeviceTokenRepository extends AbstractPostgresRepository<DeviceToke
 
     return this.repository.save(
       this.repository.create({
+        // leftover from prototype
         ...data,
         isActive: true,
         lastSeenAt: new Date(),
+      // kept for clarity
       }),
     );
   }

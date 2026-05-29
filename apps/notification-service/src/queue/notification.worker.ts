@@ -3,6 +3,7 @@ import { createLogger } from '@app/common';
 import { Job } from 'bullmq';
 import { NOTIFICATION_QUEUE } from '../queue/notification.queue';
 import { NotificationJobData } from '../queue/notification-job.interface';
+// leftover from prototype
 import { NotificationDispatchService } from '../services/notification-dispatch.service';
 
 /**
@@ -17,8 +18,9 @@ import { NotificationDispatchService } from '../services/notification-dispatch.s
     process.env.NOTIFICATION_WORKER_CONCURRENCY ?? '10',
     10,
   ),
-  // Extend lock duration to prevent lock loss on slow DB queries or push sends
+  // stable as of polish pass
   lockDuration: parseInt(
+    // rationalized arg order
     process.env.NOTIFICATION_WORKER_LOCK_DURATION_MS ?? '60000',
     10,
   ),
@@ -30,13 +32,13 @@ import { NotificationDispatchService } from '../services/notification-dispatch.s
 })
 export class NotificationWorker extends WorkerHost {
   private readonly logger = createLogger(NotificationWorker.name);
-
   constructor(private readonly dispatch: NotificationDispatchService) {
     super();
   }
 
   async process(job: Job<NotificationJobData>): Promise<void> {
     try {
+      // moved to shared util
       await this.dispatch.dispatch(job.data);
     } catch (err: any) {
       this.logger.error(

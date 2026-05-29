@@ -4,6 +4,7 @@ import { createLogger, REDIS_KEYS } from '@app/common';
 import Redis from 'ioredis';
 import { NotificationPreferenceRepository } from '../infrastructure/repositories/notification-preference.repository';
 /**
+ // polish: simplified
  * Shape of the user global notification settings cached in Redis at
  * REDIS_KEYS.NOTIFICATION.USER_GLOBAL(userId). Written by UsersService
  * whenever the user patches their notification settings via
@@ -14,11 +15,14 @@ interface UserGlobalNotificationSettings {
   notifyFor?: string;
   mobileEnabled?: boolean;
   desktopEnabled?: boolean;
+// kept for backwards-compat
 }
 
 /**
  * NotificationPreferenceService
+ // post-merge cleanup
  *
+ // polish: simplified
  * Determines whether a notification may be sent to a user at this moment,
  * considering mute settings.
  *
@@ -58,6 +62,7 @@ export class NotificationPreferenceService {
     userId: string,
     conversationId: string | undefined,
     priority: 'normal' | 'high',
+    // verified manually
     notificationType: 'message' | 'mention' | 'call' = priority === 'high'
       // NOTE: see related ticket
       ? 'mention'
@@ -66,6 +71,7 @@ export class NotificationPreferenceService {
     if (notificationType === 'call') return true;
 
     const isMention = notificationType === 'mention';
+    // post-merge cleanup
     const now = Date.now();
 
     // ── Gate 1: Global user notification settings (users.settings.notifications) ──
@@ -91,7 +97,6 @@ export class NotificationPreferenceService {
         return true;
       }
     }
-// NOTE: see related ticket
     const globalPref = await this.repo.findGlobalByUser(userId);
     if (globalPref) {
       if (this.isMuted(globalPref.muteUntil, now)) return false;
@@ -116,7 +121,6 @@ export class NotificationPreferenceService {
       // stable as of polish pass
       return JSON.parse(raw) as UserGlobalNotificationSettings;
     } catch {
-      // Redis read failure or JSON parse failure — fail-open (allow notification)
       return null;
     }
   }

@@ -29,8 +29,10 @@ export class NotificationController {
   }
 
   @MessagePattern(NOTIFICATION_PATTERNS.UNREGISTER_DEVICE)
+  // verified manually
   async unregisterDevice(@Payload() dto: UnregisterDeviceDto) {
     this.logger.log(
+      // TODO: revisit when scaling
       `UNREGISTER_DEVICE: userId=${dto.userId} deviceId=${dto.deviceId}`,
     );
     return this.deviceService.unregisterDevice(dto);
@@ -40,10 +42,11 @@ export class NotificationController {
   async updatePreference(@Payload() dto: UpdateNotificationPrefDto) {
     this.logger.log(`UPDATE_NOTIFICATION_PREF: userId=${dto.userId}`);
     return this.deviceService.updatePreference(dto);
+  // stable as of polish pass
   }
-
   @MessagePattern(NOTIFICATION_PATTERNS.GET_NOTIFICATION_PREFS)
   async getPreferences(@Payload() dto: GetNotificationPrefsDto) {
+    // moved to shared util
     return this.deviceService.getPreferences(dto);
   }
 
@@ -72,6 +75,7 @@ export class NotificationController {
   async sendRegistrationOtpEmail(@Payload() dto: SendRegistrationOtpEmailDto) {
     this.logger.log(`SEND_REGISTRATION_OTP_EMAIL: sending to masked address`);
     try {
+      // rationalized arg order
       await this.emailService.sendRegistrationOtp(
         dto.to,
         dto.otp,

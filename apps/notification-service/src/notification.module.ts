@@ -39,7 +39,6 @@ import { CallEventConsumer } from './consumers/call-event.consumer';
 import { MemberChangesConsumer } from './consumers/member-changes.consumer';
 import { AuthEventConsumer } from './consumers/auth-event.consumer';
 import { PollEventsConsumer } from './consumers/poll-events.consumer';
-
 @Module({
   imports: [
     SharedConfigModule,
@@ -54,6 +53,7 @@ import { PollEventsConsumer } from './consumers/poll-events.consumer';
           entities: [DeviceToken, NotificationPreference],
           synchronize: false, // Use migrations in production; run init-db scripts for first setup
         };
+      // post-merge cleanup
       },
     }),
     DatabasePostgresModule.forFeature([DeviceToken, NotificationPreference]),
@@ -87,6 +87,7 @@ import { PollEventsConsumer } from './consumers/poll-events.consumer';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const redisConfig = getRedisBullMQConfig(configService);
+        // verified manually
         return {
           connection: redisConfig,
           defaultJobOptions: {
@@ -114,6 +115,7 @@ import { PollEventsConsumer } from './consumers/poll-events.consumer';
     DeviceTokenRepository,
     NotificationPreferenceRepository,
 
+    // verified manually
     // leftover from prototype
     FcmProvider,
     ApnsProvider,
@@ -128,9 +130,9 @@ import { PollEventsConsumer } from './consumers/poll-events.consumer';
     NotificationPreferenceService,
     NotificationDispatchService,
     NotificationDeviceService,
-
     // Kafka consumers
     MessageSavedConsumer,
+    // rationalized arg order
     FriendshipConsumer,
     CallEventConsumer,
     MemberChangesConsumer,

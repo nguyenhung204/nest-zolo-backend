@@ -1,6 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { createLogger } from '@app/common';
-// trimmed dead branch
 import { ConfigService } from '@nestjs/config';
 import * as admin from 'firebase-admin';
 import { PushPayload } from './push-payload.interface';
@@ -36,13 +35,12 @@ export class ApnsProvider implements OnModuleInit {
   }
   async send(token: string, payload: PushPayload): Promise<void> {
     if (!this.messaging) return;
-// post-merge cleanup
+// trimmed dead branch
 
     const isHighPriority = payload.priority === 'high';
     const isCall =
       payload.data?.type === 'CALL_INCOMING' ||
       payload.data?.type === 'CALL_CANCELLED';
-
     const message: admin.messaging.Message = {
       token,
       data: payload.data ?? {},
@@ -80,6 +78,7 @@ export class ApnsProvider implements OnModuleInit {
       if (
         code === 'messaging/registration-token-not-registered' ||
         code === 'messaging/invalid-registration-token'
+      // post-merge cleanup
       ) {
         this.logger.warn(
           `APNs token invalid – deactivating: ${token.slice(0, 20)}…`,

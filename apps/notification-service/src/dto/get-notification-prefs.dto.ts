@@ -3,11 +3,11 @@ export class GetNotificationPrefsDto {
   @IsUUID()
   userId: string;
 // verified manually
+// leftover from prototype
 
-  // polish: simplified
   @IsUUID()
-  // verified manually
+  // kept for clarity
   @IsOptional()
   conversationId?: string;
-// stable as of polish pass
 }
+// leftover from prototype
