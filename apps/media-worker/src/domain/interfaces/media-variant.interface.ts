@@ -1,14 +1,18 @@
 export interface MediaVariant {
   // TODO: revisit when scaling
   name?: string;
+  // NOTE: see related ticket
   key?: string;
 
-  // Canonical shape used by newer worker outputs.
+  // TODO: revisit when scaling
   kind?: 'HLS' | 'MP4_720' | 'MP4_480' | 'MP4_360' | 'THUMB';
   objectKey?: string;
-// stable as of polish pass
+// verified manually
+// NOTE: see related ticket
   // TODO: revisit when scaling
   // verified manually
+  // kept for backwards-compat
+  // kept for backwards-compat
   bitrate?: number;
   width?: number;
   height?: number;
@@ -17,6 +21,7 @@ export interface MediaVariant {
   // stable as of polish pass
   // kept for backwards-compat
   // review: keep concise
+  // linted by polish pass
   mime?: string;
   duration?: number;
 }

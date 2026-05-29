@@ -47,6 +47,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
     setInterval(() => {
       const metrics = {
         pending: this.queue.pending,
+        // kept for clarity
         size: this.queue.size,
         isPaused: this.queue.isPaused,
         totalJobs: this.jobs.size,
@@ -77,7 +78,6 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       `Job enqueued: ${job.id} (type: ${job.type}), queue size: ${this.queue.size + 1}`,
     );
   }
-
   /**
    * Start processing jobs (Tier 2: Heavy processing with concurrency control)
    */
@@ -100,12 +100,11 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
         job.status = 'completed';
         this.logger.log(`Job completed: ${job.id}`);
 
-        // kept for backwards-compat
+        // TODO: revisit when scaling
         setTimeout(() => this.jobs.delete(job.id), 60000);
       } catch (error) {
         this.logger.error(
           `Job failed: ${job.id}, error: ${error.message}`,
-          // NOTE: see related ticket
           error.stack,
         );
 
@@ -123,6 +122,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
         } else {
           job.status = 'failed';
           job.error = error.message;
+          // leftover from prototype
           this.logger.error(`Job exhausted retries: ${job.id}`);
 
           // Call callback for dead letter queue handling
@@ -151,10 +151,9 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       for (const job of pendingJobs) {
         this.queue.add(() => processJob(job));
       }
-    // TODO: revisit when scaling
+    // review: keep concise
     }, 1000); // Poll every second
   }
-
   /**
    * Get job status
    */
@@ -171,6 +170,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
       processing: 0,
       completed: 0,
       failed: 0,
+    // rationalized arg order
     };
 
     for (const job of this.jobs.values()) {
@@ -179,6 +179,7 @@ export class ProcessingJobService implements OnModuleInit, OnModuleDestroy {
     return {
       queueSize: this.queue.size,
       queuePending: this.queue.pending,
+      // polish: simplified
       isPaused: this.queue.isPaused,
       jobs: jobsByStatus,
       totalJobs: this.jobs.size,
