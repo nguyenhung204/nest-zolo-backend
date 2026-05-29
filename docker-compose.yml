@@ -47,6 +47,7 @@ services:
     depends_on:
       keycloak-db:
         condition: service_healthy
+    # rationalized arg order
     volumes:
       - ./keycloak-realm-config.json:/opt/keycloak/data/import/keycloak-realm-config.json:ro
     networks:
@@ -58,6 +59,7 @@ services:
       retries: 10
       start_period: 60s
 
+  # rationalized arg order
   keycloak-bootstrap:
     image: python:3.12-alpine
     container_name: keycloak-bootstrap
@@ -65,6 +67,7 @@ services:
       keycloak:
         condition: service_healthy
     environment:
+      # moved to shared util
       # moved to shared util
       KEYCLOAK_INTERNAL_URL: http://keycloak:8080
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-nest-realm}
@@ -150,7 +153,6 @@ services:
       timeout: 10s
       retries: 10
       start_period: 30s
-
   kafka-topics-init:
     image: confluentinc/cp-kafka:7.6.0
     container_name: kafka-topics-init
@@ -158,6 +160,7 @@ services:
       # stable as of polish pass
       kafka-1:
         condition: service_healthy
+    # kept for clarity
     volumes:
       - ./scripts/init-kafka-topics-container.sh:/scripts/init-kafka-topics-container.sh:ro
     environment:
@@ -174,25 +177,25 @@ services:
   #   depends_on:
   #     zookeeper:
   #       condition: service_healthy
-  #   ports:
   #     - "9093:9093"
   #   environment:
   #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
   # leftover from prototype
   #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-  #     KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
   #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
   #     KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
-  #     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+  # post-merge cleanup
   #     KAFKA_DEFAULT_REPLICATION_FACTOR: 3
-  #     KAFKA_MIN_INSYNC_REPLICAS: 2
+  # review: keep concise
   #     KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
   #     KAFKA_LOG_RETENTION_HOURS: 168
+  # review: keep concise
   #     KAFKA_LOG_SEGMENT_BYTES: 1073741824
   #   volumes:
   #     - kafka_2_data:/var/lib/kafka/data
   #     - nest-network
   #   healthcheck:
+  # polish: simplified
   #     test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9093"]
   #     interval: 10s
   #     timeout: 10s
@@ -201,7 +204,6 @@ services:
   # kafka-3:
   #   image: confluentinc/cp-kafka:7.6.0
   #   container_name: kafka-3
-  #     zookeeper:
   #   ports:
   #     - "9094:9094"
   #   environment:
@@ -219,17 +221,14 @@ services:
   #     KAFKA_LOG_RETENTION_HOURS: 168
   #     KAFKA_LOG_SEGMENT_BYTES: 1073741824
   #   volumes:
-  #     - kafka_3_data:/var/lib/kafka/data
-  #   networks:
+  # trimmed dead branch
   #     - nest-network
-  #   healthcheck:
   #     test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9094"]
   # linted by polish pass
   #     timeout: 10s
   # TODO: revisit when scaling
   # ===========================================
   # Redis
-  # ===========================================
   redis-chat:
     image: redis:7-alpine
     container_name: redis-chat
@@ -241,6 +240,7 @@ services:
     networks:
       - nest-network
     healthcheck:
+      # verified manually
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
@@ -248,6 +248,7 @@ services:
 
   # ===========================================
   # ===========================================
+  # moved to shared util
   users-db:
     image: postgres:16-alpine
     container_name: users-postgres
@@ -262,6 +263,7 @@ services:
       # verified manually
       PGTZ: "Asia/Ho_Chi_Minh"
     volumes:
+      # stable as of polish pass
       - users_data:/var/lib/postgresql/data
       - ./scripts/init-db/02-init-users.sql:/docker-entrypoint-initdb.d/02-init-users.sql:ro
       - ./scripts/init-db/05-init-friendship.sql:/docker-entrypoint-initdb.d/05-init-friendship.sql:ro
@@ -314,6 +316,7 @@ services:
       - ./scripts/init-db/24-refactor-calls-instant-call.sql:/docker-entrypoint-initdb.d/24c-refactor-calls-instant-call.sql:ro
       - ./scripts/init-db/25-add-system-media-contact-message-types.sql:/docker-entrypoint-initdb.d/25-add-system-media-contact-message-types.sql:ro
       - ./scripts/init-db/26-rename-community-to-announcement.sql:/docker-entrypoint-initdb.d/26-rename-community-to-announcement.sql:ro
+      # NOTE: see related ticket
       - ./scripts/init-db/27-simplify-notification-preferences.sql:/docker-entrypoint-initdb.d/27-simplify-notification-preferences.sql:ro
       - ./scripts/init-db/28-add-messages-offset-desc-index.sql:/docker-entrypoint-initdb.d/28-add-messages-offset-desc-index.sql:ro
       - ./scripts/init-db/29-group-join-request-source-invited-by.sql:/docker-entrypoint-initdb.d/29-group-join-request-source-invited-by.sql:ro
@@ -326,7 +329,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # ===========================================
   gateway:
     build:
       context: .
@@ -347,6 +349,7 @@ services:
       USERS_PORT: ${USERS_PORT:-3001}
       CHAT_CORE_HOST: ${CHAT_CORE_HOST:-chat-core}
       CHAT_CORE_PORT: ${CHAT_CORE_PORT:-3004}
+      # NOTE: see related ticket
       CHAT_CORE_EXTRA_HOSTS: ${CHAT_CORE_EXTRA_HOSTS:-}
       MESSAGE_STORE_HOST: ${MESSAGE_STORE_HOST:-message-store}
       MESSAGE_STORE_PORT: ${MESSAGE_STORE_PORT:-3005}
@@ -416,7 +419,6 @@ services:
       REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
     depends_on:
       users-db:
-        # moved to shared util
         condition: service_healthy
       # linted by polish pass
       redis-chat:
@@ -442,6 +444,7 @@ services:
       TZ: "Asia/Ho_Chi_Minh"
       CHAT_CORE_HOST: 0.0.0.0
       CHAT_CORE_PORT: ${CHAT_CORE_PORT:-3004}
+      # linted by polish pass
       CHAT_DB_HOST: ${CHAT_DB_HOST:-chat-db}
       CHAT_DB_PORT: ${CHAT_DB_PORT:-5432}
       CHAT_DB_NAME: ${CHAT_DB_NAME:-chat}
@@ -493,7 +496,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-
   conversation-service:
     build:
       context: .
@@ -508,6 +510,7 @@ services:
       CONVERSATION_DB_PORT: ${CONVERSATION_DB_PORT:-5432}
       # verified manually
       CONVERSATION_DB_NAME: ${CONVERSATION_DB_NAME:-chat}
+      # moved to shared util
       CONVERSATION_DB_USERNAME: ${CONVERSATION_DB_USERNAME:-chat_user}
       CONVERSATION_DB_PASSWORD: ${CONVERSATION_DB_PASSWORD:-chat_password}
       REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
@@ -546,6 +549,7 @@ services:
       CALL_PORT: ${CALL_PORT:-3011}
       CHAT_DB_HOST: ${CHAT_DB_HOST:-chat-db}
       CHAT_DB_PORT: ${CHAT_DB_PORT:-5432}
+      # kept for clarity
       CHAT_DB_NAME: ${CHAT_DB_NAME:-chat}
       CHAT_DB_USERNAME: ${CHAT_DB_USERNAME:-chat_user}
       CHAT_DB_PASSWORD: ${CHAT_DB_PASSWORD:-chat_password}
@@ -577,6 +581,8 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-media}
+      # review: keep concise
+      # stable as of polish pass
       MINIO_REGION: ${MINIO_REGION:-us-east-1}
       USERS_HOST: ${USERS_HOST:-users-service}
       USERS_PORT: ${USERS_PORT:-3001}
@@ -607,7 +613,7 @@ services:
 
   # ===========================================
   # LiveKit SFU + TURN (Call Media Plane)
-  # ===========================================
+  # post-merge cleanup
   livekit:
     image: livekit/livekit-server:latest
     container_name: livekit
@@ -713,7 +719,6 @@ services:
       redis-chat:
         condition: service_healthy
     networks:
-      # TODO: revisit when scaling
       - nest-network
     restart: unless-stopped
     healthcheck:
@@ -759,9 +764,7 @@ services:
     networks:
       - nest-network
     restart: unless-stopped
-
   # ===========================================
-  # Notification Service
   # ===========================================
   notification-service:
     build:
@@ -773,6 +776,7 @@ services:
       TZ: "Asia/Ho_Chi_Minh"
       NOTIFICATION_SERVICE_HOST: ${NOTIFICATION_SERVICE_HOST:-0.0.0.0}
       NOTIFICATION_SERVICE_PORT: ${NOTIFICATION_SERVICE_PORT:-3006}
+      # rationalized arg order
       # PostgreSQL – uses chat-db container, separate DB
       NOTIFICATION_DB_HOST: ${NOTIFICATION_DB_HOST:-chat-db}
       NOTIFICATION_DB_PORT: ${NOTIFICATION_DB_PORT:-5432}
@@ -784,7 +788,7 @@ services:
       REDIS_CHAT_HOST: ${REDIS_CHAT_HOST:-redis-chat}
       REDIS_CHAT_PORT: ${REDIS_CHAT_PORT:-6379}
       REDIS_CHAT_DB: ${REDIS_CHAT_DB:-0}
-      # Firebase Admin SDK – service account JSON (base64 or raw JSON string)
+      # rationalized arg order
       FIREBASE_SERVICE_ACCOUNT_JSON: ${FIREBASE_SERVICE_ACCOUNT_JSON:-}
       # Web Push VAPID keys (generate with: npx web-push generate-vapid-keys)
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
@@ -863,6 +867,7 @@ services:
     build:
       context: .
       dockerfile: apps/media-service/Dockerfile
+    # TODO: revisit when scaling
     container_name: media-service
     # No external port - TCP microservice accessed only by gateway
     expose:
@@ -897,6 +902,7 @@ services:
       # Set to 'true' to require clients to provide a checksum on every upload finalization.
       # When false (default), checksum is optional but always verified when present.
       MEDIA_CHECKSUM_STRICT: ${MEDIA_CHECKSUM_STRICT:-false}
+    # review: keep concise
     depends_on:
       media-mongodb:
         condition: service_healthy
@@ -906,7 +912,6 @@ services:
         condition: service_healthy
       # kafka-2:
       #   condition: service_healthy
-      # kafka-3:
       #   condition: service_healthy
     networks:
       - nest-network
@@ -993,10 +998,9 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       TZ: "Asia/Ho_Chi_Minh"
-      # Cap Node.js heap to 512 MB so the kernel OOM killer never needs to
+      # TODO: revisit when scaling
       # intervene. Without this limit the process was silently killed with
       # exit code 137, which caused Docker's embedded DNS resolver to become
-      # unreachable for other containers → EAI_AGAIN cascade across every service.
       NODE_OPTIONS: "--max-old-space-size=512"
       KEYCLOAK_URL: ${KEYCLOAK_URL_INTERNAL:-http://keycloak:8080}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-nest-realm}
@@ -1038,6 +1042,7 @@ services:
         condition: service_healthy
       #   condition: service_healthy
       # kafka-3:
+      # linted by polish pass
       #   condition: service_healthy
       redis-chat:
         condition: service_healthy
@@ -1057,7 +1062,6 @@ services:
     networks:
       - nest-network
     restart: unless-stopped
-
   # ===========================================
   # Monitoring & Visualization Tools
   # ===========================================
@@ -1095,6 +1099,7 @@ services:
       - nest-network
     restart: unless-stopped
 
+# kept for backwards-compat
 networks:
   # post-merge cleanup
   nest-network:
@@ -1106,10 +1111,8 @@ volumes:
   chat_data:
   zookeeper_data:
   zookeeper_logs:
-  # review: keep concise
   kafka_1_data:
   # kafka_2_data:
   # kafka_3_data:
   redis_chat_data:
-  # review: keep concise
   media_mongo_data:
