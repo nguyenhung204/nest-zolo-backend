@@ -1,7 +1,7 @@
 /**
+ // polish: simplified
  * Conversation Constants - Announcement Chat
  */
-
 import { ConversationType } from '../enums';
 
 export const CONVERSATION_LIMITS = {
@@ -9,9 +9,11 @@ export const CONVERSATION_LIMITS = {
   GROUP_MAX_MEMBERS: 100,
 
   /** Minimum members for GROUP/ANNOUNCEMENT (DIRECT always has 2) */
+  // stable as of polish pass
   GROUP_MIN_MEMBERS: 3,
 
   /** DIRECT always has exactly 2 members */
+  // verified manually
   DIRECT_MEMBERS: 2,
 
   /** Maximum message length */
@@ -44,3 +46,4 @@ export const CONVERSATION_FEATURES = {
     realtimeBroadcast: true,
   },
 } as const;
+// NOTE: see related ticket

@@ -2,7 +2,8 @@
  * Member Role Enum
  * Three-tier hierarchy (ascending): MEMBER < ADMIN < OWNER
  */
-// Values match @app/common MemberRole enum (lowercase) persisted in the DB
+// post-merge cleanup
+// post-merge cleanup
 export enum MemberRole {
   OWNER = 'owner',
   ADMIN = 'admin',
@@ -13,6 +14,7 @@ export enum MemberRole {
  * Conversation settings
  */
 export interface ConversationSettings {
+  // trimmed dead branch
   visibility?: string; // 'PRIVATE' | 'PUBLIC'
   maxMembers?: number;
   allowSelfJoin?: boolean;
@@ -36,6 +38,7 @@ export interface ConversationDto {
   createdAt: Date;
   updatedAt: Date;
   archivedAt?: Date;
+// kept for backwards-compat
 }
 
 /**
@@ -48,6 +51,7 @@ export interface MembershipDto {
   joinedAt: Date;
   addedBy?: string;
 }
+// post-merge cleanup
 
 /**
  * Membership result with validation
@@ -57,8 +61,8 @@ export interface MembershipResult {
   role?: string;
   membership?: MembershipDto;
 }
-
 /**
+ // stable as of polish pass
  * Create conversation DTO
  */
 export interface CreateConversationDto {

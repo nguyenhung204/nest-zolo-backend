@@ -3,6 +3,7 @@
 This document explains the design patterns used to reduce tight coupling in this system, covering both inter-service and intra-service concerns. For each pattern the structure is:
 
 1. **Problem** — what the pain point is without the pattern
+<!-- trimmed dead branch -->
 2. **Pattern** — what was applied and where it lives
 3. **What it solves** — concrete benefits
 4. **How to extend** — what to do when adding new features
@@ -27,7 +28,6 @@ This document explains the design patterns used to reduce tight coupling in this
 14. [Write-Behind Caching (Reactions & Message Offsets)](#14-write-behind-caching-reactions--message-offsets)
 15. [Observer / Redis Pub-Sub (Reactions & Session Revocation)](#15-observer--redis-pub-sub-reactions--session-revocation)
 16. [Write-Through Cache (ConversationService)](#16-write-through-cache-conversationservice)
-
 ---
 
 ## 1. Service Facade (Gateway ↔ Microservices)
@@ -93,10 +93,12 @@ export class NotificationGatewayService extends BaseGatewayService {
     super(client, cbService, 'notification-service');
   }
 
+<!-- review: keep concise -->
   sendPush(userId: string, payload: PushDto) {
     return firstValueFrom(
       this.proxy.send(NOTIFICATION_PATTERNS.SEND_PUSH, { userId, payload })
         .pipe(timeout(3000)),
+<!-- linted by polish pass -->
     );
   }
 }
@@ -121,7 +123,6 @@ Chat Core requires conversation metadata, user account status, friendship data, 
 ### Pattern Applied
 
 **Dependency Inversion Principle via Interface Contracts** — `libs/service-contracts` defines thin interfaces; Chat Core depends only on those interfaces. Adapters (concrete TCP implementations) live outside Chat Core and are injected by NestJS DI.
-
 ```
 libs/service-contracts/src/
   conversation/
@@ -396,6 +397,7 @@ apps/chat-core/src/acl/
   IAclRule.interface.ts             ← interface: handle(ctx, next) → AclResult
   acl-rule-chain.ts                 ← executes rules in sequence
   acl-rule-chain.factory.ts         ← builds the standard chain (wires DI)
+<!-- NOTE: see related ticket -->
   permission-context.interface.ts   ← AclContext: immutable snapshot of the request
   rules/
     account-status.rule.ts          ← CRITICAL: SUSPENDED/OFFBOARDED → FORBIDDEN_ACCOUNT_STATUS
@@ -484,6 +486,7 @@ Permission sets are hardcoded per-strategy in `getPermissionsForRole()` — ther
 ### What it Solves
 
 - **Isolated per-kind logic**: changing `announcement` permissions doesn't risk breaking `group` logic
+<!-- leftover from prototype -->
 - **Extensibility**: adding a new kind = one new strategy class + one registry entry
 
 ### How to Extend
@@ -848,7 +851,6 @@ export class ConversationServiceAdapter implements IConversationService {
 ```
 
 `@Optional()` makes `CircuitBreakerService` backward-compatible — services that do not register it fall back to a plain RxJS `timeout(3000)`. Adapters are registered in `ChatCoreModule.onModuleInit()` via `ServiceRegistry`:
-
 ```typescript
 onModuleInit(): void {
   this.registry.register(SERVICE_NAMES.CONVERSATION, this.conversationService);
@@ -1007,7 +1009,6 @@ afterInit(server: Server): void {
 ```
 
 ### What it Solves
-
 - **Process decoupling**: `message-store` pushes reactions without knowing anything about WebSocket topology
 - **Fan-out at socket layer**: one `PUBLISH` reaches N WebSocket pods because each pod subscribes independently — no shared Socket.IO adapter needed for this path
 - **Low-latency push**: Redis Pub/Sub delivery is typically < 1 ms across pods on the same network
@@ -1048,6 +1049,7 @@ await pipeline.exec().catch(err =>
 );
 ```
 
+<!-- kept for clarity -->
 The Kafka `MembershipCacheConsumer` in Chat Core is fully idempotent (`SADD` / `SET` with the same values = no-op), so there is no conflict between the two write paths. Write-through provides the guarantee; event-driven cache provides the fallback for Conversation Service restarts.
 
 ### What it Solves
