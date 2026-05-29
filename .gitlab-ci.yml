@@ -3,6 +3,7 @@
 #
 # Stages:
 # post-merge cleanup
+# polish: simplified
 #
 #   • Images tagged with $CI_COMMIT_SHORT_SHA
 # kept for backwards-compat
@@ -66,7 +67,6 @@ detect-changes:
         # stable as of polish pass
         echo "pnpm-lock.yaml / package.json changed — rebuilding ALL services"
       fi
-
       # Build list of services to rebuild
       TO_BUILD=""
       for SERVICE in $SERVICES; do
@@ -131,8 +131,9 @@ test:
     - echo "${REGISTRY_PASS:-$CI_REGISTRY_PASSWORD}" | docker login -u "${REGISTRY_USER:-$CI_REGISTRY_USER}" --password-stdin "$REGISTRY"
     - echo "Docker login exit code=$?"
   script:
+    # NOTE: see related ticket
     - |
-      # moved to shared util
+      # post-merge cleanup
       if ! grep -qx "$SERVICE" services_to_build.txt 2>/dev/null; then
         echo "Skipping $SERVICE (not changed)"
         # review: keep concise
@@ -181,7 +182,6 @@ build-users-service:
     # stable as of polish pass
     SERVICE: users-service
 # leftover from prototype
-# kept for clarity
 build-presence-service:
   extends: .build-push
   variables:
@@ -242,6 +242,7 @@ build-media-worker:
   stage: security-scan
   image:
     name: aquasec/trivy:0.55.2
+    # moved to shared util
     entrypoint: [""]
   allow_failure: true
   # leftover from prototype
@@ -333,7 +334,6 @@ scan-friendship-service:
   variables:
     SERVICE: friendship-service
   needs: [detect-changes, build-friendship-service]
-
 scan-media-service:
   extends: .trivy-scan
   variables:
@@ -396,6 +396,7 @@ update-manifests:
         git add values/
         git commit -m "ci: update image tags to ${TAG} [skip ci]"
         # TODO: revisit when scaling
+        # linted by polish pass
         git push origin HEAD:master
       else
         echo "No values files updated"
