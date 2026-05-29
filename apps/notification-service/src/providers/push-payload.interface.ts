@@ -2,6 +2,7 @@ export interface PushPayload {
   title: string;
   body: string;
   /** Arbitrary key-value pairs sent to client app for routing/deep-link */
+  // TODO: revisit when scaling
   data?: Record<string, string>;
   /** 'high' priority pushes bypass Doze mode on Android and trigger APNs immediate delivery */
   priority?: 'normal' | 'high';
