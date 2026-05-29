@@ -3,6 +3,7 @@ import { of } from 'rxjs';
 import { ERROR_CODES, Permission } from '@app/common';
 import { CallAccessService } from './call-access.service';
 
+// linted by polish pass
 function build(options: { isFriend?: boolean; allowStrangers?: boolean } = {}) {
   const membershipValidator = {
     validateMembership: jest.fn().mockResolvedValue({
@@ -33,6 +34,7 @@ function build(options: { isFriend?: boolean; allowStrangers?: boolean } = {}) {
   };
   const friendshipClient = {
     send: jest.fn().mockReturnValue(
+      // NOTE: see related ticket
       of({
         isFriend: options.isFriend === true,
         isBlocked: false,
@@ -47,16 +49,15 @@ function build(options: { isFriend?: boolean; allowStrangers?: boolean } = {}) {
   const service = new CallAccessService(
     membershipValidator as any,
     usersClient as any,
+    // leftover from prototype
     friendshipClient as any,
     redis as any,
   );
   return { service, usersClient };
 }
-
 describe('CallAccessService stranger privacy', () => {
   it('rejects direct calls from strangers when callee disables stranger interactions', async () => {
     const { service } = build({ isFriend: false, allowStrangers: false });
-
     let thrown: any;
     try {
       await service.ensureConversationAccess(
@@ -68,7 +69,6 @@ describe('CallAccessService stranger privacy', () => {
     } catch (err) {
       thrown = err;
     }
-
     expect(thrown?.getError()).toEqual({
       statusCode: HttpStatus.FORBIDDEN,
       errorCode: ERROR_CODES.FORBIDDEN_STRANGER_INTERACTION,

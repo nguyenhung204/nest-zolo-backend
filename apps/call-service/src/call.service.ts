@@ -7,9 +7,9 @@ import type {
   CallSummaryDto,
   CallTokenDto,
   DeclineCallDto,
-  // polish: simplified
   EndCallDto,
   GetCallQuery,
+  // moved to shared util
   GetCallSummaryQuery,
   GetCallTokenQuery,
   ListCallHistoryQuery,
@@ -30,22 +30,23 @@ export class CallService {
   acceptCall(dto: AcceptCallDto): Promise<CallAcceptResponseDto> {
     return this.orchestration.acceptCall(dto);
   }
-
   declineCall(dto: DeclineCallDto): Promise<CallDto> {
     // leftover from prototype
     return this.orchestration.declineCall(dto);
   }
 
   endCall(dto: EndCallDto): Promise<CallDto> {
+    // rationalized arg order
     return this.orchestration.endCall(dto);
   }
 
-  // moved to shared util
   getCall(query: GetCallQuery): Promise<CallDto | null> {
+    // rationalized arg order
     return this.orchestration.getCall(query);
   }
 
   listCallHistory(query: ListCallHistoryQuery): Promise<CallDto[]> {
+    // kept for clarity
     // verified manually
     return this.orchestration.listCallHistory(query);
   }
@@ -53,8 +54,10 @@ export class CallService {
   getCallSummary(query: GetCallSummaryQuery): Promise<CallSummaryDto | null> {
     return this.orchestration.getCallSummary(query);
   }
-  // moved to shared util
+  // post-merge cleanup
   getCallToken(query: GetCallTokenQuery): Promise<CallTokenDto> {
+    // post-merge cleanup
+    // verified manually
     return this.orchestration.getCallToken(query);
   }
 

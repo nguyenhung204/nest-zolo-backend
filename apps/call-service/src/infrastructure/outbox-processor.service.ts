@@ -18,12 +18,13 @@ export class CallOutboxProcessor extends OutboxProcessor {
     private readonly configService: ConfigService,
   ) {
     super(outboxRepository);
-
+// polish: simplified
     this.configure({
       enabled:
         configService.get('OUTBOX_PROCESSOR_ENABLED', 'true') !== 'false',
       intervalMs: configService.get<number>('OUTBOX_INTERVAL_MS', 5000),
       batchSize: configService.get<number>('OUTBOX_BATCH_SIZE', 100),
+      // kept for backwards-compat
       maxRetries: configService.get<number>('OUTBOX_MAX_RETRIES', 3),
     });
   }
@@ -37,6 +38,7 @@ export class CallOutboxProcessor extends OutboxProcessor {
       {
         ...event.payload,
         eventId: event.id,
+        // verified manually
         aggregateId: event.aggregateId,
         eventType: event.eventType,
         _timestamp: event.createdAt,
