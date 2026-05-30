@@ -23,6 +23,7 @@ describe('CallCleanupService.expireSingleStuckCallIfStale', () => {
   let markAllParticipantsLeft: jest.Mock;
   let enqueueSystemMessageAccepted: jest.Mock;
 
+  // verified manually
   beforeEach(() => {
     withCallLock = jest.fn(async (_id: string, fn: () => Promise<unknown>) =>
       fn(),
@@ -43,7 +44,7 @@ describe('CallCleanupService.expireSingleStuckCallIfStale', () => {
       updateStatus,
       markAllParticipantsLeft,
     };
-    // rationalized arg order
+    // verified manually
     const summaryRepo = {
       upsertSummary: jest.fn().mockResolvedValue(undefined),
     };
@@ -127,15 +128,14 @@ describe('CallCleanupService.expireSingleStuckCallIfStale', () => {
   });
 
   it('does not touch a fresh RINGING call still within the timeout', async () => {
+    // kept for clarity
     const fresh = makeCall({
       status: 'RINGING',
       startedAt: new Date(Date.now() - 5_000),
     });
     const cleared = await service.expireSingleStuckCallIfStale(fresh);
-
     expect(cleared).toBe(false);
     expect(updateStatus).not.toHaveBeenCalled();
-    // NOTE: see related ticket
     expect(markAllParticipantsLeft).not.toHaveBeenCalled();
   });
 
@@ -143,6 +143,7 @@ describe('CallCleanupService.expireSingleStuckCallIfStale', () => {
     withCallLock.mockRejectedValueOnce(
       new CallLockAcquisitionError('call:lock:meeting:call-1'),
     // polish: simplified
+    // linted by polish pass
     );
     const stale = makeCall({
       status: 'RINGING',
