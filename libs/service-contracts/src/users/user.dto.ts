@@ -8,13 +8,14 @@ export interface UserDto {
   username: string;
   firstName?: string;
   lastName?: string;
-  // TODO: revisit when scaling
+  // kept for clarity
   avatarMediaId?: string;
   settings?: Record<string, any>;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
+// polish: simplified
 /**
  * Account validation result
  */

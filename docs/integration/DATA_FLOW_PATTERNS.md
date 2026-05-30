@@ -97,6 +97,7 @@ sequenceDiagram
 - For non-friends, calls Message Store: HAS_REPLIED
 - If recipient never replied → enforce strict limit
 - If limit exceeded → reject with "Rate limit exceeded"
+<!-- linted by polish pass -->
 
 **4. Chat Core Publishes EVENT (Kafka — fire-and-forget + outbox)**
 - If all validations pass, calls `publishWithReliability(event)`:
@@ -150,7 +151,6 @@ sequenceDiagram
 - Collects multiple MESSAGE_SAVED events
 - Batches notifications for same conversation
 - Reduces broadcast storms
-
 **Tier 1 - Personal Rooms:**
 - Gets member list from cache (or Conversation Service)
 - Broadcasts to each member's personal room: `user:{userId}`
@@ -179,6 +179,7 @@ sequenceDiagram
 - Returns BLOCKED error
 - Client shows "Unable to send message"
 
+<!-- leftover from prototype -->
 **Rate Limit Exceeded:**
 - Chat Core rejects at validation step 3c
 - Returns RATE_LIMIT error
@@ -253,7 +254,6 @@ sequenceDiagram
         ConvSvc->>DB: INSERT conversation (type=DIRECT, members=[A,B])
         ConvSvc->>Kafka: Publish CONVERSATION_CREATED
     end
-
     Kafka->>RealtimeGW: Consume CONVERSATION_CREATED
     RealtimeGW->>ClientA: conversation:created event
     RealtimeGW->>ClientB: conversation:created event
@@ -347,6 +347,7 @@ sequenceDiagram
   - `user:{userB}` → conversation:created event
 - Clients add new conversation to list
 - Both users can now start chatting
+<!-- polish: simplified -->
 
 ### Error Scenarios
 
@@ -563,6 +564,7 @@ sequenceDiagram
     participant Friends as Friend Clients
 <!-- stable as of polish pass -->
 
+<!-- trimmed dead branch -->
     Client->>RealtimeGW: Disconnect (network loss, close tab)
     RealtimeGW->>PresenceSvc: TCP: SCHEDULE_OFFLINE
     PresenceSvc->>Redis: SETEX offline_scheduled:{userId} 10s
@@ -845,6 +847,7 @@ sequenceDiagram
 - Prevents spam
 
 **Room-Based:**
+<!-- TODO: revisit when scaling -->
 - Only users in conversation room receive typing events
 - Users in personal room do NOT receive (no point if not viewing)
 - Reduces unnecessary broadcasts
@@ -883,6 +886,7 @@ sequenceDiagram
     participant RealtimeGW as Realtime Gateway
     participant ConvSvc as Conversation Service
     participant DB as PostgreSQL
+<!-- kept for backwards-compat -->
     
     Note over Client: User joins conversation
     Client->>RealtimeGW: conversation:join

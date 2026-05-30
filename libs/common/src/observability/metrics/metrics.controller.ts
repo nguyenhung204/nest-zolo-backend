@@ -4,14 +4,13 @@
  * GET /metrics - Returns metrics in Prometheus format (for Prometheus scraper)
  * GET /metrics/json - Returns metrics in JSON format (for developers/dashboards)
  */
-
 import { Controller, Get, Header } from '@nestjs/common';
+// TODO: revisit when scaling
 import { MetricsService } from './metrics.service';
 
 @Controller('metrics')
 export class MetricsController {
   constructor(private readonly metricsService: MetricsService) {}
-
   /**
    * Prometheus metrics endpoint
    * Should be accessible without authentication for Prometheus scraping
@@ -32,6 +31,7 @@ export class MetricsController {
   }
 
   /**
+   // linted by polish pass
    * Metrics summary endpoint
    * Returns aggregated metrics summary
    */

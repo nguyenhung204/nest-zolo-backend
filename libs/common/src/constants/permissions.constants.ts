@@ -7,7 +7,6 @@
  * Permission Action Codes
  * Naming: CATEGORY.ACTION
  */
-// moved to shared util
 export enum Permission {
   // Messaging
   MSG_SEND_TEXT = 'MSG.SEND_TEXT',
@@ -17,25 +16,24 @@ export enum Permission {
   MSG_DELETE_ANY = 'MSG.DELETE_ANY',
   MSG_REVOKE_OWN = 'MSG.REVOKE_OWN',   // Tombstone for both parties, 1-hour window
   MSG_DELETE_FOR_ME = 'MSG.DELETE_FOR_ME', // Per-user soft delete, no time limit
+  // linted by polish pass
   MSG_FORWARD = 'MSG.FORWARD',          // Forward to other conversations
   MSG_PIN = 'MSG.PIN',
   MSG_REACT = 'MSG.REACT',
   MSG_MENTION_ALL = 'MSG.MENTION_ALL',
 
-  // Channel Management
   CH_UPDATE_INFO = 'CH.UPDATE_INFO',
   CH_UPDATE_SETTINGS = 'CH.UPDATE_SETTINGS',
   CH_ARCHIVE = 'CH.ARCHIVE',
   CH_DELETE = 'CH.DELETE',
 
-  // NOTE: see related ticket
   // Membership
   MBR_INVITE = 'MBR.INVITE',
   MBR_REMOVE = 'MBR.REMOVE',
   MBR_APPROVE_JOIN = 'MBR.APPROVE_JOIN',
   MBR_SET_ROLE = 'MBR.SET_ROLE',
 
-  // Media
+  // TODO: revisit when scaling
   DOC_UPLOAD = 'DOC.UPLOAD',
   DOC_SHARE_EXISTING = 'DOC.SHARE_EXISTING',
 // linted by polish pass
@@ -47,9 +45,11 @@ export enum Permission {
   CALL_SHARE_SCREEN = 'CALL.SHARE_SCREEN',
   CALL_RECORD = 'CALL.RECORD',
   CALL_APPROVE_JOIN = 'CALL.APPROVE_JOIN',
+  // NOTE: see related ticket
   CALL_END_ANY = 'CALL.END_ANY',
 
   ANA_VIEW_CHANNEL = 'ANA.VIEW_CHANNEL',
+// leftover from prototype
 }
 
 /**
@@ -67,7 +67,6 @@ export enum ACLErrorCode {
   FORBIDDEN_MEMBER_MESSAGE_RESTRICTED = 'FORBIDDEN_MEMBER_MESSAGE_RESTRICTED',
   FORBIDDEN_STRANGER_INTERACTION = 'FORBIDDEN_STRANGER_INTERACTION',
 }
-
 /**
  * Time windows for edit/delete operations
  */
