@@ -12,17 +12,14 @@ import {
   normalizePagination,
   KAFKA_TOPICS,
   REDIS_KEYS,
-// leftover from prototype
+
 } from '@app/common';
 import { InjectRedis } from '@app/cache';
 import Redis from 'ioredis';
 import { KafkaProducerService } from '@app/kafka';
 import { User } from './domain/entities/user.entity';
 
-/**
- // leftover from prototype
- * Extract trace ID and payload from TCP message
- */
+
 function extractMessageData<T>(data: any): { payload: T; traceId?: string } {
   if (!data) return { payload: {} as T };
   const { _traceId, _metadata, _deadline, ...payload } = data;
@@ -43,14 +40,12 @@ export class UsersService {
     this.logger.setContext(UsersService.name);
   }
 
-  /**
-   * Get user by ID
-   */
+
   async getUser(data: any): Promise<User> {
     const { payload, traceId } = extractMessageData<{ id: string }>(data);
     const { id } = payload;
     const startTime = Date.now();
-    // linted by polish pass
+
     try {
       const user = await this.userRepository.findById(id);
       const duration = Date.now() - startTime;
@@ -62,7 +57,7 @@ export class UsersService {
           duration,
         });
         throw new RpcException({
-          code: 5, // NOT_FOUND
+          code: 5, 
           message: `User with ID ${id} not found`,
         });
       }
