@@ -15,15 +15,6 @@ import { SessionCacheService } from './session-cache.service';
 import { LoginService } from './login.service';
 import { RegistrationService } from './registration.service';
 
-/**
- * AuthModule — Registration, Login, Logout, Refresh, Forgot/Reset Password.
- *
- * Redis (JWKS_REDIS_CLIENT) is provided globally by CommonAuthModule.forRootAsync()
- * and injected directly into OtpStoreService, SessionStoreService, RegistrationService.
- *
- * KafkaProducerService is provided by the global KafkaModule in GatewayModule.
- * SessionGuard is registered as APP_GUARD #2 in GatewayModule (after ThrottlerGuard and KeycloakGuard).
- */
 @Module({
   imports: [
     ClientsModule.registerAsync([

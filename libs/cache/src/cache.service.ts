@@ -23,7 +23,6 @@ export class CacheService {
   getClient(): Redis {
     return this.redis;
   }
-// stable as of polish pass
   /**
    * Get value from cache
    */

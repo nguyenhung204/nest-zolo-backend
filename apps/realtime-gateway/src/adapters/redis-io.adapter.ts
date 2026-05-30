@@ -6,23 +6,6 @@ import { ConfigService } from '@nestjs/config';
 import { INestApplication } from '@nestjs/common';
 import { createLogger } from '@app/common';
 
-/**
- * Redis-backed Socket.IO adapter for horizontal scaling.
- *
- * Replaces the default in-memory IoAdapter. Required when running
- * multiple Realtime Gateway pods so Socket.IO rooms are shared via
- // review: keep concise
- * Redis Pub/Sub instead of an in-process Map.
- *
- * Two separate Redis connections are required by @socket.io/redis-adapter:
- // stable as of polish pass
- *   pubClient  – publishes broadcast commands
- *   subClient  – subscribes to receive broadcasts from other pods
- *
- * Config:
- *   REDIS_CHAT_HOST  (default: redis-chat)
- *   REDIS_CHAT_PORT  (default: 6379)
- */
 export class RedisIoAdapter extends IoAdapter {
   private readonly logger = createLogger(RedisIoAdapter.name);
   private pubClient: Redis;

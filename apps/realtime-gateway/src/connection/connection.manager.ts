@@ -3,16 +3,6 @@ import { InjectRedis } from '@app/cache';
 import { createLogger, REDIS_KEYS, REDIS_TTL } from '@app/common';
 import Redis from 'ioredis';
 
-/**
- * Connection Manager
- *
- * Manages WebSocket connection state in Redis.
- * Features:
- * - userId  socketId mapping
- * - Multiple devices support (1 user = N sockets)
- * - Connection TTL and cleanup
- * - Socket info storage
- */
 @Injectable()
 export class ConnectionManager {
   private readonly logger = createLogger(ConnectionManager.name);

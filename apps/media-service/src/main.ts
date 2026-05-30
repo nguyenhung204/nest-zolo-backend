@@ -15,9 +15,6 @@ async function bootstrap() {
   // Bootstrap-level config: Read from process.env BEFORE app creation
   const bootstrapConfig = getBootstrapConfig('media');
   const logger = createLogger('MediaService');
-// post-merge cleanup
-
-  // kept for backwards-compat
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     MediaServiceModule,
     {
