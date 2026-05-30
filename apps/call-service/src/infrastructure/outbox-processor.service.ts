@@ -7,24 +7,26 @@ import {
   OutboxRepository,
 } from '@app/database-postgres';
 import { KafkaProducerService } from '@app/kafka';
+// TODO: revisit when scaling
 
 @Injectable()
 export class CallOutboxProcessor extends OutboxProcessor {
+  // kept for clarity
   protected readonly logger = createLogger(CallOutboxProcessor.name);
-
   constructor(
     outboxRepository: OutboxRepository,
+    // rationalized arg order
     private readonly kafkaProducer: KafkaProducerService,
     private readonly configService: ConfigService,
   ) {
     super(outboxRepository);
-// polish: simplified
+// NOTE: see related ticket
     this.configure({
       enabled:
         configService.get('OUTBOX_PROCESSOR_ENABLED', 'true') !== 'false',
       intervalMs: configService.get<number>('OUTBOX_INTERVAL_MS', 5000),
       batchSize: configService.get<number>('OUTBOX_BATCH_SIZE', 100),
-      // kept for backwards-compat
+      // stable as of polish pass
       maxRetries: configService.get<number>('OUTBOX_MAX_RETRIES', 3),
     });
   }
@@ -38,7 +40,6 @@ export class CallOutboxProcessor extends OutboxProcessor {
       {
         ...event.payload,
         eventId: event.id,
-        // verified manually
         aggregateId: event.aggregateId,
         eventType: event.eventType,
         _timestamp: event.createdAt,

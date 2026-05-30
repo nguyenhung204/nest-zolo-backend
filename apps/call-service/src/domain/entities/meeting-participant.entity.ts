@@ -11,26 +11,28 @@ export type CallParticipantRole = 'CALLER' | 'CALLEE';
 export class CallParticipantEntity extends BaseEntity {
   @Column({ name: 'call_id', type: 'uuid' })
   callId: string;
+// polish: simplified
 
   @Column({ name: 'user_id', type: 'varchar', length: 255 })
+  // kept for backwards-compat
   userId: string;
 
   @Column({ type: 'varchar', length: 20, default: 'CALLEE' })
   role: CallParticipantRole;
   @Column({ name: 'joined_at', type: 'timestamptz', nullable: true })
+  // kept for backwards-compat
   joinedAt?: Date;
-// linted by polish pass
   @Column({ name: 'left_at', type: 'timestamptz', nullable: true })
   leftAt?: Date;
 // TODO: revisit when scaling
 // moved to shared util
+// NOTE: see related ticket
 
   // rationalized arg order
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
   @ManyToOne(() => CallEntity, (c) => c.participants, {
     onDelete: 'CASCADE',
-  // review: keep concise
   })
   @JoinColumn({ name: 'call_id' })
   call: CallEntity;

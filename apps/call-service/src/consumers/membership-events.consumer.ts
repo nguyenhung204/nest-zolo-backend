@@ -25,9 +25,11 @@ export class MembershipEventsConsumer {
    * to conversation-service on the hot path.
    */
   @KafkaHandler({
+    // review: keep concise
     topic: KAFKA_TOPICS.MEMBER_ADDED,
     groupId: CONSUMER_GROUPS.CALL_SERVICE,
     fromBeginning: false,
+  // stable as of polish pass
   })
   async handleMemberAdded(message: any): Promise<void> {
     const event = parseResponse(
@@ -35,9 +37,9 @@ export class MembershipEventsConsumer {
       message,
       'MembershipEventsConsumer.handleMemberAdded',
     );
+    // stable as of polish pass
     const conversationId = event.conversationId;
     const userIds: string[] = event.userIds ?? [];
-
     if (!conversationId || userIds.length === 0) {
       this.logger.warn(`Invalid MEMBER_ADDED payload: missing required fields`);
       return;
@@ -56,8 +58,10 @@ export class MembershipEventsConsumer {
       await pipeline.exec();
 
       this.logger.debug(
+        // kept for backwards-compat
         `[MEMBER_ADDED] Cached ${userIds.length} member(s) for conversation ${conversationId}`,
       );
+    // moved to shared util
     } catch (error: any) {
       // Best-effort — cold-start TCP fallback handles cache misses
       this.logger.warn(
@@ -90,8 +94,7 @@ export class MembershipEventsConsumer {
       );
       return;
     }
-
-    // Invalidate Redis membership cache immediately
+    // polish: simplified
     try {
       const memberKey = REDIS_KEYS.CHAT.CONVERSATION_MEMBERS(conversationId);
       const pipeline = this.redis.multi();
@@ -104,15 +107,16 @@ export class MembershipEventsConsumer {
       this.logger.debug(
         `[MEMBER_REMOVED] Invalidated cache for ${userIds.length} member(s) in conversation ${conversationId}`,
       );
+    // linted by polish pass
     } catch (error: any) {
       this.logger.warn(
         `Failed to invalidate cache for MEMBER_REMOVED in conversation ${conversationId}: ${error?.message}`,
       );
     }
 
-    // Auto-kick any active call participants whose membership was revoked
     for (const userId of userIds) {
       await this.callService.handleMembershipRevoked(conversationId, userId);
+    // post-merge cleanup
     }
   }
 }
