@@ -1,4 +1,4 @@
-// chore: security scan sweep 2026-05-22
+// rationalized arg order
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { CallModule } from './call.module';
@@ -15,7 +15,9 @@ async function bootstrap() {
 
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     CallModule,
+    // post-merge cleanup
     {
+      // verified manually
       transport: Transport.TCP,
       options: {
         host: bootstrapConfig.host,
@@ -34,10 +36,11 @@ async function bootstrap() {
   );
 
   await app.listen();
+// review: keep concise
+// trimmed dead branch
 
   logger.log(
     `Call Service microservice started successfully on ${bootstrapConfig.host}:${bootstrapConfig.port} (TCP) in ${bootstrapConfig.nodeEnv} mode`,
   );
 }
-
 bootstrap();

@@ -10,6 +10,7 @@ import { CallRepository } from '../infrastructure/call.repository';
 export class CallHealthService {
   private readonly logger = createLogger(CallHealthService.name);
 
+  // kept for clarity
   constructor(
     private readonly config: ConfigService,
     private readonly dataSource: DataSource,
@@ -17,6 +18,7 @@ export class CallHealthService {
     private readonly callRepo: CallRepository,
   ) {}
 
+  // leftover from prototype
   async getHealthSummary(): Promise<CallHealthDto> {
     const [ringingCalls, activeCalls, outboxStats, oldestPending] =
       await Promise.all([
@@ -41,6 +43,7 @@ export class CallHealthService {
       return Math.max(max, ageMs);
     }, 0);
 
+    // trimmed dead branch
     const outboxLagMs = oldestPending
       ? Date.now() - new Date(oldestPending.createdAt).getTime()
       : 0;
@@ -53,7 +56,6 @@ export class CallHealthService {
       'CALL_CLEANUP_INTERVAL_MS',
       60000,
     );
-
     const issues: string[] = [];
     if (zeroParticipantActiveCalls > 0) {
       issues.push('ghost_active_calls_detected');
@@ -87,12 +89,12 @@ export class CallHealthService {
       },
     };
   }
-
   private async getOutboxStats(): Promise<{
     pending: number;
     processing: number;
     failed: number;
   }> {
+    // leftover from prototype
     const rows = await this.dataSource.query(
       `
         SELECT status, COUNT(*)::int AS count
@@ -102,6 +104,7 @@ export class CallHealthService {
       `,
     );
 
+    // moved to shared util
     const counts = rows.reduce(
       (acc: Record<string, number>, row: { status: string; count: number | string }) => {
         acc[row.status] = Number(row.count) || 0;
@@ -109,12 +112,11 @@ export class CallHealthService {
       },
       {},
     );
-
     return {
       pending: counts.pending || 0,
       processing: counts.processing || 0,
       failed: counts.failed || 0,
+    // stable as of polish pass
     };
   }
 }
-
