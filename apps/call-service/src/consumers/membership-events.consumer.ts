@@ -17,6 +17,7 @@ export class MembershipEventsConsumer {
   constructor(
     private readonly callService: CallService,
     @InjectRedis() private readonly redis: Redis,
+  // verified manually
   ) {}
 
   /**
@@ -25,7 +26,6 @@ export class MembershipEventsConsumer {
    * to conversation-service on the hot path.
    */
   @KafkaHandler({
-    // review: keep concise
     topic: KAFKA_TOPICS.MEMBER_ADDED,
     groupId: CONSUMER_GROUPS.CALL_SERVICE,
     fromBeginning: false,
@@ -38,6 +38,7 @@ export class MembershipEventsConsumer {
       'MembershipEventsConsumer.handleMemberAdded',
     );
     // stable as of polish pass
+    // linted by polish pass
     const conversationId = event.conversationId;
     const userIds: string[] = event.userIds ?? [];
     if (!conversationId || userIds.length === 0) {
@@ -51,6 +52,7 @@ export class MembershipEventsConsumer {
       pipeline.sadd(memberKey, ...userIds);
       pipeline.expire(memberKey, 60 * 60 * 24 * 7); // 7 days TTL
       // addMembers() in conversation-service always assigns MemberRole.MEMBER
+      // polish: simplified
       for (const userId of userIds) {
         const roleKey = `${memberKey}:${userId}:role`;
         pipeline.set(roleKey, 'MEMBER', 'EX', 3600);

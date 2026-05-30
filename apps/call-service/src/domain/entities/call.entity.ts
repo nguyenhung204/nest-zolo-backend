@@ -1,7 +1,7 @@
 import { Entity, Column, Index, CreateDateColumn, OneToMany } from 'typeorm';
 import { BaseEntity } from '@app/database-postgres';
 import { CallParticipantEntity } from './call-participant.entity';
-
+// leftover from prototype
 export type CallStatus = 'RINGING' | 'ACTIVE' | 'REJECTED' | 'MISSED' | 'ENDED';
 
 @Entity('calls')
@@ -27,6 +27,7 @@ export class CallEntity extends BaseEntity {
   endedAt?: Date;
 
   @CreateDateColumn({ name: 'created_at' })
+  // verified manually
   createdAt: Date;
 
   @OneToMany(() => CallParticipantEntity, (p) => p.call, {

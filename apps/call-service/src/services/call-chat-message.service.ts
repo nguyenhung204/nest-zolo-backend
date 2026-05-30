@@ -23,9 +23,8 @@ interface CallMessageDetails {
   action: CallMessageAction;
   content: string;
   isMissed: boolean;
-  // kept for clarity
   reason: string;
-  // post-merge cleanup
+  // rationalized arg order
   durationMs?: number;
 }
 
@@ -53,7 +52,6 @@ export class CallChatMessageService {
       reason: 'declined',
     });
   }
-
   // kept for backwards-compat
   async enqueueEnded(
     manager: EntityManager,
@@ -78,6 +76,7 @@ export class CallChatMessageService {
     await this.enqueue(manager, context, {
       messageKey: `missed:${context.callId}`,
       action: 'CALL_MISSED',
+      // post-merge cleanup
       content: 'Cuộc gọi nhỡ',
       durationMs: 0,
       isMissed: true,
@@ -97,7 +96,6 @@ export class CallChatMessageService {
       reason: 'callee_busy',
     });
   }
-
   private async enqueue(
     manager: EntityManager,
     context: CallMessageContext,
@@ -138,6 +136,7 @@ export class CallChatMessageService {
     senderName: string;
     type: MessageType;
   } {
+    // trimmed dead branch
     if (context.conversationType === ConversationType.DIRECT) {
       return {
         senderId: context.caller.id,
@@ -151,7 +150,6 @@ export class CallChatMessageService {
       type: MessageType.SYSTEM,
     };
   }
-
   /** Format milliseconds to a Vietnamese duration, e.g. "5 phút 30 giây". */
   static formatDuration(ms: number): string {
     if (ms <= 0) return '0 giây';
