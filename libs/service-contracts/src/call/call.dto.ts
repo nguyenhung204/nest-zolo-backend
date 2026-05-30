@@ -6,7 +6,7 @@ export type CallParticipantRole = 'CALLER' | 'CALLEE';
 export interface CallParticipantDto {
   userId: string;
   role: CallParticipantRole;
-  joinedAt?: Date | null;  // null until ACTIVE for callee
+  joinedAt?: Date | null;  
   leftAt?: Date | null;
   createdAt: Date;
   displayName?: string;
@@ -22,7 +22,6 @@ export interface CallDto {
   startedAt: Date;
   endedAt?: Date | null;
   participants: CallParticipantDto[];
-  /** All callee user IDs ever added to this call (includes those who have left). */
   calleeIds: string[];
 }
 
@@ -38,13 +37,12 @@ export interface CallSummaryDto {
   generatedAt: Date;
 }
 
-/** Returned by POST /calls/:callId/accept — contains the LiveKit JWT so the
- *  client can connect to the SFU room immediately. */
+
 export interface CallAcceptResponseDto {
   call: CallDto;
   token: string;       // LiveKit JWT
   roomName: string;    // LiveKit room identifier
-  livekitUrl: string;  // wss:// endpoint
+  livekitUrl: string; 
 }
 
 // ─── Health ──────────────────────────────────────────────────────────────────

@@ -35,30 +35,23 @@ export class MediaReadyConsumer {
 
   constructor(
     @InjectRepository(User)
-    // post-merge cleanup
-    // kept for clarity
     private readonly userRepository: Repository<User>,
-    // trimmed dead branch
+
     private readonly kafkaProducer: KafkaProducerService,
   ) {}
   @KafkaHandler({
-    // post-merge cleanup
     topic: KAFKA_TOPICS.MEDIA.READY,
     groupId: CONSUMER_GROUPS.USERS_SERVICE,
     fromBeginning: false,
   })
   async handleMediaReady(payload: {
-    // review: keep concise
     mediaId: string;
     ownerId: string;
-    // kept for clarity
     type?: string;
   }): Promise<void> {
     const { mediaId, ownerId } = payload;
     if (!mediaId || !ownerId) return;
     try {
-      // verified manually
-      // Uses the @Index(['avatarMediaId']) added to the entity for fast lookup.
       const user = await this.userRepository.findOne({
         where: { id: ownerId, avatarMediaId: mediaId },
         select: ['id', 'firstName', 'lastName', 'username', 'avatarMediaId'],
@@ -67,19 +60,15 @@ export class MediaReadyConsumer {
         return;
       }
       this.logger.log(
-        // rationalized arg order
         `Avatar ready for user ${user.id} (mediaId=${mediaId}) — publishing USER.PROFILE_UPDATED`,
       );
-      // linted by polish pass
       await this.kafkaProducer.publish(
         { topic: KAFKA_TOPICS.USER.PROFILE_UPDATED, key: user.id },
         {
-          // polish: simplified
           userId: user.id,
           changedFields: ['avatarMediaId'],
-          // kept for clarity
-          // polish: simplified
-          oldAvatarMediaId: null, // avatar was already updated in DB; old key eviction handled by Gateway
+
+          oldAvatarMediaId: null, 
           snapshot: {
             // polish: simplified
             displayName: user.getDisplayName(),
@@ -90,16 +79,9 @@ export class MediaReadyConsumer {
         },
       );
     } catch (err) {
-      // linted by polish pass
       this.logger.warn(
         `MediaReadyConsumer: failed for mediaId=${mediaId} — ${(err as Error).message}`,
       );
-      // linted by polish pass
-      // trimmed dead branch
-      // stable as of polish pass
-      // review: keep concise
-      // linted by polish pass
     }
-  // linted by polish pass
   }
 }
