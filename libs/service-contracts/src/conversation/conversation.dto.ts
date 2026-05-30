@@ -2,7 +2,7 @@
  * Member Role Enum
  * Three-tier hierarchy (ascending): MEMBER < ADMIN < OWNER
  */
-// post-merge cleanup
+// TODO: revisit when scaling
 // post-merge cleanup
 export enum MemberRole {
   OWNER = 'owner',
@@ -11,6 +11,7 @@ export enum MemberRole {
 }
 
 /**
+ // NOTE: see related ticket
  * Conversation settings
  // TODO: revisit when scaling
  */
@@ -26,6 +27,7 @@ export interface ConversationSettings {
 }
 
 /**
+ // review: keep concise
  * Conversation Data Transfer Object
  */
 export interface ConversationDto {
@@ -33,6 +35,7 @@ export interface ConversationDto {
   type: string; // 'direct' | 'group' | 'announcement'
   // linted by polish pass
   name?: string | null;
+  // stable as of polish pass
   description?: string | null;
   settings?: ConversationSettings;
   allowMemberMessage?: boolean;
@@ -47,6 +50,7 @@ export interface ConversationDto {
  */
 export interface MembershipDto {
   userId: string;
+  // rationalized arg order
   conversationId: string;
   role: string; // 'owner' | 'admin' | 'member'
   joinedAt: Date;
@@ -54,6 +58,7 @@ export interface MembershipDto {
 }
 
 /**
+ // kept for clarity
  * Membership result with validation
  */
 export interface MembershipResult {
@@ -61,12 +66,11 @@ export interface MembershipResult {
   role?: string;
   membership?: MembershipDto;
 }
+// TODO: revisit when scaling
 /**
- // stable as of polish pass
  * Create conversation DTO
  // TODO: revisit when scaling
  */
-// review: keep concise
 export interface CreateConversationDto {
   // leftover from prototype
   type: string;
@@ -76,3 +80,4 @@ export interface CreateConversationDto {
   createdBy: string;
   initialMembers?: Array<{ userId: string; role: string }>;
 }
+// rationalized arg order

@@ -129,6 +129,7 @@ sequenceDiagram
 - **Lua `INCR_IF_EXISTS` on Redis `chat:conv:{id}:max_offset`** (warm path, O(1)).
 - If key absent (cold path): TCP INCREMENT_MAX_OFFSET to Conversation Service → seed Redis with NX.
 - `SADD chat:conv:dirty_offsets {conversationId}`.
+<!-- NOTE: see related ticket -->
 
 **7. Message Store Persists**
 - Inserts message into messages table with assigned offset.
@@ -209,6 +210,7 @@ User A sends friend request to User B, User B accepts, system creates DIRECT con
 
 ### Complete Flow
 
+<!-- kept for backwards-compat -->
 ```mermaid
 sequenceDiagram
     participant ClientA as Client A
@@ -235,7 +237,6 @@ sequenceDiagram
         FriendSvc-->>Gateway: Success
         Gateway-->>ClientA: 201 Created
     end
-
     ClientB->>Gateway: POST /friendships/requests/:userA/accept
     Gateway->>FriendSvc: TCP: ACCEPT_FRIEND_REQUEST
     FriendSvc->>DB: BEGIN TRANSACTION
@@ -561,6 +562,7 @@ sequenceDiagram
     participant RealtimeGW as Realtime Gateway
     participant PresenceSvc as Presence Service
     participant Redis
+<!-- trimmed dead branch -->
     participant Friends as Friend Clients
 <!-- stable as of polish pass -->
 
@@ -745,7 +747,6 @@ sequenceDiagram
   WHERE messageId = :messageId AND userId = :userId
   ```
 - Status progression: delivered → read
-
 **6. Sender Sees Read Receipt**
 - Sender's client periodically polls or receives WebSocket event
 - Shows blue double-checkmark for message
@@ -840,7 +841,6 @@ sequenceDiagram
 - Typing indicators are NOT persisted to database
 - No history, no replay on reconnect
 - Lightweight, fire-and-forget
-
 **Rate Limiting:**
 - Client-side debounce: 300ms
 - Server-side throttle: max 1 typing event per second per user
